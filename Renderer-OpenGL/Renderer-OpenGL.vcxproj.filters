@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{66e32270-2c8e-4627-a52d-185213cef9c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\OpenGL">
+      <UniqueIdentifier>{e4f5d2f1-454f-435a-8f51-88fbe81d0db3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Math">
+      <UniqueIdentifier>{49e5c237-5ad8-4490-b729-4cf02d8e3038}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{cf356dd1-4eb3-4f85-b517-dd163c3c9b0a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Math\CosmicMatrix.cpp">
+      <Filter>src\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Math\CosmicVector.cpp">
+      <Filter>src\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Math\Orientation.cpp">
+      <Filter>src\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpenGL\BufferLayout.cpp">
+      <Filter>src\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Math\CosmicCoordinateSpaces.cpp">
+      <Filter>src\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Math\CosmicPhysics.cpp">
+      <Filter>src\Math</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Core.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\CosmicColliders.h">
+      <Filter>src\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\CosmicMath.h">
+      <Filter>src\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OpenGL\OpenGLErrorCatcher.h">
+      <Filter>src\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OpenGL\RenderCommands.h">
+      <Filter>src\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OpenGL\BufferLayout.h">
+      <Filter>src\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AssetLoader.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\std_image.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OpenGL\OpenGL.h">
+      <Filter>src\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OpenGL\OpenGlRenderer.h">
+      <Filter>src\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\World.h">
+      <Filter>src\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\CosmicPhysics.h">
+      <Filter>src\Math</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\first_compute.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\quad_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\quad_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\pbr_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\pbr_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\skybox_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\debug_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\equirectangular_to_cubemap.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\irradince_convolution.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\pbr_test_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\pbr_test_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="shaders\skybox_frag.glsl">
+      <Filter>Shaders</Filter>
+    </Text>
+    <Text Include="shaders\debug_frag.glsl">
+      <Filter>Shaders</Filter>
+    </Text>
+  </ItemGroup>
+</Project>
