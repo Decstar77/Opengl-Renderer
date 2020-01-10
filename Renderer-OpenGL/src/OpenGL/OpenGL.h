@@ -9,7 +9,7 @@ namespace cm
 	/*
 		Renderbuffer/FrameBuffer are not so good and are subject to change when needed
 		Cubemaps !
-
+		@TODO: Change CreateShader to take in shader pointer
 	*/
 	//===============================================================//
 	enum class VertexFlags : uint32
@@ -58,15 +58,16 @@ namespace cm
 	{
 		uint32 object = 0;
 		uint32 size_bytes = 0;
+		uint32 index_count = 0;
 		BufferLayout lbo;
 		BufferType type = BufferType::Array_buffer;
 	};
 
 	struct IndexBuffer
 	{
-		uint32 object;
-		uint32 index_count;
-		uint32 size_bytes;
+		uint32 object = 0;
+		uint32 index_count = 0;
+		uint32 size_bytes = 0 ;
 		BufferType type = BufferType::Index_buffer;
 	};
 	
@@ -151,11 +152,11 @@ namespace cm
 
 
 	template<typename T>
-	T CreateBuffer(uint32 buffer_size_bytes, VertexFlags flags)
+	void CreateBuffer(T *buffer, uint32 buffer_size_bytes, VertexFlags flags)
 	{
-		T buffer;
+		T buff;
 		uint32 object;
-		uint32 type = static_cast<uint32>(buffer.type);
+		uint32 type = static_cast<uint32>(buff.type);
 		glGenBuffers(1, &object);
 		glBindBuffer(type, object);	
 
@@ -163,11 +164,10 @@ namespace cm
 
 		glBindBuffer(type, 0);
 
-		buffer.object = object;
-		buffer.size_bytes = buffer_size_bytes;
+		buff.object = object;
+		buff.size_bytes = buffer_size_bytes;
 
-		return buffer;
-		
+		*buffer = buff;		
 		//glBufferSubData(buffer.type, 0, sizeof(mat4), projection.arr);	//<-- ubo
 	}
 
@@ -255,6 +255,7 @@ namespace cm
 
 		memcpy(ptr, new_data, size);
 
+		
 		glUnmapBuffer(type);
 		glBindBuffer(type, 0);
 	}
@@ -279,9 +280,9 @@ namespace cm
 		glBindVertexArray(0);
 	}
 	   
-	VertexArray CreateVertexArray(BufferLayout &lbo, VertexBuffer vbo /*= VertexBuffer()*/)
+	void CreateVertexArray(VertexArray *vao, BufferLayout &lbo, VertexBuffer vbo /*= VertexBuffer()*/)
 	{
-		VertexArray vao;
+		VertexArray va;
 		uint32 buffer_id;
 		glGenVertexArrays(1, &buffer_id);
 		glBindVertexArray(buffer_id);
@@ -299,14 +300,13 @@ namespace cm
 				glVertexAttribDivisor(i, lbo.GetAttributeDivisor());
 				lbo.Next();
 			}
-			vao.vertex_buffers.push_back(vbo);
+			va.vertex_buffers.push_back(vbo);
 			
 		}
 		glBindVertexArray(0);
+		va.object = buffer_id;
 
-
-		vao.object = buffer_id;
-		return vao;
+		*vao = va;		
 	}
 
 	BufferLayout GetTotalVertexBufferLayout(const VertexArray &vao)
@@ -483,22 +483,22 @@ namespace cm
 	}
 
 
-	Texture CreateTexture(const TextureConfig &config, const void* data)
+	void CreateTexture(Texture *texture, const void* data)
 	{
 		uint32 text;
 
 		glGenTextures(1, &text);
-		glBindTexture(config.type, text);
+		glBindTexture(texture->config.type, text);
 
+		glTexParameteri(texture->config.type, GL_TEXTURE_MIN_FILTER, texture->config.min_filter);
+		glTexParameteri(texture->config.type, GL_TEXTURE_MAG_FILTER, texture->config.mag_filter);
+		glTexParameteri(texture->config.type, GL_TEXTURE_WRAP_S, texture->config.wrap_s_mode);
+		glTexParameteri(texture->config.type, GL_TEXTURE_WRAP_T, texture->config.wrap_t_mode);
+		glTexParameteri(texture->config.type, GL_TEXTURE_WRAP_R, texture->config.wrap_r_mode);
 
-		glTexParameteri(config.type, GL_TEXTURE_MIN_FILTER, config.min_filter);
-		glTexParameteri(config.type, GL_TEXTURE_MAG_FILTER, config.mag_filter);
-		glTexParameteri(config.type, GL_TEXTURE_WRAP_S, config.wrap_s_mode);
-		glTexParameteri(config.type, GL_TEXTURE_WRAP_T, config.wrap_t_mode);
-		glTexParameteri(config.type, GL_TEXTURE_WRAP_R, config.wrap_r_mode);
-
-		glTexImage2D(config.type, 0, config.texture_format, config.width,
-			config.height, 0, config.pixel_format, config.data_type, data == nullptr ? NULL : data);
+		glTexImage2D(texture->config.type, 0, texture->config.texture_format, texture->config.width,
+			texture->config.height, 0, texture->config.pixel_format, texture->config.data_type, 
+			data == nullptr ? NULL : data);
 		
 		glGenerateMipmap(GL_TEXTURE_2D);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -506,13 +506,8 @@ namespace cm
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-
-		glBindTexture(config.type, 0);
-
-		Texture t;
-		t.config = config;
-		t.object = text;
-		return t;
+		glBindTexture(texture->config.type, 0);		
+		texture->object = text;
 	}
 
 	template<typename T>

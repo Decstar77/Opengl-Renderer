@@ -18,24 +18,13 @@
     <ClCompile Include="main.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Math\CosmicMatrix.cpp">
-      <Filter>src\Math</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Math\CosmicVector.cpp">
-      <Filter>src\Math</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Math\Orientation.cpp">
-      <Filter>src\Math</Filter>
-    </ClCompile>
     <ClCompile Include="src\OpenGL\BufferLayout.cpp">
       <Filter>src\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Math\CosmicCoordinateSpaces.cpp">
-      <Filter>src\Math</Filter>
     </ClCompile>
     <ClCompile Include="src\Math\CosmicPhysics.cpp">
       <Filter>src\Math</Filter>
     </ClCompile>
+    <ClCompile Include="src\Math\CosmicMath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core.h">

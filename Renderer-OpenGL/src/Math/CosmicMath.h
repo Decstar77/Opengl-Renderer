@@ -22,8 +22,7 @@
 namespace cm
 {
 
-	struct  polar_coord;	
-	struct  Vertex;
+
 
 	struct  Vec2;
 	struct  Vec3;
@@ -35,8 +34,9 @@ namespace cm
 	struct  Mat4;
 	struct  matN;
 
-	struct Basis;	
 	struct Quat;
+	struct Basis;	
+	struct  polar_coord;
 
 	struct Transform;
 	struct Ray;	
@@ -90,7 +90,7 @@ namespace cm
 
 	inline float clamp(float value, float lowerBound, float upperBound)
 	{
-		return (value > upperBound) ? upperBound : (value < lowerBound) ? lowerBound : value;
+		return std::clamp(value, lowerBound, upperBound);	
 	}
 	
 	inline bool fequal(const float &a, const float &b, const float &epsilon = FLOATING_POINT_ERROR_PRESCION)
@@ -187,9 +187,9 @@ namespace cm
 
 	Quat conjugate(const Quat &a);
 
-	float mag(const Quat &a);
+	float Mag(const Quat &a);
 
-	Quat normalize(const Quat &a);
+	Quat Normalize(const Quat &a);
 
 	std::string toString(const Quat &a);
 
@@ -207,21 +207,21 @@ namespace cm
 
 	//========Vector2
 
-	float mag(const Vec2 &a);
+	float Mag(const Vec2 &a);
 
-	Vec2 normalize(const Vec2 &a);
+	Vec2 Normalize(const Vec2 &a);
 
 	//========Vector3
 
-	float  mag(Vec3 a);
+	float  Mag(Vec3 a);
 	
-	float  dot(Vec3 a, Vec3 b);
+	float  Dot(Vec3 a, Vec3 b);
 
 	float sqrd_distance(const Vec3 &a, const Vec3 &b);
 	
-	Vec3   cross(Vec3 a, Vec3 b);
+	Vec3   Cross(Vec3 a, Vec3 b);
 	
-	Vec3   normalize(Vec3 a);
+	Vec3   Normalize(Vec3 a);
 
 	Vec3  vec4tovec3(Vec4 &a);	
 
@@ -229,11 +229,11 @@ namespace cm
 
 	//======Vector 4
 
-	float  mag(Vec4 a);
+	float  Mag(Vec4 a);
 	
-	float   dot(Vec4 a, Vec4 b);
+	float   Dot(Vec4 a, Vec4 b);
 	
-	Vec4   normalize(Vec4 a);
+	Vec4   Normalize(Vec4 a);
 
 	Vec4  vec3tovec4(Vec3 &a, float w);
 
@@ -315,7 +315,7 @@ namespace cm
 		union
 		{
 			__m128 data;
-			float arr[3];
+			float arr[4];
 			struct
 			{
 				float x;
@@ -505,17 +505,9 @@ namespace cm
 
 	struct  polar_coord
 	{
-		float r;
-		float theta;
-		float z;
-		
-		polar_coord() = default;
-		polar_coord(float _r, float _theta, float _z)
-		{
-			r = _r;
-			theta = _theta;
-			z = _z;
-		}
+		real r;
+		real theta;
+		real z;		
 	};
 
 	struct Basis
@@ -524,13 +516,13 @@ namespace cm
 		Vec3 upward	 = Vec3(0,1,0);
 		Vec3 right	 = Vec3(1,0,0);
 	};
-	
+
 	class Transform //@TODO: Move defintions into own cpp file
 	{
 	public:
-		Vec3 position;
-		Vec3 scale;
-		Quat rotation;
+		Vec3 position = Vec3(0,0,0);
+		Vec3 scale = Vec3(1, 1, 1);
+		Quat rotation = Quat(0,0,0,1);
 		Basis basis;
 
 	public:

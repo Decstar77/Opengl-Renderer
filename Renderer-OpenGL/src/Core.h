@@ -23,6 +23,7 @@
 
 #define BYTES_TO_MEGABYTES 0.000001f
 #define BIT(x) (1 << x)
+#define REAL_MAX FLT_MAX
 #define FLOATING_POINT_ERROR_PRESCION 0.0001f
 
 
@@ -38,7 +39,7 @@ typedef uint64_t	uint64;
 typedef int8_t int8;
 typedef int16_t int16;
 typedef int32_t int32;
-typedef int64_t int164;
+typedef int64_t int64;
 
 typedef float real;
 typedef float real32;

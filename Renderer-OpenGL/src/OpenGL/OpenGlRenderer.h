@@ -16,22 +16,18 @@ namespace cm
 		Texture emssive_texture;
 		uint32 ShaderIndex;
 	};
-
+	
 	struct Mesh
 	{
 		VertexArray vao;
 		IndexBuffer ibo;		
-		Vec3 min_vertex;
-		Vec3 max_vertex;
-		//DynaArray<Triangles> tris; <- Tris are points to verts
-		DynaArray<float> *vertices;
 	};
 
 	struct Actor
 	{
-		Mat4 transform_matrix;
-		Material material;
 		Mesh mesh;
+		Material material;
+		Transform transform; // @NOTE: We will now have to calculate the matrix on the render thread
 	};
 
 	struct PointLight

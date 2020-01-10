@@ -12,11 +12,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\Math\CosmicCoordinateSpaces.cpp" />
-    <ClCompile Include="src\Math\CosmicMatrix.cpp" />
+    <ClCompile Include="src\Math\CosmicMath.cpp" />
     <ClCompile Include="src\Math\CosmicPhysics.cpp" />
-    <ClCompile Include="src\Math\CosmicVector.cpp" />
-    <ClCompile Include="src\Math\Orientation.cpp" />
     <ClCompile Include="src\OpenGL\BufferLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -54,7 +51,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{F441E316-02B5-4711-8AFB-E9F964E19FFE}</ProjectGuid>
     <RootNamespace>RendererOpenGL</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -92,10 +89,11 @@
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <AdditionalIncludeDirectories>F:\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\lung\Desktop\DeleteMe\Renderer-OpenGL\Renderer-OpenGL\src;C:\Users\lung\Desktop\DeleteMe\Libraries\GLEW\include\GL;C:\Users\lung\Desktop\DeleteMe\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\lib-vc2017;F:\Libraries\GLEW\lib\Release\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\lung\Desktop\DeleteMe\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\lib-vc2017;C:\Users\lung\Desktop\DeleteMe\Libraries\GLEW\lib\Release\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

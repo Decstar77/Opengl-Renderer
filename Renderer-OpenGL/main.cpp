@@ -9,7 +9,7 @@
 #include "src/OpenGL/OpenGL.h"
 #include "src/OpenGL/OpenGlRenderer.h"
 #include "src/AssetLoader.h"
-
+#include "src/World.h"
 using namespace cm;
 
 struct DebugQueue // TODO: Clean up memory when terminating
@@ -25,7 +25,7 @@ struct Voxel
 {
 	Actor actor;
 	Transform transform;
-	PointMass body;// Array of each collistion shape
+	PointMass body;// Array of each collision shape
 	Aabb aabb;	
 };
 
@@ -104,15 +104,15 @@ void CameraRotate(float delta_pitch, float delta_yaw)
 	front.x = cos(deg_to_rad(main_camera.camera_yaw)) * cos(deg_to_rad(main_camera.camera_pitch));
 	front.y = sin(deg_to_rad(main_camera.camera_pitch));
 	front.z = sin(deg_to_rad(main_camera.camera_yaw)) * cos(deg_to_rad(main_camera.camera_pitch));
-	front = normalize(front);
+	front = Normalize(front);
 
 	Vec3 look = main_camera.transform.position + front;
 
 	Vec3 up(0.0f, 1.0f, 0.0f); // World Space
-	Vec3 camera_reverse_direction = normalize((look - main_camera.transform.position));
-	main_camera.transform.basis.right = normalize(cross(camera_reverse_direction, up));
-	main_camera.transform.basis.upward = cross(main_camera.transform.basis.right, camera_reverse_direction);
-	main_camera.transform.basis.forward = normalize(cross(main_camera.transform.basis.upward, main_camera.transform.basis.right));
+	Vec3 camera_reverse_direction = Normalize((look - main_camera.transform.position));
+	main_camera.transform.basis.right = Normalize(Cross(camera_reverse_direction, up));
+	main_camera.transform.basis.upward = Cross(main_camera.transform.basis.right, camera_reverse_direction);
+	main_camera.transform.basis.forward = Normalize(Cross(main_camera.transform.basis.upward, main_camera.transform.basis.right));
 }
 
 Ray RayFromCamera(const Vec2 &mouse_point)
@@ -125,7 +125,7 @@ Ray RayFromCamera(const Vec2 &mouse_point)
 	
 	Ray ray;
 	ray.origin = main_camera.transform.position;
-	ray.direction = normalize(Vec3(world_coords.x, world_coords.y, world_coords.z));
+	ray.direction = Normalize(Vec3(world_coords.x, world_coords.y, world_coords.z));
 	return ray;
 }
 
@@ -231,15 +231,15 @@ void CreateMeshes(DynaArray<Mesh> *meshes, DynaArray<std::string> directories)
 		FileDataMesh data = LoadMesh(directories.at(i), true);		
 	
 		BufferLayout lbo = PNTTB_VBO_LAYOUT;
-
-		VertexBuffer vbo = CreateBuffer<VertexBuffer>(data.size_bytes, VertexFlags::READ_WRITE);
+		VertexBuffer vbo;
+		CreateBuffer<VertexBuffer>(&vbo, data.size_bytes, VertexFlags::READ_WRITE);
 		WriteBufferData(vbo, data.data, 0);
 		vbo.lbo = lbo;
 		
-
-		VertexArray vao = CreateVertexArray(lbo, vbo);
-
-		IndexBuffer ibo = CreateBuffer<IndexBuffer>(data.indices.size() * sizeof(uint32), VertexFlags::READ_WRITE);
+		VertexArray vao;
+		CreateVertexArray(&vao, lbo, vbo);
+		IndexBuffer ibo;
+		CreateBuffer<IndexBuffer>(&ibo, data.indices.size() * sizeof(uint32), VertexFlags::READ_WRITE);
 		ibo.index_count = data.indices.size();
 		ibo.size_bytes = data.indices.size() * sizeof(float);
 		WriteBufferData(ibo, data.indices, 0);
@@ -247,11 +247,6 @@ void CreateMeshes(DynaArray<Mesh> *meshes, DynaArray<std::string> directories)
 		Mesh m;
 		m.vao = vao;
 		m.ibo = ibo;		
-		m.min_vertex = data.min_vertex;
-		m.max_vertex = data.max_vertex;
-
-		m.vertices = new DynaArray<float>();
-		m.vertices->insert(m.vertices->end(), data.data.begin(), data.data.end());
 		meshes->push_back(m);
 	}
 }
@@ -266,7 +261,9 @@ void CreateTextures(DynaArray<Texture> *textures, DynaArray<std::string> directo
 	config.width = 1;
 	config.height = 1;
 	DynaArray<uint8> id_data = { 255 };
-	Texture id_text = CreateTexture(config, id_data.data());
+	Texture id_text;
+	id_text.config = config;
+	CreateTexture(&id_text, id_data.data());
 	textures->push_back(id_text);
 
 	for (uint32 i = 0; i < directories.size(); i++)
@@ -277,8 +274,9 @@ void CreateTextures(DynaArray<Texture> *textures, DynaArray<std::string> directo
 		config.height = td.height;
 
 			
-
-		Texture t = CreateTexture(config, td.data.data());
+		Texture t;
+		t.config = config;
+		CreateTexture(&t, td.data.data());
 		textures->push_back(t);
 	}
 }
@@ -305,10 +303,11 @@ void CreateCubeMapFrom6(CubeMap *cubemap, DynaArray<std::string> cubemap_faces_d
 void InitDebug()
 {
 	uint32 alloc_size = 1000; //Amount of vertices
-	VertexBuffer vbo = CreateBuffer<VertexBuffer>(sizeof(Vec4) * alloc_size, VertexFlags::READ_WRITE);
+	VertexBuffer vbo;
+	CreateBuffer<VertexBuffer>(&vbo, sizeof(Vec4) * alloc_size, VertexFlags::READ_WRITE);
 	BufferLayout lbo(DynaArray<ShaderDataType> {ShaderDataType::Float4});// padding byte
 	debug_queue.MAX_VERTICES_SIZE = alloc_size;
-	debug_queue.persistent_vao = CreateVertexArray(lbo, vbo);	
+	CreateVertexArray(&debug_queue.persistent_vao, lbo, vbo);
 }
 
 void DrawDebug(Shader *debug_shader)
@@ -329,11 +328,13 @@ void DrawDebug(Shader *debug_shader)
 	amount = debug_queue.irresolute_vertices.size();
 	if (amount > 0)
 	{
-		VertexBuffer irresolute_vbo = CreateBuffer<VertexBuffer>(sizeof(Vec4) * amount, VertexFlags::READ_WRITE);
+		VertexBuffer irresolute_vbo;
+		CreateBuffer<VertexBuffer>(&irresolute_vbo, sizeof(Vec4) * amount, VertexFlags::READ_WRITE);
 		WriteBufferData(irresolute_vbo, debug_queue.irresolute_vertices, 0);
 
 		BufferLayout lbo(DynaArray<ShaderDataType> {ShaderDataType::Float4});// padding byte
-		VertexArray irresolute_vao = CreateVertexArray(lbo, irresolute_vbo);
+		VertexArray irresolute_vao;
+		CreateVertexArray(&irresolute_vao, lbo, irresolute_vbo);
 
 		BindVertexArray(irresolute_vao);
 
@@ -449,7 +450,7 @@ int main()
 	ErrorCatcher err_catcher;
 	InitDebug();
 	PrintStats();
-
+	
 
 #if 0
 	int32 tex_w = 1280, tex_h = 720;
@@ -523,11 +524,12 @@ int main()
 
 	DynaArray<ShaderDataType> l({ ShaderDataType::Float2, ShaderDataType::Float2 });
 	BufferLayout lbo = BufferLayout(l);
-
-	VertexBuffer vbo = CreateBuffer<VertexBuffer>(quad_vertices.size() * sizeof(float), VertexFlags::READ_WRITE);
+	VertexBuffer vbo;
+	CreateBuffer<VertexBuffer>(&vbo, quad_vertices.size() * sizeof(float), VertexFlags::READ_WRITE);
 	vbo.lbo = lbo;
 	WriteBufferData(vbo, quad_vertices, 0);
-	VertexArray vao = CreateVertexArray(lbo, vbo);
+	VertexArray vao;
+	CreateVertexArray(&vao, lbo, vbo);
 	
 
 	DynaArray<std::string> mesh_directories{  
@@ -569,12 +571,12 @@ int main()
 	main_camera.view_matrix = LookAt(main_camera.transform.position, main_camera.target, Vec3(0, 1, 0));
 
 	uint32 pointlight_count = 4;
-
-	UniformBuffer ubo_camera = CreateBuffer<UniformBuffer>(sizeof(Mat4) * 2, VertexFlags::READ_WRITE);	
+	UniformBuffer ubo_camera;
+	CreateBuffer<UniformBuffer>(&ubo_camera ,sizeof(Mat4) * 2, VertexFlags::READ_WRITE);	
 	ubo_camera.binding_location = 0;
 	ubo_camera.lbo = BUFFER_LAYOUT(ShaderDataType::Mat4, ShaderDataType::Mat4);
-	
-	UniformBuffer ubo_lighting = CreateBuffer<UniformBuffer>(sizeof(Vec4) * (pointlight_count * 2), VertexFlags::READ_WRITE);
+	UniformBuffer ubo_lighting;
+	CreateBuffer<UniformBuffer>(&ubo_lighting,sizeof(Vec4) * (pointlight_count * 2), VertexFlags::READ_WRITE);
 	ubo_lighting.binding_location = 1;
 	ubo_lighting.lbo = BUFFER_LAYOUT(ShaderDataType::Float4, ShaderDataType::Mat4, ShaderDataType::Mat4);
 
@@ -610,8 +612,6 @@ int main()
 		cube.actor.mesh = meshes[index];
 		
 		
-		cube.aabb.min = meshes[index].min_vertex;
-		cube.aabb.max = meshes[index].max_vertex;
 		cube.aabb.center = (cube.aabb.max + cube.aabb.min) / 2;
 		cube.aabb.raduis = (cube.aabb.max - cube.aabb.center);
 
@@ -636,7 +636,8 @@ int main()
 	//voxels[0].body.position = voxels[1].body.position + Vec3(0.1, 1, 0);
 	//voxels[2].body.position = voxels[1].body.position + Vec3(-.1, 2, 0);
 
-
+	
+	
 
 	//for (int32 y = 0; y < 10; y++)
 	//{
@@ -701,6 +702,27 @@ int main()
 		//force_registery.RegisterForce(&attrac_fgen, &voxels[i].body);
 	}
 
+	const int test_p = 2;
+	int *test = (int*)(&test_p);
+	*test = 5;
+	std::cout << test_p << std::endl;
+
+	DynaArray<PointMass> point_masses;
+	PointMass ground;
+	ground.SetMass(0);
+	ground.damping = 0.99;
+	ground.position = Vec3(-2, 1, 0);
+	point_masses.push_back(ground);
+	uint32 count = 2;
+	for (int32 i = 1; i < count + 1; i++)
+	{
+		PointMass pm;
+		pm.SetMass(3);
+		pm.damping = 0.99;
+		pm.position = point_masses[i - 1].position + Vec3(0, 0.1, 0);
+		point_masses.push_back(pm);
+	}
+
 	//DebugAddPersistentLine(attrac_fgen.origin, attrac_fgen.origin + Vec3(attrac_fgen.raduis, 0, 0));
 	//DebugAddPersistentLine(attrac_fgen.origin, attrac_fgen.origin + Vec3(-attrac_fgen.raduis, 0, 0));
 	//DebugAddPersistentLine(attrac_fgen.origin, attrac_fgen.origin + Vec3(0, attrac_fgen.raduis, 0));
@@ -710,7 +732,7 @@ int main()
 	
 	Actor plane;
 	plane.mesh = meshes[1];
-	plane.transform_matrix = scale_cardinal(Mat4(1), Vec3(4));
+	plane.transform.scale = Vec3(4);
 
 	World world;
 	world.camera = main_camera;
@@ -729,134 +751,20 @@ int main()
 	// pbr: load the HDR environment map
 	// ---------------------------------
 	FileDataTexture<float> hdri_data = LoadHDRI("textures/Milkyway_small.hdr");
+	Texture hdr_texture;
+	hdr_texture.config.texture_format = GL_RGB16F;
+	hdr_texture.config.pixel_format = GL_RGB;
+	hdr_texture.config.data_type = GL_FLOAT;
+	hdr_texture.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	hdr_texture.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	hdr_texture.config.width = hdri_data.width;
+	hdr_texture.config.height = hdri_data.height;	
 
-	TextureConfig hdri_config;
-	hdri_config.texture_format = GL_RGB16F;
-	hdri_config.pixel_format = GL_RGB;
-	hdri_config.data_type = GL_FLOAT;
-	hdri_config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	hdri_config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	hdri_config.width = hdri_data.width;
-	hdri_config.height = hdri_data.height;
-
-	Texture hdr_texture = CreateTexture(hdri_config, hdri_data.data.data());
+	CreateTexture(&hdr_texture, hdri_data.data.data());
 	CubeMap enviroment_cubemap;
 	CubeMap irradiance_cubemap;
 	FrameBuffer capture_fbo = EquirectangularToCubemap(hdr_texture, &enviroment_cubemap, &irradiance_cubemap,
 		&equirectangular_to_cubemap_shader, &irradiance_shader, meshes[0]);
-
-
-#if 1
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// pbr: setup framebuffer
-	// ----------------------
-
- 
-
-	// pbr: setup cubemap to render to and attach to framebuffer
-	// ---------------------------------------------------------
-	//unsigned int envCubemap;
-	//glGenTextures(1, &envCubemap);
-	//glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-	//for (unsigned int i = 0; i < 6; ++i)
-	//{
-	//	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
-	//}
-	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// pbr: set up projection and view matrices for capturing data onto the 6 cubemap face directions
-	// ----------------------------------------------------------------------------------------------
-	//Mat4 captureProjection = perspective(90.0f, 1.0f, 0.1f, 10.0f);
-	//Mat4 captureViews[] =
-	//{
-	//	LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(1.0f,  0.0f,  0.0f), Vec3(0.0f, -1.0f,  0.0f)),
-	//	LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(-1.0f,  0.0f,  0.0f),Vec3(0.0f, -1.0f,  0.0f)),
-	//	LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  1.0f,  0.0f), Vec3(0.0f,  0.0f,  1.0f)),
-	//	LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f,  0.0f), Vec3(0.0f,  0.0f, -1.0f)),
-	//	LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f,  1.0f), Vec3(0.0f, -1.0f,  0.0f)),
-	//	LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f, -1.0f), Vec3(0.0f, -1.0f,  0.0f))
-	//};
-	//
-	//BindShader(equirectangular_to_cubemap_shader);
-	//ShaderSetInt32(equirectangular_to_cubemap_shader, "remove_translation", false);
-	//ShaderSetInt32(equirectangular_to_cubemap_shader, "equirectangularMap", 0);
-	//
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, hdr_texture.object);
-	//
-	//glViewport(0, 0, 512, 512); // don't forget to configure the viewport to the capture dimensions.
-	//glBindFramebuffer(GL_FRAMEBUFFER, capture_fbo.object);
-	//ShaderSetMat4(equirectangular_to_cubemap_shader, "projection", captureProjection.arr);
-	//for (unsigned int i = 0; i < 6; ++i)
-	//{
-	//	ShaderSetMat4(equirectangular_to_cubemap_shader, "view", captureViews[i].arr);
-	//
-	//	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
-	//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//
-	//	RenderMesh(&equirectangular_to_cubemap_shader, meshes[0]);
-	//}
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//IrradianceMap Calc
-	//unsigned int irradianceMap;
-	//glGenTextures(1, &irradianceMap);
-	//glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
-	//for (unsigned int i = 0; i < 6; ++i)
-	//{
-	//	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0,
-	//		GL_RGB, GL_FLOAT, nullptr);
-	//}
-	//
-	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	//glBindFramebuffer(GL_FRAMEBUFFER, capture_fbo.object);
-	//glBindRenderbuffer(GL_RENDERBUFFER, capture_fbo.render_object);
-	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
-	//
-	//BindShader(irradiance_shader);
-	//ShaderSetInt32(irradiance_shader, "environmentMap", 0);
-	//
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-	//
-	//glViewport(0, 0, 32, 32); // don't forget to configure the viewport to the capture dimensions.
-	//glBindFramebuffer(GL_FRAMEBUFFER, capture_fbo.object);
-	//ShaderSetMat4(irradiance_shader, "projection", captureProjection.arr);
-	//for (unsigned int i = 0; i < 6; ++i)
-	//{
-	//	ShaderSetMat4(irradiance_shader, "view", captureViews[i].arr);
-	//	
-	//
-	//	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-	//		GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
-	//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//
-	//	RenderMesh(&irradiance_shader, meshes[0]);
-	//}
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//
-	//int scrWidth, scrHeight;
-	//glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
-	//glViewport(0, 0, scrWidth, scrHeight);
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#endif
-
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -901,11 +809,10 @@ int main()
 		//@REDO: I hate this move before integreate for each individual PointMass, that way calc is done on an accurate pos
 		force_registery.UpdateForces(delta_time);
 		for (int32 i = 0; i < voxels.size(); i++)
-		{									
-
+		{		
 			if (voxels[i].body.position.y > 0.25f)
 			{
-				voxels[i].body.acceleration.y = -10;
+				voxels[i].body.acceleration.y = -10;				
 			}
 			else
 			{
@@ -916,50 +823,47 @@ int main()
 			voxels[i].body.Integrate(delta_time);			
 		}
 
+		
+
 		for (int32 i = 0; i < voxels.size(); i++)
 		{
 			//@NOTE: Alright now apply the resulting simulation to the transforms and caclulate the transform matrix;
 			voxels[i].transform.position = voxels[i].body.position;
-			voxels[i].actor.transform_matrix = voxels[i].transform.CalcTransformMatrix(); //@TODO: Make actor have a transform instead on mat4 
+			voxels[i].actor.transform = voxels[i].transform; //@TODO: Make actor have a transform instead on mat4 
 			DebugAddIrresolutePoint(voxels[i].transform.position);
 		}
 
-#if 0
-		for (uint32 i = 0; i < voxels.size(); i++)
+
+		PointMassContactResolver pmcr;
+		DynaArray<PointMassContact> contacts;
+		
+		for (int32 i = 0; i < point_masses.size(); i++)
 		{
-			voxels[i].body.acceleration = Vec3(0, -1, 0);
-			if (voxels[i].body.position.y < 0.5f)
-			{
-				//voxels[i].body.velocity = Vec3(0, 2, 0);
-				voxels[i].body.force_accum += Vec3(0, 10, 0);
-			}
-			voxels[i].body.Integrate(delta_time);
-			//voxels[i].body.position = Vec3(i, 1, 0);
-			voxels[i].actor.transform_matrix = CalculateTransformMatrix(voxels[i].body.position, voxels[i].body.scale, voxels[i].body.rotation);
-			Vec3 a = voxels[i].body.position;
-			Vec3 b = a + voxels[i].body.velocity;
-			DebugAddIrresoluteLine(a, b);
-
-			//@HACK!!! We'll make actual colliders and store them in the rigid body then change then when we intergrate!
-
-			Mat4 transform = voxels[i].actor.transform_matrix;
-			Aabb box;
-			for (int ii = 0; ii < 3; ii++)
-			{
-				box.center.arr[ii] = voxels[i].body.position.arr[ii];
-				box.raduis.arr[ii] = 0;
-				for (int j = 0; j < 3; j++)
-				{
-					box.center.arr[ii] += transform.data[j].arr[ii] * voxels[i].aabb.center.arr[j];
-					box.raduis.arr[ii] += abs(transform.data[j].arr[ii]) * voxels[i].aabb.raduis.arr[j];
-				}
-			}
-			
-			box.min = box.center - box.raduis;
-			box.max = box.center + box.raduis;			
-			DebugAddIrresoluteAABBMinMax(box.min, box.max);
+			point_masses[i].acceleration.y = -1;
+			point_masses[i].Integrate(delta_time);
 		}
-#endif
+		for (int32 i = 1; i < point_masses.size(); i++)
+		{
+			Vec3 top_point = point_masses[i - 1].position + Vec3(0, 0.1, 0);
+			if (point_masses[i].position.y <= top_point.y)
+			{
+				PointMassContact pmc;
+				pmc.penetration = Mag(top_point - point_masses[i].position);
+				pmc.pms[0] = &point_masses[i];
+				pmc.pms[1] = &point_masses[i - 1];
+				pmc.restitution = 0.1f;
+				pmc.contant_normal = Vec3(0, 1, 0);
+				contacts.push_back(pmc);
+	//			pmc.resolve(delta_time);
+			}
+		}
+		pmcr.iterations = point_masses.size();
+		pmcr.Resolve(contacts, delta_time);
+		for (int32 i = 0; i < point_masses.size(); i++)
+		{
+			DebugAddIrresolutePoint(point_masses[i].position);
+		}
+
 		//PhysicsUpdate(delta_time, &cube.body);
 
 
@@ -1028,7 +932,8 @@ int main()
 
 		for (int32 i = 0; i < world.actors.size(); i++)
 		{
-			ShaderSetMat4(pbr_shader, "model", world.actors[i].transform_matrix.arr);		
+			Mat4 transform_matrix = world.actors[i].transform.CalcTransformMatrix();
+			ShaderSetMat4(pbr_shader, "model", transform_matrix.arr);		
 
 			BindVertexArray(world.actors[i].mesh.vao);
 			BindBuffer<IndexBuffer>(world.actors[i].mesh.ibo);
@@ -1038,6 +943,8 @@ int main()
 			UnbindBuffer<IndexBuffer>(world.actors[i].mesh.ibo);
 			UnbindVertexArray();
 		}
+
+
 
 		//DebugDrawing
 		RenderCommands::DisableDepthBuffer();

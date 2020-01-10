@@ -125,11 +125,11 @@ namespace cm
 		void ApplyForce(PointMass *ri, real delta) override
 		{			
 			Vec3 force = ri->velocity;
-			real v = mag(force);
+			real v = Mag(force);
 			real coef = k1 * v + k2 * v * v;
 			if (!requal(v, 0))
 			{
-				force = normalize(force) * coef * -1;
+				force = Normalize(force) * coef * -1;
 				ri->force_accum += force;
 			}
 			
@@ -154,9 +154,9 @@ namespace cm
 			Vec3 ri_pos = ri->position;
 			
 			Vec3 dir = origin - ri_pos;
-			if (mag(dir) <= raduis)
+			if (Mag(dir) <= raduis)
 			{
-				dir = normalize(origin - ri_pos);
+				dir = Normalize(origin - ri_pos);
 				Vec3 force = dir * strength;
 				ri->force_accum += force;
 			}
@@ -175,8 +175,8 @@ namespace cm
 		void ApplyForce(PointMass *ri, real delta) override
 		{
 			Vec3 force = ri->position - other->position;
-			real m = mag(force);			
-			Vec3 dir = normalize(force);
+			real m = Mag(force);			
+			Vec3 dir = Normalize(force);
 			real length = abs(m) - l;
 			Vec3 applied = -k * (length) * dir;
 			ri->force_accum += applied;
@@ -195,8 +195,8 @@ namespace cm
 		void ApplyForce(PointMass *ri, real delta) override
 		{
 			Vec3 force = ri->position - anchor;
-			real m = mag(force);
-			Vec3 dir = normalize(force);
+			real m = Mag(force);
+			Vec3 dir = Normalize(force);
 			Vec3 applied = -k * (abs(m) - l) * dir;
 			ri->force_accum += applied;
 		}
@@ -220,36 +220,58 @@ namespace cm
 					continue;
 				}
 				Vec3 force = ri->position - bodies[i]->position;
-				real length = mag(force);
+				real length = Mag(force);
 				if (length < collision_length)
 				{
-					Vec3 dir = normalize(force);
+					Vec3 dir = Normalize(force);
 					Vec3 applied = -k * (abs(length) - l) * dir;
 					ri->force_accum += applied;
 				}
 			}
 		}
 	};
-
+	//@Note: Closing velo = Seperating velo
 	class PointMassContact
 	{
 	public:
-		PointMass *pms[2];
 		Vec3 pms_movement[2];
+		PointMass *pms[2];
 		Vec3 contant_normal;
 		real restitution;
 		real penetration;
+		
 		void resolve(float delta)
 		{
 			resolveVelocity(delta);
+			ResolveInterpenetration(delta);
 		}
+		real CalculateClosingVelocity()
+		{
+			return Dot(pms[0]->velocity - pms[1]->velocity, contant_normal);
+		}
+
 	private:
 		void resolveVelocity(float delta)
 		{
-			real closing_velo = dot((pms[0]->velocity - pms[1]->velocity), contant_normal); 
+			real closing_velo = Dot((pms[0]->velocity - pms[1]->velocity), contant_normal); 
 			if (closing_velo <= 0)
 			{
 				real new_closing_velo = -closing_velo * restitution;
+
+				Vec3 accCausedVelocity = pms[0]->acceleration - pms[1]->acceleration;
+				real accCausedSepVelocity = Dot(accCausedVelocity, contant_normal) * delta;
+
+				// If we've got a closing velocity due to acceleration build-up,
+				// remove it from the new separating velocity
+				if (accCausedSepVelocity < 0)
+				{
+					new_closing_velo += restitution * accCausedSepVelocity;
+
+					// Make sure we haven't removed more than was
+					// there to remove.
+					if (new_closing_velo < 0) new_closing_velo = 0;
+				}
+
 				real delta_velo = new_closing_velo - closing_velo;
 
 				real total_inverse_mass = pms[0]->inverse_mass + pms[1]->inverse_mass;
@@ -280,11 +302,75 @@ namespace cm
 			Vec3 move_per_mass = contant_normal * (penetration / total_inverse_mass);
 
 			pms_movement[0] = move_per_mass * pms[0]->inverse_mass;
-			pms_movement[1] = move_per_mass * pms[1]->inverse_mass;
+			pms_movement[1] = move_per_mass * -pms[1]->inverse_mass;
 
 			pms[0]->position = pms[0]->position + pms_movement[0];
 			pms[1]->position = pms[1]->position + pms_movement[1];
 		}
+
+	};
+
+	class PointMassContactResolver
+	{
+	public:
+		uint32 iterations;
+		//Everything that has pass in here IS colliding in some way
+		void Resolve(DynaArray<PointMassContact> contacts, float delta)
+		{
+			// Find the contact with the largest closing velocity;
+			for (int32 p = 0; p < iterations; p++)
+			{
+
+
+				real max = REAL_MAX;
+				unsigned maxIndex = contacts.size();
+				for (int32 i = 0; i < contacts.size(); i++)
+				{
+					real sepVel = contacts[i].CalculateClosingVelocity();
+					if (sepVel < max &&
+						(sepVel < 0 || contacts[i].penetration > 0))
+					{
+						max = sepVel;
+						maxIndex = i;
+					}
+				}
+
+				// Do we have anything worth resolving?
+				if (maxIndex == contacts.size())
+				{
+					break;
+				}
+
+				// Resolve this contact
+				contacts[maxIndex].resolve(delta);
+
+				// Update the interpenetrations for all particles
+				Vec3 *move = contacts[maxIndex].pms_movement;
+				for (int32 i = 0; i < contacts.size(); i++)
+				{
+					if (contacts[i].pms[0] == contacts[maxIndex].pms[0])
+					{
+						contacts[i].penetration -= Dot(move[0], contacts[i].contant_normal);
+					}
+					else if (contacts[i].pms[0] == contacts[maxIndex].pms[1])
+					{
+						contacts[i].penetration -= Dot(move[1] , contacts[i].contant_normal);
+					}
+					if (contacts[i].pms[1])
+					{
+						if (contacts[i].pms[1] == contacts[maxIndex].pms[0])
+						{
+							contacts[i].penetration += Dot(move[0], contacts[i].contant_normal);
+						}
+						else if (contacts[i].pms[1] == contacts[maxIndex].pms[1])
+						{
+							contacts[i].penetration += Dot(move[1], contacts[i].contant_normal);
+						}
+					}
+				}			
+			}
+		}
+
 
 	};
 
