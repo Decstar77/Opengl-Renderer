@@ -14,16 +14,20 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\Math\CosmicMath.cpp" />
     <ClCompile Include="src\Math\CosmicPhysics.cpp" />
+    <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\OpenGL\BufferLayout.cpp" />
+    <ClCompile Include="src\OpenGL\OpenGL.cpp" />
+    <ClCompile Include="src\OpenGL\OpenGlRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\AssetLoader.h" />
     <ClInclude Include="src\Core.h" />
+    <ClInclude Include="src\Debug.h" />
     <ClInclude Include="src\Math\CosmicColliders.h" />
     <ClInclude Include="src\Math\CosmicMath.h" />
     <ClInclude Include="src\Math\CosmicPhysics.h" />
+    <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\OpenGL\BufferLayout.h" />
-    <ClInclude Include="src\OpenGL\OpenGLErrorCatcher.h" />
     <ClInclude Include="src\OpenGL\RenderCommands.h" />
     <ClInclude Include="src\OpenGL\OpenGlRenderer.h" />
     <ClInclude Include="src\OpenGL\OpenGL.h" />
@@ -31,21 +35,30 @@
     <ClInclude Include="src\World.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\brdf_frag.glsl" />
+    <None Include="shaders\brdf_vert.glsl" />
+    <None Include="shaders\compute_vert.glsl" />
+    <None Include="shaders\cubemap_vert.glsl" />
     <None Include="shaders\debug_vert.glsl" />
     <None Include="shaders\equirectangular_to_cubemap.glsl" />
     <None Include="shaders\first_compute.glsl" />
     <None Include="shaders\irradince_convolution.glsl" />
     <None Include="shaders\pbr_frag.glsl" />
-    <None Include="shaders\pbr_test_frag.glsl" />
-    <None Include="shaders\pbr_test_vert.glsl" />
+    <None Include="shaders\instance_test_frag.glsl" />
+    <None Include="shaders\instance_test_vert.glsl" />
+    <None Include="shaders\pbr_nomaps_frag.glsl" />
+    <None Include="shaders\pbr_nomaps_vert.glsl" />
+    <None Include="shaders\pbr_texture_frag.glsl" />
     <None Include="shaders\pbr_vert.glsl" />
-    <None Include="shaders\quad_frag.glsl" />
-    <None Include="shaders\quad_vert.glsl" />
+    <None Include="shaders\prefilter.glsl" />
+    <None Include="shaders\debug_mesh_frag.glsl" />
+    <None Include="shaders\debug_mesh_vert.glsl" />
     <None Include="shaders\skybox_vert.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="shaders\debug_frag.glsl" />
     <Text Include="shaders\skybox_frag.glsl" />
+    <Text Include="src\IBL.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -89,11 +102,11 @@
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <AdditionalIncludeDirectories>C:\Users\lung\Desktop\DeleteMe\Renderer-OpenGL\Renderer-OpenGL\src;C:\Users\lung\Desktop\DeleteMe\Libraries\GLEW\include\GL;C:\Users\lung\Desktop\DeleteMe\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>C:\Users\lung\Desktop\DeleteMe\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\lib-vc2017;C:\Users\lung\Desktop\DeleteMe\Libraries\GLEW\lib\Release\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\lib-vc2017;F:\Libraries\GLEW\lib\Release\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

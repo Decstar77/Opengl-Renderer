@@ -7,7 +7,7 @@
 
 namespace cm
 {
-	static class RenderCommands
+	class RenderCommands
 	{
 	public:
 		static inline void EnableMulitSampling()

@@ -55,6 +55,9 @@ namespace cm
 		}
 	};
 
+
+	
+
 	//NOTE: Code is meant to be slow but understandable as this is a first attempt
 	class PointMass
 	{
@@ -180,7 +183,7 @@ namespace cm
 			real length = abs(m) - l;
 			Vec3 applied = -k * (length) * dir;
 			ri->force_accum += applied;
-			other->force_accum -= applied * (int32)apply_to_other;
+			other->force_accum -= applied * (float)apply_to_other;
 		}
 	};
 	
@@ -370,9 +373,9 @@ namespace cm
 				}			
 			}
 		}
-
-
 	};
+
+
 
 	//NOTE: Code is meant to be slow but understandable as this is a first attempt
 	class ForceRegistery

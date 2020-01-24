@@ -43,7 +43,7 @@ namespace cm
 	Vec3 Normalize(Vec3 a)
 	{
 		float magA = Mag(a);
-		Assert(magA != 0);
+		//Assert(magA != 0);
 		__m128 div = _mm_div_ps(a.data, _mm_set1_ps(magA));
 		return Vec3(div);
 	}
@@ -53,6 +53,14 @@ namespace cm
 		return Vec3(a.x, a.y, a.z);
 	}
 
+
+	bool CompareVec(const Vec3 &a, const Vec3 &b, const real &epsilon /*= FLOATING_POINT_ERROR_PRESCION*/)
+	{		
+		bool resx = requal(a.x, b.x, epsilon);
+		bool resy = requal(a.y, b.y, epsilon);
+		bool resz = requal(a.z, b.z, epsilon);
+		return resx && resy && resz;
+	}
 
 	std::string toString(Vec3 a)
 	{

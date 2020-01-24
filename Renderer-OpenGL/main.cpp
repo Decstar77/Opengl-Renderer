@@ -4,22 +4,14 @@
 
 #include "src/Core.h"
 #include "src/OpenGL/RenderCommands.h"
-#include "src/OpenGL/OpenGLErrorCatcher.h"
 #include "src/Math/CosmicPhysics.h"
 #include "src/OpenGL/OpenGL.h"
 #include "src/OpenGL/OpenGlRenderer.h"
+#include "src/Mesh.h"
+#include "src/Debug.h"
 #include "src/AssetLoader.h"
-#include "src/World.h"
-using namespace cm;
 
-struct DebugQueue // TODO: Clean up memory when terminating
-{
-	uint32 MAX_VERTICES_SIZE;
-	VertexArray persistent_vao;
-	DynaArray<Vec3> irresolute_vertices;
-	DynaArray<Vec3> persistent_vertices;
-	DynaArray<Vec3> colours;
-};
+using namespace cm;
 
 struct Voxel
 {
@@ -41,10 +33,9 @@ static const uint32 WINDOW_HEIGHT = 720;
 static const float MOUSE_SENSITIVITY = 0.08f;
 
 static Camera main_camera = {};
+static StandardMeshes standard_meshes = {};
 static GLFWwindow *window = nullptr;
 static float delta_time = 0;
-
-static DebugQueue debug_queue;
 
 static MouseData current_mouse = {};
 static MouseData last_mouse = {};
@@ -199,29 +190,11 @@ GLFWwindow* CreateRenderingWindow()
 	int32 width, height;
 	glfwGetFramebufferSize(window, &width, &height );
 	glViewport(0, 0, width, height); //YEET
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	return window;
 }
 
-void PrintStats()
-{
-	int work_grp_cnt[3];
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &work_grp_cnt[0]);
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &work_grp_cnt[1]);
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &work_grp_cnt[2]);
-	printf("max global (total) work group size x:%i y:%i z:%i\n",
-		work_grp_cnt[0], work_grp_cnt[1], work_grp_cnt[2]);
 
-	int work_grp_size[3];
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &work_grp_size[0]);
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &work_grp_size[1]);
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &work_grp_size[2]);
-	printf("max local (in one shader) work group sizes x:%i y:%i z:%i\n",
-		work_grp_size[0], work_grp_size[1], work_grp_size[2]);
-
-	int work_grp_inv;
-	glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &work_grp_inv);
-	printf("max local work group invocations %i\n", work_grp_inv);
-}
 
 void CreateMeshes(DynaArray<Mesh> *meshes, DynaArray<std::string> directories)
 {
@@ -230,14 +203,15 @@ void CreateMeshes(DynaArray<Mesh> *meshes, DynaArray<std::string> directories)
 	{
 		FileDataMesh data = LoadMesh(directories.at(i), true);		
 	
-		BufferLayout lbo = PNTTB_VBO_LAYOUT;
 		VertexBuffer vbo;
+		vbo.lbo = PNTTB_VBO_LAYOUT;
 		CreateBuffer<VertexBuffer>(&vbo, data.size_bytes, VertexFlags::READ_WRITE);
 		WriteBufferData(vbo, data.data, 0);
-		vbo.lbo = lbo;
 		
 		VertexArray vao;
-		CreateVertexArray(&vao, lbo, vbo);
+		vao.vertex_buffers.push_back(vbo);
+
+		CreateVertexArray(&vao);
 		IndexBuffer ibo;
 		CreateBuffer<IndexBuffer>(&ibo, data.indices.size() * sizeof(uint32), VertexFlags::READ_WRITE);
 		ibo.index_count = data.indices.size();
@@ -300,156 +274,165 @@ void CreateCubeMapFrom6(CubeMap *cubemap, DynaArray<std::string> cubemap_faces_d
 	CreateCubeMap(cubemap, cubemap_data);
 }
 
-void InitDebug()
-{
-	uint32 alloc_size = 1000; //Amount of vertices
-	VertexBuffer vbo;
-	CreateBuffer<VertexBuffer>(&vbo, sizeof(Vec4) * alloc_size, VertexFlags::READ_WRITE);
-	BufferLayout lbo(DynaArray<ShaderDataType> {ShaderDataType::Float4});// padding byte
-	debug_queue.MAX_VERTICES_SIZE = alloc_size;
-	CreateVertexArray(&debug_queue.persistent_vao, lbo, vbo);
-}
-
-void DrawDebug(Shader *debug_shader)
-{
-	//@Redo: DebugQueue stores a irrseloute and we just free the vbo inside.
-	WriteBufferData(debug_queue.persistent_vao.vertex_buffers[0], debug_queue.persistent_vertices, 0);
-	
-	BindShader(*debug_shader);
-
-	BindVertexArray(debug_queue.persistent_vao);
-	
-	uint32 amount = (uint32)debug_queue.persistent_vertices.size();
-
-	glDrawArrays(GL_LINES, 0, amount);
-
-	UnbindVertexArray();
-
-	amount = debug_queue.irresolute_vertices.size();
-	if (amount > 0)
-	{
-		VertexBuffer irresolute_vbo;
-		CreateBuffer<VertexBuffer>(&irresolute_vbo, sizeof(Vec4) * amount, VertexFlags::READ_WRITE);
-		WriteBufferData(irresolute_vbo, debug_queue.irresolute_vertices, 0);
-
-		BufferLayout lbo(DynaArray<ShaderDataType> {ShaderDataType::Float4});// padding byte
-		VertexArray irresolute_vao;
-		CreateVertexArray(&irresolute_vao, lbo, irresolute_vbo);
-
-		BindVertexArray(irresolute_vao);
-
-		glDrawArrays(GL_LINES, 0, amount);
-
-		UnbindVertexArray();
-
-		FreeVertexArray(&irresolute_vao, true);
-		debug_queue.irresolute_vertices.clear();
-	}
-	
-}
-
-void DebugAddPersistentLine(const Vec3 &a, const Vec3 &b)
-{
-	Assert(debug_queue.persistent_vertices.size() + 2 < debug_queue.MAX_VERTICES_SIZE);
-	debug_queue.persistent_vertices.push_back(a);
-	debug_queue.persistent_vertices.push_back(b);
-}
-
-void DebugAddIrresoluteLine(const Vec3 &a, const Vec3 &b)
-{
-	debug_queue.irresolute_vertices.push_back(a);
-	debug_queue.irresolute_vertices.push_back(b);
-}
-
-void DebugAddPersistentAABBMinMax(const Vec3 &min, const Vec3 &max)
-{
-	Vec3 v2 = Vec3(max.x, min.y, min.z);
-	Vec3 v3 = Vec3(max.x, max.y, min.z);
-	Vec3 v4 = Vec3(min.x, max.y, min.z);
-
-	Vec3 v6 = Vec3(max.x, min.y, max.z);
-	Vec3 v7 = Vec3(min.x, min.y, max.z);
-	Vec3 v8 = Vec3(min.x, max.y, max.z);
-
-	DebugAddPersistentLine(min, v2);
-	DebugAddPersistentLine(min, v4);
-	DebugAddPersistentLine(min, v7);
-
-	DebugAddPersistentLine(max, v6);
-	DebugAddPersistentLine(max, v8);
-	DebugAddPersistentLine(max, v3);
-
-	DebugAddPersistentLine(v3, v2);
-	DebugAddPersistentLine(v3, v4);
-
-	DebugAddPersistentLine(v2, v6);
-	DebugAddPersistentLine(v6, v7);
-
-	DebugAddPersistentLine(v8, v7);
-	DebugAddPersistentLine(v8, v4);
-}
-
-void DebugAddIrresoluteAABBMinMax(const Vec3 &min, const Vec3 &max)
-{
-	Vec3 v2 = Vec3(max.x, min.y, min.z);
-	Vec3 v3 = Vec3(max.x, max.y, min.z);
-	Vec3 v4 = Vec3(min.x, max.y, min.z);
-
-	Vec3 v6 = Vec3(max.x, min.y, max.z);
-	Vec3 v7 = Vec3(min.x, min.y, max.z);
-	Vec3 v8 = Vec3(min.x, max.y, max.z);
-
-	DebugAddIrresoluteLine(min, v2);
-	DebugAddIrresoluteLine(min, v4);
-	DebugAddIrresoluteLine(min, v7);
-
-	DebugAddIrresoluteLine(max, v6);
-	DebugAddIrresoluteLine(max, v8);
-	DebugAddIrresoluteLine(max, v3);
-
-	DebugAddIrresoluteLine(v3, v2);
-	DebugAddIrresoluteLine(v3, v4);
-
-	DebugAddIrresoluteLine(v2, v6);
-	DebugAddIrresoluteLine(v6, v7);
-
-	DebugAddIrresoluteLine(v8, v7);
-	DebugAddIrresoluteLine(v8, v4);
-}
-
-void DebugAddPersistentAABBCenterRaduis(const Vec3 &center, const Vec3 &radius)
-{
-	DebugAddPersistentAABBMinMax(center - radius, center + radius);
-}
-
-void DebugAddIrresoluteAABBCenterRaduis(const Vec3 &center, const Vec3 &radius)
-{
-	DebugAddIrresoluteAABBMinMax(center - radius, center + radius);
-}
-
-void DebugAddPersistentPoint(const Vec3 &center)
-{
-	DebugAddPersistentAABBCenterRaduis(center, Vec3(0.05f));
-}
-
-void DebugAddIrresolutePoint(const Vec3 &center)
-{
-	DebugAddIrresoluteAABBCenterRaduis(center, Vec3(0.05f));
-}
-
 void PhysicsUpdate(float delta, PointMass *body)
 {
 
 }
 
+void InitializeStandardMeshes()
+{
+	FileDataMesh data = LoadMesh("models/voxel_cube.obj", false);
+
+	VertexBuffer vbo;
+	vbo.lbo = PNT_VBO_LAYOUT;
+	CreateBuffer<VertexBuffer>(&vbo, data.size_bytes, VertexFlags::READ_WRITE);
+	WriteBufferData(vbo, data.data, 0);
+
+	VertexArray vao;
+	vao.vertex_buffers.push_back(vbo);
+
+	CreateVertexArray(&vao);
+	
+	IndexBuffer ibo;
+	CreateBuffer<IndexBuffer>(&ibo, data.indices.size() * sizeof(uint32), VertexFlags::READ_WRITE);
+	ibo.index_count = data.indices.size();
+	WriteBufferData(ibo, data.indices, 0);
+	   
+	standard_meshes.cube.vao = vao;
+	standard_meshes.cube.ibo = ibo;	
+}
+
+int CreateSkyBox()
+{ 
+	//@Hack
+	Shader equirectangular_to_cubemap_shader = CreateShader(ReadFile("shaders/cubemap_vert.glsl"), ReadFile("shaders/equirectangular_to_cubemap.glsl"));
+	equirectangular_to_cubemap_shader.name = "equirect";
+
+	Shader irradiance_shader = CreateShader(ReadFile("shaders/cubemap_vert.glsl"), ReadFile("shaders/irradince_convolution.glsl"));
+	irradiance_shader.name = "irradice";
+
+	Shader prefilter_shader = CreateShader(ReadFile("shaders/cubemap_vert.glsl"), ReadFile("shaders/prefilter.glsl"));
+	prefilter_shader.name = "Prefiler";
+
+	Shader brdf_shader = CreateShader(ReadFile("shaders/brdf_vert.glsl"), ReadFile("shaders/brdf_frag.glsl"));
+	brdf_shader.name = "brdf_shader";
+
+
+	uint32 frame_buffer_resolution = 512;
+	uint32 irradiance_buffer_resolution = 32;
+	uint32 floating_point_accuracy = GL_RGB16F;
+	glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+	unsigned int captureFBO;
+	unsigned int captureRBO;
+	glGenFramebuffers(1, &captureFBO);
+	glGenRenderbuffers(1, &captureRBO);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, frame_buffer_resolution, frame_buffer_resolution);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
+
+	// pbr: load the HDR environment map
+	// ---------------------------------
+	stbi_set_flip_vertically_on_load(true);
+	int width, height, nrComponents;
+	float *data = stbi_loadf("textures/Milkyway_small.hdr", &width, &height, &nrComponents, 0);
+	unsigned int hdrTexture;
+	if (data)
+	{
+		glGenTextures(1, &hdrTexture);
+		glBindTexture(GL_TEXTURE_2D, hdrTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, floating_point_accuracy, width, height, 0, GL_RGB, GL_FLOAT, data); // note how we specify the texture's data value to be float
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(data);
+	}
+	else
+	{
+		std::cout << "Failed to load HDR image." << std::endl;
+	}
+
+	// pbr: setup cubemap to render to and attach to framebuffer
+	// ---------------------------------------------------------
+	unsigned int envCubemap;
+	glGenTextures(1, &envCubemap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, floating_point_accuracy, frame_buffer_resolution, frame_buffer_resolution, 0, GL_RGB, GL_FLOAT, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// pbr: set up projection and view matrices for capturing data onto the 6 cubemap face directions
+	// ----------------------------------------------------------------------------------------------
+	Mat4 captureProjection = perspective(90.0f, 1.0f, 0.1f, 10.0f);
+	Mat4 captureViews[] =
+	{
+		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(1.0f,  0.0f,  0.0f), Vec3(0.0f, -1.0f,  0.0f)),
+		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(-1.0f,  0.0f,  0.0f),Vec3(0.0f, -1.0f,  0.0f)),
+		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  1.0f,  0.0f), Vec3(0.0f,  0.0f,  1.0f)),
+		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f,  0.0f), Vec3(0.0f,  0.0f, -1.0f)),
+		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f,  1.0f), Vec3(0.0f, -1.0f,  0.0f)),
+		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f, -1.0f), Vec3(0.0f, -1.0f,  0.0f))
+	};
+
+	// pbr: convert HDR equirectangular environment map to cubemap equivalent
+	// ----------------------------------------------------------------------
+	BindShader(equirectangular_to_cubemap_shader);
+	ShaderSetMat4(equirectangular_to_cubemap_shader, "projection", captureProjection.arr);
+	ShaderSetInt32(equirectangular_to_cubemap_shader, "equirectangularMap", 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, hdrTexture);
+
+	glViewport(0, 0, frame_buffer_resolution, frame_buffer_resolution); // don't forget to configure the viewport to the capture dimensions.
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		ShaderSetMat4(equirectangular_to_cubemap_shader, "view", captureViews[i].arr);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		RenderMesh(equirectangular_to_cubemap_shader, standard_meshes.cube);
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// then let OpenGL generate mipmaps from first mip face (combatting visible dots artifact)
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+	glDeleteFramebuffers(1, &captureFBO);
+
+	int scrWidth, scrHeight;
+	glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
+	glViewport(0, 0, scrWidth, scrHeight);
+
+	FreeShader(&equirectangular_to_cubemap_shader);
+	FreeShader(&irradiance_shader);
+	FreeShader(&prefilter_shader);
+	FreeShader(&brdf_shader);
+
+	return envCubemap;
+}
 
 int main()
 {
 	window = CreateRenderingWindow();
 
-	ErrorCatcher err_catcher;
+
 	InitDebug();
-	PrintStats();
+	InitializeStandardMeshes();
+	CreateStandardMeshes(&standard_meshes);
+	
 	
 
 #if 0
@@ -463,8 +446,8 @@ int main()
 	config.width = tex_w;
 	config.height = tex_h;
 
-	Texture new_texture = CreateTexture(config, nullptr);		
-	glBindImageTexture(0, new_texture.object, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+	//Texture new_texture = CreateTexture(config, nullptr);		
+	//glBindImageTexture(0, new_texture.object, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 
 
 	Shader ray_= CreateComputeShader(ReadFile("shaders/first_compute.glsl"));
@@ -486,12 +469,16 @@ int main()
 	// make sure writing to image has finished before read
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 #endif
-	
-	Shader qq = CreateShader(ReadFile("shaders/quad_vert.glsl"), ReadFile("shaders/quad_frag.glsl"));
-	qq.name = "quad";
+
+
+	//Shader qq = CreateShader(ReadFile("shaders/quad_vert.glsl"), ReadFile("shaders/quad_frag.glsl"));
+	//qq.name = "quad";
 
 	Shader pbr_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_frag.glsl"));
 	pbr_shader.name = "pbr_shader";
+
+	Shader pbr_texture_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_texture_frag.glsl"));
+	pbr_texture_shader.name = "pbr_texture_shader";
 
 	Shader cubemap_shader = CreateShader(ReadFile("shaders/skybox_vert.glsl"), ReadFile("shaders/skybox_frag.glsl"));
 	cubemap_shader.name = "cubemap_shader";
@@ -499,16 +486,16 @@ int main()
 	Shader debug_shader = CreateShader(ReadFile("shaders/debug_vert.glsl"), ReadFile("shaders/debug_frag.glsl"));
 	debug_shader.name = "debug_shader";
 
-	Shader equirectangular_to_cubemap_shader = CreateShader(ReadFile("shaders/skybox_vert.glsl"), ReadFile("shaders/equirectangular_to_cubemap.glsl"));
-	equirectangular_to_cubemap_shader.name = "equirect";
+	Shader debug_mesh_shader = CreateShader(ReadFile("shaders/debug_mesh_vert.glsl"), ReadFile("shaders/debug_mesh_frag.glsl"));
+	debug_mesh_shader.name = "debug_quad_shader";
+	
+	Shader instance_shader_test = CreateShader(ReadFile("shaders/instance_test_vert.glsl"), ReadFile("shaders/instance_test_frag.glsl"));
+	instance_shader_test.name = "instancing_test";
+	
+	Shader pbr_nomaps = CreateShader(ReadFile("shaders/pbr_nomaps_vert.glsl"), ReadFile("shaders/pbr_nomaps_frag.glsl"));
+	pbr_nomaps.name = "pbr_nomaps";
 
-	Shader irradiance_shader = CreateShader(ReadFile("shaders/skybox_vert.glsl"), ReadFile("shaders/irradince_convolution.glsl"));
-	irradiance_shader.name = "irradice";
 
-	Shader pbr_test_shader = CreateShader(ReadFile("shaders/pbr_test_vert.glsl"), ReadFile("shaders/pbr_test_frag.glsl"));
-	pbr_test_shader.name = "pbrtes_shader";
-
-	uint32 quad_shader = qq.shader_program;
 
 	DynaArray<float> quad_vertices =
 	{
@@ -522,14 +509,14 @@ int main()
 		 1.0f,  1.0f,  1.0f, 1.0f
 	};
 
-	DynaArray<ShaderDataType> l({ ShaderDataType::Float2, ShaderDataType::Float2 });
-	BufferLayout lbo = BufferLayout(l);
 	VertexBuffer vbo;
+	vbo.lbo = BufferLayout({ ShaderDataType::Float2, ShaderDataType::Float2 });
 	CreateBuffer<VertexBuffer>(&vbo, quad_vertices.size() * sizeof(float), VertexFlags::READ_WRITE);
-	vbo.lbo = lbo;
 	WriteBufferData(vbo, quad_vertices, 0);
+
 	VertexArray vao;
-	CreateVertexArray(&vao, lbo, vbo);
+	vao.vertex_buffers.push_back(vbo);
+	CreateVertexArray(&vao);
 	
 
 	DynaArray<std::string> mesh_directories{  
@@ -537,24 +524,24 @@ int main()
 		"models/voxel_cube.obj",
 		//"models/smooth_cube.obj",
 		"models/plane.obj",
-		"models/sphere.obj"
-												//"models/claud_bot.obj"
+		"models/sphere.obj",
+		"models/quad.obj",		
+		//"models/claud_bot.obj",
 	};
 	DynaArray<std::string> text_directories{ 		
 		//"textures/bot1_rig_v01_Scene_Material_BaseColor.png",
-	    //"textures/bot1_rig_v01_Scene_Material_OcclusionRoughnessMetallic.png",
 		//"textures/bot1_rig_v01_Scene_Material_Normal.png",
-		//"textures/point_light2.png"
+	    //"textures/bot1_rig_v01_Scene_Material_OcclusionRoughnessMetallic.png"
 	};
 	
 	DynaArray<std::string> cubemap_faces_directories
 	{
-		"textures/mp_orbital/orbital-element_bk.tga",// 1
-		"textures/mp_orbital/orbital-element_ft.tga",// 2
-		"textures/mp_orbital/orbital-element_up.tga",
-		"textures/mp_orbital/orbital-element_dn.tga",
-		"textures/mp_orbital/orbital-element_lf.tga",// 5
-		"textures/mp_orbital/orbital-element_rt.tga",// 6	
+		//"textures/mp_orbital/orbital-element_bk.tga",// 1
+		//"textures/mp_orbital/orbital-element_ft.tga",// 2
+		//"textures/mp_orbital/orbital-element_up.tga",
+		//"textures/mp_orbital/orbital-element_dn.tga",
+		//"textures/mp_orbital/orbital-element_lf.tga",// 5
+		//"textures/mp_orbital/orbital-element_rt.tga",// 6	
 	};	
 	
 	DynaArray<Shader> shaders;
@@ -595,10 +582,16 @@ int main()
 	WriteBufferData(ubo_camera, ubo_camera_data, 0);
 	WriteBufferData(ubo_lighting, ubo_lighting_data, 0);
 
+
+	//@TODO: Rename the fricken ubo plz
 	ShaderBindUniformBuffer(pbr_shader, 0, "Matrices");
-	ShaderBindUniformBuffer(debug_shader, 0, "Matrices");
 	ShaderBindUniformBuffer(pbr_shader, 1, "Lighting");
-		
+	ShaderBindUniformBuffer(debug_shader, 0, "Matrices");
+	ShaderBindUniformBuffer(pbr_texture_shader, 0, "Matrices");
+	ShaderBindUniformBuffer(pbr_texture_shader, 1, "Lighting");	
+	ShaderBindUniformBuffer(debug_mesh_shader, 0, "Matrices");	
+	ShaderBindUniformBuffer(instance_shader_test, 0, "CameraMatrices");
+
 	//CubeMap cubemap;
 	//CreateCubeMapFrom6(&cubemap, cubemap_faces_directories);
 
@@ -630,37 +623,19 @@ int main()
 	voxels[0].transform.position.y += 0.2f;
 	voxels[3].transform.rotation = EulerToQuat(Vec3(0, 0, -25));
 	voxels[3].transform.position.y += 0.2f;
-	//voxels[0].transform.position = voxels[1].transform.position + Vec3(0.1, 1, 0);
-	//voxels[2].transform.position = voxels[1].transform.position + Vec3(-.1, 2, 0);
 
-	//voxels[0].body.position = voxels[1].body.position + Vec3(0.1, 1, 0);
-	//voxels[2].body.position = voxels[1].body.position + Vec3(-.1, 2, 0);
 
-	
-	
-
-	//for (int32 y = 0; y < 10; y++)
-	//{
-	//	for (int32 x = 0; x < 10; x++)
-	//	{
-	//		for (int32 z = 0; z < 10; z++)
-	//		{
-	//			bool set = !(bool)RandomUInt(0, exp(y * 2) - 1);
-	//			if (set)
-	//			{
-	//				Voxel v;
-	//				v.actor.mesh = meshes[0];
-	//				v.body.position = Vec3(x, y, z);
-	//				v.body.scale = Vec3(0.48);
-	//				v.actor.transform_matrix = CalculateTransformMatrix(v.body.position, v.body.scale, v.body.rotation);
-	//				voxels.push_back(v);
-	//			}
-	//		}
-	//	}
-	//}
-	//
-	//Set Up physics
-	//DragForceGenerator *drag_force_gen = (DragForceGenerator*)malloc(sizeof(DragForceGenerator));
+	DynaArray<Actor> spheres;
+	int32 sphere_count = 5;
+	for (int32 i = 0; i < 5; i++)
+	{
+		Actor a;
+		a.mesh = meshes[2];
+		a.transform.position = Vec3(-(sphere_count/2) + i, 3, -2);
+		a.transform.scale = Vec3(0.25);
+		a.transform.rotation = EulerToQuat(Vec3(45, 45, 0 ));
+		spheres.push_back(a);
+	}
 	DragForceGenerator drag_force_gen;
 	drag_force_gen.k1 = 2;
 	drag_force_gen.k2 = 5;
@@ -723,13 +698,7 @@ int main()
 		point_masses.push_back(pm);
 	}
 
-	//DebugAddPersistentLine(attrac_fgen.origin, attrac_fgen.origin + Vec3(attrac_fgen.raduis, 0, 0));
-	//DebugAddPersistentLine(attrac_fgen.origin, attrac_fgen.origin + Vec3(-attrac_fgen.raduis, 0, 0));
-	//DebugAddPersistentLine(attrac_fgen.origin, attrac_fgen.origin + Vec3(0, attrac_fgen.raduis, 0));
-	//DebugAddPersistentLine(attrac_fgen.origin, attrac_fgen.origin + Vec3(0, -attrac_fgen.raduis, 0));
-	//DebugAddPersistentLine(attrac_fgen.origin, attrac_fgen.origin + Vec3(0,0, attrac_fgen.raduis));
-	//DebugAddPersistentLine(attrac_fgen.origin, attrac_fgen.origin + Vec3(0,0, -attrac_fgen.raduis));
-	
+
 	Actor plane;
 	plane.mesh = meshes[1];
 	plane.transform.scale = Vec3(4);
@@ -746,25 +715,9 @@ int main()
 		DebugAddPersistentLine(Vec3(4, 2.5, -4), Vec3(4, 2.6, -4));
 	}
 
-	DebugAddPersistentPoint(Vec3(0, 1, 0));
+	uint32 	envCubemap = CreateSkyBox();
 
-	// pbr: load the HDR environment map
-	// ---------------------------------
-	FileDataTexture<float> hdri_data = LoadHDRI("textures/Milkyway_small.hdr");
-	Texture hdr_texture;
-	hdr_texture.config.texture_format = GL_RGB16F;
-	hdr_texture.config.pixel_format = GL_RGB;
-	hdr_texture.config.data_type = GL_FLOAT;
-	hdr_texture.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	hdr_texture.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	hdr_texture.config.width = hdri_data.width;
-	hdr_texture.config.height = hdri_data.height;	
 
-	CreateTexture(&hdr_texture, hdri_data.data.data());
-	CubeMap enviroment_cubemap;
-	CubeMap irradiance_cubemap;
-	FrameBuffer capture_fbo = EquirectangularToCubemap(hdr_texture, &enviroment_cubemap, &irradiance_cubemap,
-		&equirectangular_to_cubemap_shader, &irradiance_shader, meshes[0]);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -777,10 +730,16 @@ int main()
 		{
 			FreeShader(&cubemap_shader);
 			cubemap_shader = CreateShader(ReadFile("shaders/skybox_vert.glsl"), ReadFile("shaders/skybox_frag.glsl"));
+			
 			FreeShader(&pbr_shader);
 			pbr_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_frag.glsl"));
 			ShaderBindUniformBuffer(pbr_shader, 0, "Matrices");
 			ShaderBindUniformBuffer(pbr_shader, 1, "Lighting");
+
+			FreeShader(&pbr_texture_shader);
+			pbr_texture_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_texture_frag.glsl"));
+			ShaderBindUniformBuffer(pbr_texture_shader, 0, "Matrices");
+			ShaderBindUniformBuffer(pbr_texture_shader, 1, "Lighting");
 
 		}
 
@@ -796,8 +755,6 @@ int main()
 
 		DynaArray<Mat4> camera_data = {main_camera.projection_matrix, main_camera.view_matrix };
 		WriteBufferData(ubo_camera, camera_data, 0);
-
-		
 		//Update Physics
 
 		for (int32 i = 0; i < voxels.size(); i++)
@@ -830,7 +787,7 @@ int main()
 			//@NOTE: Alright now apply the resulting simulation to the transforms and caclulate the transform matrix;
 			voxels[i].transform.position = voxels[i].body.position;
 			voxels[i].actor.transform = voxels[i].transform; //@TODO: Make actor have a transform instead on mat4 
-			DebugAddIrresolutePoint(voxels[i].transform.position);
+			//DebugAddIrresolutePoint(voxels[i].transform.position);
 		}
 
 
@@ -861,18 +818,28 @@ int main()
 		pmcr.Resolve(contacts, delta_time);
 		for (int32 i = 0; i < point_masses.size(); i++)
 		{
-			DebugAddIrresolutePoint(point_masses[i].position);
+			//DebugAddIrresolutePoint(point_masses[i].position);
 		}
 
 		//PhysicsUpdate(delta_time, &cube.body);
+	
+
+
 
 
 		//Update World
+		
 		world.actors.clear();		
 		world.actors.push_back(plane);
+		
 		for (uint32 i = 0; i < voxels.size(); i++)
 		{
-			world.actors.push_back(voxels[i].actor);
+			//world.actors.push_back(voxels[i].actor);
+		}
+		
+		for (uint32 i = 0; i < spheres.size(); i++)
+		{
+			world.actors.push_back(spheres[i]);
 		}
 		
 
@@ -890,66 +857,40 @@ int main()
 		
 
 		BindShader(cubemap_shader);
-		ShaderSetInt32(cubemap_shader, "remove_translation", true);
 		ShaderSetMat4(cubemap_shader, "projection", main_camera.projection_matrix.arr);
 		ShaderSetMat4(cubemap_shader, "view", main_camera.view_matrix.arr);
+		ShaderSetInt32(cubemap_shader, "environmentMap", 0);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, enviroment_cubemap.object);
-		RenderMesh(&cubemap_shader, meshes[0]);
-
+		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+		RenderMesh(cubemap_shader, meshes[0]);
 
 		glDepthMask(GL_TRUE);
 
 
-		//BindShader(equirectangular_to_cubemap_shader);
-		//ShaderBindTexture(equirectangular_to_cubemap_shader, hdr_texture, 0, "equirectangularMap");
-		//RenderMesh(&equirectangular_to_cubemap_shader, meshes[0]);
+		//for (int32 i = 0; i < world.actors.size(); i++)
+		//{
+		//	Mat4 transform_matrix = world.actors[i].transform.CalcTransformMatrix();
+		//	ShaderSetMat4(pbr_shader, "model", transform_matrix.arr);		
+
+		//	BindVertexArray(world.actors[i].mesh.vao);
+		//	BindBuffer<IndexBuffer>(world.actors[i].mesh.ibo);
+		//	
+		//	glDrawElements(GL_TRIANGLES, world.actors[i].mesh.ibo.index_count, GL_UNSIGNED_INT, 0);
+
+		//	UnbindBuffer<IndexBuffer>(world.actors[i].mesh.ibo);
+		//	UnbindVertexArray();
+		//}
 
 
-		
-		//Draw world
-		BindShader(pbr_shader);
-		//ShaderBindTexture(pbr_shader, textures[1], 0, "albedo_map");
-		//ShaderBindTexture(pbr_shader, textures[2], 1, "all_map");		
-		ShaderBindTexture(pbr_shader, textures[IDENTITY_TEXTURE], 0, "albedo_map");
-		ShaderBindTexture(pbr_shader, textures[IDENTITY_TEXTURE], 1, "all_map");
-		ShaderBindTexture(pbr_shader, textures[IDENTITY_TEXTURE], 2, "normal_map");
-		ShaderSetInt32(pbr_shader, "use_normal_map", 0);
-
-
-		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, irradiance_cubemap.object);
-		ShaderSetInt32(pbr_shader, "irradiance_map", 3);
-
-		//BindShader(pbr_test_shader);
-		//ShaderSetMat4(pbr_test_shader, "projection", main_camera.projection_matrix.arr);
-		//ShaderSetMat4(pbr_test_shader, "view", main_camera.view_matrix.arr);
-
-		ShaderSetVec3(pbr_shader, "diffuse_colour", Vec3(0.3, .4, 0.25).arr);
-		ShaderSetVec3(pbr_shader, "all_colour", Vec3(1, .5, .5).arr);
-		ShaderSetVec3(pbr_shader, "camPos", main_camera.transform.position.arr);
-
-
-		for (int32 i = 0; i < world.actors.size(); i++)
-		{
-			Mat4 transform_matrix = world.actors[i].transform.CalcTransformMatrix();
-			ShaderSetMat4(pbr_shader, "model", transform_matrix.arr);		
-
-			BindVertexArray(world.actors[i].mesh.vao);
-			BindBuffer<IndexBuffer>(world.actors[i].mesh.ibo);
-			
-			glDrawElements(GL_TRIANGLES, world.actors[i].mesh.ibo.index_count, GL_UNSIGNED_INT, 0);
-
-			UnbindBuffer<IndexBuffer>(world.actors[i].mesh.ibo);
-			UnbindVertexArray();
-		}
-
+		RenderMesh(pbr_nomaps, standard_meshes.plane);
 
 
 		//DebugDrawing
 		RenderCommands::DisableDepthBuffer();
-		DrawDebug(&debug_shader);
+		DebugDrawLines(&debug_shader);
 		RenderCommands::EnableDepthBuffer();
+
+
 		glfwSwapBuffers(window);
 
 		std::chrono::time_point<std::chrono::steady_clock> endTime = std::chrono::steady_clock::now();

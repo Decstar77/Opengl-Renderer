@@ -25,6 +25,9 @@
       <Filter>src\Math</Filter>
     </ClCompile>
     <ClCompile Include="src\Math\CosmicMath.cpp" />
+    <ClCompile Include="src\Mesh.cpp" />
+    <ClCompile Include="src\OpenGL\OpenGL.cpp" />
+    <ClCompile Include="src\OpenGL\OpenGlRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core.h">
@@ -35,9 +38,6 @@
     </ClInclude>
     <ClInclude Include="src\Math\CosmicMath.h">
       <Filter>src\Math</Filter>
-    </ClInclude>
-    <ClInclude Include="src\OpenGL\OpenGLErrorCatcher.h">
-      <Filter>src\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\OpenGL\RenderCommands.h">
       <Filter>src\OpenGL</Filter>
@@ -63,15 +63,11 @@
     <ClInclude Include="src\Math\CosmicPhysics.h">
       <Filter>src\Math</Filter>
     </ClInclude>
+    <ClInclude Include="src\Debug.h" />
+    <ClInclude Include="src\Mesh.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\first_compute.glsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="shaders\quad_vert.glsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="shaders\quad_frag.glsl">
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\pbr_frag.glsl">
@@ -92,12 +88,26 @@
     <None Include="shaders\irradince_convolution.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="shaders\pbr_test_vert.glsl">
+    <None Include="shaders\prefilter.glsl" />
+    <None Include="shaders\brdf_frag.glsl" />
+    <None Include="shaders\debug_mesh_vert.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="shaders\pbr_test_frag.glsl">
+    <None Include="shaders\debug_mesh_frag.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="shaders\brdf_vert.glsl" />
+    <None Include="shaders\cubemap_vert.glsl" />
+    <None Include="shaders\pbr_texture_frag.glsl" />
+    <None Include="shaders\instance_test_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\instance_test_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\pbr_nomaps_vert.glsl" />
+    <None Include="shaders\pbr_nomaps_frag.glsl" />
+    <None Include="shaders\compute_vert.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="shaders\skybox_frag.glsl">
@@ -106,5 +116,6 @@
     <Text Include="shaders\debug_frag.glsl">
       <Filter>Shaders</Filter>
     </Text>
+    <Text Include="src\IBL.txt" />
   </ItemGroup>
 </Project>

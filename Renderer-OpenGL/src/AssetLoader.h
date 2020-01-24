@@ -66,7 +66,7 @@ namespace cm
 		int32 width;
 		int32 height;
 		int32 nrChannels;
-		//stbi_set_flip_vertically_on_load(true);
+		stbi_set_flip_vertically_on_load(true);
 		float * t_data = stbi_loadf(file_directory.c_str(), &width, &height, &nrChannels, 0);
 		Assert(t_data != nullptr);
 		uint32 size = width * height * nrChannels * sizeof(float);

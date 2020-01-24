@@ -1,34 +1,13 @@
 ﻿cl : Command line warning D9002: ignoring unknown option '/arch:SSE2'
   main.cpp
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(87): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\opengl\rendercommands.h(102): warning C4091: 'static ': ignored on left of 'cm::RenderCommands' when no variable is declared
-f:\renderer-opengl\renderer-opengl\src\math\cosmicphysics.h(170): warning C4244: 'argument': conversion from 'int32' to 'const float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(297): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(346): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(357): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(365): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(435): warning C4101: 'geometry': unreferenced local variable
-f:\renderer-opengl\renderer-opengl\src\assetloader.h(207): warning C4267: 'initializing': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\assetloader.h(327): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(242): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(243): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(244): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(329): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(513): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(604): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(679): warning C4244: 'argument': conversion from 'int32' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(854): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(1000): warning C4244: 'initializing': conversion from '_Rep' to 'float', possible loss of data
-          with
-          [
-              _Rep=__int64
-          ]
-f:\renderer-opengl\renderer-opengl\main.cpp(668): warning C4101: 'map': unreferenced local variable
-LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
-  Generating code
-  4 of 2456 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    4 functions had inline decision re-evaluated but remain unchanged
-  Finished generating code
-glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'F:\Renderer-OpenGL\x64\Release\vc120.pdb'; linking object as if no debug info
-  Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Release\Renderer-OpenGL.exe
+c:\users\lung\desktop\deleteme\renderer-opengl\renderer-opengl\main.cpp(1): fatal error C1083: Cannot open include file: 'glew.h': No such file or directory
+  CosmicMath.cpp
+c:\users\lung\desktop\deleteme\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(87): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\lung\desktop\deleteme\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(93): error C2039: 'clamp': is not a member of 'std'
+  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\include\random(21): note: see declaration of 'std'
+c:\users\lung\desktop\deleteme\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(521): warning C4099: 'cm::Transform': type name first seen using 'struct' now seen using 'class'
+  c:\users\lung\desktop\deleteme\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(520): note: see declaration of 'cm::Transform'
+  CosmicPhysics.cpp
+c:\users\lung\desktop\deleteme\renderer-opengl\renderer-opengl\src\math\cosmicphysics.h(2): fatal error C1083: Cannot open include file: 'Core.h': No such file or directory
+  BufferLayout.cpp
+c:\users\lung\desktop\deleteme\renderer-opengl\renderer-opengl\src\opengl\bufferlayout.h(2): fatal error C1083: Cannot open include file: 'Core.h': No such file or directory

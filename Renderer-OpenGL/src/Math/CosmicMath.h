@@ -21,9 +21,6 @@
 //============Forward Declerations============//
 namespace cm
 {
-
-
-
 	struct  Vec2;
 	struct  Vec3;
 	struct  Vec4;
@@ -38,7 +35,7 @@ namespace cm
 	struct Basis;	
 	struct  polar_coord;
 
-	struct Transform;
+	class Transform;
 	struct Ray;	
 
 	enum class ShaderDataType
@@ -84,7 +81,7 @@ namespace cm
 
 	inline float float_chop(float val, float decimal_count)
 	{
-		float d_amout = pow(10, decimal_count);
+		float d_amout = powf(10, decimal_count);
 		return static_cast<float>(static_cast<int>(val * d_amout)) / d_amout;
 	}
 
@@ -148,7 +145,7 @@ namespace cm
 		return res;
 	}
 	
-	inline real RandomReal(real min, real max)
+	inline real RandomReal(real min, real max) // min to max - 1
 	{
 		real c = max - min;
 		return  c == 0 ? min : min + static_cast <real> (rand()) / (static_cast <real> (RAND_MAX / c));		
@@ -160,7 +157,16 @@ namespace cm
 		return c == 0 ? min : rand() % (max - min) + min;
 	}
 
+	inline real Fit(real value, real min, real max)
+	{
+		return (value - min) / (max - min);
+	}
 	
+	inline real LinearInterpolate(real a, real b, real t)
+	{
+		return a * t + b *(1 - t);
+	}
+
 	//============Functions Declerations============//
 
 	//============        Other       ============//
@@ -224,6 +230,8 @@ namespace cm
 	Vec3   Normalize(Vec3 a);
 
 	Vec3  vec4tovec3(Vec4 &a);	
+
+	bool CompareVec(const Vec3 &a, const Vec3 &b, const real &epsilon = FLOATING_POINT_ERROR_PRESCION);
 
 	std::string  toString(Vec3 a);
 
