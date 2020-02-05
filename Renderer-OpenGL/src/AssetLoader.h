@@ -99,6 +99,69 @@ namespace cm
 		}
 	}
 
+	void ParseObj(const std::string &file_directory, DynaArray<Vec3> *points, DynaArray<Vec3> *normals,
+		DynaArray<Vec3> *texture_coords, DynaArray<uint32> *layout)
+	{
+		std::ifstream file;
+		file.open(file_directory);
+
+		Assert(file.is_open());
+
+		std::stringstream file_stream;
+
+		file_stream << file.rdbuf();
+
+		file.close();
+		std::string line;
+		while (getline(file_stream, line))
+		{
+			if (line.substr(0, 2) == "v ")
+			{
+				std::istringstream s(line.substr(2));
+				Vec3 v; s >> v.x; s >> v.y; s >> v.z;
+				points->push_back(v);
+			}
+			else if (line.substr(0, 2) == "vn ")
+			{
+				std::istringstream s(line.substr(2));
+				Vec3 v; s >> v.x; s >> v.y; s >> v.z;
+				normals->push_back(v);
+			}
+			else if (line.substr(0, 2) == "vt ")
+			{
+				std::istringstream s(line.substr(2));
+				Vec3 v; s >> v.x; s >> v.y; s >> v.z;
+				texture_coords->push_back(v);
+			}
+			else if (line.substr(0, 2) == "f ")
+			{
+				std::string face = line.substr(2);
+				std::replace(face.begin(), face.end(), ' ', '/');
+				std::string other;
+				std::istringstream ss(face);
+				for (int32 i = 0; i < 8; i++)
+				{
+					uint32 data = 0;
+					ss >> data;
+					data--;
+					layout->push_back(data);
+					std::getline(ss, other, '/');
+				}
+			}
+			else if (line[0] == '#')
+			{
+				/* ignoring this line */
+			}
+			else
+			{
+				/* ignoring this line */
+			}
+		}
+
+
+
+	}
+
 	FileDataMesh LoadMesh(const std::string &file_directory, bool tangents)
 	{
 

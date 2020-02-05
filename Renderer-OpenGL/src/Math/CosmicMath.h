@@ -1,8 +1,7 @@
 #pragma once
 #include "../Core.h"
 #include <math.h>
-#include <ctime>  //eeehhh
-#include <random> //eeehhh
+#include <random> 
 #include <intrin.h>
 #include <xmmintrin.h>
 
@@ -33,7 +32,7 @@ namespace cm
 
 	struct Quat;
 	struct Basis;	
-	struct  polar_coord;
+	struct polar_coord;
 
 	class Transform;
 	struct Ray;	
@@ -79,13 +78,23 @@ namespace cm
 		return std::roundf(val * 1000000.0f) / 1000000.0f;
 	}
 
+	inline real Floor(const real &val)
+	{
+		return std::floor(val);
+	}
+
+	inline real Ceil(const real &val)
+	{
+		return std::ceil(val);
+	}
+
 	inline float float_chop(float val, float decimal_count)
 	{
 		float d_amout = powf(10, decimal_count);
 		return static_cast<float>(static_cast<int>(val * d_amout)) / d_amout;
 	}
 
-	inline float clamp(float value, float lowerBound, float upperBound)
+	inline float Clamp(float value, float lowerBound, float upperBound)
 	{
 		return std::clamp(value, lowerBound, upperBound);	
 	}
@@ -132,7 +141,7 @@ namespace cm
 		}
 		return x;
 	}
-
+	
 	inline real RandomUnillateral() // 0 to 1
 	{
 		real res = (real)rand() / (real)RAND_MAX;
@@ -158,13 +167,13 @@ namespace cm
 	}
 
 	inline real Fit(real value, real min, real max)
-	{
+	{		
 		return (value - min) / (max - min);
 	}
 	
-	inline real LinearInterpolate(real a, real b, real t)
+	inline real Lerp(real a, real b, real t)
 	{
-		return a * t + b *(1 - t);
+		return a *(1 - t) + b * t;
 	}
 
 	//============Functions Declerations============//
@@ -703,7 +712,7 @@ namespace cm
 		return Quat(x, w, z, w);
 	}
 
-	inline Vec3 lerp(Vec3 a, Vec3 b, float t)
+	inline Vec3 Lerp(Vec3 a, Vec3 b, float t)
 	{
 		Vec3 r = Vec3(
 			a.x + t * (b.x - a.x),
@@ -714,5 +723,4 @@ namespace cm
 	}
 
 	typedef Vec4 Colour;
-
 }

@@ -21,12 +21,53 @@ namespace cm
 		VertexArray vao;
 		IndexBuffer ibo;
 	};
+		
+	struct StandardMeshes 
+	{
+		Mesh quad;
+		Mesh plane;
+		Mesh cube;
+		Mesh sphere;
+		Mesh cone;
+	};
+	
+	struct StandardShaders
+	{
+		Shader gpu_gaussian_blur;
+		//.. Add as needed;
+	};
+
+	// @THINK: This could be a OpenGLVertex type thing where we 
+	//		 : Standardize all out vert shaders input
+	struct Vertex
+	{
+		Vec3 position;
+		Vec3 normal;
+		Vec3 texture_coord;
+		Vec3 colour;
+	};
+
+	struct Edge
+	{
+		Vertex vertices[2] = {};
+		real32 length = 0;
+	};
+
+	struct Triangle
+	{
+		real32 area;
+		Vec3 normal;
+		Vertex vertices[3];
+		Edge edges[2];
+	};
+
 
 	struct Actor
 	{
 		Mesh mesh;
-		Material material;
-		Transform transform; // @NOTE: We will now have to calculate the matrix on the render thread
+		//Material material;
+		 // @NOTE: We will now have to calculate the matrix on the render thread
+		Transform transform;
 	};
 
 	struct Batch
@@ -62,15 +103,22 @@ namespace cm
 	struct World
 	{
 		Camera camera;
-		RenderSettings render_settings;
-		DynaArray<Shader> shaders;
+		RenderSettings render_settings;		
+		DynaArray<Batch> batches;
 		DynaArray<Actor> actors;
-		DynaArray<PointLight> point_lights;
+	};
+		
+	
+	struct PostProcessingStack
+	{
+		FrameBuffer post_processing_fbo;		
+		//...settings...
 	};
 
 	void CreateBatch(Batch *batch, const VertexBuffer &vbo_to_batch, const IndexBuffer &ibo_of_vbo);
 	void FreeBatch(Batch *batch);
 	void RenderBatch(const Shader &shader, const Batch &batch);
 	void RenderMesh(const Shader &shader, const Mesh &mesh);
-	void RenderWorld(Shader *shader, const World &world);
+	void RenderWorld(Shader *shader, Shader *batch_shader, const World &world);
+
 }

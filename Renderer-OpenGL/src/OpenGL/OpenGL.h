@@ -6,8 +6,7 @@
 namespace cm
 {	
 	//===============================================================//
-	/*
-		Renderbuffer/FrameBuffer are not so good and are subject to change when needed
+	/*		
 		@TODO: Change CreateShader to take in shader pointer
 	*/
 	//===============================================================//
@@ -33,6 +32,18 @@ namespace cm
 	{
 		Rasterization = 1,
 		Compute = 2
+	};
+
+	struct OpenGLStatistics
+	{
+		std::string vendor;
+		std::string renderer;
+		std::string version;
+		std::string shading_lang;
+			   
+		int32 work_grp_cnt[3];
+		int32 work_grp_size[3];
+		int32 work_grp_inv;
 	};
 
 	struct UniformBuffer
@@ -121,23 +132,25 @@ namespace cm
 		CubeMapConfig config;
 	};
 
-	struct FrameBufferConfig
+	struct RenderBuffer
 	{
+		uint32 object = 0;
+		uint32 width = 0;
+		uint32 height = 0;
 		uint32 render_buffer_format = GL_DEPTH24_STENCIL8;
-		uint32 render_buffer_attachment = GL_DEPTH_STENCIL_ATTACHMENT;
-		
-		uint32 buffer_attactment = GL_COLOR_ATTACHMENT0;
-		uint32 buffer_draw = 36064; //Defualt apparently
-		uint32 buffer_read = GL_COLOR_ATTACHMENT0;
+		uint32 render_buffer_attachment_type = GL_DEPTH_STENCIL_ATTACHMENT;
 	};
 
 	struct FrameBuffer
 	{
 		BufferType type = BufferType::Frame_buffer;
 		uint32 object = 0;
-		uint32 render_object = 0;
-		DynaArray<Texture> texture_attachments;		
-		FrameBufferConfig config;
+
+		RenderBuffer render_attchment;
+		Texture colour0_texture_attachment;
+		Texture colour1_texture_attachment;
+		Texture colour2_texture_attachment;
+		Texture colour3_texture_attachment;		
 	};
 		
 	struct Shader
@@ -308,6 +321,10 @@ namespace cm
 	//************************************
 
 	void CreateTexture(Texture *texture, const void* data);
+
+	void CopyTexture(Texture *src, Texture *dst);
+
+	void FreeTexture(Texture *texture);
 	
 	//************************************
 	// Shader Functions
@@ -343,23 +360,25 @@ namespace cm
 	
 	void BindFrameBuffer(const FrameBuffer &fbo);
 	
-	void UnbindFrameBuffer(const FrameBuffer &fbo);
+	void UnbindFrameBuffer();
 	
 	void FreeFrameBuffer(FrameBuffer *fbo);
 	
 	void CreateFrameBuffer(FrameBuffer *fbo);
 	
-	void AddFrameBufferTextureAttachtment(FrameBuffer *buffer, Texture texture);
+	void FrameBufferAddColourAttachtments(FrameBuffer *buffer);
+		
+	void FrameAddBufferRenderAttachtment(FrameBuffer *buffer);
 	
-	void AddFrameBufferRenderAttachtment(FrameBuffer *buffer, uint32 width, uint32 height);
-	
-	bool CheckFrameBuffer(FrameBuffer buffer);
+	bool CheckFrameBuffer(const FrameBuffer &buffer); // Returns true if FrameBuffer is good 
 
 	//************************************
 	// Other Functions
 	//************************************
 
-	void PrintComputeShaderStats();
+	void GetOpenglStatistics(OpenGLStatistics *stats);
+
+	void PrintOpenglStatistics(const OpenGLStatistics &stats);
 
 }
 

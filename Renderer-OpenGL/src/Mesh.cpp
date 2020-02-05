@@ -2,45 +2,6 @@
 
 namespace cm
 {
-	void CreateStandardMeshes(StandardMeshes *stdmesh) //@TODO: This function will eventually become initstdmeshes
-	{
-		EditableMesh plane;
-		plane.AddTrianlge(Vec3(0, 0, 0), Vec3(0, 1, 0), Vec3(1, 0, 0));
-		plane.SetColour(Vec3(0.7, 0.1, 0.1));
-		plane.AddTrianlge(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
-		plane.SetColour(Vec3(0.1, 0.7, 0.1));
-		//plane.AddTrianlge(Vec3(1, 1, 0), Vec3(1, 2, 0), Vec3(2, 1, 0));
-		//plane.AddTrianlge(Vec3(1, 0, 0), Vec3(2, 0, 0), Vec3(2, -1, 0));
-		//plane.AddTrianlge(Vec3(0, 0, 0), Vec3(-1, 0, 0), Vec3(0, -1, 0));
-		//plane.RecaluclateNormals();
-		plane.FuseVertices();
-		Mesh m = plane.CreateMesh();
-		stdmesh->plane = m;
-
-		EditableMesh cube;
-		//Front
-		cube.AddTrianlge(Vec3(0, 0, 0), Vec3(0, 1, 0), Vec3(1, 0, 0));
-		cube.AddTrianlge(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
-		//Right
-		cube.AddTrianlge(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
-		cube.AddTrianlge(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
-		//Left
-		cube.AddTrianlge(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
-		cube.AddTrianlge(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
-		//Up
-		cube.AddTrianlge(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
-		cube.AddTrianlge(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
-		//Down
-		cube.AddTrianlge(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
-		cube.AddTrianlge(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
-		//Top
-		cube.AddTrianlge(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
-		cube.AddTrianlge(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
-		cube.RecaluclateNormals();
-		cube.FuseVertices();
-
-
-	}
 
 	Mesh EditableMesh::CreateMesh()
 	{
@@ -78,16 +39,19 @@ namespace cm
 		IndexedTriangle tri;
 		Vertex p1;
 		p1.position = pos1;
+		p1.texture_coord = pos1;
 		vertices.push_back(p1);
 		tri.v1 = static_cast<uint32>(vertices.size()) - 1;
 
 		Vertex p2;
 		p2.position = pos2;
+		p2.texture_coord = pos2;
 		vertices.push_back(p2);
 		tri.v2 = static_cast<uint32>(vertices.size()) - 1;
 
 		Vertex p3;
 		p3.position = pos3;
+		p3.texture_coord = pos3;
 		vertices.push_back(p3);
 		tri.v3 = static_cast<uint32>(vertices.size()) - 1;
 
@@ -119,6 +83,14 @@ namespace cm
 		tris.push_back(tri);
 	}
 
+	void EditableMesh::AddTextureCoords(const Vec3 &t1, const Vec3 &t2, const Vec3 &t3)
+	{
+		uint32 size = static_cast<uint32>(vertices.size());
+		vertices[size - 1].texture_coord = t3;
+		vertices[size - 2].texture_coord = t2;
+		vertices[size - 3].texture_coord = t1;
+	}
+
 	void EditableMesh::RecaluclateNormals()
 	{
 		uint32 size = static_cast<uint32>(tris.size());
@@ -130,6 +102,7 @@ namespace cm
 
 	void EditableMesh::FuseVertices(float tollerance)
 	{
+		//https://answers.unity.com/questions/228841/dynamically-combine-verticies-that-share-the-same.html
 		uint32 size = static_cast<uint32>(vertices.size());
 		uint32 half_size = (uint32)std::ceilf((float)size / 2.f);
 
@@ -151,6 +124,7 @@ namespace cm
 				if (res)
 				{
 					marked_doubles[ii] = i;
+					
 				}
 			}
 		}

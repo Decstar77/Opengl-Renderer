@@ -17,6 +17,7 @@ namespace cm
 	};
 
 	static DebugQueue debug_queue;
+	static World debug_world;
 
 	static void APIENTRY glDebugOutput(GLenum source,
 		GLenum type,
@@ -69,7 +70,8 @@ namespace cm
 
 	void InitDebug()
 	{
-		uint32 alloc_size = 1000; //Amount of vertices
+		// Amount of vertices not bytes 100 000
+		uint32 alloc_size = 5000; 
 		debug_queue.MAX_VERTICES_SIZE = alloc_size;
 
 

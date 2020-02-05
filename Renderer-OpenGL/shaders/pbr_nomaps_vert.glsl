@@ -9,11 +9,16 @@ layout (std140, binding = 0) uniform Matrices
 	mat4 view;
 };
 
+uniform mat4 model;
+
+
+//@TODO Make struct
 out vec3 normal;
-out vec3 vertex_colour;
+out vec3 t_coord;
+
 void main()
 {
 	normal = aNormal;
-	vertex_colour = vec3(aTexCoords, 1);
-    gl_Position =  projection * view * vec4(aPos, 1.0);
+	t_coord = vec3(aTexCoords, 0);
+    gl_Position =  projection * view * model * vec4(aPos, 1.0);
 }

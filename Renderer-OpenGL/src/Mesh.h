@@ -3,38 +3,6 @@
 #include "OpenGL/OpenGlRenderer.h"
 namespace cm
 {
-	//@TODO: Should we bring Mesh definition into here or leave it in Renderer
-	struct StandardMeshes // @TODO: Create meshes in INIT()
-	{
-		Mesh quad;
-		Mesh plane;
-		Mesh cube;
-		Mesh sphere;
-		Mesh cone;
-	};
-
-	struct Vertex 
-	{
-		Vec3 position;
-		Vec3 normal;
-		Vec3 texture_coord;
-		Vec3 colour;
-	};   	
-
-	struct Edge
-	{
-		Vertex vertices[2] = {};
-		real32 length = 0;
-	};
-
-	struct Triangle
-	{
-		real32 area;
-		Vec3 normal;
-		Vertex vertices[3];
-		Edge edges[2];
-	};
-
 	class IndexedTriangle
 	{
 	public:
@@ -67,7 +35,7 @@ namespace cm
 	};
 
 
-	void CreateStandardMeshes(StandardMeshes *stdmesh); //@TODO: This function will eventually become initstdmeshes
+	
 
 
 	class EditableMesh
@@ -80,6 +48,7 @@ namespace cm
 		Mesh CreateMesh();
 		void LoadMesh(Mesh mesh);
 		void AddTrianlge(const Vec3 &pos1, const Vec3 &pos2, const Vec3 &pos3);
+		void AddTextureCoords(const Vec3 &t1, const Vec3 &t2, const Vec3 &t3);
 		void AddTrianlge(const Vertex &p1, const Vertex &p2, const Vertex &p3);
 		void ConvertToPNT(DynaArray<float> *data, DynaArray<uint32> *index) const;
 		void RecaluclateNormals();

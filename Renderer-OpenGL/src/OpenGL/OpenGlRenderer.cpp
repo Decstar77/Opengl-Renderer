@@ -7,8 +7,8 @@ namespace cm
 	void CreateBatch(Batch *batch, const VertexBuffer &vbo_to_batch, const IndexBuffer &ibo_of_vbo)
 	{
 		Assert(batch->vao.object == 0);
-		Assert(batch->transforms.size() != 0);
 		Assert(batch->copied_ibo.object == 0);
+		Assert(batch->transforms.size() != 0);
 		Assert(ibo_of_vbo.object != 0);
 		Assert(vbo_to_batch.object != 0);
 
@@ -50,8 +50,10 @@ namespace cm
 	}
 
 	void FreeBatch(Batch *batch)
-	{
-		//TODO: Free all the batch memory;
+	{		
+		FreeBuffer(&batch->copied_ibo);
+		FreeVertexArray(&batch->vao, true);
+		batch->transforms.clear();
 	}
 
 
@@ -86,8 +88,28 @@ namespace cm
 		UnbindVertexArray();
 	}
 
-	void RenderWorld(Shader *shader, const World &world)
+	void RenderWorld(Shader *shader, Shader *batch_shader, const World &world)
 	{
+		Shader cur_shader = *batch_shader;
+		BindShader(cur_shader);
+		if (batch_shader != nullptr)
+		{
+			for (int32 i = 0; i < world.batches.size(); i++)
+			{
+				RenderBatch(cur_shader, world.batches[i]);
+			}
+		}
 
+		cur_shader = *shader;
+		BindShader(cur_shader);
+		if (shader != nullptr)
+		{
+			for (int32 i = 0; i < world.actors.size(); i++)
+			{
+				Actor a = world.actors[i];
+				ShaderSetMat4(cur_shader, "model", a.transform.CalcTransformMatrix().arr);
+				RenderMesh(cur_shader, a.mesh);
+			}
+		}
 	}
 }

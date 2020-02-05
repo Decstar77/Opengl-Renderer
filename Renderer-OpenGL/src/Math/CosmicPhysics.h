@@ -1,7 +1,7 @@
 #pragma once
 #include "Core.h"
 #include "CosmicMath.h"
-
+#include <list>
 namespace cm
 {	
 	//NOTE: Code is meant to be slow but understandable as this is a first attempt
@@ -54,67 +54,35 @@ namespace cm
 			return (true);
 		}
 	};
-
+	   
 
 	
-
-	//NOTE: Code is meant to be slow but understandable as this is a first attempt
 	class PointMass
-	{
+	{		
 	public:
 		Vec3 position;
 		Vec3 velocity;
 		Vec3 acceleration;
 		Vec3 force_accum;
 
+		uint32 rid = 0;
+
 		real mass;
 		real inverse_mass;
 		real damping;
-		
 
-		void SetMass(real mass)
-		{
-			this->mass = mass;
-			if (mass == 0)
-			{
-				inverse_mass = 0;
-			}
-			else
-			{
-				inverse_mass = 1.f / mass;
-			}
-		}
+	public:
+		void SetMass(real mass);
+		void SetDamping(real damp);
+		void Integrate(float delta);
+	
 
-		void Integrate(float delta)
-		{
-			if (inverse_mass <= 0.0f) { return; }
-
-			//Assert(delta < 0.0);
-
-			// Update linear position.		
-			position += delta * velocity;
-			//transform_applied->position = position;	
-			
-			
-			// Work out the acceleration from the force
-			Vec3 resulting_acc = acceleration;
-			resulting_acc += inverse_mass * force_accum;
-
-			// Update linear velocity from the acceleration.
-			velocity += resulting_acc * delta;
-
-			// Impose drag.
-
-			velocity = velocity * pow(damping, delta);
-
-			force_accum = 0;
-		}		
 	};
-	//NOTE: Code is meant to be slow but understandable as this is a first attempt
+
 	class ForceGenerator
 	{
 	public:
-		virtual void ApplyForce(PointMass *ri, real delta) = 0; 
+		virtual void ApplyForce(PointMass *ri, real delta) = 0;
 	};
 
 	class DragForceGenerator : public ForceGenerator
@@ -125,23 +93,10 @@ namespace cm
 		~DragForceGenerator() {}
 		real k1, k2;
 
-		void ApplyForce(PointMass *ri, real delta) override
-		{			
-			Vec3 force = ri->velocity;
-			real v = Mag(force);
-			real coef = k1 * v + k2 * v * v;
-			if (!requal(v, 0))
-			{
-				force = Normalize(force) * coef * -1;
-				ri->force_accum += force;
-			}
-			
-			// Edge case where by the velocity is 0 
-			
-		}
+		void ApplyForce(PointMass *ri, real delta) override;
 	};
 
-	//NOTE: Code is meant to be slow but understandable as this is a first attempt
+	
 	class AttractionForceGenerator : public ForceGenerator
 	{
 	public:
@@ -152,87 +107,53 @@ namespace cm
 		~AttractionForceGenerator() {}
 		AttractionForceGenerator(const Vec3 &origin, real strength, real raduis) : origin(origin), strength(strength), raduis(raduis) {}
 
-		void ApplyForce(PointMass *ri, real delta) override
-		{
-			Vec3 ri_pos = ri->position;
-			
-			Vec3 dir = origin - ri_pos;
-			if (Mag(dir) <= raduis)
-			{
-				dir = Normalize(origin - ri_pos);
-				Vec3 force = dir * strength;
-				ri->force_accum += force;
-			}
-			
-		}
+		void ApplyForce(PointMass *ri, real delta) override;
+	
 	};
-	//NOTE: Code is meant to be slow but understandable as this is a first attempt
+	
 	class PartricelSpringForce : public ForceGenerator
 	{
 	public:
 		PointMass *other;
-		real k; //Spring constant
-		real l;	//Rest length
-		real limit_of_elas = 0; //Limit of elasticity
+		//Spring constant
+		real k; 
+		//Rest length
+		real l;	
+		//Limit of elasticity
+		real limit_of_elas = 0;
 		bool apply_to_other;
-		void ApplyForce(PointMass *ri, real delta) override
-		{
-			Vec3 force = ri->position - other->position;
-			real m = Mag(force);			
-			Vec3 dir = Normalize(force);
-			real length = abs(m) - l;
-			Vec3 applied = -k * (length) * dir;
-			ri->force_accum += applied;
-			other->force_accum -= applied * (float)apply_to_other;
-		}
+		void ApplyForce(PointMass *ri, real delta) override;
 	};
 	
-	//NOTE: Code is meant to be slow but understandable as this is a first attempt	
+	
 	class AnchoredSpringForce : public ForceGenerator
 	{
 	public:
 		Vec3 anchor;
-		real k; //Spring constant
-		real l;	//Rest length
+		//Spring constant
+		real k; 
+		//Rest length
+		real l;	
 		
-		void ApplyForce(PointMass *ri, real delta) override
-		{
-			Vec3 force = ri->position - anchor;
-			real m = Mag(force);
-			Vec3 dir = Normalize(force);
-			Vec3 applied = -k * (abs(m) - l) * dir;
-			ri->force_accum += applied;
-		}
+		void ApplyForce(PointMass *ri, real delta) override;
 	};
 
-	//NOTE: Code is meant to be slow but understandable as this is a first attempt
+	
 	class OvercrowdingSpringForceGenerator : public ForceGenerator
 	{		
 	public:
 		DynaArray<PointMass*> bodies;
-		real k; //Spring constant <--- make this large
-		real l;	//Rest length <--- make this larger than the collision_lenth else we are extending the spring mathmaticly
+		//Spring constant <--- make this large
+		real k; 
+		//Rest length <--- make this larger than the collision_lenth else we are extending the spring mathmaticly
+		real l;	
 		real collision_length;
 
-		void ApplyForce(PointMass *ri, real delta) override
-		{		
-			for (uint32 i = 0; i < bodies.size(); i++)
-			{
-				if (ri == bodies[i])
-				{
-					continue;
-				}
-				Vec3 force = ri->position - bodies[i]->position;
-				real length = Mag(force);
-				if (length < collision_length)
-				{
-					Vec3 dir = Normalize(force);
-					Vec3 applied = -k * (abs(length) - l) * dir;
-					ri->force_accum += applied;
-				}
-			}
-		}
+		void ApplyForce(PointMass *ri, real delta) override;
 	};
+
+
+
 	//@Note: Closing velo = Seperating velo
 	class PointMassContact
 	{
@@ -240,8 +161,8 @@ namespace cm
 		Vec3 pms_movement[2];
 		PointMass *pms[2];
 		Vec3 contant_normal;
-		real restitution;
-		real penetration;
+		real restitution = 0;
+		real penetration = 0;
 		
 		void resolve(float delta)
 		{
@@ -320,11 +241,13 @@ namespace cm
 		//Everything that has pass in here IS colliding in some way
 		void Resolve(DynaArray<PointMassContact> contacts, float delta)
 		{
+			if (contacts.size() == 0)
+			{
+				return;
+			}
 			// Find the contact with the largest closing velocity;
 			for (int32 p = 0; p < iterations; p++)
 			{
-
-
 				real max = REAL_MAX;
 				unsigned maxIndex = contacts.size();
 				for (int32 i = 0; i < contacts.size(); i++)
@@ -376,35 +299,166 @@ namespace cm
 	};
 
 
-
-	//NOTE: Code is meant to be slow but understandable as this is a first attempt
-	class ForceRegistery
+	class PointMassCable
 	{
-	private:
-		struct ForceRegistration
-		{
-			ForceGenerator *fg;
-			PointMass *ri;
-		};
-		DynaArray<ForceRegistration> res;
 	public:
+		real max_length;
+		real cur_length;
+		real restitution;
+		PointMass *pms[2];
 
-		void RegisterForce(ForceGenerator *fg, PointMass *ri)
+		PointMassContact CheckContact()
 		{
-			ForceRegistration r;
-			r.fg = fg;
-			r.ri = ri;
-			res.push_back(r);
+			PointMassContact pmc;
+			PointMass m1 = *pms[0];
+			PointMass m2 = *pms[1];
+			
+			real length = Mag(m1.position - m2.position);
+			if (length < max_length)
+			{
+				return {};
+			}
+
+			Vec3 normal = Normalize(m2.position - m1.position);
+
+			pmc.pms[0] = pms[0];
+			pmc.pms[1] = pms[1];
+					
+			pmc.penetration = length - max_length;
+			pmc.restitution = restitution;
+			pmc.contant_normal = normal;
+
+			pmc.restitution = 0;
+			return pmc;
 		}
 
-		void UpdateForces(real delta)
+
+	};
+
+	class PointMassRod
+	{
+	public:
+		real max_length;
+		real cur_length;
+		PointMass *pms[2];
+
+		PointMassContact CheckContact()
 		{
-			for (int32 i = 0; i < res.size(); i++)
+			PointMassContact pmc;
+			PointMass m1 = *pms[0];
+			PointMass m2 = *pms[1];
+
+			real length = Mag(m1.position - m2.position);
+			if (requal(length, max_length))
 			{
-				res[i].fg->ApplyForce(res[i].ri, delta);
+				return {};
+			}
+
+			Vec3 normal = Normalize(m2.position - m1.position);
+
+			pmc.pms[0] = pms[0];
+			pmc.pms[1] = pms[1];
+
+			if (length > max_length)
+			{
+				pmc.penetration = length - max_length;
+				pmc.contant_normal = normal;
+			}
+			else
+			{
+				pmc.penetration = max_length - length;
+				pmc.contant_normal = normal * -1;
+			}
+			pmc.restitution = 0;
+			return pmc;
+		}
+	};
+
+
+	class MassAggregateEngine 
+	{		
+		
+	private:		
+		std::list<PointMass> point_masses;
+
+		std::list<ForceGenerator*> force_generators;
+
+	public:
+
+		uint32 CreatePointMass(const Vec3 &pos, real mass, real damping)
+		{
+			PointMass pm_test;
+			pm_test.damping = damping;
+			pm_test.SetMass(mass);
+			pm_test.position = pos;			
+			pm_test.rid = 1;
+			point_masses.push_back(pm_test);
+		}
+		
+
+		void DeletePointMass(PointMass *pm)
+		{
+			//point_masses.remove(*pm);
+		}
+
+		void DeleteForceGenerator(ForceGenerator *fg)
+		{
+			//force_generators.remove(fg);
+		}
+
+		template<typename T>
+		void CreateForceGenerator(const T &fg)
+		{
+			T * nfg = (T*)malloc(sizeof(T));
+			memcpy(nfg, &fg, sizeof(T));
+			ForceGenerator* force_gen = (ForceGenerator *)nfg;
+			force_generators.push_back(force_gen);
+		}
+
+
+		//template<typename T>
+		//T* DoForceThingy()
+		//{
+		//	OvercrowdingSpringForceGenerator over;
+		//	//Push this back.
+		//	//The return a pointer.
+		//	
+		//}
+
+		void Update(float delta)
+		{			
+			for (PointMass &pm : point_masses)
+			{
+				if (pm.position.y > 0.25f)
+				{
+					pm.acceleration.y = -1;
+				}
+				else
+				{
+					pm.acceleration = 0;
+					pm.velocity = 0;
+				}
+				pm.Integrate(delta);
 			}
 		}
 
+		void ResolveCollisions()
+		{
+
+		}
+
+		void ApplyForceGenerators(real delta)
+		{
+			//for (int32 i = 0; i < force_generators.size(); i++)
+			//{
+			//	for (int32 ii = 0; ii < force_generators[i].registered_point_masses.size(); ii++)
+			//	{
+			//		int32 index = force_generators[i].registered_point_masses[ii];
+			//		PointMass pm = point_masses[index];
+			//		force_generators[ii].force_generator->ApplyForce(&pm, delta);
+			//	}
+			//}
+		}
 	};
 
 }

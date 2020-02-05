@@ -141,14 +141,15 @@ namespace cm
 	{
 		if (clear_vbos)
 		{
-			uint32 vbo_count = (uint32)vao->vertex_buffers.size();
+			// Free the GPU memory
+			uint32 vbo_count = static_cast<uint32>(vao->vertex_buffers.size());
 			for (uint32 i = 0; i < vbo_count; i++)
 			{
-				FreeBuffer(&vao->vertex_buffers[i]); // Free the GPU memory
+				FreeBuffer(&vao->vertex_buffers[i]);
 			}
-			vao->vertex_buffers.clear();
-
-			glDeleteVertexArrays(1, &vao->object);
+			glDeleteVertexArrays(1, &vao->object); 
+			
+			// Free the local memory
 			vao->vertex_buffers.clear();
 			vao->object = 0;
 		}
@@ -271,6 +272,25 @@ namespace cm
 		texture->object = text;
 	}
 
+	void CopyTexture(Texture *src, Texture *dst)
+	{
+		Assert(src != nullptr);
+		Assert(src->object != 0);
+		Assert(dst != nullptr);
+		Assert(dst->object != 0);
+
+		glCopyImageSubData(src->object, GL_TEXTURE_2D, 0, 0, 0, 0,
+						   dst->object, GL_TEXTURE_2D, 0, 0, 0, 0, 
+						   dst->config.width, dst->config.height, 1);
+	}
+
+	void FreeTexture(Texture *texture)
+	{
+		glDeleteTextures(1, &texture->object);
+		texture->config.width = 0;
+		texture->config.height = 0;		
+	}
+
 	void FreeShader(Shader *shader)
 	{
 		glDeleteProgram(shader->shader_program);
@@ -362,13 +382,14 @@ namespace cm
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo.object);
 	}
 
-	void UnbindFrameBuffer(const FrameBuffer &fbo)
+	void UnbindFrameBuffer()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	void FreeFrameBuffer(FrameBuffer *fbo)
 	{
+		Assert(0); //@TODO: We need to free the colour buffers etc
 		if (fbo->object != 0)
 		{
 			glDeleteFramebuffers(1, &fbo->object);
@@ -382,55 +403,89 @@ namespace cm
 		glGenFramebuffers(1, &fbo->object);
 	}
 
-	void AddFrameBufferTextureAttachtment(FrameBuffer *buffer, Texture texture)
+	void FrameBufferAddColourAttachtments(FrameBuffer *buffer)
 	{
+
 		Assert(buffer->object != 0);
-		Assert(texture.config.width != 0);
-		Assert(texture.config.height != 0);
 
-		BindBuffer(*buffer);
+		BindFrameBuffer(*buffer);
 
-		buffer->texture_attachments.push_back(texture);
+		Texture *texture = &buffer->colour0_texture_attachment;
 
-		//if (config.texture.type == GL_TEXTURE_CUBE_MAP)
-		//{
-		//	glFramebufferTexture(GL_FRAMEBUFFER, config.buffer_attactment, tbos.back().GetId(), 0);
-		//}
+		uint32 count = 0;
+
+		uint32 attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
+								GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+
+		for (int32 i = 0; i < 4; i++)
+		{
+			if (texture[i].object != 0)
+			{
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D,
+					texture[i].object, 0);
+				glDrawBuffer(GL_COLOR_ATTACHMENT0 + i);
+				count++;
+			}
+			else
+			{
+				break;
+			}
+		}
+		
+		glDrawBuffers(count, attachments);
 
 
-		glFramebufferTexture2D(GL_FRAMEBUFFER, buffer->config.buffer_attactment,
-			texture.config.type, texture.object, 0);
+		UnbindFrameBuffer();
 
-		glDrawBuffer(buffer->config.buffer_draw);
-		glReadBuffer(buffer->config.buffer_read);
+		//Assert(buffer->object != 0);
+		//Assert(buffer->colour0_texture_attachment.object != 0);		
 
-		UnbindBuffer(*buffer);
+		//BindFrameBuffer(*buffer);
+		////
+		////if (config.texture.type == GL_TEXTURE_CUBE_MAP)
+		////{
+		////	glFramebufferTexture(GL_FRAMEBUFFER, config.buffer_attactment, tbos.back().GetId(), 0);
+		////}
+		////
+		//glFramebufferTexture2D(GL_FRAMEBUFFER, buffer->config.buffer_attactment,
+		//	buffer->colour0_texture_attachment.config.type, buffer->colour0_texture_attachment.object, 0);
+
+
+
+		//glDrawBuffer(buffer->config.buffer_draw);
+		//glReadBuffer(buffer->config.buffer_read);
+
+		//UnbindFrameBuffer();
 	}
 
-	void AddFrameBufferRenderAttachtment(FrameBuffer *buffer, uint32 width, uint32 height)
+
+	void FrameAddBufferRenderAttachtment(FrameBuffer *buffer)
 	{
 		Assert(buffer->object != 0);
-		Assert(buffer->render_object == 0);
-		Assert(buffer)
-			uint32 rbo;
-
-		BindBuffer(*buffer);
+		Assert(buffer->render_attchment.object == 0);
+		Assert(buffer->render_attchment.width != 0);
+		Assert(buffer->render_attchment.height!= 0);
+		
+		uint32 rbo;
+		BindFrameBuffer(*buffer);
+		
 		glGenRenderbuffers(1, &rbo);
 		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+				
+		glRenderbufferStorage(GL_RENDERBUFFER, buffer->render_attchment.render_buffer_format, 
+			buffer->render_attchment.width, buffer->render_attchment.height);
 
-		glRenderbufferStorage(GL_RENDERBUFFER, buffer->config.render_buffer_format, width, height);
-
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, buffer->config.render_buffer_attachment,
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, buffer->render_attchment.render_buffer_attachment_type,
 			GL_RENDERBUFFER, rbo);
-		buffer->render_object = rbo;
-
-		UnbindBuffer(*buffer);
+		
+		buffer->render_attchment.object = rbo;
+		UnbindFrameBuffer();
 	}
 
-	bool CheckFrameBuffer(FrameBuffer buffer)
+	bool CheckFrameBuffer(const FrameBuffer &buffer)
 	{
 		bool res = true;
-		BindBuffer(buffer);
+		BindFrameBuffer(buffer);
 
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		{
@@ -438,30 +493,49 @@ namespace cm
 			res = false;
 		}
 
-		UnbindBuffer(buffer);
+		UnbindFrameBuffer();
 		return res;
 	}
 
 
-	void PrintComputeShaderStats()
+	void GetOpenglStatistics(OpenGLStatistics *stats)
 	{
-		int work_grp_cnt[3];
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &work_grp_cnt[0]);
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &work_grp_cnt[1]);
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &work_grp_cnt[2]);
-		printf("max global (total) work group size x:%i y:%i z:%i\n",
-			work_grp_cnt[0], work_grp_cnt[1], work_grp_cnt[2]);
+		stats->vendor = std::string((const char*)glGetString(GL_VENDOR));
+		stats->renderer = std::string((const char*)glGetString(GL_RENDERER));
+		stats->version = std::string((const char*)glGetString(GL_VERSION));
+		stats->shading_lang = std::string((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
 
-		int work_grp_size[3];
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &work_grp_size[0]);
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &work_grp_size[1]);
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &work_grp_size[2]);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &stats->work_grp_cnt[0]);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &stats->work_grp_cnt[1]);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &stats->work_grp_cnt[2]);
+
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &stats->work_grp_size[0]);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &stats->work_grp_size[1]);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &stats->work_grp_size[2]);
+
+		glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &stats->work_grp_inv);		
+	}
+
+	void PrintOpenglStatistics(const OpenGLStatistics &stats)
+	{		
+		printf("/*************OPENGL_STATS*************/ \n");
+		printf("General Stats: \n");
+		printf("Vendor: ");
+		printf(stats.vendor.c_str()); printf("\n");
+		printf("Renderer: ");
+		printf(stats.renderer.c_str()); printf("\n");
+		printf("Version: ");
+		printf(stats.version.c_str()); printf("\n");
+		printf("Shader_lang: ");
+		printf(stats.shading_lang.c_str()); printf("\n");
+		
+		printf("Compute Stats: \n");
+		printf("max global (total) work group size x:%i y:%i z:%i\n", 
+			stats.work_grp_cnt[0], stats.work_grp_cnt[1], stats.work_grp_cnt[2]);
 		printf("max local (in one shader) work group sizes x:%i y:%i z:%i\n",
-			work_grp_size[0], work_grp_size[1], work_grp_size[2]);
-
-		int work_grp_inv;
-		glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &work_grp_inv);
-		printf("max local work group invocations %i\n", work_grp_inv);
+			stats.work_grp_size[0], stats.work_grp_size[1], stats.work_grp_size[2]);
+		printf("max local work group invocations %i\n", stats.work_grp_inv);
+		printf("/*************OPENGL_STATS*************/ \n");
 	}
 
 

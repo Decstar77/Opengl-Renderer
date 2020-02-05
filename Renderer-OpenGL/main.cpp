@@ -5,9 +5,11 @@
 #include "src/Core.h"
 #include "src/OpenGL/RenderCommands.h"
 #include "src/Math/CosmicPhysics.h"
+#include "src/Math/CosmicNoise.h"
 #include "src/OpenGL/OpenGL.h"
 #include "src/OpenGL/OpenGlRenderer.h"
 #include "src/Mesh.h"
+#include "src/GPUCompute.h"
 #include "src/Debug.h"
 #include "src/AssetLoader.h"
 
@@ -17,7 +19,6 @@ struct Voxel
 {
 	Actor actor;
 	Transform transform;
-	PointMass body;// Array of each collision shape
 	Aabb aabb;	
 };
 
@@ -34,6 +35,7 @@ static const float MOUSE_SENSITIVITY = 0.08f;
 
 static Camera main_camera = {};
 static StandardMeshes standard_meshes = {};
+static MassAggregateEngine physics_engine;
 static GLFWwindow *window = nullptr;
 static float delta_time = 0;
 
@@ -141,13 +143,6 @@ void MousePositionCallBack(GLFWwindow *widow, double xpos, double ypos)
 	last_mouse.position = current_mouse.position;
 }
 
-void WindowEvents()
-{
-	if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE))
-	{
-		glfwSetWindowShouldClose(window, 1);
-	}	
-}
 
 GLFWwindow* CreateRenderingWindow()
 {
@@ -156,7 +151,7 @@ GLFWwindow* CreateRenderingWindow()
 		Assert(0);
 	}
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 
 #if 1
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
@@ -281,25 +276,50 @@ void PhysicsUpdate(float delta, PointMass *body)
 
 void InitializeStandardMeshes()
 {
-	FileDataMesh data = LoadMesh("models/voxel_cube.obj", false);
+	EditableMesh plane;
+	plane.AddTrianlge(Vec3(0, 0, 0), Vec3(0, 1, 0), Vec3(1, 0, 0));
+	plane.SetColour(Vec3(0.7, 0.1, 0.1));
+	plane.AddTrianlge(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
+	plane.SetColour(Vec3(0.1, 0.7, 0.1));
+	//plane.AddTrianlge(Vec3(1, 1, 0), Vec3(1, 2, 0), Vec3(2, 1, 0));
+	//plane.AddTrianlge(Vec3(1, 0, 0), Vec3(2, 0, 0), Vec3(2, -1, 0));
+	//plane.AddTrianlge(Vec3(0, 0, 0), Vec3(-1, 0, 0), Vec3(0, -1, 0));
+	//plane.RecaluclateNormals();
+	plane.FuseVertices();
+	standard_meshes.plane = plane.CreateMesh();
 
-	VertexBuffer vbo;
-	vbo.lbo = PNT_VBO_LAYOUT;
-	CreateBuffer<VertexBuffer>(&vbo, data.size_bytes, VertexFlags::READ_WRITE);
-	WriteBufferData(vbo, data.data, 0);
+	EditableMesh cube;
+	// Back
+	cube.AddTrianlge(Vec3(0, 0, 0), Vec3(0, 1, 0), Vec3(1, 0, 0));
+	cube.AddTrianlge(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
+	// Front
+	cube.AddTrianlge(Vec3(0, 0, 1), Vec3(0, 1, 1), Vec3(1, 0, 1));
+	cube.AddTrianlge(Vec3(0, 1, 1), Vec3(1, 1, 1), Vec3(1, 0, 1));
+	// Right
+	cube.AddTrianlge(Vec3(1, 0, 0), Vec3(1, 0, 1), Vec3(1, 1, 0));
+	cube.AddTrianlge(Vec3(1, 0, 1), Vec3(1, 1, 1), Vec3(1, 1, 0));
+	// Left
+	cube.AddTrianlge(Vec3(0, 0, 0), Vec3(0, 0, 1), Vec3(0, 1, 0));
+	cube.AddTrianlge(Vec3(0, 0, 1), Vec3(0, 1, 1), Vec3(0, 1, 0));
+	// Top
+	cube.AddTrianlge(Vec3(0, 1, 0), Vec3(0, 1, 1), Vec3(1, 1, 0));
+	cube.AddTrianlge(Vec3(0, 1, 1), Vec3(1, 1, 1), Vec3(1, 1, 0));
+	// Bottom
+	cube.AddTrianlge(Vec3(0, 0, 0), Vec3(0, 0, 1), Vec3(1, 0, 0));
+	cube.AddTrianlge(Vec3(0, 0, 1), Vec3(1, 0, 1), Vec3(1, 0, 0));
 
-	VertexArray vao;
-	vao.vertex_buffers.push_back(vbo);
+	cube.RecaluclateNormals();
+	//cube.FuseVertices();
 
-	CreateVertexArray(&vao);
-	
-	IndexBuffer ibo;
-	CreateBuffer<IndexBuffer>(&ibo, data.indices.size() * sizeof(uint32), VertexFlags::READ_WRITE);
-	ibo.index_count = data.indices.size();
-	WriteBufferData(ibo, data.indices, 0);
-	   
-	standard_meshes.cube.vao = vao;
-	standard_meshes.cube.ibo = ibo;	
+	standard_meshes.cube = cube.CreateMesh();
+
+	EditableMesh quad; 
+	quad.AddTrianlge(Vec3(-1, -1, 0), Vec3(-1, 1, 0), Vec3(1, -1, 0));
+	quad.AddTextureCoords(Vec3(0, 0, 0), Vec3(0, 1, 0), Vec3(01, 0, 0));
+	quad.AddTrianlge(Vec3(-1, 1, 0), Vec3(1, 1, 0), Vec3(1, -1, 0));
+	quad.AddTextureCoords(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
+	quad.RecaluclateNormals();
+	standard_meshes.quad = quad.CreateMesh();
 }
 
 int CreateSkyBox()
@@ -427,13 +447,12 @@ int CreateSkyBox()
 int main()
 {
 	window = CreateRenderingWindow();
-
-
 	InitDebug();
 	InitializeStandardMeshes();
-	CreateStandardMeshes(&standard_meshes);
-	
-	
+
+	OpenGLStatistics opengl_stats;
+	GetOpenglStatistics(&opengl_stats);
+	PrintOpenglStatistics(opengl_stats);
 
 #if 0
 	int32 tex_w = 1280, tex_h = 720;
@@ -492,10 +511,17 @@ int main()
 	Shader instance_shader_test = CreateShader(ReadFile("shaders/instance_test_vert.glsl"), ReadFile("shaders/instance_test_frag.glsl"));
 	instance_shader_test.name = "instancing_test";
 	
-	Shader pbr_nomaps = CreateShader(ReadFile("shaders/pbr_nomaps_vert.glsl"), ReadFile("shaders/pbr_nomaps_frag.glsl"));
-	pbr_nomaps.name = "pbr_nomaps";
+	Shader pbr_nomaps_shader = CreateShader(ReadFile("shaders/pbr_nomaps_vert.glsl"), ReadFile("shaders/pbr_nomaps_frag.glsl"));
+	pbr_nomaps_shader.name = "pbr_nomaps";
 
+	Shader pbr_nomaps_batch_shader = CreateShader(ReadFile("shaders/pbr_nomaps_batch_vert.glsl"), ReadFile("shaders/pbr_nomaps_frag.glsl"));
+	pbr_nomaps_batch_shader.name = "pbr_nomaps_batch_shader";
 
+	Shader post_processing_shader = CreateShader(ReadFile("shaders/post_processing_vert.glsl"), ReadFile("shaders/post_processing_frag.glsl"));
+	post_processing_shader.name = "post_processing_shader";
+
+	Shader gpu_gaussian_blur_shader = CreateShader(ReadFile("shaders/Compute/GPU_gaussian_blur_vert.glsl"), ReadFile("shaders/Compute/GPU_gaussian_blur_frag.glsl"));
+	gpu_gaussian_blur_shader.name = "gaussian_blur";
 
 	DynaArray<float> quad_vertices =
 	{
@@ -591,7 +617,7 @@ int main()
 	ShaderBindUniformBuffer(pbr_texture_shader, 1, "Lighting");	
 	ShaderBindUniformBuffer(debug_mesh_shader, 0, "Matrices");	
 	ShaderBindUniformBuffer(instance_shader_test, 0, "CameraMatrices");
-
+	ShaderBindUniformBuffer(pbr_nomaps_batch_shader, 0, "CameraMatrices");
 	//CubeMap cubemap;
 	//CreateCubeMapFrom6(&cubemap, cubemap_faces_directories);
 
@@ -614,9 +640,9 @@ int main()
 		cube.transform.scale.y = .1;
 		cube.transform.scale.z = 1;
 		//cube.body.mass = i * 3+ 1;
-		cube.body.damping = 0.99;
-		cube.body.mass = 2;
-		cube.body.inverse_mass = 1.f / (float)(cube.body.mass);		
+		//cube.body.damping = 0.99;
+		//cube.body.mass = 2;
+		//cube.body.inverse_mass = 1.f / (float)(cube.body.mass);		
 		voxels.push_back(cube);
 	}
 	voxels[0].transform.rotation = EulerToQuat(Vec3(0, 0, 25));
@@ -625,86 +651,11 @@ int main()
 	voxels[3].transform.position.y += 0.2f;
 
 
-	DynaArray<Actor> spheres;
-	int32 sphere_count = 5;
-	for (int32 i = 0; i < 5; i++)
-	{
-		Actor a;
-		a.mesh = meshes[2];
-		a.transform.position = Vec3(-(sphere_count/2) + i, 3, -2);
-		a.transform.scale = Vec3(0.25);
-		a.transform.rotation = EulerToQuat(Vec3(45, 45, 0 ));
-		spheres.push_back(a);
-	}
-	DragForceGenerator drag_force_gen;
-	drag_force_gen.k1 = 2;
-	drag_force_gen.k2 = 5;
-	AttractionForceGenerator attrac_fgen;
-	attrac_fgen.origin = Vec3(0, 3, 0);
-	attrac_fgen.strength = 8;
-	attrac_fgen.raduis = 5;
-	PartricelSpringForce part_spring_force;
-	part_spring_force.k = 10;
-	part_spring_force.l = 0.3;
-	part_spring_force.other = &voxels[0].body; //Care don't realloc
-	part_spring_force.apply_to_other = false;
-	OvercrowdingSpringForceGenerator over_spring_force;
-	over_spring_force.bodies.push_back(&voxels[0].body);
-	over_spring_force.bodies.push_back(&voxels[1].body);
-	over_spring_force.bodies.push_back(&voxels[2].body);
-	over_spring_force.k = 20;
-	over_spring_force.collision_length = 0.5;
-	over_spring_force.l = 2.5;
-	ForceRegistery force_registery;
-	//force_registery.RegisterForce(&part_spring_force, &voxels[1].body);
-	DynaArray<AnchoredSpringForce> anc_spring;
-	anc_spring.resize(4);
-	for (int32 i = 0; i < voxels.size(); i++)
-	{
-		AnchoredSpringForce anc_spring_force;
-		anc_spring_force.k = 50;
-		anc_spring_force.l = 0.5;
-		anc_spring_force.anchor = voxels[i].transform.position + Vec3(0, 1, 0);
-		anc_spring[i] = (anc_spring_force);
-		force_registery.RegisterForce(&anc_spring[i], &voxels[i].body);
-		DebugAddPersistentPoint(anc_spring_force.anchor);
-	}
-
-	for (uint32 i = 0; i < voxels.size(); i++)
-	{
-		force_registery.RegisterForce(&drag_force_gen, &voxels[i].body);
-		//force_registery.RegisterForce(&over_spring_force, &voxels[i].body);
-		//force_registery.RegisterForce(&attrac_fgen, &voxels[i].body);
-	}
-
-	const int test_p = 2;
-	int *test = (int*)(&test_p);
-	*test = 5;
-	std::cout << test_p << std::endl;
-
-	DynaArray<PointMass> point_masses;
-	PointMass ground;
-	ground.SetMass(0);
-	ground.damping = 0.99;
-	ground.position = Vec3(-2, 1, 0);
-	point_masses.push_back(ground);
-	uint32 count = 2;
-	for (int32 i = 1; i < count + 1; i++)
-	{
-		PointMass pm;
-		pm.SetMass(3);
-		pm.damping = 0.99;
-		pm.position = point_masses[i - 1].position + Vec3(0, 0.1, 0);
-		point_masses.push_back(pm);
-	}
 
 
-	Actor plane;
-	plane.mesh = meshes[1];
-	plane.transform.scale = Vec3(4);
 
-	World world;
-	world.camera = main_camera;
+	World main_world;
+	main_world.camera = main_camera;
 		
 	//DrawLightPositions
 	if (DRAW_LIGHT_POSITIONS)
@@ -716,14 +667,146 @@ int main()
 	}
 
 	uint32 	envCubemap = CreateSkyBox();
+	
+	DynaArray<PointMass> pms;
+	for (int32 i = 0; i < 2; i++)
+	{
+		PointMass temp;
+		temp.position = Vec3(0, 2 * (i + 1), 0);//Vec3(-3 * (i + 1), 4, 0);
+		temp.SetMass(3);
+		temp.damping = 0.98;
+		pms.push_back(temp);
+	}
+
+	AnchoredSpringForce asft;
+	asft.k = 2;
+	asft.l = 1;
+	asft.anchor = Vec3(-3, 5, 0);
+		
+	pms[0].position = Vec3(0, 4, 0);
+	pms[1].position = Vec3(-2, 4, 0);
+	PointMassRod joint;
+	joint.max_length = 1;
+	joint.pms[0] = &pms[0];
+	joint.pms[1] = &pms[1];
+
+	PointMass ground;
+	ground.SetMass(0);
+	ground.damping = 1;
+	ground.position = Vec3(0);
+
+	//@NOTE Why not have this other way round ? have the register point mass return a point mass pointer.
+	//physics_registery.RegisterForceGenerator(&asft, &pm_test);
+	//const uint32 dime = 10;
+	//bool cube_field[dime][dime][dime] = {};
+	//Batch cube_batch = {};
+	//
+	//PerlinNoise pn;
+	//Vec3 vector_field[dime][dime][dime] = {};
+	//PointMass vector_particle;
+	//vector_particle.damping = 0.99;
+	//vector_particle.SetMass(3);
+	//vector_particle.position = Vec3(5.5,5.5,0);
+
+	//for (int32 x = 0; x < dime; x++)
+	//{
+	//	for (int32 y = 0; y < dime; y++)
+	//	{
+	//		for (int32 z = 0; z < dime; z++)
+	//		{
+	//			uint32 frq = 1;
+	//			float xx = ((float)x / (float)dime) * frq;
+	//			float yy = ((float)y / (float)dime) * frq;
+	//			float zz = ((float)z / (float)dime) * frq;
+	//			real pno = pn.Sample(xx, yy, zz);
 
 
+	//			Vec3 base = Vec3(1, 0, 0);
+
+	//			float angle = pno * 2 * PI;
+
+	//			//Vec3 dir = rotate(angle, base, Vec3(0, 0, 1));
+
+
+	//			Vec3 dir = Vec3(cos(angle), sin(angle), cos(angle));
+
+	//			//vector_field[x][y][z] = dir;
+	//			bool r = pno > 0.5;
+	//			cube_field[x][y][z] = r;
+	//			if (r)
+	//			{
+	//				Transform transform;
+	//				transform.position = Vec3(x, y, z);
+	//				transform.scale = Vec3(0.98);
+	//				//cube_batch.transforms.push_back(transform.CalcTransformMatrix());					
+	//			}
+
+	//			Vec3 pos = Vec3(x, y, z);
+	//			//DebugAddPersistentPoint(pos);
+	//			//DebugAddPersistentLine(pos, pos + dir);				
+	//		}			
+	//	}
+	//}
+
+	//Transform t1;
+	//t1.position = Vec3(0);
+	//Transform t2;
+	//t2.position = Vec3(2);
+	//cube_batch.transforms.push_back(t1.CalcTransformMatrix());
+	//cube_batch.transforms.push_back(t2.CalcTransformMatrix());
+	//CreateBatch(&cube_batch, standard_meshes.cube.vao.vertex_buffers[0], standard_meshes.cube.ibo);
+
+	//main_world.batches.push_back(cube_batch);
+
+	FrameBuffer post_processing;
+	CreateFrameBuffer(&post_processing);
+	BindFrameBuffer(post_processing);
+
+	TextureConfig colour_buffers_config;
+	colour_buffers_config.height = WINDOW_HEIGHT;
+	colour_buffers_config.width = WINDOW_WIDTH;
+	colour_buffers_config.data_type = GL_FLOAT;
+	colour_buffers_config.texture_format = GL_RGBA16F;
+	colour_buffers_config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	colour_buffers_config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	colour_buffers_config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+	
+	post_processing.colour0_texture_attachment.config = colour_buffers_config;
+	post_processing.colour1_texture_attachment.config = colour_buffers_config;
+	
+	CreateTexture(&post_processing.colour0_texture_attachment, nullptr);
+	CreateTexture(&post_processing.colour1_texture_attachment, nullptr);
+
+	post_processing.render_attchment.width = WINDOW_WIDTH;
+	post_processing.render_attchment.height = WINDOW_HEIGHT;
+
+	FrameBufferAddColourAttachtments(&post_processing);
+	FrameAddBufferRenderAttachtment(&post_processing);
+
+	bool check_frame_buffer = CheckFrameBuffer(post_processing);
+	Assert(check_frame_buffer);
+
+	GPUGaussienCompute bloom_blur;
+	bloom_blur.quad = &standard_meshes.quad;
+	bloom_blur.blur = &gpu_gaussian_blur_shader;
+	bloom_blur.texture_to_blur = &post_processing.colour1_texture_attachment;
+	bloom_blur.CreateGPUGassien();
+	
+	//bloom_blur.texture_to_blur = &post_processing.colour1_texture_attachment;
+	//CreateGPUGassien(&bloom_blur);
 
 	while (!glfwWindowShouldClose(window))
 	{
+		//************************************
+		// Process Windows Events
+		//************************************
 		std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
-		
 		glfwPollEvents();
+		
+
+		//************************************
+		// Process Custom Events
+		//************************************
 		UpdateCamera();
 
 		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_F5))
@@ -731,167 +814,220 @@ int main()
 			FreeShader(&cubemap_shader);
 			cubemap_shader = CreateShader(ReadFile("shaders/skybox_vert.glsl"), ReadFile("shaders/skybox_frag.glsl"));
 			
-			FreeShader(&pbr_shader);
-			pbr_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_frag.glsl"));
-			ShaderBindUniformBuffer(pbr_shader, 0, "Matrices");
-			ShaderBindUniformBuffer(pbr_shader, 1, "Lighting");
+			//FreeShader(&pbr_shader);
+			//pbr_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_frag.glsl"));
+			//ShaderBindUniformBuffer(pbr_shader, 0, "Matrices");
+			//ShaderBindUniformBuffer(pbr_shader, 1, "Lighting");
 
-			FreeShader(&pbr_texture_shader);
-			pbr_texture_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_texture_frag.glsl"));
-			ShaderBindUniformBuffer(pbr_texture_shader, 0, "Matrices");
-			ShaderBindUniformBuffer(pbr_texture_shader, 1, "Lighting");
+			//FreeShader(&pbr_texture_shader);
+			//pbr_texture_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_texture_frag.glsl"));
+			//ShaderBindUniformBuffer(pbr_texture_shader, 0, "Matrices");
+			//ShaderBindUniformBuffer(pbr_texture_shader, 1, "Lighting");
 
+			FreeShader(&post_processing_shader);
+			post_processing_shader = CreateShader(ReadFile("shaders/post_processing_vert.glsl"), ReadFile("shaders/post_processing_frag.glsl"));
+			post_processing_shader.name = "post_processing_shader";
 		}
 
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
 		{
 			double x, y;
-			glfwGetCursorPos(window, &x, &y);
-			Vec2 pos(x, y);		
-			voxels[2].body.velocity.x = 3;
+			glfwGetCursorPos(window, &x, &y);		
+			pms[1].velocity.x = 2;
+		}
+		
+		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE))
+		{
+			glfwSetWindowShouldClose(window, 1);
 		}
 
-		WindowEvents();						
 
-		DynaArray<Mat4> camera_data = {main_camera.projection_matrix, main_camera.view_matrix };
-		WriteBufferData(ubo_camera, camera_data, 0);
 		//Update Physics
 
-		for (int32 i = 0; i < voxels.size(); i++)
-		{
-			//@NOTE: Make sure we run the simulation on the updated positions that may have changed due to gameplay code
-			voxels[i].body.position = voxels[i].transform.position;
-		}
+		//@NOTE: Make sure we run the simulation on the updated positions that may have changed due to gameplay code					
 
-		//@REDO: I hate this move before integreate for each individual PointMass, that way calc is done on an accurate pos
-		force_registery.UpdateForces(delta_time);
-		for (int32 i = 0; i < voxels.size(); i++)
-		{		
-			if (voxels[i].body.position.y > 0.25f)
-			{
-				voxels[i].body.acceleration.y = -10;				
-			}
-			else
-			{
-				voxels[i].body.acceleration.y = 0;
-				voxels[i].body.velocity.y = 0;
-			}		
-
-			voxels[i].body.Integrate(delta_time);			
-		}
-
-		
-
-		for (int32 i = 0; i < voxels.size(); i++)
-		{
-			//@NOTE: Alright now apply the resulting simulation to the transforms and caclulate the transform matrix;
-			voxels[i].transform.position = voxels[i].body.position;
-			voxels[i].actor.transform = voxels[i].transform; //@TODO: Make actor have a transform instead on mat4 
-			//DebugAddIrresolutePoint(voxels[i].transform.position);
-		}
-
-
-		PointMassContactResolver pmcr;
-		DynaArray<PointMassContact> contacts;
-		
-		for (int32 i = 0; i < point_masses.size(); i++)
-		{
-			point_masses[i].acceleration.y = -1;
-			point_masses[i].Integrate(delta_time);
-		}
-		for (int32 i = 1; i < point_masses.size(); i++)
-		{
-			Vec3 top_point = point_masses[i - 1].position + Vec3(0, 0.1, 0);
-			if (point_masses[i].position.y <= top_point.y)
-			{
-				PointMassContact pmc;
-				pmc.penetration = Mag(top_point - point_masses[i].position);
-				pmc.pms[0] = &point_masses[i];
-				pmc.pms[1] = &point_masses[i - 1];
-				pmc.restitution = 0.1f;
-				pmc.contant_normal = Vec3(0, 1, 0);
-				contacts.push_back(pmc);
-	//			pmc.resolve(delta_time);
-			}
-		}
-		pmcr.iterations = point_masses.size();
-		pmcr.Resolve(contacts, delta_time);
-		for (int32 i = 0; i < point_masses.size(); i++)
-		{
-			//DebugAddIrresolutePoint(point_masses[i].position);
-		}
-
-		//PhysicsUpdate(delta_time, &cube.body);
-	
-
-
-
-
-		//Update World
-		
-		world.actors.clear();		
-		world.actors.push_back(plane);
-		
-		for (uint32 i = 0; i < voxels.size(); i++)
-		{
-			//world.actors.push_back(voxels[i].actor);
-		}
-		
-		for (uint32 i = 0; i < spheres.size(); i++)
-		{
-			world.actors.push_back(spheres[i]);
-		}
-		
-
-		RenderCommands::ClearColourBuffer();
-		RenderCommands::ClearDepthBuffer();
-		RenderCommands::Clear(Colour(0,1, 0,1));
-
-		//Draw Skybox
-		glDepthMask(GL_FALSE);
-
-		//BindShader(cubemap_shader);
-		//ShaderSetInt32(cubemap_shader, "remove_translation", true);
-		//glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.object); // @Hack write shader function
-		//RenderMesh(&cubemap_shader, meshes[0]);
-		
-
-		BindShader(cubemap_shader);
-		ShaderSetMat4(cubemap_shader, "projection", main_camera.projection_matrix.arr);
-		ShaderSetMat4(cubemap_shader, "view", main_camera.view_matrix.arr);
-		ShaderSetInt32(cubemap_shader, "environmentMap", 0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-		RenderMesh(cubemap_shader, meshes[0]);
-
-		glDepthMask(GL_TRUE);
-
-
-		//for (int32 i = 0; i < world.actors.size(); i++)
+		//int vx = (int)vector_particle.position.x;
+		//int vy = (int)vector_particle.position.y;
+		//if (vx > dime || vx < 0 || vy > dime || vy < 0)
 		//{
-		//	Mat4 transform_matrix = world.actors[i].transform.CalcTransformMatrix();
-		//	ShaderSetMat4(pbr_shader, "model", transform_matrix.arr);		
-
-		//	BindVertexArray(world.actors[i].mesh.vao);
-		//	BindBuffer<IndexBuffer>(world.actors[i].mesh.ibo);
+		//	vector_particle.position.x = RandomUInt(1, dime - 1);
+		//	vector_particle.position.y = RandomUInt(1, dime - 1);
+		//}
+		//else
+		//{
 		//	
-		//	glDrawElements(GL_TRIANGLES, world.actors[i].mesh.ibo.index_count, GL_UNSIGNED_INT, 0);
-
-		//	UnbindBuffer<IndexBuffer>(world.actors[i].mesh.ibo);
-		//	UnbindVertexArray();
+		//	
+		//	vector_particle.force_accum += 10 * vector_field[vx][vy];
+		//	if (Mag(vector_particle.velocity) > 1)
+		//	{
+		//		std::cout << Mag(vector_particle.velocity) << std::endl;
+		//		vector_particle.velocity = Normalize(vector_particle.velocity );
+		//	}
+		//	vector_particle.Integrate(delta_time);
 		//}
 
 
-		RenderMesh(pbr_nomaps, standard_meshes.plane);
+		//DebugAddIrresolutePoint(vector_particle.position);
 
+		for (int32 i = 0; i < pms.size(); i++)
+		{
+			//asft.ApplyForce(&pms[i], delta_time);
+			if (pms[i].position.y > 0.25f)
+			{
+				pms[i].acceleration.y = -1;
+			}
+			//else
+			//{
+			//	pms[i].acceleration = 0;
+			//	pms[i].velocity = 0;
+			//}
+			pms[i].Integrate(delta_time);
+		}
+
+
+		//physics_engine.Update(delta_time);
+		//
+		for (int32 i = 0; i < pms.size(); i++)
+		{
+			DebugAddIrresolutePoint(pms[i].position);
+		}
+		
+
+		//@NOTE: Alright now apply the resulting simulation to the transforms and caclulate the transform matrix;
+
+
+		PointMassContactResolver pmcr;
+		pmcr.iterations = 10;
+		DynaArray<PointMassContact> contacts;
+		
+		PointMassContact pmc = joint.CheckContact();
+		if (pmc.penetration != 0)
+		{
+			//contacts.push_back(pmc);		
+		}
+		
+		Vec3 side = pms[0].position + Vec3(-0.1, 0, 0);
+		if (pms[1].position.x >= side.x)
+		{
+			PointMassContact hit_contact;
+			hit_contact.penetration = Mag(side - pms[0].position);
+			hit_contact.pms[0] = &pms[0];
+			hit_contact.pms[1] = &pms[1];
+			hit_contact.restitution = 0.4;
+			hit_contact.contant_normal = Vec3(1, 0, 0);
+			contacts.push_back(hit_contact);
+		}
+
+		for (int32 i = 0; i < pms.size(); i++)
+		{
+			if (pms[i].position.y < ground.position.y)
+			{
+				PointMassContact ground_contact;
+				ground_contact.contant_normal = Vec3(0, 1, 0);
+				ground_contact.penetration = abs(pms[i].position.y);
+				ground_contact.restitution = 0.01;
+
+				ground_contact.pms[0] = &pms[i];
+				ground_contact.pms[1] = &ground;
+
+				contacts.push_back(ground_contact);
+			}
+		}
+
+		pmcr.Resolve(contacts, delta_time);
+
+	//	for (int32 i = 0; i < point_masses.size(); i++)
+	//	{
+	//		point_masses[i].acceleration.y = -1;
+	//		point_masses[i].Integrate(delta_time);
+	//	}
+	//	for (int32 i = 1; i < point_masses.size(); i++)
+	//	{
+	//		Vec3 top_point = point_masses[i - 1].position + Vec3(0, 0.1, 0);
+	//		if (point_masses[i].position.y <= top_point.y)
+	//		{
+	//			PointMassContact pmc;
+	//			pmc.penetration = Mag(top_point - point_masses[i].position);
+	//			pmc.pms[0] = &point_masses[i];
+	//			pmc.pms[1] = &point_masses[i - 1];
+	//			pmc.restitution = 0.1f;
+	//			pmc.contant_normal = Vec3(0, 1, 0);
+	//			contacts.push_back(pmc);
+	////			pmc.resolve(delta_time);
+	//		}
+	//	}
+	//	pmcr.iterations = point_masses.size();
+	//	pmcr.Resolve(contacts, delta_time);
+	//	for (int32 i = 0; i < point_masses.size(); i++)
+	//	{
+	//		//DebugAddIrresolutePoint(point_masses[i].position);
+	//	}
+
+		//PhysicsUpdate(delta_time, &cube.body);
+	
+		
+		//************************************
+		// Update GPU Buffers
+		//************************************
+
+		DynaArray<Mat4> camera_data = { main_camera.projection_matrix, main_camera.view_matrix };
+		WriteBufferData(ubo_camera, camera_data, 0);
+
+
+		//************************************
+		// Render The Current Frame
+		//************************************
+
+		RenderCommands::ClearColourBuffer();
+		RenderCommands::ClearDepthBuffer();
+		RenderCommands::Clear(Colour(0, 1, 0, 1));
+
+
+		BindFrameBuffer(post_processing);
+		RenderCommands::ClearColourBuffer();
+		RenderCommands::ClearDepthBuffer();
+	
+
+		//Draw Skybox
+		BindShader(cubemap_shader);
+		ShaderSetMat4(cubemap_shader, "projection", main_camera.projection_matrix.arr);
+		ShaderSetMat4(cubemap_shader, "view", main_camera.view_matrix.arr);
+		RenderMesh(cubemap_shader, meshes[0]);
+
+		BindShader(pbr_nomaps_shader);
+		ShaderSetMat4(pbr_nomaps_shader, "model", Mat4(1).arr);
+		RenderMesh(pbr_nomaps_shader, standard_meshes.plane);
+		
+		RenderWorld(&pbr_nomaps_shader, &pbr_nomaps_batch_shader, main_world);
+		RenderWorld(&pbr_nomaps_shader, &pbr_nomaps_batch_shader, debug_world);
 
 		//DebugDrawing
 		RenderCommands::DisableDepthBuffer();
 		DebugDrawLines(&debug_shader);
 		RenderCommands::EnableDepthBuffer();
 
+		UnbindFrameBuffer();
+
+		bloom_blur.GPUGaussienBlur();
+
+		BindShader(post_processing_shader);
+		ShaderSetFloat(post_processing_shader, "exposure", 1.0f);
+		ShaderBindTexture(post_processing_shader, post_processing.colour0_texture_attachment, 0, "scene_texture");
+		ShaderBindTexture(post_processing_shader, *bloom_blur.texture_to_blur, 1, "bloom_texture");
+		RenderMesh(post_processing_shader, standard_meshes.quad);
+
+		//glViewport(0, 0, WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
+		//ShaderSetFloat(post_processing_shader, "exposure", 1.0f);
+		//ShaderBindTexture(post_processing_shader, blur_t, 0, "scene_texture");
+		//RenderMesh(post_processing_shader, standard_meshes.quad);
+		//glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT); 
 
 		glfwSwapBuffers(window);
+
+		//************************************
+		// Collect Stats About Last Frame
+		//************************************
+
 
 		std::chrono::time_point<std::chrono::steady_clock> endTime = std::chrono::steady_clock::now();
 		std::chrono::microseconds elapsedTime(std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime));
