@@ -73,6 +73,16 @@ namespace cm
 			glFrontFace(GL_CCW);
 		}
 
+		static inline void CullBackFace()
+		{
+			glCullFace(GL_BACK);
+		}
+
+		static inline void CullFrontFace()
+		{
+			glCullFace(GL_FRONT);			
+		}
+
 		static inline void EnableWireframe()
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -97,6 +107,11 @@ namespace cm
 		{
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		}
+
+		static inline void ChangeViewPort(uint32 width, uint32 height)
+		{
+			glViewport(0, 0, width, height);
 		}
 
 	};

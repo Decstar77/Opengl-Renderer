@@ -188,7 +188,7 @@ namespace cm
 		
 	Mat4  perspective(float fovy, float aspect, float near, float far);
 
-	Mat4 orthographic(float left, float right, float top, float bottom, float _near, float _far);
+	Mat4 Orthographic(float left, float right, float top, float bottom, float _near, float _far);
 	   	 
 	Mat4 LookAt(Vec3 position, Vec3 target, Vec3 up);
 
@@ -275,7 +275,7 @@ namespace cm
 
 	Mat3  adjoint(Mat4 a, int row, int col);
 	
-	Mat4  inverse(Mat4 a);
+	Mat4  Inverse(Mat4 a);
 
 	Mat4  transpose(Mat4 a);
 

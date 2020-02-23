@@ -90,10 +90,12 @@ namespace cm
 
 	void RenderWorld(Shader *shader, Shader *batch_shader, const World &world)
 	{
-		Shader cur_shader = *batch_shader;
-		BindShader(cur_shader);
+		Shader cur_shader;	
+		
 		if (batch_shader != nullptr)
 		{
+			cur_shader = *batch_shader;
+			BindShader(cur_shader);
 			for (int32 i = 0; i < world.batches.size(); i++)
 			{
 				RenderBatch(cur_shader, world.batches[i]);

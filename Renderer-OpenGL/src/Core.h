@@ -6,7 +6,13 @@
 #include <vector>
 #include <algorithm>
 
+#ifdef _DEBUG
 #define Assert(Value) if (!(Value)) {*(int *)0 = 0;}
+#else
+#define Assert()
+#endif
+
+
 
 
 #define LOG(str, ...) printf(__FUNCTION__); \

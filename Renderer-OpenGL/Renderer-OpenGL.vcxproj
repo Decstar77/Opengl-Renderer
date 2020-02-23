@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\Engine\Input.cpp" />
     <ClCompile Include="src\Math\CosmicMath.cpp" />
     <ClCompile Include="src\Math\CosmicNoise.cpp" />
     <ClCompile Include="src\Math\CosmicPhysics.cpp" />
@@ -25,6 +26,7 @@
     <ClInclude Include="src\AssetLoader.h" />
     <ClInclude Include="src\Core.h" />
     <ClInclude Include="src\Debug.h" />
+    <ClInclude Include="src\Engine\Input.h" />
     <ClInclude Include="src\Math\CosmicColliders.h" />
     <ClInclude Include="src\Math\CosmicMath.h" />
     <ClInclude Include="src\Math\CosmicNoise.h" />
@@ -62,12 +64,15 @@
     <None Include="shaders\prefilter.glsl" />
     <None Include="shaders\debug_mesh_frag.glsl" />
     <None Include="shaders\debug_mesh_vert.glsl" />
+    <None Include="shaders\simple_shadow_map_frag.glsl" />
+    <None Include="shaders\simple_shadow_map_vert.glsl" />
     <None Include="shaders\skybox_vert.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="shaders\debug_frag.glsl" />
     <Text Include="shaders\skybox_frag.glsl" />
     <Text Include="src\IBL.txt" />
+    <Text Include="src\ShadowCascadeFailure.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -131,6 +136,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <AdditionalIncludeDirectories>F:\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

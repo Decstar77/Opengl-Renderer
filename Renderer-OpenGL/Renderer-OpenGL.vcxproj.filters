@@ -30,6 +30,7 @@
     <ClCompile Include="src\OpenGL\OpenGlRenderer.cpp" />
     <ClCompile Include="src\Math\CosmicNoise.cpp" />
     <ClCompile Include="src\GPUCompute.cpp" />
+    <ClCompile Include="src\Engine\Input.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core.h">
@@ -69,6 +70,7 @@
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\Math\CosmicNoise.h" />
     <ClInclude Include="src\GPUCompute.h" />
+    <ClInclude Include="src\Engine\Input.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\first_compute.glsl">
@@ -117,6 +119,8 @@
     <None Include="shaders\post_processing_frag.glsl" />
     <None Include="shaders\Compute\GPU_gaussian_blur_frag.glsl" />
     <None Include="shaders\Compute\GPU_gaussian_blur_vert.glsl" />
+    <None Include="shaders\simple_shadow_map_vert.glsl" />
+    <None Include="shaders\simple_shadow_map_frag.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="shaders\skybox_frag.glsl">
@@ -126,5 +130,6 @@
       <Filter>Shaders</Filter>
     </Text>
     <Text Include="src\IBL.txt" />
+    <Text Include="src\ShadowCascadeFailure.txt" />
   </ItemGroup>
 </Project>

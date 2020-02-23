@@ -150,7 +150,7 @@ namespace cm
 		Texture colour0_texture_attachment;
 		Texture colour1_texture_attachment;
 		Texture colour2_texture_attachment;
-		Texture colour3_texture_attachment;		
+		Texture depth_texture_attachment;
 	};
 		
 	struct Shader
@@ -262,45 +262,6 @@ namespace cm
 		glBindBufferRange(type, buffer.binding_location, buffer.object, 0, buffer.size_bytes);//<-- ubo		
 	}
 
-	template<typename T>
-	void CreateCubeMap(CubeMap *map, const DynaArray<T> *data)
-	{
-		uint32 obj;
-		glGenTextures(1, &obj);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, obj);
-
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, map->config.min_filter);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, map->config.mag_filter);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, map->config.wrap_s_mode);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, map->config.wrap_t_mode);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, map->config.wrap_r_mode);
-
-		if (data == nullptr)
-		{
-			for (int32 i = 0; i < 6; i++)
-			{
-				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, map->config.texture_format,
-					map->config.width, map->config.height, 0, map->config.pixel_format, map->config.data_type,
-					nullptr);
-			}
-		}
-		else
-		{
-			for (int32 i = 0; i < 6; i++)
-			{
-				const T *a = data[i].data();
-				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, map->config.texture_format,
-					map->config.width, map->config.height, 0, map->config.pixel_format, map->config.data_type,
-					a);
-			}
-		}
-
-
-		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-
-		map->object = obj;
-	}
-
 	//************************************
 	// Vertex Array Functions
 	//************************************
@@ -319,13 +280,25 @@ namespace cm
 	//************************************
 	// Texture Functions
 	//************************************
+	
+	void BindTexture(Texture *texture);
+
+	void BindTexture(const Texture &texture);
+
+	void UnbindTexure();
 
 	void CreateTexture(Texture *texture, const void* data);
 
 	void CopyTexture(Texture *src, Texture *dst);
 
+	void TextureSetBorder(Texture *texture, float *border_colour);
+
 	void FreeTexture(Texture *texture);
 	
+	void CreateCubeMap(CubeMap *cube_map, const void **data);
+
+	void CreateCubeMapFrom6(CubeMap *cube_map, DynaArray<Texture> textures);
+
 	//************************************
 	// Shader Functions
 	//************************************
@@ -367,7 +340,9 @@ namespace cm
 	void CreateFrameBuffer(FrameBuffer *fbo);
 	
 	void FrameBufferAddColourAttachtments(FrameBuffer *buffer);
-		
+	
+	void FrameBufferAddDepthAttachments(FrameBuffer *buffer);
+
 	void FrameAddBufferRenderAttachtment(FrameBuffer *buffer);
 	
 	bool CheckFrameBuffer(const FrameBuffer &buffer); // Returns true if FrameBuffer is good 

@@ -1,11 +1,32 @@
 ﻿cl : Command line warning D9002: ignoring unknown option '/arch:SSE2'
-  OpenGL.cpp
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(25): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(42): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(53): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(61): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(109): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(120): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(128): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(203): warning C4101: 'geometry': unreferenced local variable
+  main.cpp
+f:\renderer-opengl\renderer-opengl\src\math\cosmicphysics.h(249): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\math\cosmicphysics.h(252): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(41): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(42): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\assetloader.h(270): warning C4267: 'initializing': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\assetloader.h(390): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(131): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(132): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(133): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(574): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(675): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(710): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(750): warning C4244: 'initializing': conversion from 'int32' to 'real', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(754): warning C4244: 'argument': conversion from 'int32' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(902): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(906): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(1045): warning C4244: 'initializing': conversion from '_Rep' to 'float', possible loss of data
+          with
+          [
+              _Rep=__int64
+          ]
+  GPUCompute.cpp
+  Mesh.cpp
+f:\renderer-opengl\renderer-opengl\src\mesh.cpp(19): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\mesh.cpp(24): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
+  OpenGlRenderer.cpp
+  Generating Code...
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

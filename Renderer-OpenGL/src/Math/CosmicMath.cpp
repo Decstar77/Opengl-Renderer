@@ -233,7 +233,7 @@ namespace cm
 		return a;
 	}
 
-	Mat4 inverse(Mat4 a)
+	Mat4 Inverse(Mat4 a)
 	{
 		if (check_orthogonal(a))
 		{
@@ -373,7 +373,7 @@ namespace cm
 		return p;
 	}
 
-	Mat4 orthographic(float left, float right, float top, float bottom, float _near, float _far)
+	Mat4 Orthographic(float left, float right, float top, float bottom, float _near, float _far)
 	{
 		Mat4 result(1);
 		result.row0 = Vec4(2 / (right - left), 0, 0, 0);
@@ -576,13 +576,13 @@ namespace cm
 
 	Vec4 ToViewCoords(Mat4 & projection_matrix, Vec4 & viewCoords)
 	{
-		Mat4 invproj = inverse(projection_matrix);
+		Mat4 invproj = Inverse(projection_matrix);
 		return viewCoords * invproj;
 	}
 
 	Vec3 ToWorldCoords(Mat4 & view_matrix, Vec4 & viewCoords)
 	{
-		Mat4 invView = inverse(view_matrix);
+		Mat4 invView = Inverse(view_matrix);
 		Vec4 worldSpace = viewCoords * invView;
 		return Vec3(worldSpace.x, worldSpace.y, worldSpace.z);
 	}

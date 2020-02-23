@@ -253,6 +253,9 @@ namespace cm
 	void CreateTexture(Texture *texture, const void* data)
 	{
 		uint32 text;
+		Assert(texture->object == 0);
+		Assert(texture->config.width != 0);
+		Assert(texture->config.height != 0);
 
 		glGenTextures(1, &text);
 		glBindTexture(texture->config.type, text);
@@ -272,6 +275,23 @@ namespace cm
 		texture->object = text;
 	}
 
+	void BindTexture(Texture *texture)
+	{
+		Assert(texture->object != 0);
+		glBindTexture(texture->config.type, texture->object);
+	}
+
+	void BindTexture(const Texture &texture)
+	{
+		Assert(texture.object != 0);
+		glBindTexture(texture.config.type, texture.object);
+	}
+
+	void UnbindTexure()
+	{
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+
 	void CopyTexture(Texture *src, Texture *dst)
 	{
 		Assert(src != nullptr);
@@ -284,11 +304,79 @@ namespace cm
 						   dst->config.width, dst->config.height, 1);
 	}
 
+	void TextureSetBorder(Texture *texture, float *border_colour)
+	{
+		BindTexture(texture);		
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_colour);
+		UnbindTexure();
+	}
+
 	void FreeTexture(Texture *texture)
 	{
 		glDeleteTextures(1, &texture->object);
 		texture->config.width = 0;
 		texture->config.height = 0;		
+	}
+
+	void CreateCubeMap(CubeMap *cube_map, const void **data)
+	{
+		Assert(cube_map->object == 0);
+		Assert(cube_map->config.width != 0);
+		Assert(cube_map->config.height != 0);
+		
+		uint32 obj;
+		glGenTextures(1, &obj);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, obj);
+
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, cube_map->config.min_filter);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, cube_map->config.mag_filter);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, cube_map->config.wrap_s_mode);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, cube_map->config.wrap_t_mode);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, cube_map->config.wrap_r_mode);
+
+		if (data == nullptr)
+		{
+			for (int32 i = 0; i < 6; i++)
+			{
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, cube_map->config.texture_format,
+					cube_map->config.width, cube_map->config.height, 0, cube_map->config.pixel_format, 
+					cube_map->config.data_type,	nullptr);
+			}
+		}
+		else
+		{
+			for (int32 i = 0; i < 6; i++)
+			{
+				const void *a = data[i];
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, cube_map->config.texture_format,
+					cube_map->config.width, cube_map->config.height, 0, cube_map->config.pixel_format,
+					cube_map->config.data_type,	a);
+			}
+		}
+
+
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+		cube_map->object = obj;
+	}
+
+	void CreateCubeMapFrom6(CubeMap *cubemap, DynaArray<Texture> textures)
+	{
+		Assert(0);
+		//DynaArray<uint8> cubemap_data[6] = {};
+		//cubemap->config.type = GL_TEXTURE_CUBE_MAP;
+		//cubemap->config.texture_format = GL_RGB;
+		//cubemap->config.pixel_format = GL_RGB;
+		//cubemap->config.data_type = GL_UNSIGNED_BYTE;
+
+		//for (int32 i = 0; i < 6; i++)
+		//{
+		//	FileDataTexture<uint8> texture_data = LoadTexture(cubemap_faces_directories[i]);
+		//	cubemap->config.width = texture_data.width;
+		//	cubemap->config.height = texture_data.height;
+		//	cubemap_data[i] = texture_data.data;
+		//}
+		//CreateCubeMap(cubemap, cubemap_data);
 	}
 
 	void FreeShader(Shader *shader)
@@ -405,19 +493,15 @@ namespace cm
 
 	void FrameBufferAddColourAttachtments(FrameBuffer *buffer)
 	{
-
 		Assert(buffer->object != 0);
-
 		BindFrameBuffer(*buffer);
-
 		Texture *texture = &buffer->colour0_texture_attachment;
 
 		uint32 count = 0;
-
 		uint32 attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
 								GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 
-		for (int32 i = 0; i < 4; i++)
+		for (int32 i = 0; i < 3; i++)
 		{
 			if (texture[i].object != 0)
 			{
@@ -436,28 +520,22 @@ namespace cm
 
 
 		UnbindFrameBuffer();
-
-		//Assert(buffer->object != 0);
-		//Assert(buffer->colour0_texture_attachment.object != 0);		
-
-		//BindFrameBuffer(*buffer);
-		////
-		////if (config.texture.type == GL_TEXTURE_CUBE_MAP)
-		////{
-		////	glFramebufferTexture(GL_FRAMEBUFFER, config.buffer_attactment, tbos.back().GetId(), 0);
-		////}
-		////
-		//glFramebufferTexture2D(GL_FRAMEBUFFER, buffer->config.buffer_attactment,
-		//	buffer->colour0_texture_attachment.config.type, buffer->colour0_texture_attachment.object, 0);
-
-
-
-		//glDrawBuffer(buffer->config.buffer_draw);
-		//glReadBuffer(buffer->config.buffer_read);
-
-		//UnbindFrameBuffer();
 	}
 
+
+	void FrameBufferAddDepthAttachments(FrameBuffer *buffer)
+	{
+		Assert(buffer->object != 0);
+		Assert(buffer->depth_texture_attachment.object != 0);
+		BindFrameBuffer(*buffer);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,	buffer->depth_texture_attachment.object, 0);
+
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+
+		UnbindFrameBuffer();
+	}
 
 	void FrameAddBufferRenderAttachtment(FrameBuffer *buffer)
 	{

@@ -37,8 +37,13 @@ namespace cm
 		//.. Add as needed;
 	};
 
-	// @THINK: This could be a OpenGLVertex type thing where we 
-	//		 : Standardize all out vert shaders input
+	struct RenderShaders
+	{
+		Shader *render_shader;
+		Shader *skybox_shader;
+		Shader *post_processing_shader;
+	};
+
 	struct Vertex
 	{
 		Vec3 position;
@@ -66,7 +71,6 @@ namespace cm
 	{
 		Mesh mesh;
 		//Material material;
-		 // @NOTE: We will now have to calculate the matrix on the render thread
 		Transform transform;
 	};
 
@@ -79,14 +83,27 @@ namespace cm
 
 	struct PointLight
 	{
-		Vec3 LightColour;
-		Vec3 LightPos;
+		Vec3 light_colour;
+		Vec3 light_position;
+	};
+
+	struct DirectionalLight
+	{
+		Vec3 light_colour;
+		Vec3 direction;
+	};
+
+	struct SpotLight
+	{
+		Vec3 light_colour;
+		Vec3 light_position;
+		Vec4 direction; // w = raduis
 	};
 
 	struct Camera
 	{
-		float  camera_yaw = -90.0f;
-		float  camera_pitch = 0.0f;
+		real  camera_yaw = -90.0f;
+		real  camera_pitch = 0.0f;
 
 		Transform transform;
 		Vec3 target;
@@ -102,7 +119,6 @@ namespace cm
 
 	struct World
 	{
-		Camera camera;
 		RenderSettings render_settings;		
 		DynaArray<Batch> batches;
 		DynaArray<Actor> actors;

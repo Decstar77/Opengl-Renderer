@@ -1,0 +1,69 @@
+		float near_plane = 1.0f, far_plane = 7.5f;
+		float rect = 3;
+		Mat4 lightProjection = Orthographic(-rect, rect, rect, -rect, near_plane, far_plane);
+		Mat4 light_view = LookAt(Vec3(-2.0f, 4.0f, -1.0f), Vec3(0), Vec3(0, 1, 0));
+		Mat4 light_space_matrix = light_view * lightProjection;
+
+		Mat4 view_inverse = Inverse(camera_controller.main_camera.view_matrix);		
+		Mat4 light_space_trans = light_view;
+		Mat4 shadow_projections[3];
+
+		float ar = ((float)WINDOW_WIDTH) / (float)WINDOW_HEIGHT;
+		float tanHalfHFOV = tanf(deg_to_rad(40.f * ar / 2.0f));
+		float tanHalfVFOV = tanf(deg_to_rad((40.f) / 2.0f));
+
+		float m_cascadeEnd[] = { 0.1f, 25.f / 1.f, 90.f / 1.f,  250.0f };
+
+		for (uint32 i = 0; i < 3; i++)
+		{
+			float xn = m_cascadeEnd[i] * tanHalfHFOV;
+			float xf = m_cascadeEnd[i + 1] * tanHalfHFOV;
+			float yn = m_cascadeEnd[i] * tanHalfVFOV;
+			float yf = m_cascadeEnd[i + 1] * tanHalfVFOV;
+
+
+			Vec4 frustumCorners[] = {
+				// near face
+				Vec4(xn, yn,   -m_cascadeEnd[i], 1.0),
+				Vec4(-xn, yn,  -m_cascadeEnd[i], 1.0),
+				Vec4(xn, -yn,  -m_cascadeEnd[i], 1.0),
+				Vec4(-xn, -yn, -m_cascadeEnd[i], 1.0),
+
+				// far face
+				Vec4(xf, yf,   -m_cascadeEnd[i + 1], 1.0),
+				Vec4(-xf, yf,  -m_cascadeEnd[i + 1], 1.0),
+				Vec4(xf, -yf,  -m_cascadeEnd[i + 1], 1.0),
+				Vec4(-xf, -yf, -m_cascadeEnd[i + 1], 1.0)
+			};
+
+			Vec4 frustumCornersL[8];
+
+			float minX = FLT_MAX;
+			float minY = FLT_MAX;
+			float minZ = FLT_MAX;
+			float maxX = FLT_MIN;
+			float maxY = FLT_MIN;
+			float maxZ = FLT_MIN;
+
+
+
+			for (uint32 j = 0; j < 8; j++)
+			{
+				// Transform the frustum coordinate from view to world space
+				Vec4 vW = frustumCorners[j] * view_inverse;
+				Vec3 pos = Vec3(vW.x, vW.y, vW.z);
+
+				frustumCornersL[j] = vW * light_space_trans;
+
+				minX = std::min(minX, frustumCornersL[j].x);
+				maxX = std::max(maxX, frustumCornersL[j].x);
+				minY = std::min(minY, frustumCornersL[j].y);
+				maxY = std::max(maxY, frustumCornersL[j].y);
+				minZ = std::min(minZ, frustumCornersL[j].z);
+				maxZ = std::max(maxZ, frustumCornersL[j].z);
+
+			}
+			shadow_projections[i] = Orthographic(minX, maxX, maxY, minY, minZ, maxZ);
+		}
+
+		light_space_matrix = light_view * shadow_projections[0];

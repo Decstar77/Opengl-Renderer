@@ -7,7 +7,9 @@
 namespace cm
 {
 	//@TODO: Move into cpp file at some point
-	struct DebugQueue // TODO: Clean up memory when terminating
+	// @TODO: Clean up memory when terminating
+	
+	struct DebugQueue 
 	{
 		uint32 MAX_VERTICES_SIZE;
 		VertexArray persistent_vao;
@@ -16,7 +18,27 @@ namespace cm
 		DynaArray<Vec3> colours;
 	};
 
+	// @NOTE: We could do something like this
+	struct ExternalData
+	{
+		uint32 window_width;
+		uint32 window_height;
+		StandardMeshes *std_meshs;
+	};
+	// @NOTE: To prevent this. Or take in an external data as param
+	//static void DebugDrawTextureOnScreen(Shader shader, Texture texture, , StandardMeshes meshes, window_width, uint32 window_height)
+	//{		
+	//	glViewport(0, 0, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+	//	ShaderSetFloat(shader, "exposure", 1.0f);
+	//	ShaderBindTexture(shader, texture, 0, "scene_texture");
+	//	RenderMesh(shader, standard_meshes.quad);
+	//	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+	//}
+
+
+
 	static DebugQueue debug_queue;
+
 	static World debug_world;
 
 	static void APIENTRY glDebugOutput(GLenum source,
@@ -68,7 +90,7 @@ namespace cm
 	}
 
 
-	void InitDebug()
+	static void InitDebug()
 	{
 		// Amount of vertices not bytes 100 000
 		uint32 alloc_size = 5000; 
@@ -92,8 +114,8 @@ namespace cm
 			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 		}		
 	}
-	
-	void DebugDrawTexture(Shader *shader, const Texture &t, const Mesh &quad_mesh) // TODO: Remove the mesh parama
+
+	static void DebugDrawTexture(Shader *shader, const Texture &t, const Mesh &quad_mesh) // TODO: Remove the mesh parama
 	{
 		BindShader(*shader);
 		Transform transform;
@@ -103,7 +125,7 @@ namespace cm
 		RenderMesh(*shader, quad_mesh);
 	}
 
-	void DebugDrawLines(Shader *debug_shader)
+	static void DebugDrawLines(Shader *debug_shader)
 	{
 		//@Redo: DebugQueue stores a irrseloute and we just free the vbo inside.
 		WriteBufferData(debug_queue.persistent_vao.vertex_buffers[0], debug_queue.persistent_vertices, 0);
@@ -143,20 +165,20 @@ namespace cm
 		}
 	}
 
-	void DebugAddPersistentLine(const Vec3 &a, const Vec3 &b)
+	static void DebugAddPersistentLine(const Vec3 &a, const Vec3 &b)
 	{
 		Assert(debug_queue.persistent_vertices.size() + 2 < debug_queue.MAX_VERTICES_SIZE);
 		debug_queue.persistent_vertices.push_back(a);
 		debug_queue.persistent_vertices.push_back(b);
 	}
 
-	void DebugAddIrresoluteLine(const Vec3 &a, const Vec3 &b)
+	static void DebugAddIrresoluteLine(const Vec3 &a, const Vec3 &b)
 	{
 		debug_queue.irresolute_vertices.push_back(a);
 		debug_queue.irresolute_vertices.push_back(b);
 	}
 
-	void DebugAddPersistentAABBMinMax(const Vec3 &min, const Vec3 &max)
+	static void DebugAddPersistentAABBMinMax(const Vec3 &min, const Vec3 &max)
 	{
 		Vec3 v2 = Vec3(max.x, min.y, min.z);
 		Vec3 v3 = Vec3(max.x, max.y, min.z);
@@ -184,7 +206,7 @@ namespace cm
 		DebugAddPersistentLine(v8, v4);
 	}
 
-	void DebugAddIrresoluteAABBMinMax(const Vec3 &min, const Vec3 &max)
+	static void DebugAddIrresoluteAABBMinMax(const Vec3 &min, const Vec3 &max)
 	{
 		Vec3 v2 = Vec3(max.x, min.y, min.z);
 		Vec3 v3 = Vec3(max.x, max.y, min.z);
@@ -212,22 +234,22 @@ namespace cm
 		DebugAddIrresoluteLine(v8, v4);
 	}
 
-	void DebugAddPersistentAABBCenterRaduis(const Vec3 &center, const Vec3 &radius)
+	static void DebugAddPersistentAABBCenterRaduis(const Vec3 &center, const Vec3 &radius)
 	{
 		DebugAddPersistentAABBMinMax(center - radius, center + radius);
 	}
 
-	void DebugAddIrresoluteAABBCenterRaduis(const Vec3 &center, const Vec3 &radius)
+	static void DebugAddIrresoluteAABBCenterRaduis(const Vec3 &center, const Vec3 &radius)
 	{
 		DebugAddIrresoluteAABBMinMax(center - radius, center + radius);
 	}
 
-	void DebugAddPersistentPoint(const Vec3 &center)
+	static void DebugAddPersistentPoint(const Vec3 &center)
 	{
 		DebugAddPersistentAABBCenterRaduis(center, Vec3(0.05f));
 	}
 
-	void DebugAddIrresolutePoint(const Vec3 &center)
+	static void DebugAddIrresolutePoint(const Vec3 &center)
 	{
 		DebugAddIrresoluteAABBCenterRaduis(center, Vec3(0.05f));
 	}

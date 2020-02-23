@@ -93,10 +93,15 @@ namespace cm
 
 	void EditableMesh::RecaluclateNormals()
 	{
+		
 		uint32 size = static_cast<uint32>(tris.size());
 		for (uint32 i = 0; i < size; i++)
 		{
 			tris[i].CalculateNormal();
+			//TODO: Each vertex could have a different normal, in fact it will for a hard shaded cube. Refactor			
+			vertices[tris[i].v1].normal = tris[i].normal;
+			vertices[tris[i].v2].normal = tris[i].normal;
+			vertices[tris[i].v3].normal = tris[i].normal;
 		}
 	}
 
