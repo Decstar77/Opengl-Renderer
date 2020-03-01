@@ -4793,7 +4793,7 @@ static int stbi__de_iphone_flag = 0;
 
 STBIDEF void stbi_set_unpremultiply_on_load(int flag_true_if_should_unpremultiply)
 {
-	stbi__unpremultiply_on_load = flag_true_if_should_unpremultiply;
+	stbi__unpremultiplyOon_load = flag_true_if_should_unpremultiply;
 }
 
 STBIDEF void stbi_convert_iphone_png_to_rgb(int flag_true_if_should_convert)

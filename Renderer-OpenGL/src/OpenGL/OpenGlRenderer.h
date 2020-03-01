@@ -39,9 +39,12 @@ namespace cm
 
 	struct RenderShaders
 	{
-		Shader *render_shader;
-		Shader *skybox_shader;
-		Shader *post_processing_shader;
+		Shader render_shader;
+		Shader render_batch_shader;
+		Shader skybox_shader;
+		Shader post_processing_shader;
+		Shader depth_test_shader;
+		Shader g_buffer_shader;
 	};
 
 	struct Vertex

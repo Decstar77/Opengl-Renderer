@@ -31,6 +31,7 @@
     <ClCompile Include="src\Math\CosmicNoise.cpp" />
     <ClCompile Include="src\GPUCompute.cpp" />
     <ClCompile Include="src\Engine\Input.cpp" />
+    <ClCompile Include="src\Core\Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core.h">
@@ -71,6 +72,7 @@
     <ClInclude Include="src\Math\CosmicNoise.h" />
     <ClInclude Include="src\GPUCompute.h" />
     <ClInclude Include="src\Engine\Input.h" />
+    <ClInclude Include="src\Core\Renderer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\first_compute.glsl">

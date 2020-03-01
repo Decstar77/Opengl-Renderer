@@ -10,6 +10,7 @@
 #include "src/OpenGL/OpenGlRenderer.h"
 #include "src/Mesh.h"
 #include "src/GPUCompute.h"
+#include "src/Core/Renderer.h"
 #include "src/Debug.h"
 #include "src/AssetLoader.h"
 #include "src/Engine/Input.h"
@@ -471,43 +472,6 @@ int main()
 
 	Assert(CheckFrameBuffer(shadow_map0));
 
-	FrameBuffer shadow_map1;
-	shadow_map1.depth_texture_attachment.config.texture_format = GL_DEPTH_COMPONENT32;
-	shadow_map1.depth_texture_attachment.config.pixel_format = GL_DEPTH_COMPONENT;
-	shadow_map1.depth_texture_attachment.config.min_filter = GL_NEAREST;
-	shadow_map1.depth_texture_attachment.config.mag_filter = GL_NEAREST;
-	shadow_map1.depth_texture_attachment.config.data_type = GL_FLOAT;
-	shadow_map1.depth_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_BORDER;
-	shadow_map1.depth_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_BORDER;
-	shadow_map1.depth_texture_attachment.config.width = 1024;
-	shadow_map1.depth_texture_attachment.config.height = 1024;
-
-	CreateTexture(&shadow_map1.depth_texture_attachment, nullptr);
-	TextureSetBorder(&shadow_map1.depth_texture_attachment, Vec4(1).arr);
-
-	CreateFrameBuffer(&shadow_map1);
-	FrameBufferAddDepthAttachments(&shadow_map1);
-
-	Assert(CheckFrameBuffer(shadow_map1));
-
-	FrameBuffer shadow_map2;
-	shadow_map2.depth_texture_attachment.config.texture_format = GL_DEPTH_COMPONENT32;
-	shadow_map2.depth_texture_attachment.config.pixel_format = GL_DEPTH_COMPONENT;
-	shadow_map2.depth_texture_attachment.config.min_filter = GL_NEAREST;
-	shadow_map2.depth_texture_attachment.config.mag_filter = GL_NEAREST;
-	shadow_map2.depth_texture_attachment.config.data_type = GL_FLOAT;
-	shadow_map2.depth_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_BORDER;
-	shadow_map2.depth_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_BORDER;
-	shadow_map2.depth_texture_attachment.config.width = 1024;
-	shadow_map2.depth_texture_attachment.config.height = 1024;
-
-	CreateTexture(&shadow_map2.depth_texture_attachment, nullptr);
-	TextureSetBorder(&shadow_map2.depth_texture_attachment, Vec4(1).arr);
-
-	CreateFrameBuffer(&shadow_map2);
-	FrameBufferAddDepthAttachments(&shadow_map2);
-
-	Assert(CheckFrameBuffer(shadow_map2));
 
 	FrameBuffer g_buffer;
 	
@@ -630,89 +594,7 @@ int main()
 
 
 
-		/////////////////////////////////////////////////
-		Mat4 cascades[4];
-		float cascadeSplits[4] = { 0.0f, 0.1f, 0.5f, 1 };
-		float cascade_ends[4] = {0,0,0,0};
-		near_plane = 0.1f;
-		far_plane = 250.f;
 
-		float clip_range = far_plane - near_plane;
-
-		float minZ = near_plane;
-		float maxZ = near_plane + clip_range;
-
-		float range = maxZ - minZ;
-		float ratio = maxZ / minZ;
-
-
-		// Calculate split depths based on view camera furstum
-		// Based on method presentd in https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch10.html
-		for (uint32_t i = 0; i < 4; i++) {
-			float p = (i + 1) / static_cast<float>(4);
-			float log = minZ * std::pow(ratio, p);
-			float uniform = minZ + range * p;
-			float d = 0.95f * (log - uniform) + uniform;
-			cascadeSplits[i] = (d - near_plane) / range;
-			
-		}
-		
-		Mat4 shadow_projections[4];
-
-		float lastSplitDist = 0.0;	
-		for (uint32 i = 0; i < 3; i++)
-		{
-			float splitDist = cascadeSplits[i];
-
-			Vec3 frustumCorners[8] = {
-				Vec3(-1.0f,  1.0f, -1.0f),
-				Vec3(1.0f,  1.0f, -1.0f),
-				Vec3(1.0f, -1.0f, -1.0f),
-				Vec3(-1.0f, -1.0f, -1.0f),
-				Vec3(-1.0f,  1.0f,  1.0f),
-				Vec3(1.0f,  1.0f,  1.0f),
-				Vec3(1.0f, -1.0f,  1.0f),
-				Vec3(-1.0f, -1.0f,  1.0f)
-			};
-
-			// Project frustum corners into world space
-			Mat4 invCam = Inverse(camera_controller.main_camera.view_matrix *
-				camera_controller.main_camera.projection_matrix);
-			for (uint32_t i = 0; i < 8; i++) {
-				Vec4 invCorner = Vec4(frustumCorners[i], 1.0f) * invCam;
-				invCorner = invCorner / invCorner.w;
-				frustumCorners[i] = vec4tovec3(invCorner);
-			}
-
-			for (uint32_t i = 0; i < 4; i++) {
-				Vec3 dist = frustumCorners[i + 4] - frustumCorners[i];
-				frustumCorners[i + 4] = frustumCorners[i] + (dist * splitDist);
-				frustumCorners[i] = frustumCorners[i] + (dist * lastSplitDist);
-			}
-			cascade_ends[i]= (near_plane + splitDist * clip_range) * -1.0f;
-			lastSplitDist = cascadeSplits[i];
-
-			float minX = FLT_MAX;
-			float minY = FLT_MAX;
-			float minZ = FLT_MAX;
-			float maxX = FLT_MIN;
-			float maxY = FLT_MIN;
-			float maxZ = FLT_MIN;
-
-			for (uint32 j = 0; j < 8; j++)
-			{	
-
-				minX = std::min(minX, frustumCorners[j].x);
-				maxX = std::max(maxX, frustumCorners[j].x);
-				minY = std::min(minY, frustumCorners[j].y);
-				maxY = std::max(maxY, frustumCorners[j].y);
-				minZ = std::min(minZ, frustumCorners[j].z);
-				maxZ = std::max(maxZ, frustumCorners[j].z);
-
-			}
-			shadow_projections[i] = light_view * Orthographic(minX, maxX, maxY, minY, minZ, maxZ);
-			
-		}
 		//light_space_matrix = light_view * shadow_projections[0];
 
 
@@ -723,7 +605,7 @@ int main()
 		//************************************
 
 		DynaArray<Mat4> camera_data = { camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix,
-										shadow_projections[0]};
+										light_space_matrix};
 		WriteBufferData(ubo_camera, camera_data, 0);
 			   
 
@@ -745,7 +627,7 @@ int main()
 		RenderCommands::ChangeViewPort(1024, 1024);
 		RenderCommands::ClearDepthBuffer();
 		RenderCommands::CullFrontFace();
-		ShaderSetMat4(simple_shadow_map_shader, "lightSpaceMatrix", shadow_projections[0].arr); // It's in ubo
+		ShaderSetMat4(simple_shadow_map_shader, "lightSpaceMatrix", light_space_matrix.arr); // It's in ubo
 		
 		RenderWorld(&simple_shadow_map_shader, nullptr, main_world);
 
@@ -753,36 +635,7 @@ int main()
 		RenderCommands::CullBackFace();
 		RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-		// Pass1
-		BindFrameBuffer(shadow_map1);
-		BindShader(simple_shadow_map_shader);
-		RenderCommands::ChangeViewPort(1024, 1024);
-		RenderCommands::ClearDepthBuffer();
-		RenderCommands::CullFrontFace();
-		ShaderSetMat4(simple_shadow_map_shader, "lightSpaceMatrix", shadow_projections[1].arr); // It's in ubo
-
-		RenderWorld(&simple_shadow_map_shader, nullptr, main_world);
-
-		UnbindFrameBuffer();
-		RenderCommands::CullBackFace();
-		RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_HEIGHT);
-		
-
-		// Pass2
-		BindFrameBuffer(shadow_map2);
-		BindShader(simple_shadow_map_shader);
-		RenderCommands::ChangeViewPort(1024, 1024);
-		RenderCommands::ClearDepthBuffer();
-		RenderCommands::CullFrontFace();
-		ShaderSetMat4(simple_shadow_map_shader, "lightSpaceMatrix", shadow_projections[2].arr); // It's in ubo
-
-		RenderWorld(&simple_shadow_map_shader, nullptr, main_world);
-
-		UnbindFrameBuffer();
-		RenderCommands::CullBackFace();
-		RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_HEIGHT);
-
-			   
+	
 		////////////////////
 		// G Buffer Pass
 		////////////////////
@@ -826,12 +679,7 @@ int main()
 		//ShaderSetVec3(pbr_nomaps_shader, "light_pos", light_pos_test.arr);
 		ShaderSetVec3(pbr_nomaps_shader, "light_colour", sun_light.light_colour.arr);
 		ShaderSetVec3(pbr_nomaps_shader, "light_direction", sun_light.direction.arr);
-		//ShaderSetFloat(pbr_nomaps_shader, "cascade_ends[0]", cascade_ends[0]);
-		//ShaderSetFloat(pbr_nomaps_shader, "cascade_ends[1]", cascade_ends[1]);
-		//ShaderSetFloat(pbr_nomaps_shader, "cascade_ends[2]", cascade_ends[2]);
-		ShaderSetMat4(pbr_nomaps_shader, "light_space_matrices[0]", shadow_projections[0].arr);
-		ShaderSetMat4(pbr_nomaps_shader, "light_space_matrices[1]", shadow_projections[1].arr);
-		ShaderSetMat4(pbr_nomaps_shader, "light_space_matrices[2]", shadow_projections[2].arr);
+
 
 		ShaderBindTexture(pbr_nomaps_shader, shadow_map0.depth_texture_attachment, 0, "shadow_map");
 		DebugAddIrresolutePoint(Vec3(-2.0f, 4.0f, -1.0f));
@@ -875,19 +723,6 @@ int main()
 		RenderMesh(debug_mesh_shader, standard_meshes.quad);
 		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-		BindShader(debug_mesh_shader);
-		glViewport(WINDOW_WIDTH/3.8f, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
-		ShaderBindTexture(debug_mesh_shader, shadow_map1.depth_texture_attachment, 0, "mesh_texture");
-		ShaderSetMat4(debug_mesh_shader, "model", Mat4(1).arr);
-		RenderMesh(debug_mesh_shader, standard_meshes.quad);
-		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-		BindShader(debug_mesh_shader);
-		glViewport(WINDOW_WIDTH / 1.9f, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
-		ShaderBindTexture(debug_mesh_shader, shadow_map2.depth_texture_attachment, 0, "mesh_texture");
-		ShaderSetMat4(debug_mesh_shader, "model", Mat4(1).arr);
-		RenderMesh(debug_mesh_shader, standard_meshes.quad);
-		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 		//// @TODO: Debug Draw Quad
 		//// @NOTE: Draw bloom buffer;

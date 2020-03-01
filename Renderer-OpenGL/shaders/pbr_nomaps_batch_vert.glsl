@@ -17,7 +17,7 @@ out VS_OUT
 	vec3 world_normal;
 	vec3 texture_coords;
 	vec3 camera_world_position;	
-	vec4 light_space_position[3];
+	vec4 light_space_position;
 
 } vs_out;
 

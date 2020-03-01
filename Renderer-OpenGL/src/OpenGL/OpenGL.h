@@ -298,10 +298,17 @@ namespace cm
 	// Shader Functions
 	//************************************
 	
+	// @TODO: Prehaps we should store the source in the shader struct
+	// @TODO: ShaderUniforms should be const float *data
+	
 	Shader CreateShader(std::string vertex_source, std::string fragment_source);
 	
 	Shader CreateComputeShader(std::string source);
 	
+	// @TODO: Complete
+	//Shader CreateBatchShaderFromShader(std::string vertex_source, std::string fragment_source);
+
+
 	void FreeShader(Shader *shader);
 	
 	void BindShader(const Shader &shader);
@@ -319,7 +326,10 @@ namespace cm
 	void ShaderSetMat4(Shader &shader, const std::string &uniform_name, float* data);
 	
 	void ShaderBindUniformBuffer(Shader &shader, uint32 binding_point, const std::string &uniform_name);
-	
+
+	// @TODO: Complete
+	//void ShaderBindUniformBuffersFromSource(Shader &shader);
+
 	void ShaderBindTexture(Shader &shader, Texture texture, uint8 texture_slot, const std::string &uniform_name);
 
 	//************************************

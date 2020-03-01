@@ -25,7 +25,7 @@ in VS_OUT
 	vec3 texture_coords;
 	// @NOTE: This works because all primitives get the same value thus interp doesn't do anything
 	vec3 camera_world_position; 		
-	vec4 light_space_position[3];
+	vec4 light_space_position;
 
 } vs_in;
 
@@ -84,7 +84,7 @@ vec3 PhongDirectionalLight(vec3 light_dir, vec3 light_colour)
 	float spec = pow(max(dot(view_dir, spec_dir), 0.f), 32) * 0.5f;
 
 	//Shadow
-	float shadow = ShadowAmount(vs_in.light_space_position[0], vs_in.world_normal, light_dir);
+	float shadow = ShadowAmount(vs_in.light_space_position, vs_in.world_normal, light_dir);
 	vec3 colour = ((1 - shadow) * (diff  + spec) + vec3(0.01)) * light_colour * vs_in.texture_coords;
 	
 	return colour;
