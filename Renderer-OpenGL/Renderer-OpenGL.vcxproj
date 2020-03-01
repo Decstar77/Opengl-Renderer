@@ -43,6 +43,8 @@
   <ItemGroup>
     <None Include="shaders\brdf_frag.glsl" />
     <None Include="shaders\brdf_vert.glsl" />
+    <None Include="shaders\Compute\g_buffer_frag.glsl" />
+    <None Include="shaders\Compute\g_buffer_vert.glsl" />
     <None Include="shaders\compute_vert.glsl" />
     <None Include="shaders\cubemap_vert.glsl" />
     <None Include="shaders\debug_vert.glsl" />

@@ -103,11 +103,6 @@ GLFWwindow* CreateRenderingWindow()
 	//DESC: Callbacks
 	glfwSetCursorPosCallback(window, MousePositionCallBack);
 	glfwSetKeyCallback(window, KeyCodeCallBack);
-	//DESC: ViewPort
-	int32 width, height;
-	glfwGetFramebufferSize(window, &width, &height );
-	glViewport(0, 0, width, height); //YEET	
-	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	return window;
 }
 
@@ -170,135 +165,6 @@ void CreateTextures(DynaArray<Texture> *textures, DynaArray<std::string> directo
 	}
 }
 
-void UpdatePhysics(float delta, PointMass *body)
-{
-
-	//Update Physics
-
-	//@NOTE: Make sure we run the simulation on the updated positions that may have changed due to gameplay code					
-
-	//int vx = (int)vector_particle.position.x;
-	//int vy = (int)vector_particle.position.y;
-	//if (vx > dime || vx < 0 || vy > dime || vy < 0)
-	//{
-	//	vector_particle.position.x = RandomUInt(1, dime - 1);
-	//	vector_particle.position.y = RandomUInt(1, dime - 1);
-	//}
-	//else
-	//{
-	//	
-	//	
-	//	vector_particle.force_accum += 10 * vector_field[vx][vy];
-	//	if (Mag(vector_particle.velocity) > 1)
-	//	{
-	//		std::cout << Mag(vector_particle.velocity) << std::endl;
-	//		vector_particle.velocity = Normalize(vector_particle.velocity );
-	//	}
-	//	vector_particle.Integrate(delta_time);
-	//}
-
-
-	//DebugAddIrresolutePoint(vector_particle.position);
-
-	//for (int32 i = 0; i < pms.size(); i++)
-	//{
-	//	//asft.ApplyForce(&pms[i], delta_time);
-	//	if (pms[i].position.y > 0.25f)
-	//	{
-	//		pms[i].acceleration.y = -1;
-	//	}
-	//	//else
-	//	//{
-	//	//	pms[i].acceleration = 0;
-	//	//	pms[i].velocity = 0;
-	//	//}
-	//	pms[i].Integrate(delta_time);
-	//}
-
-
-	////physics_engine.Update(delta_time);
-	////
-	//for (int32 i = 0; i < pms.size(); i++)
-	//{
-	//	DebugAddIrresolutePoint(pms[i].position);
-	//}
-
-
-	////@NOTE: Alright now apply the resulting simulation to the transforms and caclulate the transform matrix;
-
-
-	//PointMassContactResolver pmcr;
-	//pmcr.iterations = 10;
-	//DynaArray<PointMassContact> contacts;
-
-	//PointMassContact pmc = joint.CheckContact();
-	//if (pmc.penetration != 0)
-	//{
-	//	//contacts.push_back(pmc);		
-	//}
-
-	//Vec3 side = pms[0].position + Vec3(-0.1, 0, 0);
-	//if (pms[1].position.x >= side.x)
-	//{
-	//	PointMassContact hit_contact;
-	//	hit_contact.penetration = Mag(side - pms[0].position);
-	//	hit_contact.pms[0] = &pms[0];
-	//	hit_contact.pms[1] = &pms[1];
-	//	hit_contact.restitution = 0.4;
-	//	hit_contact.contant_normal = Vec3(1, 0, 0);
-	//	contacts.push_back(hit_contact);
-	//}
-
-	//for (int32 i = 0; i < pms.size(); i++)
-	//{
-	//	if (pms[i].position.y < ground.position.y)
-	//	{
-	//		PointMassContact ground_contact;
-	//		ground_contact.contant_normal = Vec3(0, 1, 0);
-	//		ground_contact.penetration = abs(pms[i].position.y);
-	//		ground_contact.restitution = 0.01;
-
-	//		ground_contact.pms[0] = &pms[i];
-	//		ground_contact.pms[1] = &ground;
-
-	//		contacts.push_back(ground_contact);
-	//	}
-	//}
-
-	//pmcr.Resolve(contacts, delta_time);
-
-	//	for (int32 i = 0; i < point_masses.size(); i++)
-	//	{
-	//		point_masses[i].acceleration.y = -1;
-	//		point_masses[i].Integrate(delta_time);
-	//	}
-	//	for (int32 i = 1; i < point_masses.size(); i++)
-	//	{
-	//		Vec3 top_point = point_masses[i - 1].position + Vec3(0, 0.1, 0);
-	//		if (point_masses[i].position.y <= top_point.y)
-	//		{
-	//			PointMassContact pmc;
-	//			pmc.penetration = Mag(top_point - point_masses[i].position);
-	//			pmc.pms[0] = &point_masses[i];
-	//			pmc.pms[1] = &point_masses[i - 1];
-	//			pmc.restitution = 0.1f;
-	//			pmc.contant_normal = Vec3(0, 1, 0);
-	//			contacts.push_back(pmc);
-	////			pmc.resolve(delta_time);
-	//		}
-	//	}
-	//	pmcr.iterations = point_masses.size();
-	//	pmcr.Resolve(contacts, delta_time);
-	//	for (int32 i = 0; i < point_masses.size(); i++)
-	//	{
-	//		//DebugAddIrresolutePoint(point_masses[i].position);
-	//	}
-
-		//PhysicsUpdate(delta_time, &cube.body);
-
-
-}
-
 void InitializeStandardMeshes()
 {
 	RenderCommands::EnableFaceCulling();
@@ -353,137 +219,32 @@ void InitializeStandardMeshes()
 	standard_meshes.quad = quad.CreateMesh();
 }
 
-int CreateSkyBox()
-{ 
-	//@Hack
-	Shader equirectangular_to_cubemap_shader = CreateShader(ReadFile("shaders/cubemap_vert.glsl"), ReadFile("shaders/equirectangular_to_cubemap.glsl"));
-	equirectangular_to_cubemap_shader.name = "equirect";
-
-	Shader irradiance_shader = CreateShader(ReadFile("shaders/cubemap_vert.glsl"), ReadFile("shaders/irradince_convolution.glsl"));
-	irradiance_shader.name = "irradice";
-
-	Shader prefilter_shader = CreateShader(ReadFile("shaders/cubemap_vert.glsl"), ReadFile("shaders/prefilter.glsl"));
-	prefilter_shader.name = "Prefiler";
-
-	Shader brdf_shader = CreateShader(ReadFile("shaders/brdf_vert.glsl"), ReadFile("shaders/brdf_frag.glsl"));
-	brdf_shader.name = "brdf_shader";
 
 
-	uint32 frame_buffer_resolution = 512;
-	uint32 irradiance_buffer_resolution = 32;
-	uint32 floating_point_accuracy = GL_RGB16F;
-	glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
-	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-
-	unsigned int captureFBO;
-	unsigned int captureRBO;
-	glGenFramebuffers(1, &captureFBO);
-	glGenRenderbuffers(1, &captureRBO);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, frame_buffer_resolution, frame_buffer_resolution);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
-
-	// pbr: load the HDR environment map
-	// ---------------------------------
-	stbi_set_flip_vertically_on_load(true);
-	int width, height, nrComponents;
-	float *data = stbi_loadf("textures/Milkyway_small.hdr", &width, &height, &nrComponents, 0);
-	unsigned int hdrTexture;
-	if (data)
-	{
-		glGenTextures(1, &hdrTexture);
-		glBindTexture(GL_TEXTURE_2D, hdrTexture);
-		glTexImage2D(GL_TEXTURE_2D, 0, floating_point_accuracy, width, height, 0, GL_RGB, GL_FLOAT, data); // note how we specify the texture's data value to be float
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		stbi_image_free(data);
-	}
-	else
-	{
-		std::cout << "Failed to load HDR image." << std::endl;
-	}
-
-	// pbr: setup cubemap to render to and attach to framebuffer
-	// ---------------------------------------------------------
-	unsigned int envCubemap;
-	glGenTextures(1, &envCubemap);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, floating_point_accuracy, frame_buffer_resolution, frame_buffer_resolution, 0, GL_RGB, GL_FLOAT, nullptr);
-	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// pbr: set up projection and view matrices for capturing data onto the 6 cubemap face directions
-	// ----------------------------------------------------------------------------------------------
-	Mat4 captureProjection = perspective(90.0f, 1.0f, 0.1f, 10.0f);
-	Mat4 captureViews[] =
-	{
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(1.0f,  0.0f,  0.0f), Vec3(0.0f, -1.0f,  0.0f)),
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(-1.0f,  0.0f,  0.0f),Vec3(0.0f, -1.0f,  0.0f)),
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  1.0f,  0.0f), Vec3(0.0f,  0.0f,  1.0f)),
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f,  0.0f), Vec3(0.0f,  0.0f, -1.0f)),
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f,  1.0f), Vec3(0.0f, -1.0f,  0.0f)),
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f, -1.0f), Vec3(0.0f, -1.0f,  0.0f))
-	};
-
-	// pbr: convert HDR equirectangular environment map to cubemap equivalent
-	// ----------------------------------------------------------------------
-	BindShader(equirectangular_to_cubemap_shader);
-	ShaderSetMat4(equirectangular_to_cubemap_shader, "projection", captureProjection.arr);
-	ShaderSetInt32(equirectangular_to_cubemap_shader, "equirectangularMap", 0);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, hdrTexture);
-
-	glViewport(0, 0, frame_buffer_resolution, frame_buffer_resolution); // don't forget to configure the viewport to the capture dimensions.
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		ShaderSetMat4(equirectangular_to_cubemap_shader, "view", captureViews[i].arr);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		RenderMesh(equirectangular_to_cubemap_shader, standard_meshes.cube);
-	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	// then let OpenGL generate mipmaps from first mip face (combatting visible dots artifact)
-	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-
-	glDeleteFramebuffers(1, &captureFBO);
-
-	int scrWidth, scrHeight;
-	glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
-	glViewport(0, 0, scrWidth, scrHeight);
-
-	FreeShader(&equirectangular_to_cubemap_shader);
-	FreeShader(&irradiance_shader);
-	FreeShader(&prefilter_shader);
-	FreeShader(&brdf_shader);
-
-	return envCubemap;
-}
 
 int main()
 {
 	window = CreateRenderingWindow();
-	InitDebug();
+	InitializeDebug();
 	InitializeStandardMeshes();
 
 	OpenGLStatistics opengl_stats;
 	GetOpenglStatistics(&opengl_stats);
 	PrintOpenglStatistics(opengl_stats);
+
+#define GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX 0x9048
+#define GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX 0x9049
+	GLint nTotalMemoryInKB = 0;
+	GLint nCurAvailMemoryInKB = 0;
+
+	glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX,
+		&nTotalMemoryInKB);
+
+
+	glGetIntegerv(GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX,
+		&nCurAvailMemoryInKB);
+	std::cout << "Total memory: " << (float)nTotalMemoryInKB * 0.001f << std::endl;
+	std::cout << "Ava memory: " << (float)nCurAvailMemoryInKB  * 0.001f << std::endl;
 
 #if 0
 	int32 tex_w = 1280, tex_h = 720;
@@ -557,27 +318,13 @@ int main()
 	Shader gpu_gaussian_blur_shader = CreateShader(ReadFile("shaders/Compute/GPU_gaussian_blur_vert.glsl"), ReadFile("shaders/Compute/GPU_gaussian_blur_frag.glsl"));
 	gpu_gaussian_blur_shader.name = "gaussian_blur";
 
-	DynaArray<float> quad_vertices =
-	{
-		// positions   // texCoords
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		-1.0f, -1.0f,  0.0f, 0.0f,
-		 1.0f, -1.0f,  1.0f, 0.0f,
+	Shader g_buffer_shader = CreateShader(ReadFile("shaders/Compute/g_buffer_vert.glsl"), ReadFile("shaders/Compute/g_buffer_frag.glsl"));
+	g_buffer_shader.name = "g_buffer_shader ";
 
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		 1.0f, -1.0f,  1.0f, 0.0f,
-		 1.0f,  1.0f,  1.0f, 1.0f
-	};
 
-	VertexBuffer vbo;
-	vbo.lbo = BufferLayout({ ShaderDataType::Float2, ShaderDataType::Float2 });
-	CreateBuffer<VertexBuffer>(&vbo, quad_vertices.size() * sizeof(float), VertexFlags::READ_WRITE);
-	WriteBufferData(vbo, quad_vertices, 0);
-
-	VertexArray vao;
-	vao.vertex_buffers.push_back(vbo);
-	CreateVertexArray(&vao);
-	
+	DynaArray<Shader> shaders;
+	DynaArray<Texture> textures;
+	DynaArray<Mesh> meshes;
 
 	DynaArray<std::string> mesh_directories{  
 		//"models/sponza.obj",
@@ -593,39 +340,41 @@ int main()
 		//"textures/bot1_rig_v01_Scene_Material_Normal.png",
 	    //"textures/bot1_rig_v01_Scene_Material_OcclusionRoughnessMetallic.png"
 	};
-	
-	DynaArray<std::string> cubemap_faces_directories
-	{
-		//"textures/mp_orbital/orbital-element_bk.tga",// 1
-		//"textures/mp_orbital/orbital-element_ft.tga",// 2
-		//"textures/mp_orbital/orbital-element_up.tga",
-		//"textures/mp_orbital/orbital-element_dn.tga",
-		//"textures/mp_orbital/orbital-element_lf.tga",// 5
-		//"textures/mp_orbital/orbital-element_rt.tga",// 6	
-	};	
-	
-	DynaArray<Shader> shaders;
-	DynaArray<Texture> textures;
-	DynaArray<Mesh> meshes;
-	
-	CreateTextures(&textures, text_directories);
-	
-	CreateMeshes(&meshes, mesh_directories);	
 
+	CreateTextures(&textures, text_directories);
+	CreateMeshes(&meshes, mesh_directories);
+
+		
 	camera_controller.main_camera.projection_matrix = perspective(40, ((float)WINDOW_WIDTH) / WINDOW_HEIGHT, 0.1f, 250.0f);
 	camera_controller.main_camera.target = Vec3(0);
 	camera_controller.main_camera.transform.position = Vec3(0, 4, 5);
 	camera_controller.main_camera.view_matrix = LookAt(camera_controller.main_camera.transform.position, camera_controller.main_camera.target, Vec3(0, 1, 0));
+	
+	Actor floor_tile;
+	floor_tile.mesh = standard_meshes.plane;
+	floor_tile.transform.scale = Vec3(20);
+	floor_tile.transform.rotation = EulerToQuat(Vec3(90, 0, 0));
+	floor_tile.transform.position = Vec3(-10, 0, 10);
 
-	uint32 pointlight_count = 4;
+	Actor test_cube_guy;
+	test_cube_guy.mesh = standard_meshes.cube;
+	World main_world;
+	main_world.actors.push_back(floor_tile);
+	main_world.actors.push_back(test_cube_guy);
+	
+
+	RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_WIDTH);
+	RenderCommands::EnableDepthBuffer();
+	RenderCommands::EnableCubeMapSeamless();
+	RenderCommands::DepthBufferFunction(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
+
 	UniformBuffer ubo_camera;
-	CreateBuffer<UniformBuffer>(&ubo_camera ,sizeof(Mat4) * 3, VertexFlags::READ_WRITE);	
-	ubo_camera.binding_location = 0;
 	ubo_camera.lbo = BUFFER_LAYOUT(ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4);
+	CreateUniformBuffer(&ubo_camera);
+
 	UniformBuffer ubo_lighting;
-	CreateBuffer<UniformBuffer>(&ubo_lighting,sizeof(Vec4) * (pointlight_count * 2), VertexFlags::READ_WRITE);
-	ubo_lighting.binding_location = 1;
 	ubo_lighting.lbo = BUFFER_LAYOUT(ShaderDataType::Float4, ShaderDataType::Mat4, ShaderDataType::Mat4);
+	CreateUniformBuffer(&ubo_lighting);
 
 
 	DynaArray<Mat4> ubo_camera_data = { camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix };
@@ -636,8 +385,8 @@ int main()
 		Vec4(100, 300, 100, 1), Vec4(300, 100, 100, 1), Vec4(100, 100, 300, 1), Vec4(300, 300, 300, 1)
 	};
 		
-	SetBufferBindingPoint(ubo_camera);
-	SetBufferBindingPoint(ubo_lighting);
+	UniformBufferSetBindPoint(ubo_camera, 0);
+	UniformBufferSetBindPoint(ubo_lighting, 1);
 
 	WriteBufferData(ubo_camera, ubo_camera_data, 0);
 	WriteBufferData(ubo_lighting, ubo_lighting_data, 0);
@@ -654,113 +403,26 @@ int main()
 
 	ShaderBindUniformBuffer(pbr_nomaps_shader, 0, "CameraMatrices");
 	ShaderBindUniformBuffer(pbr_nomaps_batch_shader, 0, "CameraMatrices");
+
+	ShaderBindUniformBuffer(g_buffer_shader, 0, "WorldMatrices");
+
 	//ShaderBindUniformBuffer(pbr_nomaps_shader, 1, "LightingData");
 	//ShaderBindUniformBuffer(pbr_nomaps_batch_shader, 1, "LightingData");
-	//CubeMap cubemap;
-	//CreateCubeMapFrom6(&cubemap, cubemap_faces_directories);
-
-	RenderCommands::EnableDepthBuffer();
-
-	DynaArray<Voxel> voxels;
-	for (int32 i = 0; i < 4; i++)
-	{
-		int32 index = 0;
-		Voxel cube;
-		cube.actor.mesh = meshes[index];
-		
-		
-		cube.aabb.center = (cube.aabb.max + cube.aabb.min) / 2;
-		cube.aabb.raduis = (cube.aabb.max - cube.aabb.center);
-
-		cube.transform.position = Vec3(i - 1, 1, 0);
-		cube.transform.scale = Vec3(0.25);
-		cube.transform.scale.x = 0.4;
-		cube.transform.scale.y = .1;
-		cube.transform.scale.z = 1;
-		//cube.body.mass = i * 3+ 1;
-		//cube.body.damping = 0.99;
-		//cube.body.mass = 2;
-		//cube.body.inverse_mass = 1.f / (float)(cube.body.mass);		
-		voxels.push_back(cube);
-	}
-	voxels[0].transform.rotation = EulerToQuat(Vec3(0, 0, 25));
-	voxels[0].transform.position.y += 0.2f;
-	voxels[3].transform.rotation = EulerToQuat(Vec3(0, 0, -25));
-	voxels[3].transform.position.y += 0.2f;
-
-
-	Actor floor_tile;
-	floor_tile.mesh = standard_meshes.plane;
-	floor_tile.transform.scale = Vec3(20);
-	floor_tile.transform.rotation = EulerToQuat(Vec3(90, 0, 0));
-	floor_tile.transform.position = Vec3(-10, 0, 10);
-
-	Actor test_cube_guy;
-	test_cube_guy.mesh = standard_meshes.cube;
-	World main_world;
-	main_world.actors.push_back(floor_tile);
-	main_world.actors.push_back(test_cube_guy);
-
-	uint32 	envCubemap = CreateSkyBox();
 	
-	DynaArray<PointMass> pms;
-	for (int32 i = 0; i < 2; i++)
-	{
-		PointMass temp;
-		temp.position = Vec3(0, 2 * (i + 1), 0);//Vec3(-3 * (i + 1), 4, 0);
-		temp.SetMass(3);
-		temp.damping = 0.98;
-		pms.push_back(temp);
-	}
+	
 
-	AnchoredSpringForce asft;
-	asft.k = 2;
-	asft.l = 1;
-	asft.anchor = Vec3(-3, 5, 0);
-		
-	pms[0].position = Vec3(0, 4, 0);
-	pms[1].position = Vec3(-2, 4, 0);
-	PointMassRod joint;
-	joint.max_length = 1;
-	joint.pms[0] = &pms[0];
-	joint.pms[1] = &pms[1];
+	CubeMap default_skybox;
+	default_skybox.config.data_type = GL_FLOAT;
+	default_skybox.config.texture_format = GL_RGBA16;
+	default_skybox.config.min_filter = GL_LINEAR;
+	default_skybox.config.mag_filter = GL_LINEAR;
+	default_skybox.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+	default_skybox.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	default_skybox.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	default_skybox.config.width = 512;
+	default_skybox.config.height = 512;
 
-	PointMass ground;
-	ground.SetMass(0);
-	ground.damping = 1;
-	ground.position = Vec3(0);
-	//physics_registery.RegisterForceGenerator(&asft, &pm_test);
-
-	const uint32 dime = 10;
-	bool cube_field[dime][dime][dime] = {};
-	Batch cube_batch = {};	
-	PerlinNoise pn;
-
-	for (int32 x = 0; x < dime; x++)
-	{
-		for (int32 z = 0; z < dime; z++)
-		{
-			uint32 frq = 1;
-			real xx = ((real)x / (real)dime) * frq;
-			real zz = ((real)z / (real)dime) * frq;
-			real pno = pn.Sample(xx, zz);
-			
-			int32 elevation_level = (int32)Ceil(pno * 3.f); // 0 - 3
-
-			real height = elevation_level;
-
-
-			Transform transform;
-			transform.position = Vec3(x, height, z);
-			transform.scale = Vec3(1);
-			cube_batch.transforms.push_back(transform.CalcTransformMatrix());
-		}		
-	}
-
-	//CreateBatch(&cube_batch, standard_meshes.cube.vao.vertex_buffers[0], standard_meshes.cube.ibo);
-	//main_world.batches.push_back(cube_batch);
-
-
+	CreateCubeMap(&default_skybox, nullptr);
 
 	FrameBuffer post_processing;
 	CreateFrameBuffer(&post_processing);
@@ -790,24 +452,62 @@ int main()
 	
 	Assert(CheckFrameBuffer(post_processing));		
 	
-	FrameBuffer shadow_map;	
-	shadow_map.depth_texture_attachment.config.texture_format = GL_DEPTH_COMPONENT32;
-	shadow_map.depth_texture_attachment.config.pixel_format = GL_DEPTH_COMPONENT;
-	shadow_map.depth_texture_attachment.config.min_filter = GL_NEAREST;
-	shadow_map.depth_texture_attachment.config.mag_filter = GL_NEAREST;
-	shadow_map.depth_texture_attachment.config.data_type = GL_FLOAT;
-	shadow_map.depth_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_BORDER;
-	shadow_map.depth_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_BORDER;
-	shadow_map.depth_texture_attachment.config.width = 1024;
-	shadow_map.depth_texture_attachment.config.height= 1024;
+	FrameBuffer shadow_map0;	
+	shadow_map0.depth_texture_attachment.config.texture_format = GL_DEPTH_COMPONENT32;
+	shadow_map0.depth_texture_attachment.config.pixel_format = GL_DEPTH_COMPONENT;
+	shadow_map0.depth_texture_attachment.config.min_filter = GL_NEAREST;
+	shadow_map0.depth_texture_attachment.config.mag_filter = GL_NEAREST;
+	shadow_map0.depth_texture_attachment.config.data_type = GL_FLOAT;
+	shadow_map0.depth_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_BORDER;
+	shadow_map0.depth_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_BORDER;
+	shadow_map0.depth_texture_attachment.config.width = 1024;
+	shadow_map0.depth_texture_attachment.config.height= 1024;
 	
-	CreateTexture(&shadow_map.depth_texture_attachment, nullptr);	
-	TextureSetBorder(&shadow_map.depth_texture_attachment, Vec4(1).arr);
+	CreateTexture(&shadow_map0.depth_texture_attachment, nullptr);	
+	TextureSetBorder(&shadow_map0.depth_texture_attachment, Vec4(1).arr);
 	
-	CreateFrameBuffer(&shadow_map);
-	FrameBufferAddDepthAttachments(&shadow_map);
+	CreateFrameBuffer(&shadow_map0);
+	FrameBufferAddDepthAttachments(&shadow_map0);
 
-	Assert(CheckFrameBuffer(shadow_map));
+	Assert(CheckFrameBuffer(shadow_map0));
+
+	FrameBuffer shadow_map1;
+	shadow_map1.depth_texture_attachment.config.texture_format = GL_DEPTH_COMPONENT32;
+	shadow_map1.depth_texture_attachment.config.pixel_format = GL_DEPTH_COMPONENT;
+	shadow_map1.depth_texture_attachment.config.min_filter = GL_NEAREST;
+	shadow_map1.depth_texture_attachment.config.mag_filter = GL_NEAREST;
+	shadow_map1.depth_texture_attachment.config.data_type = GL_FLOAT;
+	shadow_map1.depth_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_BORDER;
+	shadow_map1.depth_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_BORDER;
+	shadow_map1.depth_texture_attachment.config.width = 1024;
+	shadow_map1.depth_texture_attachment.config.height = 1024;
+
+	CreateTexture(&shadow_map1.depth_texture_attachment, nullptr);
+	TextureSetBorder(&shadow_map1.depth_texture_attachment, Vec4(1).arr);
+
+	CreateFrameBuffer(&shadow_map1);
+	FrameBufferAddDepthAttachments(&shadow_map1);
+
+	Assert(CheckFrameBuffer(shadow_map1));
+
+	FrameBuffer shadow_map2;
+	shadow_map2.depth_texture_attachment.config.texture_format = GL_DEPTH_COMPONENT32;
+	shadow_map2.depth_texture_attachment.config.pixel_format = GL_DEPTH_COMPONENT;
+	shadow_map2.depth_texture_attachment.config.min_filter = GL_NEAREST;
+	shadow_map2.depth_texture_attachment.config.mag_filter = GL_NEAREST;
+	shadow_map2.depth_texture_attachment.config.data_type = GL_FLOAT;
+	shadow_map2.depth_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_BORDER;
+	shadow_map2.depth_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_BORDER;
+	shadow_map2.depth_texture_attachment.config.width = 1024;
+	shadow_map2.depth_texture_attachment.config.height = 1024;
+
+	CreateTexture(&shadow_map2.depth_texture_attachment, nullptr);
+	TextureSetBorder(&shadow_map2.depth_texture_attachment, Vec4(1).arr);
+
+	CreateFrameBuffer(&shadow_map2);
+	FrameBufferAddDepthAttachments(&shadow_map2);
+
+	Assert(CheckFrameBuffer(shadow_map2));
 
 	FrameBuffer g_buffer;
 	
@@ -858,7 +558,7 @@ int main()
 	sun_light.direction = Normalize(Vec3(2, -4, 1));
 	sun_light.light_colour = Vec3(10);
 
-	
+
 
 	float fh = 1;
 	while (!glfwWindowShouldClose(window))
@@ -914,15 +614,108 @@ int main()
 		
 		static Vec3 distance_to_dir = Vec3(-2.0f, 4.0f, -1.0f) - camera_controller.main_camera.transform.position;
 		static Vec3 distance_to_ori = Vec3(0) - Vec3(-2.0f, 4.0f, -1.0f);
-
+		static Vec3 target = -1 * Vec3(-2.0f, 4.0f, -1.0f);
 		Vec3 e_pos = camera_controller.main_camera.transform.position + distance_to_dir;
 		Vec3 o_pos = e_pos + distance_to_ori;
 		float near_plane = 1.0f, far_plane = 10.f;
-		float rect = 3;
-
+		float rect = 10;
+		Vec3 cpos = camera_controller.main_camera.transform.position;
 		Mat4 lightProjection = Orthographic(-rect, rect, rect, -rect, near_plane, far_plane);
+		//Mat4 light_view = LookAt(cpos, cpos + Normalize(target), Vec3(0, 1, 0));
 		Mat4 light_view = LookAt(Vec3(-2.0f, 4.0f, -1.0f), Vec3(0), Vec3(0, 1, 0));
 		Mat4 light_space_matrix = light_view * lightProjection;
+
+
+		/////////////////////////////////////////////////
+
+
+
+		/////////////////////////////////////////////////
+		Mat4 cascades[4];
+		float cascadeSplits[4] = { 0.0f, 0.1f, 0.5f, 1 };
+		float cascade_ends[4] = {0,0,0,0};
+		near_plane = 0.1f;
+		far_plane = 250.f;
+
+		float clip_range = far_plane - near_plane;
+
+		float minZ = near_plane;
+		float maxZ = near_plane + clip_range;
+
+		float range = maxZ - minZ;
+		float ratio = maxZ / minZ;
+
+
+		// Calculate split depths based on view camera furstum
+		// Based on method presentd in https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch10.html
+		for (uint32_t i = 0; i < 4; i++) {
+			float p = (i + 1) / static_cast<float>(4);
+			float log = minZ * std::pow(ratio, p);
+			float uniform = minZ + range * p;
+			float d = 0.95f * (log - uniform) + uniform;
+			cascadeSplits[i] = (d - near_plane) / range;
+			
+		}
+		
+		Mat4 shadow_projections[4];
+
+		float lastSplitDist = 0.0;	
+		for (uint32 i = 0; i < 3; i++)
+		{
+			float splitDist = cascadeSplits[i];
+
+			Vec3 frustumCorners[8] = {
+				Vec3(-1.0f,  1.0f, -1.0f),
+				Vec3(1.0f,  1.0f, -1.0f),
+				Vec3(1.0f, -1.0f, -1.0f),
+				Vec3(-1.0f, -1.0f, -1.0f),
+				Vec3(-1.0f,  1.0f,  1.0f),
+				Vec3(1.0f,  1.0f,  1.0f),
+				Vec3(1.0f, -1.0f,  1.0f),
+				Vec3(-1.0f, -1.0f,  1.0f)
+			};
+
+			// Project frustum corners into world space
+			Mat4 invCam = Inverse(camera_controller.main_camera.view_matrix *
+				camera_controller.main_camera.projection_matrix);
+			for (uint32_t i = 0; i < 8; i++) {
+				Vec4 invCorner = Vec4(frustumCorners[i], 1.0f) * invCam;
+				invCorner = invCorner / invCorner.w;
+				frustumCorners[i] = vec4tovec3(invCorner);
+			}
+
+			for (uint32_t i = 0; i < 4; i++) {
+				Vec3 dist = frustumCorners[i + 4] - frustumCorners[i];
+				frustumCorners[i + 4] = frustumCorners[i] + (dist * splitDist);
+				frustumCorners[i] = frustumCorners[i] + (dist * lastSplitDist);
+			}
+			cascade_ends[i]= (near_plane + splitDist * clip_range) * -1.0f;
+			lastSplitDist = cascadeSplits[i];
+
+			float minX = FLT_MAX;
+			float minY = FLT_MAX;
+			float minZ = FLT_MAX;
+			float maxX = FLT_MIN;
+			float maxY = FLT_MIN;
+			float maxZ = FLT_MIN;
+
+			for (uint32 j = 0; j < 8; j++)
+			{	
+
+				minX = std::min(minX, frustumCorners[j].x);
+				maxX = std::max(maxX, frustumCorners[j].x);
+				minY = std::min(minY, frustumCorners[j].y);
+				maxY = std::max(maxY, frustumCorners[j].y);
+				minZ = std::min(minZ, frustumCorners[j].z);
+				maxZ = std::max(maxZ, frustumCorners[j].z);
+
+			}
+			shadow_projections[i] = light_view * Orthographic(minX, maxX, maxY, minY, minZ, maxZ);
+			
+		}
+		//light_space_matrix = light_view * shadow_projections[0];
+
+
 
 
 		//************************************
@@ -930,7 +723,7 @@ int main()
 		//************************************
 
 		DynaArray<Mat4> camera_data = { camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix,
-										light_space_matrix};
+										shadow_projections[0]};
 		WriteBufferData(ubo_camera, camera_data, 0);
 			   
 
@@ -941,31 +734,70 @@ int main()
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
 		RenderCommands::Clear(Colour(0, 1, 0, 1));
-
 		
 		
 		////////////////////
-		// Draw Shadow Map
+		// Shadow Pass
 		////////////////////
-
-	
-
-		BindFrameBuffer(shadow_map);
+		//Pass0
+		BindFrameBuffer(shadow_map0);
 		BindShader(simple_shadow_map_shader);
 		RenderCommands::ChangeViewPort(1024, 1024);
 		RenderCommands::ClearDepthBuffer();
 		RenderCommands::CullFrontFace();
-		ShaderSetMat4(simple_shadow_map_shader, "lightSpaceMatrix", light_space_matrix.arr);
+		ShaderSetMat4(simple_shadow_map_shader, "lightSpaceMatrix", shadow_projections[0].arr); // It's in ubo
 		
 		RenderWorld(&simple_shadow_map_shader, nullptr, main_world);
 
 		UnbindFrameBuffer();
 		RenderCommands::CullBackFace();
 		RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+		// Pass1
+		BindFrameBuffer(shadow_map1);
+		BindShader(simple_shadow_map_shader);
+		RenderCommands::ChangeViewPort(1024, 1024);
+		RenderCommands::ClearDepthBuffer();
+		RenderCommands::CullFrontFace();
+		ShaderSetMat4(simple_shadow_map_shader, "lightSpaceMatrix", shadow_projections[1].arr); // It's in ubo
+
+		RenderWorld(&simple_shadow_map_shader, nullptr, main_world);
+
+		UnbindFrameBuffer();
+		RenderCommands::CullBackFace();
+		RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_HEIGHT);
+		
+
+		// Pass2
+		BindFrameBuffer(shadow_map2);
+		BindShader(simple_shadow_map_shader);
+		RenderCommands::ChangeViewPort(1024, 1024);
+		RenderCommands::ClearDepthBuffer();
+		RenderCommands::CullFrontFace();
+		ShaderSetMat4(simple_shadow_map_shader, "lightSpaceMatrix", shadow_projections[2].arr); // It's in ubo
+
+		RenderWorld(&simple_shadow_map_shader, nullptr, main_world);
+
+		UnbindFrameBuffer();
+		RenderCommands::CullBackFace();
+		RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_HEIGHT);
+
 			   
 		////////////////////
-		// Bind final FrameBuffer
+		// G Buffer Pass
 		////////////////////
+
+		BindFrameBuffer(g_buffer);
+		BindShader(g_buffer_shader);
+		RenderCommands::ClearBuffers();
+
+		RenderWorld(&g_buffer_shader, nullptr, main_world);
+
+		UnbindFrameBuffer();
+		////////////////////
+		// Bind Post FrameBuffer
+		////////////////////
+
 		BindFrameBuffer(post_processing);
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
@@ -973,6 +805,7 @@ int main()
 		////////////////////
 		// Draw Skybox
 		////////////////////
+
 		RenderCommands::DisableFaceCulling();
 		BindShader(cubemap_shader);
 		ShaderSetMat4(cubemap_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
@@ -980,47 +813,78 @@ int main()
 		RenderMesh(cubemap_shader, meshes[0]); // It has texture coords
 		RenderCommands::EnableFaceCulling();
 
+		////////////////////
+		// Deffered Render
+		////////////////////
+
 
 		////////////////////
-		// Render the worlds
+		// Forward Render
 		////////////////////
+
 		BindShader(pbr_nomaps_shader);
 		//ShaderSetVec3(pbr_nomaps_shader, "light_pos", light_pos_test.arr);
 		ShaderSetVec3(pbr_nomaps_shader, "light_colour", sun_light.light_colour.arr);
 		ShaderSetVec3(pbr_nomaps_shader, "light_direction", sun_light.direction.arr);
+		//ShaderSetFloat(pbr_nomaps_shader, "cascade_ends[0]", cascade_ends[0]);
+		//ShaderSetFloat(pbr_nomaps_shader, "cascade_ends[1]", cascade_ends[1]);
+		//ShaderSetFloat(pbr_nomaps_shader, "cascade_ends[2]", cascade_ends[2]);
+		ShaderSetMat4(pbr_nomaps_shader, "light_space_matrices[0]", shadow_projections[0].arr);
+		ShaderSetMat4(pbr_nomaps_shader, "light_space_matrices[1]", shadow_projections[1].arr);
+		ShaderSetMat4(pbr_nomaps_shader, "light_space_matrices[2]", shadow_projections[2].arr);
 
-		ShaderBindTexture(pbr_nomaps_shader, shadow_map.depth_texture_attachment, 0, "shadow_map");
+		ShaderBindTexture(pbr_nomaps_shader, shadow_map0.depth_texture_attachment, 0, "shadow_map");
 		DebugAddIrresolutePoint(Vec3(-2.0f, 4.0f, -1.0f));
 		DebugAddIrresoluteLine(Vec3(-2.0f, 4.0f, -1.0f), Vec3(-2.0f, 4.0f, -1.0f) + sun_light.direction);
 
 
 		RenderWorld(&pbr_nomaps_shader, &pbr_nomaps_batch_shader, main_world);
-		RenderWorld(&pbr_nomaps_shader, &pbr_nomaps_batch_shader, debug_world);
-		
+		RenderWorld(&pbr_nomaps_shader, &pbr_nomaps_batch_shader, debug_world);		
 		
 		////////////////////
-		//DebugDrawing
+		// Pre Debug Drawing
 		////////////////////
+
 		RenderCommands::DisableDepthBuffer();
 		DebugDrawLines(&debug_shader);
 		RenderCommands::EnableDepthBuffer();
 
 		UnbindFrameBuffer();
 
-		bloom_blur.GPUGaussienBlur();
+		////////////////////
+		// Draw Final Scence
+		////////////////////
 
+		bloom_blur.GPUGaussienBlur();
 		BindShader(post_processing_shader);
 		ShaderSetFloat(post_processing_shader, "exposure", 1.0f);
 		ShaderBindTexture(post_processing_shader, post_processing.colour0_texture_attachment, 0, "scene_texture");
 		ShaderBindTexture(post_processing_shader, *bloom_blur.texture_to_blur, 1, "bloom_texture");
 		RenderMesh(post_processing_shader, standard_meshes.quad);
 
+		////////////////////
+		// Post Debug Drawing
+		////////////////////
 
 		// @TODO: Debug Draw Quad
 		// @NOTE: Draw Shadow Map;
 		BindShader(debug_mesh_shader);
-		glViewport(0, 0, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);		
-		ShaderBindTexture(debug_mesh_shader, shadow_map.depth_texture_attachment, 0, "mesh_texture");
+		glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);		
+		ShaderBindTexture(debug_mesh_shader, shadow_map0.depth_texture_attachment, 0, "mesh_texture");
+		ShaderSetMat4(debug_mesh_shader, "model", Mat4(1).arr);
+		RenderMesh(debug_mesh_shader, standard_meshes.quad);
+		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+		BindShader(debug_mesh_shader);
+		glViewport(WINDOW_WIDTH/3.8f, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
+		ShaderBindTexture(debug_mesh_shader, shadow_map1.depth_texture_attachment, 0, "mesh_texture");
+		ShaderSetMat4(debug_mesh_shader, "model", Mat4(1).arr);
+		RenderMesh(debug_mesh_shader, standard_meshes.quad);
+		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+		BindShader(debug_mesh_shader);
+		glViewport(WINDOW_WIDTH / 1.9f, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
+		ShaderBindTexture(debug_mesh_shader, shadow_map2.depth_texture_attachment, 0, "mesh_texture");
 		ShaderSetMat4(debug_mesh_shader, "model", Mat4(1).arr);
 		RenderMesh(debug_mesh_shader, standard_meshes.quad);
 		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);

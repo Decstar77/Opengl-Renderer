@@ -19,7 +19,7 @@ namespace cm
 
 	};
 
-	enum class BufferType
+	enum class BufferType : uint32
 	{
 		Array_buffer = GL_ARRAY_BUFFER,
 		Index_buffer = GL_ELEMENT_ARRAY_BUFFER,
@@ -48,7 +48,6 @@ namespace cm
 
 	struct UniformBuffer
 	{
-		int32 binding_location = -1;
 		uint32 object = 0;
 		uint32 size_bytes = 0;
 		BufferLayout lbo;
@@ -105,15 +104,15 @@ namespace cm
 
 	struct CubeMapConfig
 	{
-		uint32 type = GL_TEXTURE_2D;
+		uint32 type = GL_TEXTURE_CUBE_MAP;
 		uint32 texture_format = GL_RGBA; // Or GL_RGBA32F for example // first
-		uint32 pixel_format = GL_RGBA; //second
-		uint32 data_type = GL_FLOAT; //GL_UNSIGNED_BYTE
+		uint32 pixel_format = GL_RGBA;	//second
+		uint32 data_type = GL_FLOAT;    //GL_UNSIGNED_BYTE
 		uint32 min_filter = GL_LINEAR;
 		uint32 mag_filter = GL_LINEAR;
-		uint32 wrap_s_mode = GL_REPEAT;
-		uint32 wrap_t_mode = GL_REPEAT;
-		uint32 wrap_r_mode = GL_REPEAT;
+		uint32 wrap_s_mode = GL_CLAMP_TO_EDGE;
+		uint32 wrap_t_mode = GL_CLAMP_TO_EDGE;
+		uint32 wrap_r_mode = GL_CLAMP_TO_EDGE;
 		uint32 width = 0;
 		uint32 height = 0;
 		std::string uniform_name = "";
@@ -161,8 +160,6 @@ namespace cm
 		std::unordered_map<std::string, uint32> uniform_cache;
 	};
 
-
-
 	template<typename T>
 	void CreateBuffer(T *buffer, uint32 buffer_size_bytes, VertexFlags flags)
 	{
@@ -180,7 +177,6 @@ namespace cm
 
 		buffer->object = object;		
 		buffer->size_bytes = buffer_size_bytes;
-		//glBufferSubData(buffer.type, 0, sizeof(mat4), projection.arr);	//<-- ubo
 	}
 
 	template<typename T>	
@@ -253,14 +249,13 @@ namespace cm
 		glBindBuffer(type, 0);
 	}
 
-	template<typename T>
-	void SetBufferBindingPoint(T &buffer) //TODO: Maybe pass in the binding_point
-	{
-		Assert(buffer.object != 0);
-		Assert(buffer.binding_location != -1)
-		uint32 type = static_cast<uint32>(buffer.type);		
-		glBindBufferRange(type, buffer.binding_location, buffer.object, 0, buffer.size_bytes);//<-- ubo		
-	}
+	//************************************
+	// Uniform Buffer Functions
+	//************************************
+
+	void CreateUniformBuffer(UniformBuffer *buffer);
+
+	void UniformBufferSetBindPoint(const UniformBuffer &ubo, uint32 binding_point);
 
 	//************************************
 	// Vertex Array Functions

@@ -90,7 +90,7 @@ namespace cm
 	}
 
 
-	static void InitDebug()
+	static void InitializeDebug()
 	{
 		// Amount of vertices not bytes 100 000
 		uint32 alloc_size = 5000; 

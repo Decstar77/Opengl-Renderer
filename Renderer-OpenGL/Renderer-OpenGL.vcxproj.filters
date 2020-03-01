@@ -121,6 +121,8 @@
     <None Include="shaders\Compute\GPU_gaussian_blur_vert.glsl" />
     <None Include="shaders\simple_shadow_map_vert.glsl" />
     <None Include="shaders\simple_shadow_map_frag.glsl" />
+    <None Include="shaders\Compute\g_buffer_vert.glsl" />
+    <None Include="shaders\Compute\g_buffer_frag.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="shaders\skybox_frag.glsl">

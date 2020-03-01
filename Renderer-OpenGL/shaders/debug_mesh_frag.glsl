@@ -12,8 +12,12 @@ in VS_OUT {
 
 void main()
 {
+	//vec3 col = texture(mesh_texture, fs_in.TexCoords).rgb;
+	//FragColour = vec4(vec3(col), 1.0);
+    
 	
-    float depthValue = texture(mesh_texture, fs_in.TexCoords).r;
+	// Depth testing for shadow map
+	float depthValue = texture(mesh_texture, fs_in.TexCoords).r;
     FragColour = vec4(vec3(depthValue), 1.0);
 	//FragColour = vec4(1.0);
 }

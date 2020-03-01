@@ -23,7 +23,21 @@ namespace cm
 		static inline void EnableDepthBuffer()
 		{
 			glEnable(GL_DEPTH_TEST);
+		}
 
+		static inline void EnableCubeMapSeamless()
+		{
+			glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+		}
+
+		static inline void DepthBufferFunction(uint32 func)
+		{
+			glDepthFunc(func);
+		}
+
+		static inline void Enable(uint32 cmd)
+		{
+			glEnable(cmd);
 		}
 
 		static inline void EnableStencilBuffer()
@@ -113,6 +127,12 @@ namespace cm
 		{
 			glViewport(0, 0, width, height);
 		}
+
+		static inline void ChangeViewPort(uint32 start_x, uint32 start_y, uint32 width, uint32 height)
+		{
+			glViewport(start_x, start_y, width, height);
+		}
+
 
 	};
 }

@@ -4,6 +4,34 @@
 
 namespace cm
 {
+
+
+	void CreateUniformBuffer(UniformBuffer *buffer)
+	{		
+		Assert(buffer->object == 0);
+		uint32 buff;
+		glGenBuffers(1, &buff);
+		glBindBuffer(GL_UNIFORM_BUFFER, buff);
+			   		
+		uint32 size_bytes = buffer->lbo.GetTotalSize();
+
+		glBufferStorage(GL_UNIFORM_BUFFER, size_bytes, NULL, static_cast<uint32>(VertexFlags::READ_WRITE));
+
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		buffer->object = buff;
+		buffer->size_bytes = size_bytes;
+	}
+
+	void UniformBufferSetBindPoint(const UniformBuffer &ubo, uint32 binding_point)
+	{
+		Assert(ubo.object != 0);
+		Assert(ubo.size_bytes != 0);
+		Assert(binding_point >= 0);			
+		glBindBufferRange(GL_UNIFORM_BUFFER, binding_point, ubo.object, 0, ubo.size_bytes);		
+	}
+
+
 	void BindVertexArray(const VertexArray &vao)
 	{
 		glBindVertexArray(vao.object);

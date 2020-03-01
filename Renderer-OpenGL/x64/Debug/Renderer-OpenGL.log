@@ -8,25 +8,16 @@ f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(41): warning C4244: 'a
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(42): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\assetloader.h(270): warning C4267: 'initializing': conversion from 'size_t' to 'uint32', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\assetloader.h(390): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(131): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(132): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(133): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(574): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(675): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(710): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(750): warning C4244: 'initializing': conversion from 'int32' to 'real', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(754): warning C4244: 'argument': conversion from 'int32' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(902): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(906): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(1045): warning C4244: 'initializing': conversion from '_Rep' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(126): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(127): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(128): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(602): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(606): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(879): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(886): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(909): warning C4244: 'initializing': conversion from '_Rep' to 'float', possible loss of data
           with
           [
               _Rep=__int64
           ]
-  GPUCompute.cpp
-  Mesh.cpp
-f:\renderer-opengl\renderer-opengl\src\mesh.cpp(19): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\mesh.cpp(24): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
-  OpenGlRenderer.cpp
-  Generating Code...
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

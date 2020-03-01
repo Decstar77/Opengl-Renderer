@@ -1,42 +1,83 @@
-		float near_plane = 1.0f, far_plane = 7.5f;
-		float rect = 3;
+	
+		static Vec3 distance_to_dir = Vec3(-2.0f, 4.0f, -1.0f) - camera_controller.main_camera.transform.position;
+		static Vec3 distance_to_ori = Vec3(0) - Vec3(-2.0f, 4.0f, -1.0f);
+		static Vec3 target = -1 * Vec3(-2.0f, 4.0f, -1.0f);
+		Vec3 e_pos = camera_controller.main_camera.transform.position + distance_to_dir;
+		Vec3 o_pos = e_pos + distance_to_ori;
+		float near_plane = 1.0f, far_plane = 10.f;
+		float rect = 10;
+		Vec3 cpos = camera_controller.main_camera.transform.position;
 		Mat4 lightProjection = Orthographic(-rect, rect, rect, -rect, near_plane, far_plane);
+		//Mat4 light_view = LookAt(cpos, cpos + Normalize(target), Vec3(0, 1, 0));
 		Mat4 light_view = LookAt(Vec3(-2.0f, 4.0f, -1.0f), Vec3(0), Vec3(0, 1, 0));
 		Mat4 light_space_matrix = light_view * lightProjection;
 
-		Mat4 view_inverse = Inverse(camera_controller.main_camera.view_matrix);		
-		Mat4 light_space_trans = light_view;
-		Mat4 shadow_projections[3];
 
-		float ar = ((float)WINDOW_WIDTH) / (float)WINDOW_HEIGHT;
-		float tanHalfHFOV = tanf(deg_to_rad(40.f * ar / 2.0f));
-		float tanHalfVFOV = tanf(deg_to_rad((40.f) / 2.0f));
+		/////////////////////////////////////////////////
 
-		float m_cascadeEnd[] = { 0.1f, 25.f / 1.f, 90.f / 1.f,  250.0f };
 
+
+		/////////////////////////////////////////////////
+		Mat4 cascades[4];
+		float cascadeSplits[4] = { 0.0f, 0.1f, 0.5f, 1 };
+		float cascade_ends[4] = {0,0,0,0};
+		near_plane = 0.1f;
+		far_plane = 250.f;
+
+		float clip_range = far_plane - near_plane;
+
+		float minZ = near_plane;
+		float maxZ = near_plane + clip_range;
+
+		float range = maxZ - minZ;
+		float ratio = maxZ / minZ;
+
+
+		// Calculate split depths based on view camera furstum
+		// Based on method presentd in https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch10.html
+		for (uint32_t i = 0; i < 4; i++) {
+			float p = (i + 1) / static_cast<float>(4);
+			float log = minZ * std::pow(ratio, p);
+			float uniform = minZ + range * p;
+			float d = 0.95f * (log - uniform) + uniform;
+			cascadeSplits[i] = (d - near_plane) / range;
+			
+		}
+		
+		Mat4 shadow_projections[4];
+
+		float lastSplitDist = 0.0;	
 		for (uint32 i = 0; i < 3; i++)
 		{
-			float xn = m_cascadeEnd[i] * tanHalfHFOV;
-			float xf = m_cascadeEnd[i + 1] * tanHalfHFOV;
-			float yn = m_cascadeEnd[i] * tanHalfVFOV;
-			float yf = m_cascadeEnd[i + 1] * tanHalfVFOV;
+			float splitDist = cascadeSplits[i];
 
-
-			Vec4 frustumCorners[] = {
-				// near face
-				Vec4(xn, yn,   -m_cascadeEnd[i], 1.0),
-				Vec4(-xn, yn,  -m_cascadeEnd[i], 1.0),
-				Vec4(xn, -yn,  -m_cascadeEnd[i], 1.0),
-				Vec4(-xn, -yn, -m_cascadeEnd[i], 1.0),
-
-				// far face
-				Vec4(xf, yf,   -m_cascadeEnd[i + 1], 1.0),
-				Vec4(-xf, yf,  -m_cascadeEnd[i + 1], 1.0),
-				Vec4(xf, -yf,  -m_cascadeEnd[i + 1], 1.0),
-				Vec4(-xf, -yf, -m_cascadeEnd[i + 1], 1.0)
+			Vec3 frustumCorners[8] = {
+				Vec3(-1.0f,  1.0f, -1.0f),
+				Vec3(1.0f,  1.0f, -1.0f),
+				Vec3(1.0f, -1.0f, -1.0f),
+				Vec3(-1.0f, -1.0f, -1.0f),
+				Vec3(-1.0f,  1.0f,  1.0f),
+				Vec3(1.0f,  1.0f,  1.0f),
+				Vec3(1.0f, -1.0f,  1.0f),
+				Vec3(-1.0f, -1.0f,  1.0f)
 			};
 
-			Vec4 frustumCornersL[8];
+			// Project frustum corners into world space
+			Mat4 invCam = Inverse(camera_controller.main_camera.view_matrix *
+				camera_controller.main_camera.projection_matrix);
+			for (uint32_t i = 0; i < 8; i++) {
+				Vec4 invCorner = Vec4(frustumCorners[i], 1.0f) * invCam;
+				invCorner = invCorner / invCorner.w;
+				frustumCorners[i] = vec4tovec3(invCorner);
+			}
+
+			for (uint32_t i = 0; i < 4; i++) {
+				Vec3 dist = frustumCorners[i + 4] - frustumCorners[i];
+				frustumCorners[i + 4] = frustumCorners[i] + (dist * splitDist);
+				frustumCorners[i] = frustumCorners[i] + (dist * lastSplitDist);
+			}
+			cascade_ends[i]= (near_plane + splitDist * clip_range) * -1.0f;
+			lastSplitDist = cascadeSplits[i];
 
 			float minX = FLT_MAX;
 			float minY = FLT_MAX;
@@ -45,25 +86,18 @@
 			float maxY = FLT_MIN;
 			float maxZ = FLT_MIN;
 
-
-
 			for (uint32 j = 0; j < 8; j++)
-			{
-				// Transform the frustum coordinate from view to world space
-				Vec4 vW = frustumCorners[j] * view_inverse;
-				Vec3 pos = Vec3(vW.x, vW.y, vW.z);
+			{	
 
-				frustumCornersL[j] = vW * light_space_trans;
-
-				minX = std::min(minX, frustumCornersL[j].x);
-				maxX = std::max(maxX, frustumCornersL[j].x);
-				minY = std::min(minY, frustumCornersL[j].y);
-				maxY = std::max(maxY, frustumCornersL[j].y);
-				minZ = std::min(minZ, frustumCornersL[j].z);
-				maxZ = std::max(maxZ, frustumCornersL[j].z);
+				minX = std::min(minX, frustumCorners[j].x);
+				maxX = std::max(maxX, frustumCorners[j].x);
+				minY = std::min(minY, frustumCorners[j].y);
+				maxY = std::max(maxY, frustumCorners[j].y);
+				minZ = std::min(minZ, frustumCorners[j].z);
+				maxZ = std::max(maxZ, frustumCorners[j].z);
 
 			}
-			shadow_projections[i] = Orthographic(minX, maxX, maxY, minY, minZ, maxZ);
+			shadow_projections[i] = light_view * Orthographic(minX, maxX, maxY, minY, minZ, maxZ);
+			
 		}
-
-		light_space_matrix = light_view * shadow_projections[0];
+		//light_space_matrix = light_view * shadow_projections[0];
