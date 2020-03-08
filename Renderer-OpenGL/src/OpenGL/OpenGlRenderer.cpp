@@ -7,7 +7,7 @@ namespace cm
 	void CreateBatch(Batch *batch, const VertexBuffer &vbo_to_batch, const IndexBuffer &ibo_of_vbo)
 	{
 		Assert(batch->vao.object == 0);
-		Assert(batch->copied_ibo.object == 0);
+		Assert(batch->ibo.object == 0);
 		Assert(batch->transforms.size() != 0);
 		Assert(ibo_of_vbo.object != 0);
 		Assert(vbo_to_batch.object != 0);
@@ -46,12 +46,12 @@ namespace cm
 
 
 		batch->vao = temp_vao;
-		batch->copied_ibo = ibo;
+		batch->ibo = ibo;
 	}
 
 	void FreeBatch(Batch *batch)
 	{		
-		FreeBuffer(&batch->copied_ibo);
+		FreeBuffer(&batch->ibo);
 		FreeVertexArray(&batch->vao, true);
 		batch->transforms.clear();
 	}
@@ -66,12 +66,12 @@ namespace cm
 
 		BindShader(shader);
 		BindVertexArray(batch.vao);
-		BindBuffer<IndexBuffer>(batch.copied_ibo);
+		BindBuffer<IndexBuffer>(batch.ibo);
 
-		glDrawElementsInstanced(GL_TRIANGLES, batch.copied_ibo.index_count,
+		glDrawElementsInstanced(GL_TRIANGLES, batch.ibo.index_count,
 			GL_UNSIGNED_INT, 0, amount);
 
-		UnbindBuffer<IndexBuffer>(batch.copied_ibo);
+		UnbindBuffer<IndexBuffer>(batch.ibo);
 		UnbindVertexArray();
 	}
 

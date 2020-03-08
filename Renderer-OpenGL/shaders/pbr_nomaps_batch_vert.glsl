@@ -4,7 +4,7 @@ layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
 layout (location = 3) in mat4 instanceMatrix;
 
-layout (std140, binding = 0) uniform CameraMatrices
+layout (std140, binding = 0) uniform WorldMatrices
 {
 	mat4 projection;
 	mat4 view;
@@ -28,7 +28,9 @@ void main()
 	vs_out.world_normal = transpose(inverse(mat3(instanceMatrix))) * aNormal;   
 	vs_out.camera_world_position = view[3].xyz;
 
-
+	vs_out.light_space_position =  light_space_matrix * vec4(vs_out.world_position, 1);
+	
+	
 
     gl_Position =  projection * view * instanceMatrix * vec4(aPos, 1.0);
 }

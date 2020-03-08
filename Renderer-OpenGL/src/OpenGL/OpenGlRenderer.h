@@ -80,7 +80,7 @@ namespace cm
 	struct Batch
 	{
 		VertexArray vao;
-		IndexBuffer copied_ibo;
+		IndexBuffer ibo;
 		DynaArray<Mat4> transforms;
 	};
 
@@ -116,8 +116,11 @@ namespace cm
 
 	struct RenderSettings
 	{
-		//bool Shadows = true;
-		//bool Forward = true;
+		bool shadow_pass = true;
+		bool defferd_pass = true;
+		bool post_processing_bloom = false;
+		bool post_processing_ssao = false;
+		bool post_processing_ssr = false;
 	};
 
 	struct World
@@ -125,6 +128,11 @@ namespace cm
 		RenderSettings render_settings;		
 		DynaArray<Batch> batches;
 		DynaArray<Actor> actors;
+
+		//Lighting
+		DirectionalLight dir;
+		DynaArray<SpotLight> spot_lights;		
+		DynaArray<PointLight> point_lights;
 	};
 		
 	

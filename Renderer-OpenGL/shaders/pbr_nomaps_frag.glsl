@@ -7,7 +7,7 @@ layout (std140, binding = 1) uniform LightingData
 {
 	vec4 size_data; // x -> PointLightSize, y -> DirectionalLightSize, z-> SpotLightSize
 	
-	vec4 dir_light_position;
+	vec4 dir_light_direction;
 	vec4 dir_light_color;
 	
 	vec4 point_light_position[4];
@@ -34,7 +34,7 @@ uniform vec3 light_pos;
 uniform vec3 light_colour;
 uniform vec3 light_direction;
 uniform float light_amount;
-uniform float cascade_ends[3];
+//uniform float cascade_ends[3];
 uniform sampler2D shadow_map;
 
 float ShadowAmount(vec4 light_space_pos, vec3 normal, vec3 light_dir)
@@ -134,10 +134,12 @@ vec3 PhongSpotLight(vec3 light_pos, vec3 spot_direction, vec3 light_colour)
 
 vec3 PhongColour()
 {	
-	//vec3 light_pos = light_positions[0];
-	//vec3 light_colour = light_colors[0];
-	
-	return PhongDirectionalLight(light_direction, light_colour);
+	vec3 final_colour = vec3(0);
+	for (int i = 0; i < size_data.y; i++)
+	{
+		final_colour += PhongDirectionalLight(dir_light_direction.xyz, dir_light_color.xyz);
+	}
+	return final_colour;
 	//return PhongSpotLight(light_pos, light_direction, light_colour);
 }
 

@@ -40,20 +40,24 @@ namespace cm
 	public:
 		RenderShaders render_shaders;
 		StandardShaders standard_shaders;
-
-		// @TODO: Window struct
-		uint32 WINDOW_WIDTH;
-		uint32 WINDOW_HEIGHT;
-		CameraController *camera;
-
-		World render_world;
-		CubeMap default_skybox;
 		StandardMeshes standard_meshes;
-		GPUGaussienCompute gaussien_blur_compute;
 
 		FrameBuffer frame_post_processing;
 		FrameBuffer frame_shadow_map;
 		FrameBuffer frame_g_buffer;
+
+		RenderSettings render_settings;
+
+		// @TODO: Window struct
+		uint32 WINDOW_WIDTH;
+		uint32 WINDOW_HEIGHT;
+		CameraController *camera; // @HACK: This will not be needed once we do the informer
+
+		World render_world;
+		CubeMap default_skybox;
+		
+		GPUGaussienCompute gaussien_blur_compute;
+		
 	public:
 		Renderer();
 		Renderer(RenderShaders render_shaders, StandardShaders standard_shaders);
@@ -61,7 +65,7 @@ namespace cm
 		void Render();
 		void Render(const World &world);
 		
-	private:
+	public:
 
 		void ShadowPass(const World &world, Mat4 *light_space_matrix);
 		void GBufferPass(const World &world);

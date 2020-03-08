@@ -104,12 +104,12 @@ namespace cm
 
 	Renderer::Renderer()
 	{
-
+		
 	}
 
 	Renderer::Renderer(RenderShaders render_shaders, StandardShaders standard_shaders) : render_shaders(render_shaders), standard_shaders(standard_shaders)
 	{
-
+		
 	}
 
 	void Renderer::Render(const World &world)
@@ -118,20 +118,37 @@ namespace cm
 		RenderCommands::ClearDepthBuffer();
 		RenderCommands::Clear(Colour(0, 1, 0, 1));
 
-		ShadowPass(world, nullptr);
-
-		GBufferPass(world);
-
+		float near_plane = 1.0f, far_plane = 10.f;
+		float rect = 10;
+		Mat4 lightProjection = Orthographic(-rect, rect, rect, -rect, near_plane, far_plane);
+		//Mat4 light_view = LookAt(cpos, cpos + Normalize(target), Vec3(0, 1, 0));
+		Mat4 light_view = LookAt(Vec3(-2.0f, 4.0f, -1.0f), Vec3(0), Vec3(0, 1, 0));
+		Mat4 light_space_matrix = light_view * lightProjection;
+		
+		if (render_settings.shadow_pass)
+		{
+			ShadowPass(world, &light_space_matrix);
+		}
+		if (render_settings.defferd_pass)
+		{
+			GBufferPass(world);
+		}
+		
 		BindFrameBuffer(frame_post_processing);
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
 
 		DrawSkyBox();
 
-		DeferedPass(world);
+		if (render_settings.defferd_pass)
+		{
+			DeferedPass(world);
+		}
 
 		ForwardPass(world);
 		
+		UnbindFrameBuffer();
+
 		PostProcessingPass(world);
 		
 	}
@@ -141,7 +158,8 @@ namespace cm
 		BindFrameBuffer(frame_shadow_map);
 		BindShader(render_shaders.depth_test_shader);
 
-		RenderCommands::ChangeViewPort(frame_shadow_map.render_attchment.width, frame_shadow_map.render_attchment.height);
+		RenderCommands::ChangeViewPort(frame_shadow_map.depth_texture_attachment.config.width, 
+			frame_shadow_map.depth_texture_attachment.config.height);
 		RenderCommands::ClearDepthBuffer();
 		RenderCommands::CullFrontFace();
 		
@@ -177,17 +195,14 @@ namespace cm
 	void Renderer::ForwardPass(const World &world)
 	{
 		BindShader(render_shaders.render_shader);
-		
-		//@TODO: Lighting ?
-		//ShaderSetVec3(pbr_nomaps_shader, "light_pos", light_pos_test.arr);
-		//ShaderSetVec3(render_shaders.render_shader, "light_colour", sun_light.light_colour.arr);
-		//ShaderSetVec3(render_shaders.render_shader, "light_direction", sun_light.direction.arr);
 
 
-		ShaderBindTexture(render_shaders.render_shader, frame_shadow_map.depth_texture_attachment, 0, "shadow_map");
+		if (render_settings.shadow_pass)
+		{
+			ShaderBindTexture(render_shaders.render_shader, frame_shadow_map.depth_texture_attachment, 0, "shadow_map");
+		}
 
-
-		RenderWorld(&render_shaders.render_shader, nullptr, world);		
+		RenderWorld(&render_shaders.render_shader, &render_shaders.render_batch_shader, world);		
 	}
 
 	void Renderer::PostProcessingPass(const World &world)
@@ -207,12 +222,12 @@ namespace cm
 	void Renderer::DrawSkyBox()
 	{
 		// @TODO: Fill in ubos
-		//RenderCommands::DisableFaceCulling();
-		//BindShader(cubemap_shader);
-		//ShaderSetMat4(cubemap_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
-		//ShaderSetMat4(cubemap_shader, "view", camera_controller.main_camera.view_matrix.arr);
-		//RenderMesh(cubemap_shader, meshes[0]); // It has texture coords
-		//RenderCommands::EnableFaceCulling();
+		RenderCommands::DisableFaceCulling();
+		BindShader(render_shaders.skybox_shader);
+		ShaderSetMat4(render_shaders.skybox_shader, "projection", camera->main_camera.projection_matrix.arr);
+		ShaderSetMat4(render_shaders.skybox_shader, "view", camera->main_camera.view_matrix.arr);
+		RenderMesh(render_shaders.skybox_shader, standard_meshes.cube); // It has texture coords
+		RenderCommands::EnableFaceCulling();
 	}
 
 	void Renderer::InitShaders()

@@ -29,7 +29,7 @@ namespace cm
 	int32 PerlinNoise::Inc(int32 value)
 	{
 		value++;
-		return value;
+		return value & 255;
 	}
 
 	real PerlinNoise::Sample(real x, real y)
@@ -76,9 +76,9 @@ namespace cm
 	real PerlinNoise::Sample(real x, real y, real z)
 	{
 		// Wraps the value bettween 0 and 255
-		int32 yi = static_cast<int32>(Floor(y)) & 255;
 		int32 xi = static_cast<int32>(Floor(x)) & 255;
-		int32 zi = static_cast<int32>(Floor(x)) & 255;
+		int32 yi = static_cast<int32>(Floor(y)) & 255;
+		int32 zi = static_cast<int32>(Floor(z)) & 255;
 
 		// Get the decimal part. Ie, where we are in the current unit cube we are.			
 		real xf = x - Floor(x);

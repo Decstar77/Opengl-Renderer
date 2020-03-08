@@ -221,7 +221,37 @@ void InitializeStandardMeshes()
 }
 
 
+Batch CreateSector(int32 x, int32 y, int32 z, uint32 dime)
+{
+	PerlinNoise pn;
+	Batch first_sector;	
+	int32 ux = dime + x;
+	int32 uy = dime + y;
+	int32 uz = dime + z;
+	for (int32 ix = x; ix < ux; ix++)
+	{
+		for (int32 iy = y; iy < uy; iy++)
+		{
+			for (int32 iz = z; iz < uz; iz++)
+			{
+				uint32 frq = 1;
+				real xx = ((real)ix / (real)dime) * frq;
+				real yy = ((real)iy / (real)dime) * frq;
+				real zz = ((real)iz / (real)dime) * frq;
 
+				real n = pn.Sample(xx, yy, zz);
+				if (n >= 0.5)
+				{
+					Transform t;
+					t.position = Vec3(ix, iy, iz);
+					t.scale = Vec3(0.9f);
+					first_sector.transforms.push_back(t.CalcTransformMatrix());
+				}				
+			}
+		}
+	}
+	return first_sector;
+}
 
 int main()
 {
@@ -345,7 +375,9 @@ int main()
 	CreateTextures(&textures, text_directories);
 	CreateMeshes(&meshes, mesh_directories);
 
-		
+	
+
+
 	camera_controller.main_camera.projection_matrix = perspective(40, ((float)WINDOW_WIDTH) / WINDOW_HEIGHT, 0.1f, 250.0f);
 	camera_controller.main_camera.target = Vec3(0);
 	camera_controller.main_camera.transform.position = Vec3(0, 4, 5);
@@ -363,6 +395,25 @@ int main()
 	main_world.actors.push_back(floor_tile);
 	main_world.actors.push_back(test_cube_guy);
 	
+	uint32 dime = 5;
+	for (int32 x = 0; x < 2; x++)
+	{
+		for (int32 z = 0; z < 2; z++)
+		{
+		}		
+	}	
+
+	Batch first_sector = CreateSector(0, 0, 0, dime);
+	Batch sc = CreateSector(0, 0, dime, dime);
+
+	CreateBatch(&first_sector, standard_meshes.cube.vao.vertex_buffers[0], standard_meshes.cube.ibo);
+	CreateBatch(&sc, standard_meshes.cube.vao.vertex_buffers[0], standard_meshes.cube.ibo);
+	main_world.batches.push_back(first_sector);
+	main_world.batches.push_back(sc);
+
+	DebugAddPersistentAABBMinMax(Vec3(0, 0, 0), Vec3(5));
+
+
 
 	RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_WIDTH);
 	RenderCommands::EnableDepthBuffer();
@@ -374,16 +425,16 @@ int main()
 	CreateUniformBuffer(&ubo_camera);
 
 	UniformBuffer ubo_lighting;
-	ubo_lighting.lbo = BUFFER_LAYOUT(ShaderDataType::Float4, ShaderDataType::Mat4, ShaderDataType::Mat4);
+	ubo_lighting.lbo = BUFFER_LAYOUT(ShaderDataType::Float4, ShaderDataType::Float4, ShaderDataType::Float4,
+		ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4);
 	CreateUniformBuffer(&ubo_lighting);
 
 
 	DynaArray<Mat4> ubo_camera_data = { camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix };
 
 	DynaArray<Vec4> ubo_lighting_data = {
-		Vec4(-4,  2.5, 4, 1), Vec4(-4, 2.5, -4, 1), Vec4(4, 2.5, 4, 1), Vec4(4, 2.5, -4, 1),
-		//Vec4(0), Vec4(0), Vec4(0), Vec4(0)
-		Vec4(100, 300, 100, 1), Vec4(300, 100, 100, 1), Vec4(100, 100, 300, 1), Vec4(300, 300, 300, 1)
+		Vec4(0,  1, 0, 0),  // Size
+		Vec4(0), Vec4(0)		
 	};
 		
 	UniformBufferSetBindPoint(ubo_camera, 0);
@@ -402,127 +453,37 @@ int main()
 	ShaderBindUniformBuffer(debug_mesh_shader, 0, "Matrices");	
 	ShaderBindUniformBuffer(instance_shader_test, 0, "CameraMatrices");
 
-	ShaderBindUniformBuffer(pbr_nomaps_shader, 0, "CameraMatrices");
-	ShaderBindUniformBuffer(pbr_nomaps_batch_shader, 0, "CameraMatrices");
+	ShaderBindUniformBuffer(pbr_nomaps_shader, 0, "WorldMatrices");
+	ShaderBindUniformBuffer(pbr_nomaps_batch_shader, 0, "WorldMatrices");
 
 	ShaderBindUniformBuffer(g_buffer_shader, 0, "WorldMatrices");
 
 	//ShaderBindUniformBuffer(pbr_nomaps_shader, 1, "LightingData");
 	//ShaderBindUniformBuffer(pbr_nomaps_batch_shader, 1, "LightingData");
 	
+	   	  
+
+	Renderer renderer;
+	renderer.render_shaders.skybox_shader = cubemap_shader;
+	renderer.render_shaders.depth_test_shader = simple_shadow_map_shader;
+	renderer.render_shaders.g_buffer_shader = g_buffer_shader;
+	renderer.render_shaders.render_shader = pbr_nomaps_shader;
+	renderer.render_shaders.render_batch_shader = pbr_nomaps_batch_shader;
+	renderer.render_shaders.post_processing_shader = post_processing_shader;
 	
+	renderer.standard_meshes = standard_meshes;
+	// @HACK: Overriding this cause it has texture coords
+	renderer.standard_meshes.cube = meshes[0];
 
-	CubeMap default_skybox;
-	default_skybox.config.data_type = GL_FLOAT;
-	default_skybox.config.texture_format = GL_RGBA16;
-	default_skybox.config.min_filter = GL_LINEAR;
-	default_skybox.config.mag_filter = GL_LINEAR;
-	default_skybox.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
-	default_skybox.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	default_skybox.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	default_skybox.config.width = 512;
-	default_skybox.config.height = 512;
-
-	CreateCubeMap(&default_skybox, nullptr);
-
-	FrameBuffer post_processing;
-	CreateFrameBuffer(&post_processing);
-	BindFrameBuffer(post_processing);
-
-	TextureConfig post_processing_colour_buffers_config;
-	post_processing_colour_buffers_config.height = WINDOW_HEIGHT;
-	post_processing_colour_buffers_config.width = WINDOW_WIDTH;
-	post_processing_colour_buffers_config.data_type = GL_FLOAT;
-	post_processing_colour_buffers_config.texture_format = GL_RGBA16F;
-	post_processing_colour_buffers_config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	post_processing_colour_buffers_config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	post_processing_colour_buffers_config.wrap_r_mode = GL_CLAMP_TO_EDGE;
-	
-	post_processing.colour0_texture_attachment.config = post_processing_colour_buffers_config;
-	post_processing.colour1_texture_attachment.config = post_processing_colour_buffers_config;
-	
-	CreateTexture(&post_processing.colour0_texture_attachment, nullptr);
-	CreateTexture(&post_processing.colour1_texture_attachment, nullptr);
-
-	post_processing.render_attchment.width = WINDOW_WIDTH;
-	post_processing.render_attchment.height = WINDOW_HEIGHT;
-
-	FrameBufferAddColourAttachtments(&post_processing);
-	FrameBufferAddColourAttachtments(&post_processing);
-	FrameAddBufferRenderAttachtment(&post_processing);
-	
-	Assert(CheckFrameBuffer(post_processing));		
-	
-	FrameBuffer shadow_map0;	
-	shadow_map0.depth_texture_attachment.config.texture_format = GL_DEPTH_COMPONENT32;
-	shadow_map0.depth_texture_attachment.config.pixel_format = GL_DEPTH_COMPONENT;
-	shadow_map0.depth_texture_attachment.config.min_filter = GL_NEAREST;
-	shadow_map0.depth_texture_attachment.config.mag_filter = GL_NEAREST;
-	shadow_map0.depth_texture_attachment.config.data_type = GL_FLOAT;
-	shadow_map0.depth_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_BORDER;
-	shadow_map0.depth_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_BORDER;
-	shadow_map0.depth_texture_attachment.config.width = 1024;
-	shadow_map0.depth_texture_attachment.config.height= 1024;
-	
-	CreateTexture(&shadow_map0.depth_texture_attachment, nullptr);	
-	TextureSetBorder(&shadow_map0.depth_texture_attachment, Vec4(1).arr);
-	
-	CreateFrameBuffer(&shadow_map0);
-	FrameBufferAddDepthAttachments(&shadow_map0);
-
-	Assert(CheckFrameBuffer(shadow_map0));
-
-
-	FrameBuffer g_buffer;
-	
-	g_buffer.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
-	g_buffer.colour0_texture_attachment.config.width = WINDOW_WIDTH;
-	g_buffer.colour0_texture_attachment.config.data_type = GL_FLOAT;
-	g_buffer.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
-	g_buffer.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	g_buffer.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	g_buffer.colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
-
-	g_buffer.colour1_texture_attachment.config.height = WINDOW_HEIGHT;
-	g_buffer.colour1_texture_attachment.config.width = WINDOW_WIDTH;
-	g_buffer.colour1_texture_attachment.config.data_type = GL_FLOAT;
-	g_buffer.colour1_texture_attachment.config.texture_format = GL_RGBA16F;
-	g_buffer.colour1_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	g_buffer.colour1_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	g_buffer.colour1_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
-
-	g_buffer.colour2_texture_attachment.config.height = WINDOW_HEIGHT;
-	g_buffer.colour2_texture_attachment.config.width = WINDOW_WIDTH;
-	g_buffer.colour2_texture_attachment.config.data_type = GL_UNSIGNED_BYTE;
-	g_buffer.colour2_texture_attachment.config.texture_format = GL_RGBA;
-	g_buffer.colour2_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	g_buffer.colour2_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	g_buffer.colour2_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
-
-	g_buffer.render_attchment.width = WINDOW_WIDTH;
-	g_buffer.render_attchment.height = WINDOW_HEIGHT;
-
-	CreateTexture(&g_buffer.colour0_texture_attachment, nullptr);
-	CreateTexture(&g_buffer.colour1_texture_attachment, nullptr);
-	CreateTexture(&g_buffer.colour2_texture_attachment, nullptr);
-	CreateFrameBuffer(&g_buffer);
-	FrameBufferAddColourAttachtments(&g_buffer);
-	FrameAddBufferRenderAttachtment(&g_buffer);
-
-	Assert(CheckFrameBuffer(g_buffer));
-
-	GPUGaussienCompute bloom_blur;
-	bloom_blur.quad = &standard_meshes.quad;
-	bloom_blur.blur = &gpu_gaussian_blur_shader;
-	bloom_blur.texture_to_blur = &post_processing.colour1_texture_attachment;
-	bloom_blur.CreateGPUGassien();
+	renderer.WINDOW_WIDTH = WINDOW_WIDTH;
+	renderer.WINDOW_HEIGHT = WINDOW_HEIGHT;
+	renderer.camera = &camera_controller;
+	renderer.InitFrameBuffers();
 
 
 	DirectionalLight sun_light;
 	sun_light.direction = Normalize(Vec3(2, -4, 1));
 	sun_light.light_colour = Vec3(10);
-
-
 
 	float fh = 1;
 	while (!glfwWindowShouldClose(window))
@@ -605,124 +566,38 @@ int main()
 		//************************************
 
 		DynaArray<Mat4> camera_data = { camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix,
-										light_space_matrix};
+										light_space_matrix };
+
+		DynaArray<Vec4> lighting_data = {
+		Vec4(0,  1, 0, 0),  // Size
+		Vec4(sun_light.direction, 0), Vec4(sun_light.light_colour, 0)
+		};
+
 		WriteBufferData(ubo_camera, camera_data, 0);
-			   
+		WriteBufferData(ubo_lighting, lighting_data, 0);
 
 		//************************************
 		// Render The Current Frame
 		//************************************
 
-		RenderCommands::ClearColourBuffer();
-		RenderCommands::ClearDepthBuffer();
-		RenderCommands::Clear(Colour(0, 1, 0, 1));
-		
-		
-		////////////////////
-		// Shadow Pass
-		////////////////////
-		//Pass0
-		BindFrameBuffer(shadow_map0);
-		BindShader(simple_shadow_map_shader);
-		RenderCommands::ChangeViewPort(1024, 1024);
-		RenderCommands::ClearDepthBuffer();
-		RenderCommands::CullFrontFace();
-		ShaderSetMat4(simple_shadow_map_shader, "lightSpaceMatrix", light_space_matrix.arr); // It's in ubo
-		
-		RenderWorld(&simple_shadow_map_shader, nullptr, main_world);
+		renderer.Render(main_world);
 
-		UnbindFrameBuffer();
-		RenderCommands::CullBackFace();
-		RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_HEIGHT);
-
-	
-		////////////////////
-		// G Buffer Pass
-		////////////////////
-
-		BindFrameBuffer(g_buffer);
-		BindShader(g_buffer_shader);
-		RenderCommands::ClearBuffers();
-
-		RenderWorld(&g_buffer_shader, nullptr, main_world);
-
-		UnbindFrameBuffer();
-		////////////////////
-		// Bind Post FrameBuffer
-		////////////////////
-
-		BindFrameBuffer(post_processing);
-		RenderCommands::ClearColourBuffer();
-		RenderCommands::ClearDepthBuffer();
-
-		////////////////////
-		// Draw Skybox
-		////////////////////
-
-		RenderCommands::DisableFaceCulling();
-		BindShader(cubemap_shader);
-		ShaderSetMat4(cubemap_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
-		ShaderSetMat4(cubemap_shader, "view", camera_controller.main_camera.view_matrix.arr);
-		RenderMesh(cubemap_shader, meshes[0]); // It has texture coords
-		RenderCommands::EnableFaceCulling();
-
-		////////////////////
-		// Deffered Render
-		////////////////////
-
-
-		////////////////////
-		// Forward Render
-		////////////////////
-
-		BindShader(pbr_nomaps_shader);
-		//ShaderSetVec3(pbr_nomaps_shader, "light_pos", light_pos_test.arr);
-		ShaderSetVec3(pbr_nomaps_shader, "light_colour", sun_light.light_colour.arr);
-		ShaderSetVec3(pbr_nomaps_shader, "light_direction", sun_light.direction.arr);
-
-
-		ShaderBindTexture(pbr_nomaps_shader, shadow_map0.depth_texture_attachment, 0, "shadow_map");
-		DebugAddIrresolutePoint(Vec3(-2.0f, 4.0f, -1.0f));
-		DebugAddIrresoluteLine(Vec3(-2.0f, 4.0f, -1.0f), Vec3(-2.0f, 4.0f, -1.0f) + sun_light.direction);
-
-
-		RenderWorld(&pbr_nomaps_shader, &pbr_nomaps_batch_shader, main_world);
-		RenderWorld(&pbr_nomaps_shader, &pbr_nomaps_batch_shader, debug_world);		
-		
-		////////////////////
-		// Pre Debug Drawing
-		////////////////////
 
 		RenderCommands::DisableDepthBuffer();
 		DebugDrawLines(&debug_shader);
 		RenderCommands::EnableDepthBuffer();
 
-		UnbindFrameBuffer();
-
-		////////////////////
-		// Draw Final Scence
-		////////////////////
-
-		bloom_blur.GPUGaussienBlur();
-		BindShader(post_processing_shader);
-		ShaderSetFloat(post_processing_shader, "exposure", 1.0f);
-		ShaderBindTexture(post_processing_shader, post_processing.colour0_texture_attachment, 0, "scene_texture");
-		ShaderBindTexture(post_processing_shader, *bloom_blur.texture_to_blur, 1, "bloom_texture");
-		RenderMesh(post_processing_shader, standard_meshes.quad);
 
 		////////////////////
 		// Post Debug Drawing
 		////////////////////
 
-		// @TODO: Debug Draw Quad
-		// @NOTE: Draw Shadow Map;
 		BindShader(debug_mesh_shader);
-		glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);		
-		ShaderBindTexture(debug_mesh_shader, shadow_map0.depth_texture_attachment, 0, "mesh_texture");
+		glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
+		ShaderBindTexture(debug_mesh_shader, renderer.frame_shadow_map.depth_texture_attachment, 0, "mesh_texture");
 		ShaderSetMat4(debug_mesh_shader, "model", Mat4(1).arr);
 		RenderMesh(debug_mesh_shader, standard_meshes.quad);
 		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
 
 		//// @TODO: Debug Draw Quad
 		//// @NOTE: Draw bloom buffer;
