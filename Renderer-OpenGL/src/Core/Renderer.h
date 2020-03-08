@@ -3,7 +3,7 @@
 #include "OpenGL/RenderCommands.h"
 #include "GPUCompute.h"
 #include "Engine/Input.h"
-
+#include "Engine/AssetLoader.h"
 
 namespace cm
 {
@@ -23,58 +23,59 @@ namespace cm
 
 	};
 	
-	//class Informer
-	//{
-	//public:
-	//	RenderShaders *render_shaders;
-	//	StandardShaders *stander_shaders;
-	//public:
-	//	Informer();
-	//	Informer(*render_shaders);
-	//	
-	//};
+	class Informer
+	{
+	public:
+		RenderShaders *render_shaders;
+		StandardShaders *stander_shaders;
+	public:
+		Informer();
+		Informer(RenderShaders *render_shaders);
+		
+	};
 
-	//class Renderer
-	//{
+	class Renderer
+	{
 
-	//public:
-	//	RenderShaders render_shaders;
-	//	StandardShaders standard_shaders;
+	public:
+		RenderShaders render_shaders;
+		StandardShaders standard_shaders;
 
-	//	// @TODO: Window struct
-	//	uint32 WINDOW_WIDTH;
-	//	uint32 WINDOW_HEIGHT;
+		// @TODO: Window struct
+		uint32 WINDOW_WIDTH;
+		uint32 WINDOW_HEIGHT;
+		CameraController *camera;
 
-	//	World render_world;
-	//	CubeMap default_skybox;
-	//	StandardMeshes standard_meshes;
-	//	GPUGaussienCompute gaussien_blur_compute;
+		World render_world;
+		CubeMap default_skybox;
+		StandardMeshes standard_meshes;
+		GPUGaussienCompute gaussien_blur_compute;
 
-	//	FrameBuffer frame_post_processing;
-	//	FrameBuffer frame_shadow_map;
-	//	FrameBuffer frame_g_buffer;
-	//public:
-	//	Renderer();
-	//	Renderer(RenderShaders render_shaders, StandardShaders standard_shaders);
+		FrameBuffer frame_post_processing;
+		FrameBuffer frame_shadow_map;
+		FrameBuffer frame_g_buffer;
+	public:
+		Renderer();
+		Renderer(RenderShaders render_shaders, StandardShaders standard_shaders);
 
-	//	void Render();
-	//	void Render(const World &world);
-	//	
-	//private:
+		void Render();
+		void Render(const World &world);
+		
+	private:
 
-	//	void ShadowPass(const World &world, Mat4 *light_space_matrix);
-	//	void GBufferPass(const World &world);
-	//	void DeferedPass(const World &world);
-	//	void ForwardPass(const World &world);
-	//	void PostProcessingPass(const World &world);
+		void ShadowPass(const World &world, Mat4 *light_space_matrix);
+		void GBufferPass(const World &world);
+		void DeferedPass(const World &world);
+		void ForwardPass(const World &world);
+		void PostProcessingPass(const World &world);
 
-	//	void DrawSkyBox();
+		void DrawSkyBox();
 
-	//	void InitShaders();
-	//	void InitSkyBox();
-	//	void InitFrameBuffers();
-	//	void InitStandardMeshes();
+		void InitShaders();
+		void InitSkyBox();
+		void InitFrameBuffers();
+		void InitStandardMeshes();
 
-	//};
+	};
 
 }

@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\Core\Renderer.cpp" />
+    <ClCompile Include="src\Engine\AssetLoader.cpp" />
     <ClCompile Include="src\Engine\Input.cpp" />
     <ClCompile Include="src\Math\CosmicMath.cpp" />
     <ClCompile Include="src\Math\CosmicNoise.cpp" />
@@ -24,7 +25,7 @@
     <ClCompile Include="src\OpenGL\OpenGlRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\AssetLoader.h" />
+    <ClInclude Include="src\Engine\AssetLoader.h" />
     <ClInclude Include="src\Core.h" />
     <ClInclude Include="src\Core\Renderer.h" />
     <ClInclude Include="src\Debug.h" />
@@ -39,7 +40,7 @@
     <ClInclude Include="src\OpenGL\RenderCommands.h" />
     <ClInclude Include="src\OpenGL\OpenGlRenderer.h" />
     <ClInclude Include="src\OpenGL\OpenGL.h" />
-    <ClInclude Include="src\std_image.h" />
+    <ClInclude Include="vendor\std_image.h" />
     <ClInclude Include="src\World.h" />
   </ItemGroup>
   <ItemGroup>

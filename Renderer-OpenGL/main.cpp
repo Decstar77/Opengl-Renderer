@@ -12,7 +12,7 @@
 #include "src/GPUCompute.h"
 #include "src/Core/Renderer.h"
 #include "src/Debug.h"
-#include "src/AssetLoader.h"
+#include "src/Engine/AssetLoader.h"
 #include "src/Engine/Input.h"
 
 using namespace cm;
@@ -49,7 +49,7 @@ void MousePositionCallBack(GLFWwindow *widow, double xpos, double ypos)
 
 	xoffset *= MOUSE_SENSITIVITY;
 	yoffset *= MOUSE_SENSITIVITY;
-
+	
 	camera_controller.CameraRotate(yoffset, xoffset);
 	Input::SetMousePosition(current_mouse.x, current_mouse.y);
 }

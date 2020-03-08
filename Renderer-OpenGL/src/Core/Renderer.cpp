@@ -102,256 +102,256 @@ namespace cm
 		main_camera.view_matrix = LookAt(main_camera.transform.position, look, Vec3(0, 1, 0));
 	}
 
-	////Renderer::Renderer()
-	////{
+	Renderer::Renderer()
+	{
 
-	////}
+	}
 
-	////Renderer::Renderer(RenderShaders render_shaders, StandardShaders standard_shaders) : render_shaders(render_shaders), standard_shaders(standard_shaders)
-	////{
+	Renderer::Renderer(RenderShaders render_shaders, StandardShaders standard_shaders) : render_shaders(render_shaders), standard_shaders(standard_shaders)
+	{
 
-	////}
+	}
 
-	////void Renderer::Render(const World &world)
-	////{
-	////	RenderCommands::ClearColourBuffer();
-	////	RenderCommands::ClearDepthBuffer();
-	////	RenderCommands::Clear(Colour(0, 1, 0, 1));
+	void Renderer::Render(const World &world)
+	{
+		RenderCommands::ClearColourBuffer();
+		RenderCommands::ClearDepthBuffer();
+		RenderCommands::Clear(Colour(0, 1, 0, 1));
 
-	////	ShadowPass(world, nullptr);
+		ShadowPass(world, nullptr);
 
-	////	GBufferPass(world);
+		GBufferPass(world);
 
-	////	BindFrameBuffer(frame_post_processing);
-	////	RenderCommands::ClearColourBuffer();
-	////	RenderCommands::ClearDepthBuffer();
+		BindFrameBuffer(frame_post_processing);
+		RenderCommands::ClearColourBuffer();
+		RenderCommands::ClearDepthBuffer();
 
-	////	DrawSkyBox();
+		DrawSkyBox();
 
-	////	DeferedPass(world);
+		DeferedPass(world);
 
-	////	ForwardPass(world);
-	////	
-	////	PostProcessingPass(world);
-	////	
-	////}
+		ForwardPass(world);
+		
+		PostProcessingPass(world);
+		
+	}
 
-	////void Renderer::ShadowPass(const World &world, Mat4 *light_space_matrix)
-	////{
-	////	BindFrameBuffer(frame_shadow_map);
-	////	BindShader(render_shaders.depth_test_shader);
+	void Renderer::ShadowPass(const World &world, Mat4 *light_space_matrix)
+	{
+		BindFrameBuffer(frame_shadow_map);
+		BindShader(render_shaders.depth_test_shader);
 
-	////	RenderCommands::ChangeViewPort(frame_shadow_map.render_attchment.width, frame_shadow_map.render_attchment.height);
-	////	RenderCommands::ClearDepthBuffer();
-	////	RenderCommands::CullFrontFace();
-	////	
-	////	ShaderSetMat4(render_shaders.depth_test_shader, "lightSpaceMatrix", light_space_matrix->arr); // It's in ubo
+		RenderCommands::ChangeViewPort(frame_shadow_map.render_attchment.width, frame_shadow_map.render_attchment.height);
+		RenderCommands::ClearDepthBuffer();
+		RenderCommands::CullFrontFace();
+		
+		ShaderSetMat4(render_shaders.depth_test_shader, "lightSpaceMatrix", light_space_matrix->arr); // It's in ubo
 
-	////	RenderWorld(&render_shaders.depth_test_shader, nullptr, world);
+		RenderWorld(&render_shaders.depth_test_shader, nullptr, world);
 
-	////	UnbindFrameBuffer();
-	////	
-	////	RenderCommands::CullBackFace();
-	////	RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_HEIGHT);
-	////}
+		UnbindFrameBuffer();
+		
+		RenderCommands::CullBackFace();
+		RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_HEIGHT);
+	}
 
-	////void Renderer::GBufferPass(const World &world)
-	////{
+	void Renderer::GBufferPass(const World &world)
+	{
 
-	////	BindFrameBuffer(frame_g_buffer);
-	////	BindShader(render_shaders.g_buffer_shader);
-	////	RenderCommands::ClearBuffers();
+		BindFrameBuffer(frame_g_buffer);
+		BindShader(render_shaders.g_buffer_shader);
+		RenderCommands::ClearBuffers();
 
-	////	RenderWorld(&render_shaders.g_buffer_shader, nullptr, world);
+		RenderWorld(&render_shaders.g_buffer_shader, nullptr, world);
 
-	////	UnbindFrameBuffer();
-	////}
+		UnbindFrameBuffer();
+	}
 
-	////void Renderer::DeferedPass(const World &world)
-	////{
-	////	// @TODO: Anything lolz
-	////	// @TODO: SSAO
-	////	// @TODO: SSRF
-	////}
+	void Renderer::DeferedPass(const World &world)
+	{
+		// @TODO: Anything lolz
+		// @TODO: SSAO
+		// @TODO: SSRF
+	}
 
-	////void Renderer::ForwardPass(const World &world)
-	////{
-	////	BindShader(render_shaders.render_shader);
-	////	
-	////	//@TODO: Lighting ?
-	////	//ShaderSetVec3(pbr_nomaps_shader, "light_pos", light_pos_test.arr);
-	////	//ShaderSetVec3(render_shaders.render_shader, "light_colour", sun_light.light_colour.arr);
-	////	//ShaderSetVec3(render_shaders.render_shader, "light_direction", sun_light.direction.arr);
-
-
-	////	ShaderBindTexture(render_shaders.render_shader, frame_shadow_map.depth_texture_attachment, 0, "shadow_map");
+	void Renderer::ForwardPass(const World &world)
+	{
+		BindShader(render_shaders.render_shader);
+		
+		//@TODO: Lighting ?
+		//ShaderSetVec3(pbr_nomaps_shader, "light_pos", light_pos_test.arr);
+		//ShaderSetVec3(render_shaders.render_shader, "light_colour", sun_light.light_colour.arr);
+		//ShaderSetVec3(render_shaders.render_shader, "light_direction", sun_light.direction.arr);
 
 
-	////	RenderWorld(&render_shaders.render_shader, nullptr, world);		
-	////}
-
-	////void Renderer::PostProcessingPass(const World &world)
-	////{
-	////	// @TODO: Create a better solution for the blur 
-	////	//bloom_blur.GPUGaussienBlur();
-	////	BindShader(render_shaders.post_processing_shader);
-	////	
-	////	ShaderSetFloat(render_shaders.post_processing_shader, "exposure", 1.0f);
-	////	ShaderBindTexture(render_shaders.post_processing_shader, frame_post_processing.colour0_texture_attachment, 0, "scene_texture");
-	////	//ShaderBindTexture(render_shaders.post_processing_shader, *bloom_blur.texture_to_blur, 1, "bloom_texture");
-
-	////	RenderMesh(render_shaders.post_processing_shader, standard_meshes.quad);
-	////}
+		ShaderBindTexture(render_shaders.render_shader, frame_shadow_map.depth_texture_attachment, 0, "shadow_map");
 
 
-	////void Renderer::DrawSkyBox()
-	////{
-	////	// @TODO: Fill in ubos
-	////	//RenderCommands::DisableFaceCulling();
-	////	//BindShader(cubemap_shader);
-	////	//ShaderSetMat4(cubemap_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
-	////	//ShaderSetMat4(cubemap_shader, "view", camera_controller.main_camera.view_matrix.arr);
-	////	//RenderMesh(cubemap_shader, meshes[0]); // It has texture coords
-	////	//RenderCommands::EnableFaceCulling();
-	////}
+		RenderWorld(&render_shaders.render_shader, nullptr, world);		
+	}
 
-	////void Renderer::InitShaders()
-	////{
-	////	// @TODO: Fix up AssetLoader for linking errors
-	////	//Shader cubemap_shader = CreateShader(ReadFile("shaders/Rendering/skybox_vert.glsl"), ReadFile("shaders/Rendering/skybox_frag.glsl"));
-	////	//cubemap_shader.name = "cubemap_shader";
+	void Renderer::PostProcessingPass(const World &world)
+	{
+		// @TODO: Create a better solution for the blur 
+		//bloom_blur.GPUGaussienBlur();
+		BindShader(render_shaders.post_processing_shader);
+		
+		ShaderSetFloat(render_shaders.post_processing_shader, "exposure", 1.0f);
+		ShaderBindTexture(render_shaders.post_processing_shader, frame_post_processing.colour0_texture_attachment, 0, "scene_texture");
+		//ShaderBindTexture(render_shaders.post_processing_shader, *bloom_blur.texture_to_blur, 1, "bloom_texture");
 
-	////	//Shader pbr_nomaps_shader = CreateShader(ReadFile("shaders/Rendering/pbr_nomaps_vert.glsl"), ReadFile("shaders/Rendering/pbr_nomaps_frag.glsl"));
-	////	//pbr_nomaps_shader.name = "pbr_nomaps";
+		RenderMesh(render_shaders.post_processing_shader, standard_meshes.quad);
+	}
 
-	////	//Shader pbr_nomaps_batch_shader = CreateShader(ReadFile("shaders/Rendering/pbr_nomaps_batch_vert.glsl"), ReadFile("shaders/Rendering/pbr_nomaps_frag.glsl"));
-	////	//pbr_nomaps_batch_shader.name = "pbr_nomaps_batch_shader";
 
-	////	//Shader post_processing_shader = CreateShader(ReadFile("shaders/Rendering/post_processing_vert.glsl"), ReadFile("shaders/Rendering/post_processing_frag.glsl"));
-	////	//post_processing_shader.name = "post_processing_shader";
+	void Renderer::DrawSkyBox()
+	{
+		// @TODO: Fill in ubos
+		//RenderCommands::DisableFaceCulling();
+		//BindShader(cubemap_shader);
+		//ShaderSetMat4(cubemap_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
+		//ShaderSetMat4(cubemap_shader, "view", camera_controller.main_camera.view_matrix.arr);
+		//RenderMesh(cubemap_shader, meshes[0]); // It has texture coords
+		//RenderCommands::EnableFaceCulling();
+	}
 
-	////	//Shader simple_shadow_map_shader = CreateShader(ReadFile("shaders/Rendering/simple_shadow_map_vert.glsl"), ReadFile("shaders/Rendering/simple_shadow_map_frag.glsl"));
-	////	//simple_shadow_map_shader.name = "simple_shadow_map_vert";
+	void Renderer::InitShaders()
+	{
+		// @TODO: Fix up AssetLoader for linking errors
+		//Shader cubemap_shader = CreateShader(ReadFile("shaders/Rendering/skybox_vert.glsl"), ReadFile("shaders/Rendering/skybox_frag.glsl"));
+		//cubemap_shader.name = "cubemap_shader";
 
-	////	//Shader gpu_gaussian_blur_shader = CreateShader(ReadFile("shaders/Rendering/GPU_gaussian_blur_vert.glsl"), ReadFile("shaders/Rendering/GPU_gaussian_blur_frag.glsl"));
-	////	//gpu_gaussian_blur_shader.name = "gaussian_blur";
+		//Shader pbr_nomaps_shader = CreateShader(ReadFile("shaders/Rendering/pbr_nomaps_vert.glsl"), ReadFile("shaders/Rendering/pbr_nomaps_frag.glsl"));
+		//pbr_nomaps_shader.name = "pbr_nomaps";
 
-	////	//Shader g_buffer_shader = CreateShader(ReadFile("shaders/Rendering/g_buffer_vert.glsl"), ReadFile("shaders/Rendering/g_buffer_frag.glsl"));
-	////	//g_buffer_shader.name = "g_buffer_shader ";
-	////}
+		//Shader pbr_nomaps_batch_shader = CreateShader(ReadFile("shaders/Rendering/pbr_nomaps_batch_vert.glsl"), ReadFile("shaders/Rendering/pbr_nomaps_frag.glsl"));
+		//pbr_nomaps_batch_shader.name = "pbr_nomaps_batch_shader";
 
-	////void Renderer::InitFrameBuffers()
-	////{
-	////	FrameBuffer post_processing;
-	////	CreateFrameBuffer(&post_processing);
-	////	BindFrameBuffer(post_processing);
+		//Shader post_processing_shader = CreateShader(ReadFile("shaders/Rendering/post_processing_vert.glsl"), ReadFile("shaders/Rendering/post_processing_frag.glsl"));
+		//post_processing_shader.name = "post_processing_shader";
 
-	////	TextureConfig post_processing_colour_buffers_config;
-	////	post_processing_colour_buffers_config.height = WINDOW_HEIGHT;
-	////	post_processing_colour_buffers_config.width = WINDOW_WIDTH;
-	////	post_processing_colour_buffers_config.data_type = GL_FLOAT;
-	////	post_processing_colour_buffers_config.texture_format = GL_RGBA16F;
-	////	post_processing_colour_buffers_config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	////	post_processing_colour_buffers_config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	////	post_processing_colour_buffers_config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+		//Shader simple_shadow_map_shader = CreateShader(ReadFile("shaders/Rendering/simple_shadow_map_vert.glsl"), ReadFile("shaders/Rendering/simple_shadow_map_frag.glsl"));
+		//simple_shadow_map_shader.name = "simple_shadow_map_vert";
 
-	////	post_processing.colour0_texture_attachment.config = post_processing_colour_buffers_config;
-	////	post_processing.colour1_texture_attachment.config = post_processing_colour_buffers_config;
+		//Shader gpu_gaussian_blur_shader = CreateShader(ReadFile("shaders/Rendering/GPU_gaussian_blur_vert.glsl"), ReadFile("shaders/Rendering/GPU_gaussian_blur_frag.glsl"));
+		//gpu_gaussian_blur_shader.name = "gaussian_blur";
 
-	////	CreateTexture(&post_processing.colour0_texture_attachment, nullptr);
-	////	CreateTexture(&post_processing.colour1_texture_attachment, nullptr);
+		//Shader g_buffer_shader = CreateShader(ReadFile("shaders/Rendering/g_buffer_vert.glsl"), ReadFile("shaders/Rendering/g_buffer_frag.glsl"));
+		//g_buffer_shader.name = "g_buffer_shader ";
+	}
 
-	////	post_processing.render_attchment.width = WINDOW_WIDTH;
-	////	post_processing.render_attchment.height = WINDOW_HEIGHT;
+	void Renderer::InitFrameBuffers()
+	{
+		FrameBuffer post_processing;
+		CreateFrameBuffer(&post_processing);
+		BindFrameBuffer(post_processing);
 
-	////	FrameBufferAddColourAttachtments(&post_processing);
-	////	FrameBufferAddColourAttachtments(&post_processing);
-	////	FrameAddBufferRenderAttachtment(&post_processing);
+		TextureConfig post_processing_colour_buffers_config;
+		post_processing_colour_buffers_config.height = WINDOW_HEIGHT;
+		post_processing_colour_buffers_config.width = WINDOW_WIDTH;
+		post_processing_colour_buffers_config.data_type = GL_FLOAT;
+		post_processing_colour_buffers_config.texture_format = GL_RGBA16F;
+		post_processing_colour_buffers_config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+		post_processing_colour_buffers_config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+		post_processing_colour_buffers_config.wrap_r_mode = GL_CLAMP_TO_EDGE;
 
-	////	Assert(CheckFrameBuffer(post_processing));
+		post_processing.colour0_texture_attachment.config = post_processing_colour_buffers_config;
+		post_processing.colour1_texture_attachment.config = post_processing_colour_buffers_config;
 
-	////	FrameBuffer shadow_map;
-	////	shadow_map.depth_texture_attachment.config.texture_format = GL_DEPTH_COMPONENT32;
-	////	shadow_map.depth_texture_attachment.config.pixel_format = GL_DEPTH_COMPONENT;
-	////	shadow_map.depth_texture_attachment.config.min_filter = GL_NEAREST;
-	////	shadow_map.depth_texture_attachment.config.mag_filter = GL_NEAREST;
-	////	shadow_map.depth_texture_attachment.config.data_type = GL_FLOAT;
-	////	shadow_map.depth_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_BORDER;
-	////	shadow_map.depth_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_BORDER;
-	////	shadow_map.depth_texture_attachment.config.width = 1024;
-	////	shadow_map.depth_texture_attachment.config.height = 1024;
+		CreateTexture(&post_processing.colour0_texture_attachment, nullptr);
+		CreateTexture(&post_processing.colour1_texture_attachment, nullptr);
 
-	////	CreateTexture(&shadow_map.depth_texture_attachment, nullptr);
-	////	TextureSetBorder(&shadow_map.depth_texture_attachment, Vec4(1).arr);
+		post_processing.render_attchment.width = WINDOW_WIDTH;
+		post_processing.render_attchment.height = WINDOW_HEIGHT;
 
-	////	CreateFrameBuffer(&shadow_map);
-	////	FrameBufferAddDepthAttachments(&shadow_map);
+		FrameBufferAddColourAttachtments(&post_processing);
+		FrameBufferAddColourAttachtments(&post_processing);
+		FrameAddBufferRenderAttachtment(&post_processing);
 
-	////	Assert(CheckFrameBuffer(shadow_map));
+		Assert(CheckFrameBuffer(post_processing));
 
-	////	FrameBuffer g_buffer;
+		FrameBuffer shadow_map;
+		shadow_map.depth_texture_attachment.config.texture_format = GL_DEPTH_COMPONENT32;
+		shadow_map.depth_texture_attachment.config.pixel_format = GL_DEPTH_COMPONENT;
+		shadow_map.depth_texture_attachment.config.min_filter = GL_NEAREST;
+		shadow_map.depth_texture_attachment.config.mag_filter = GL_NEAREST;
+		shadow_map.depth_texture_attachment.config.data_type = GL_FLOAT;
+		shadow_map.depth_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_BORDER;
+		shadow_map.depth_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_BORDER;
+		shadow_map.depth_texture_attachment.config.width = 1024;
+		shadow_map.depth_texture_attachment.config.height = 1024;
 
-	////	g_buffer.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
-	////	g_buffer.colour0_texture_attachment.config.width = WINDOW_WIDTH;
-	////	g_buffer.colour0_texture_attachment.config.data_type = GL_FLOAT;
-	////	g_buffer.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
-	////	g_buffer.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	////	g_buffer.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	////	g_buffer.colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+		CreateTexture(&shadow_map.depth_texture_attachment, nullptr);
+		TextureSetBorder(&shadow_map.depth_texture_attachment, Vec4(1).arr);
 
-	////	g_buffer.colour1_texture_attachment.config.height = WINDOW_HEIGHT;
-	////	g_buffer.colour1_texture_attachment.config.width = WINDOW_WIDTH;
-	////	g_buffer.colour1_texture_attachment.config.data_type = GL_FLOAT;
-	////	g_buffer.colour1_texture_attachment.config.texture_format = GL_RGBA16F;
-	////	g_buffer.colour1_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	////	g_buffer.colour1_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	////	g_buffer.colour1_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+		CreateFrameBuffer(&shadow_map);
+		FrameBufferAddDepthAttachments(&shadow_map);
 
-	////	g_buffer.colour2_texture_attachment.config.height = WINDOW_HEIGHT;
-	////	g_buffer.colour2_texture_attachment.config.width = WINDOW_WIDTH;
-	////	g_buffer.colour2_texture_attachment.config.data_type = GL_UNSIGNED_BYTE;
-	////	g_buffer.colour2_texture_attachment.config.texture_format = GL_RGBA;
-	////	g_buffer.colour2_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	////	g_buffer.colour2_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	////	g_buffer.colour2_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+		Assert(CheckFrameBuffer(shadow_map));
 
-	////	g_buffer.render_attchment.width = WINDOW_WIDTH;
-	////	g_buffer.render_attchment.height = WINDOW_HEIGHT;
+		FrameBuffer g_buffer;
 
-	////	CreateTexture(&g_buffer.colour0_texture_attachment, nullptr);
-	////	CreateTexture(&g_buffer.colour1_texture_attachment, nullptr);
-	////	CreateTexture(&g_buffer.colour2_texture_attachment, nullptr);
-	////	CreateFrameBuffer(&g_buffer);
-	////	FrameBufferAddColourAttachtments(&g_buffer);
-	////	FrameAddBufferRenderAttachtment(&g_buffer);
+		g_buffer.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
+		g_buffer.colour0_texture_attachment.config.width = WINDOW_WIDTH;
+		g_buffer.colour0_texture_attachment.config.data_type = GL_FLOAT;
+		g_buffer.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
+		g_buffer.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+		g_buffer.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+		g_buffer.colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
 
-	////	Assert(CheckFrameBuffer(g_buffer));
+		g_buffer.colour1_texture_attachment.config.height = WINDOW_HEIGHT;
+		g_buffer.colour1_texture_attachment.config.width = WINDOW_WIDTH;
+		g_buffer.colour1_texture_attachment.config.data_type = GL_FLOAT;
+		g_buffer.colour1_texture_attachment.config.texture_format = GL_RGBA16F;
+		g_buffer.colour1_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+		g_buffer.colour1_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+		g_buffer.colour1_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
 
-	////	frame_post_processing = post_processing;
-	////	frame_shadow_map = shadow_map;
-	////	frame_g_buffer = g_buffer;
+		g_buffer.colour2_texture_attachment.config.height = WINDOW_HEIGHT;
+		g_buffer.colour2_texture_attachment.config.width = WINDOW_WIDTH;
+		g_buffer.colour2_texture_attachment.config.data_type = GL_UNSIGNED_BYTE;
+		g_buffer.colour2_texture_attachment.config.texture_format = GL_RGBA;
+		g_buffer.colour2_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+		g_buffer.colour2_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+		g_buffer.colour2_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
 
-	////}
+		g_buffer.render_attchment.width = WINDOW_WIDTH;
+		g_buffer.render_attchment.height = WINDOW_HEIGHT;
 
-	////void Renderer::InitStandardMeshes()
-	////{
+		CreateTexture(&g_buffer.colour0_texture_attachment, nullptr);
+		CreateTexture(&g_buffer.colour1_texture_attachment, nullptr);
+		CreateTexture(&g_buffer.colour2_texture_attachment, nullptr);
+		CreateFrameBuffer(&g_buffer);
+		FrameBufferAddColourAttachtments(&g_buffer);
+		FrameAddBufferRenderAttachtment(&g_buffer);
 
-	////}
+		Assert(CheckFrameBuffer(g_buffer));
 
-	////void Renderer::InitSkyBox()
-	////{
-	////	CubeMap default_skybox0;
-	////	default_skybox0.config.data_type = GL_FLOAT;
-	////	default_skybox0.config.texture_format = GL_RGBA16;
-	////	default_skybox0.config.min_filter = GL_LINEAR;
-	////	default_skybox0.config.mag_filter = GL_LINEAR;
-	////	default_skybox0.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
-	////	default_skybox0.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	////	default_skybox0.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	////	default_skybox0.config.width = 512;
-	////	default_skybox0.config.height = 512;
-	////	CreateCubeMap(&default_skybox0, nullptr);
-	////	default_skybox = default_skybox0;
-	////}
+		frame_post_processing = post_processing;
+		frame_shadow_map = shadow_map;
+		frame_g_buffer = g_buffer;
+
+	}
+
+	void Renderer::InitStandardMeshes()
+	{
+
+	}
+
+	void Renderer::InitSkyBox()
+	{
+		CubeMap default_skybox0;
+		default_skybox0.config.data_type = GL_FLOAT;
+		default_skybox0.config.texture_format = GL_RGBA16;
+		default_skybox0.config.min_filter = GL_LINEAR;
+		default_skybox0.config.mag_filter = GL_LINEAR;
+		default_skybox0.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+		default_skybox0.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+		default_skybox0.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+		default_skybox0.config.width = 512;
+		default_skybox0.config.height = 512;
+		CreateCubeMap(&default_skybox0, nullptr);
+		default_skybox = default_skybox0;
+	}
 
 }

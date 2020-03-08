@@ -32,6 +32,7 @@
     <ClCompile Include="src\GPUCompute.cpp" />
     <ClCompile Include="src\Engine\Input.cpp" />
     <ClCompile Include="src\Core\Renderer.cpp" />
+    <ClCompile Include="src\Engine\AssetLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core.h">
@@ -48,12 +49,6 @@
     </ClInclude>
     <ClInclude Include="src\OpenGL\BufferLayout.h">
       <Filter>src\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AssetLoader.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\std_image.h">
-      <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\OpenGL\OpenGL.h">
       <Filter>src\OpenGL</Filter>
@@ -73,6 +68,12 @@
     <ClInclude Include="src\GPUCompute.h" />
     <ClInclude Include="src\Engine\Input.h" />
     <ClInclude Include="src\Core\Renderer.h" />
+    <ClInclude Include="src\Engine\AssetLoader.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\std_image.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\first_compute.glsl">
