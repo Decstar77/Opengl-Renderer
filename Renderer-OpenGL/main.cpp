@@ -244,9 +244,9 @@ Batch CreateSector(int32 x, int32 y, int32 z, uint32 dime)
 				{
 					Transform t;
 					t.position = Vec3(ix, iy, iz);
-					t.scale = Vec3(0.9f);
+					t.scale = Vec3(1);
 					first_sector.transforms.push_back(t.CalcTransformMatrix());
-				}				
+				}
 			}
 		}
 	}
@@ -396,21 +396,16 @@ int main()
 	main_world.actors.push_back(test_cube_guy);
 	
 	uint32 dime = 5;
-	for (int32 x = 0; x < 2; x++)
+	for (int32 x = -2; x < 2; x++)
 	{
-		for (int32 z = 0; z < 2; z++)
+		for (int32 z = -2; z < 2; z++)
 		{
+			Batch first_sector = CreateSector(dime * x, 0, dime * z, dime);
+			CreateBatch(&first_sector, standard_meshes.cube.vao.vertex_buffers[0], standard_meshes.cube.ibo);
+			main_world.batches.push_back(first_sector);
 		}		
 	}	
-
-	Batch first_sector = CreateSector(0, 0, 0, dime);
-	Batch sc = CreateSector(0, 0, dime, dime);
-
-	CreateBatch(&first_sector, standard_meshes.cube.vao.vertex_buffers[0], standard_meshes.cube.ibo);
-	CreateBatch(&sc, standard_meshes.cube.vao.vertex_buffers[0], standard_meshes.cube.ibo);
-	main_world.batches.push_back(first_sector);
-	main_world.batches.push_back(sc);
-
+	
 	DebugAddPersistentAABBMinMax(Vec3(0, 0, 0), Vec3(5));
 
 
@@ -479,6 +474,9 @@ int main()
 	renderer.WINDOW_HEIGHT = WINDOW_HEIGHT;
 	renderer.camera = &camera_controller;
 	renderer.InitFrameBuffers();
+
+	//Informer informer;
+	//informer.CreateUBO("Matrices", BUFFER_LAYOUT(ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4), 0);
 
 
 	DirectionalLight sun_light;

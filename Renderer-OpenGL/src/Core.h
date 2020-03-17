@@ -20,9 +20,9 @@
 					  printf(" Line: %d ", __LINE__); \
 					  printf(str, __VA_ARGS__); printf(" \n");
 
-#define PNT_VBO_LAYOUT BufferLayout(DynaArray<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2 }));
-#define PNTTB_VBO_LAYOUT BufferLayout(DynaArray<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float3, ShaderDataType::Float3 }));
-#define BUFFER_LAYOUT(...) BufferLayout(DynaArray<ShaderDataType>({__VA_ARGS__}));
+#define PNT_VBO_LAYOUT BufferLayout(DynaArray<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2 }))
+#define PNTTB_VBO_LAYOUT BufferLayout(DynaArray<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float3, ShaderDataType::Float3 }))
+#define BUFFER_LAYOUT(...) BufferLayout(DynaArray<ShaderDataType>({__VA_ARGS__}))
 
 #define IDENTITY_TEXTURE 0
 

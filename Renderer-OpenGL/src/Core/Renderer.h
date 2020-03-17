@@ -25,13 +25,20 @@ namespace cm
 	
 	class Informer
 	{
-	public:
-		RenderShaders *render_shaders;
-		StandardShaders *stander_shaders;
+	public:		
+		std::unordered_map<std::string, int32> ubo_data;
+		DynaArray<UniformBuffer> ubos;
 	public:
 		Informer();
-		Informer(RenderShaders *render_shaders);
+		~Informer();
 		
+		void CreateUBO(const std::string &name, const BufferLayout &lbo, int32 binding_location);
+		void LinkShader(const std::string &name, Shader shader);
+		void LinkShader(const std::string &name, RenderShaders render_shaders);
+		template<typename T>
+		void UpdateUBO(const std::string &name, DynaArray<T> data) 
+		{ WriteBufferData(ubos[ubo_data.at(name)], data, 0); }
+
 	};
 
 	class Renderer

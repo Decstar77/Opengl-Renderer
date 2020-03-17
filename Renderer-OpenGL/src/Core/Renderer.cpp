@@ -350,7 +350,7 @@ namespace cm
 
 	void Renderer::InitStandardMeshes()
 	{
-
+		Assert(0);
 	}
 
 	void Renderer::InitSkyBox()
@@ -367,6 +367,32 @@ namespace cm
 		default_skybox0.config.height = 512;
 		CreateCubeMap(&default_skybox0, nullptr);
 		default_skybox = default_skybox0;
+	}
+
+	Informer::Informer()
+	{
+
+	}
+
+	Informer::~Informer()
+	{
+
+	}
+
+	void Informer::CreateUBO(const std::string &name, const BufferLayout &lbo, int32 binding_location)
+	{
+		UniformBuffer ubo;
+		ubo.lbo = lbo;
+		CreateUniformBuffer(&ubo);
+		UniformBufferSetBindPoint(ubo, binding_location);
+
+		ubo_data[name] = binding_location;
+		ubos.push_back(ubo);
+	}
+
+	void Informer::LinkShader(const std::string &name, Shader shader)
+	{
+		ShaderBindUniformBuffer(shader, ubo_data[name], name);
 	}
 
 }

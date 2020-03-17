@@ -1,21 +1,22 @@
 ﻿cl : Command line warning D9002: ignoring unknown option '/arch:SSE2'
-  CosmicNoise.cpp
+  main.cpp
+f:\renderer-opengl\renderer-opengl\src\math\cosmicphysics.h(249): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\math\cosmicphysics.h(252): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(41): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(42): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(157): warning C4244: '=': conversion from 'const float' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(158): warning C4244: '=': conversion from 'const float' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(159): warning C4244: '=': conversion from 'const float' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(169): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(171): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(173): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(182): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(195): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(199): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(203): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(236): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(239): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(250): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(252): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\main.cpp(127): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(128): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(129): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(246): warning C4244: 'argument': conversion from 'int32' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(525): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(529): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(617): warning C4244: 'initializing': conversion from '_Rep' to 'float', possible loss of data
+          with
+          [
+              _Rep=__int64
+          ]
+  Renderer.cpp
+  Generating Code...
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe
