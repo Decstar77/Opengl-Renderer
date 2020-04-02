@@ -22,7 +22,7 @@ namespace cm
 		return a.x * b.x + a.y * b.y + a.z * b.z;
 	}
 
-	float sqrd_distance(const Vec3 &a, const Vec3 &b)
+	float SqrdDistance(const Vec3 &a, const Vec3 &b)
 	{
 		return (a.x - b.x)*(a.x - b.x) + (a.y - b.y)*(a.y - b.y) + (a.z - b.z)*(a.z - b.z);
 	}
@@ -48,7 +48,7 @@ namespace cm
 		return Vec3(div);
 	}
 
-	Vec3 vec4tovec3(Vec4 &a)
+	Vec3 Vec4ToVec3(Vec4 &a)
 	{
 		return Vec3(a.x, a.y, a.z);
 	}
@@ -62,7 +62,7 @@ namespace cm
 		return resx && resy && resz;
 	}
 
-	std::string toString(Vec3 a)
+	std::string ToString(Vec3 a)
 	{
 		std::stringstream ss;
 		ss << '(' << a.x << ", " << a.y << ", " << a.z << ')';
@@ -92,12 +92,12 @@ namespace cm
 		return a;
 	}
 
-	Vec4 vec3tovec4(Vec3 &a, float w)
+	Vec4 Vec3ToVec4(Vec3 &a, float w)
 	{
 		return Vec4(a.x, a.y, a.z, w);
 	}
 
-	std::string toString(Vec4 a)
+	std::string ToString(Vec4 a)
 	{
 		std::stringstream ss;
 		ss << '(' << a.x << ", " << a.y << ", " << a.z << ", " << a.w << ')';
@@ -111,7 +111,7 @@ namespace cm
 
 	//============Mat3 Functions==============//
 
-	float det(Mat3 a)
+	float Det(Mat3 a)
 	{
 		float f = a.arr[0] * (a.arr[4] * a.arr[8] - a.arr[7] * a.arr[5]);
 		float b = a.arr[1] * (a.arr[3] * a.arr[8] - a.arr[6] * a.arr[5]);
@@ -119,12 +119,12 @@ namespace cm
 		return f - b + c;
 	}
 
-	Mat3 mat4tomat3(Mat4 &a)
+	Mat3 Mat4ToMat3(Mat4 &a)
 	{
 		Mat3 result(1);
-		result.row0 = vec4tovec3(a.row0);
-		result.row1 = vec4tovec3(a.row1);
-		result.row2 = vec4tovec3(a.row2);
+		result.row0 = Vec4ToVec3(a.row0);
+		result.row1 = Vec4ToVec3(a.row1);
+		result.row2 = Vec4ToVec3(a.row2);
 		return result;
 	}
 
@@ -132,18 +132,18 @@ namespace cm
 	{
 		Mat4 model_transform(1);
 		//Apparently scale, rotate, translate. Here is rotate, translate, scale
-		model_transform = translate(model_transform, position);
-		model_transform = quat_to_mat4(conjugate(rotation)) * model_transform;
-		model_transform = scale_cardinal(model_transform, scale);
+		model_transform = Translate(model_transform, position);
+		model_transform = QuatToMat4(Conjugate(rotation)) * model_transform;
+		model_transform = ScaleCardinal(model_transform, scale);
 		return model_transform;
 	}
 
-	float get(Mat4 a, int row, int col)
+	float Get(Mat4 a, int row, int col)
 	{
 		return a.arr[4 * row + col];
 	}
 
-	Vec4 getColumn(Mat4 a, uint8 col)
+	Vec4 GetColumn(Mat4 a, uint8 col)
 	{
 		Vec4 column(0, 0, 0, 0);
 		column.x = a.arr[4 * 0 + col];
@@ -153,7 +153,7 @@ namespace cm
 		return column;
 	}
 
-	std::string toString(Mat4 a)
+	std::string ToString(Mat4 a)
 	{
 		std::stringstream ss;
 		ss << "| " << a.arr[0] << " " << a.arr[1] << " " << a.arr[2] << " " << a.arr[3] << " |";
@@ -163,7 +163,7 @@ namespace cm
 		return ss.str();
 	}
 
-	Mat3 adjoint(Mat4 a, int row, int col)
+	Mat3 Adjoint(Mat4 a, int row, int col)
 	{
 		Mat3 result(1);
 		int index = 0;
@@ -175,13 +175,13 @@ namespace cm
 			{
 				if (c == col || c == col + 4 || c == col + 8 || c == col + 12)
 					continue;
-				result.arr[index++] = get(a, r, c);
+				result.arr[index++] = Get(a, r, c);
 			}
 		}
 		return result;
 	}
 
-	float det(Mat4 a)
+	float Det(Mat4 a)
 	{
 		float f = a.arr[0] * (
 			a.arr[5] * (a.arr[10] * a.arr[15] - a.arr[11] * a.arr[14]) +
@@ -206,19 +206,19 @@ namespace cm
 		return f - b + c - d;
 	}
 
-	Mat4 mat3tomat4(Mat3 & a, Vec4 & b)
+	Mat4 Mat3ToMat4(Mat3 & a, Vec4 & b)
 	{
 		Mat4 result(1);
-		result.row0 = vec3tovec4(a.row0, 0);
-		result.row1 = vec3tovec4(a.row1, 0);
-		result.row2 = vec3tovec4(a.row2, 0);
+		result.row0 = Vec3ToVec4(a.row0, 0);
+		result.row1 = Vec3ToVec4(a.row1, 0);
+		result.row2 = Vec3ToVec4(a.row2, 0);
 		result.row3 = b;
 		return result;
 	}
 
-	bool check_orthogonal(Mat4 a, float tolerance)
+	bool ChecOorthogonal(Mat4 a, float tolerance)
 	{
-		Mat4 result = a * transpose(a);
+		Mat4 result = a * Transpose(a);
 		for (int i = 0; i < 4; i++)
 		{
 			if (abs(1 - abs(result.arr[i * 5])) > tolerance)
@@ -227,7 +227,7 @@ namespace cm
 		return true;
 	}
 
-	Mat4 transpose(Mat4 a)
+	Mat4 Transpose(Mat4 a)
 	{
 		_MM_TRANSPOSE4_PS(a.row0.data, a.row1.data, a.row2.data, a.row3.data);
 		return a;
@@ -235,9 +235,9 @@ namespace cm
 
 	Mat4 Inverse(Mat4 a)
 	{
-		if (check_orthogonal(a))
+		if (ChecOorthogonal(a))
 		{
-			return transpose(a);
+			return Transpose(a);
 		}
 		Mat4 result(1);
 		Mat3 ad(1);
@@ -248,72 +248,72 @@ namespace cm
 			{
 				if ((row + col) % 2)
 				{
-					ad = adjoint(a, row, col);
-					float i = -det(ad);
+					ad = Adjoint(a, row, col);
+					float i = -Det(ad);
 					result.arr[index++] = i;
 				}
 				else
 				{
-					ad = adjoint(a, row, col);
-					float i = det(ad);
+					ad = Adjoint(a, row, col);
+					float i = Det(ad);
 					result.arr[index++] = i;
 				}
 			}
 		}
 
-		result = transpose(result);
+		result = Transpose(result);
 
-		float determinant = det(a);
+		float determinant = Det(a);
 
 		return result / determinant;
 
 	}
 
-	Mat4 translate(Mat4 a, Vec3 translation)
+	Mat4 Translate(Mat4 a, Vec3 translation)
 	{
 		a.row3 = Vec4(translation, 1) * a;
 		return a;
 	}
 
-	Mat4 translate(Mat4 a, float length, float d_angle, float z)
+	Mat4 Translate(Mat4 a, float length, float d_angle, float z)
 	{
-		polar_coord p_coord = canonical(length, d_angle, z);
+		Polar_coord p_coord = Canonical(length, d_angle, z);
 		a.row3 = Vec4(p_coord.r * cosf(p_coord.theta), p_coord.r * sinf(p_coord.theta), p_coord.z, 1) * a;
 		return a;
 	}
 
-	Mat4 translate(Mat4 a, polar_coord p_coord)
+	Mat4 Translate(Mat4 a, Polar_coord p_coord)
 	{
 		a.row3 = Vec4(p_coord.r * cosf(p_coord.theta), p_coord.r * sinf(p_coord.theta), p_coord.z, 1) * a;
 		return a;
 	}
 
-	Mat4 rotate(Mat4 a, float d_angle, Vec3 axis, bool should_normalize)
+	Mat4 Rotate(Mat4 a, float d_angle, Vec3 axis, bool should_normalize)
 	{
 		if (should_normalize && Mag(axis) != 1)
 		{
 			axis = Normalize(axis);
 		}
-		float theata = deg_to_rad(d_angle);
+		float theata = DegToRad(d_angle);
 		float cos_theata = cosf(theata);
 		float sin_theata = sinf(theata);
 
 		Vec4 iPrime(0, 0, 0, 0);
-		iPrime.x = round(axis.x *axis.x * (1 - cos_theata) + cos_theata);
-		iPrime.y = round(axis.x *axis.y * (1 - cos_theata) + axis.z * sin_theata);
-		iPrime.z = round(axis.x *axis.z * (1 - cos_theata) - axis.y * sin_theata);
+		iPrime.x = Round(axis.x *axis.x * (1 - cos_theata) + cos_theata);
+		iPrime.y = Round(axis.x *axis.y * (1 - cos_theata) + axis.z * sin_theata);
+		iPrime.z = Round(axis.x *axis.z * (1 - cos_theata) - axis.y * sin_theata);
 		iPrime.w = 0;
 
 		Vec4 jPrime(0, 0, 0, 0);
-		jPrime.x = round(axis.x *axis.y * (1 - cos_theata) - axis.z *sin_theata);
-		jPrime.y = round(axis.y *axis.y * (1 - cos_theata) + cos_theata);
-		jPrime.z = round(axis.y *axis.z * (1 - cos_theata) + axis.x *sin_theata);
+		jPrime.x = Round(axis.x *axis.y * (1 - cos_theata) - axis.z *sin_theata);
+		jPrime.y = Round(axis.y *axis.y * (1 - cos_theata) + cos_theata);
+		jPrime.z = Round(axis.y *axis.z * (1 - cos_theata) + axis.x *sin_theata);
 		jPrime.w = 0;
 
 		Vec4 kPrime(0, 0, 0, 0);
-		kPrime.x = round(axis.x *axis.z * (1 - cos_theata) + axis.y *sin_theata);
-		kPrime.y = round(axis.y *axis.z * (1 - cos_theata) - axis.x *sin_theata);
-		kPrime.z = round(axis.z *axis.z * (1 - cos_theata) + cos_theata);
+		kPrime.x = Round(axis.x *axis.z * (1 - cos_theata) + axis.y *sin_theata);
+		kPrime.y = Round(axis.y *axis.z * (1 - cos_theata) - axis.x *sin_theata);
+		kPrime.z = Round(axis.z *axis.z * (1 - cos_theata) + cos_theata);
 		kPrime.w = 0;
 
 		Vec4 wPrime(0, 0, 0, 1);
@@ -323,7 +323,7 @@ namespace cm
 		return result * a;
 	}
 
-	Mat4 scale_direction(Mat4 a, float k, Vec3 unit_direction, bool should_normalize)
+	Mat4 ScaleDirection(Mat4 a, float k, Vec3 unit_direction, bool should_normalize)
 	{
 		if (should_normalize && Mag(unit_direction) != 1)
 		{
@@ -350,7 +350,7 @@ namespace cm
 		return result * a;
 	}
 
-	Mat4 scale_cardinal(Mat4 a, Vec3 direction)
+	Mat4 ScaleCardinal(Mat4 a, Vec3 direction)
 	{
 		a.row0 = a.row0 * direction.x;
 		a.row1 = a.row1 * direction.y;
@@ -358,10 +358,10 @@ namespace cm
 		return a;
 	}
 
-	Mat4 perspective(float fovy, float aspect, float fnear, float ffar)
+	Mat4 Perspective(float fovy, float aspect, float fnear, float ffar)
 	{
 		Mat4 p(1);
-		fovy = deg_to_rad(fovy);
+		fovy = DegToRad(fovy);
 		float half_tan_fovy = tan(fovy / 2);
 		p.row0 = Vec4((1 / (aspect * half_tan_fovy)), 0, 0, 0);
 		p.row1 = Vec4(0, 1 / half_tan_fovy, 0, 0);
@@ -407,7 +407,7 @@ namespace cm
 		translation.row1 = Vec4(0, 1, 0, -position.y);
 		translation.row2 = Vec4(0, 0, 1, -position.z);
 
-		return transpose(rotation * translation);
+		return Transpose(rotation * translation);
 	}
 
 	Mat4 operator /(Mat4 a, float b)
@@ -432,7 +432,7 @@ namespace cm
 				Vec4 col(0, 0, 0, 0);
 				for (int x = 0; x < 4; x++)
 				{
-					col.arr[x] = get(b, x, y);
+					col.arr[x] = Get(b, x, y);
 				}
 				//Adds to result
 				result.arr[4 * i + y] = Dot(col, a.data[i]);
@@ -456,7 +456,7 @@ namespace cm
 		Vec4 result(0, 0, 0, 0);
 		for (int i = 0; i < 4; i++)
 		{
-			Vec4 col = getColumn(b, i);
+			Vec4 col = GetColumn(b, i);
 			result.arr[i] = Dot(col, a);
 		}
 		return result;
@@ -468,8 +468,8 @@ namespace cm
 
 	Quat EulerToQuat(const Vec3 &euler_angle)
 	{
-		Vec3 c = Vec3(cos(deg_to_rad(euler_angle.x) / 2), cos(deg_to_rad(euler_angle.y) / 2), cos(deg_to_rad(euler_angle.z) / 2));
-		Vec3 s = Vec3(sin(deg_to_rad(euler_angle.x) / 2), sin(deg_to_rad(euler_angle.y) / 2), sin(deg_to_rad(euler_angle.z) / 2));
+		Vec3 c = Vec3(cos(DegToRad(euler_angle.x) / 2), cos(DegToRad(euler_angle.y) / 2), cos(DegToRad(euler_angle.z) / 2));
+		Vec3 s = Vec3(sin(DegToRad(euler_angle.x) / 2), sin(DegToRad(euler_angle.y) / 2), sin(DegToRad(euler_angle.z) / 2));
 
 		Quat q;
 
@@ -481,7 +481,7 @@ namespace cm
 	}
 
 
-	Mat4 quat_to_mat4(const Quat &q)
+	Mat4 QuatToMat4(const Quat &q)
 	{
 		//@Copy		
 		Mat4 mat(1);
@@ -510,37 +510,37 @@ namespace cm
 		return mat;
 	}
 
-	Vec3 rotate(const float &d_angle, const Vec3 &point, const Vec3 &axis)
+	Vec3 Rotate(const float &d_angle, const Vec3 &point, const Vec3 &axis)
 	{
 		//@Speed, normalizing to be safe
 		Vec3 ax = Normalize(axis);
 
-		float sh = sin(deg_to_rad(d_angle / 2));
-		float ch = cos(deg_to_rad(d_angle / 2));
+		float sh = sin(DegToRad(d_angle / 2));
+		float ch = cos(DegToRad(d_angle / 2));
 
 		Quat r(ax.x * sh,
 			ax.y * sh,
 			ax.z * sh,
 			ch);
 
-		Quat rc = conjugate(r);
+		Quat rc = Conjugate(r);
 		Quat pp = Quat(point, 0);
 
 		Quat res = (r * pp) * rc;
 		return res.vec;
 	}
 
-	Vec3 rotate(const Quat &r, const Vec3 &point)
+	Vec3 Rotate(const Quat &r, const Vec3 &point)
 	{
 		//@Help: https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
 		//@Speed, normalizing to be safe		
-		Quat rc = conjugate(Normalize(r));
+		Quat rc = Conjugate(Normalize(r));
 		Quat pp = Quat(point, 0);
 		Quat res = (r * pp) * rc;
 		return res.vec;
 	}
 
-	Quat conjugate(const Quat &a)
+	Quat Conjugate(const Quat &a)
 	{
 		return Quat(-a.x, -a.y, -a.z, a.w);
 	}
@@ -556,7 +556,7 @@ namespace cm
 		return Quat(a.x / m, a.y / m, a.z / m, a.w / m);
 	}
 
-	std::string toString(const Quat & a)
+	std::string ToString(const Quat & a)
 	{
 		std::stringstream ss;
 		ss << '(' << '{' << a.x << ", " << a.y << ", " << a.z << '}' << ' ' << a.w << ')';
@@ -592,9 +592,9 @@ namespace cm
 	/////////////////////////////////////////////////////////////////////////////////////////
 		   
 	//============Other Functions============//
-	polar_coord canonical(float r, float theta, float z)
+	Polar_coord Canonical(float r, float theta, float z)
 	{
-		theta = deg_to_rad(theta);
+		theta = DegToRad(theta);
 		if (r == 0)
 		{
 			theta = 0;

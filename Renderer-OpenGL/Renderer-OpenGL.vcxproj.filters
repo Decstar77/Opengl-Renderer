@@ -114,10 +114,7 @@
     <None Include="shaders\instance_test_frag.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="shaders\pbr_nomaps_vert.glsl" />
-    <None Include="shaders\pbr_nomaps_frag.glsl" />
     <None Include="shaders\compute_vert.glsl" />
-    <None Include="shaders\pbr_nomaps_batch_vert.glsl" />
     <None Include="shaders\post_processing_vert.glsl" />
     <None Include="shaders\post_processing_frag.glsl" />
     <None Include="shaders\Compute\GPU_gaussian_blur_frag.glsl" />
@@ -126,6 +123,19 @@
     <None Include="shaders\simple_shadow_map_frag.glsl" />
     <None Include="shaders\Compute\g_buffer_vert.glsl" />
     <None Include="shaders\Compute\g_buffer_frag.glsl" />
+    <None Include="shaders\deffered_shader_vert.glsl" />
+    <None Include="shaders\deffered_shader_frag.glsl" />
+    <None Include="shaders\forward_phong_notext_frag.glsl" />
+    <None Include="shaders\forward_phong_notext_vert.glsl" />
+    <None Include="shaders\forward_phong_notext_batch_vert.glsl" />
+    <None Include="shaders\ssao_gbuffer_vert.glsl" />
+    <None Include="shaders\ssao_gbuffer_frag.glsl" />
+    <None Include="shaders\ssao_vert.glsl" />
+    <None Include="shaders\ssao_frag.glsl" />
+    <None Include="shaders\simple_blur_vert.glsl" />
+    <None Include="shaders\simple_blur_frag.glsl" />
+    <None Include="shaders\sanitycheck_vert.glsl" />
+    <None Include="shaders\sanitycheck_frag.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="shaders\skybox_frag.glsl">
@@ -136,5 +146,6 @@
     </Text>
     <Text Include="src\IBL.txt" />
     <Text Include="src\ShadowCascadeFailure.txt" />
+    <Text Include="shaders\Notes.txt" />
   </ItemGroup>
 </Project>

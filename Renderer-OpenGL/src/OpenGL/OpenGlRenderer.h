@@ -34,17 +34,24 @@ namespace cm
 	struct StandardShaders
 	{
 		Shader gpu_gaussian_blur;
+		Shader simple_blur;
 		//.. Add as needed;
 	};
 
 	struct RenderShaders
 	{
-		Shader render_shader;
-		Shader render_batch_shader;
+		Shader forward_render_shader;
+		Shader forward_render_batch_shader;
+		Shader deferred_render_shader;
+		Shader deferred_render_batch_shader;
 		Shader skybox_shader;
 		Shader post_processing_shader;
 		Shader depth_test_shader;
-		Shader g_buffer_shader;
+		Shader g_buffer_shader;		
+		Shader ssao_gbuffer_shader;
+		Shader ssao_shader;
+		Shader debug_shader;
+		Shader debug_mesh_shader;
 	};
 
 	struct Vertex
@@ -118,9 +125,9 @@ namespace cm
 	{
 		bool shadow_pass = true;
 		bool defferd_pass = true;
-		bool post_processing_bloom = false;
-		bool post_processing_ssao = false;
-		bool post_processing_ssr = false;
+		bool bloom = true;
+		bool ssao = true;
+		bool ssr = true;
 	};
 
 	struct World

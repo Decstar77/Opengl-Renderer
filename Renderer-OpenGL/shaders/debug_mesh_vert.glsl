@@ -9,7 +9,7 @@ out VS_OUT {
     vec2 TexCoords;
 } vs_out;
 
-layout (std140, binding = 0) uniform Matrices
+layout (std140, binding = 0) uniform WorldMatrices
 {
 	mat4 projection;
 	mat4 view;

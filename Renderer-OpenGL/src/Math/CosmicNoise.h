@@ -64,35 +64,4 @@ namespace cm
 		real DotProd(int32 hash, real x, real y, real z);
 		int32 Inc(int32 value);
 	};
-
-
-	class VectorField
-	{
-	public:
-		VectorField();
-		~VectorField();
-
-		void Populate(const Vec3 &center, const Vec3 &dimension, uint32 flow, uint32 turbulence);
-		Vec3 Sample(real x, real y, real z);
-	private:		
-		// Properties
-		uint32 size_x = 0;
-		uint32 size_y = 0;
-		uint32 size_z = 0;
-		Vec3 center = Vec3(0);
-
-		// Used for infinite size
-		PerlinNoise *perlin_noise;
-		
-		// 3D Array
-		Vec3 ***field = nullptr;
-
-	private:
-		void CreateMemory();
-		void FreeMemory();
-	};
-
-
-
-
 }

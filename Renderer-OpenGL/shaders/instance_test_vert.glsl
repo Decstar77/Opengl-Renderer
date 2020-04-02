@@ -6,7 +6,7 @@ layout (location = 3) in mat4 instanceMatrix;
 
 out vec2 TexCoords;
 
-layout (std140, binding = 0) uniform CameraMatrices
+layout (std140, binding = 0) uniform WorldMatrices
 {
 	mat4 projection;
 	mat4 view;

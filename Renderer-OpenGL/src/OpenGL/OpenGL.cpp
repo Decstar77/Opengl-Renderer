@@ -476,15 +476,24 @@ namespace cm
 			name = texture.config.uniform_name;
 		}
 		loc = GetUniformLocation(&shader, name);
-		Assert(loc != -1);
-		glUniform1i(loc, texture_slot);
-		glActiveTexture(GL_TEXTURE0 + texture_slot);
-		glBindTexture(GL_TEXTURE_2D, texture.object);
+		if (loc == -1)
+		{
+			// @TODO: Make assert or something 
+			std::string ss = "ERROR::SHADER::TEXTURE: " + shader.name + " " + uniform_name;
+			LOG(ss.c_str());
+		}
+		else
+		{
+			glUniform1i(loc, texture_slot);
+			glActiveTexture(GL_TEXTURE0 + texture_slot);
+			glBindTexture(GL_TEXTURE_2D, texture.object);
+		}		
 	}
 
 
 	void BindFrameBuffer(const FrameBuffer &fbo)
 	{
+		Assert(fbo.object != 0) // @NOTE: Open-GL reserves 0 for the defualt framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo.object);
 	}
 

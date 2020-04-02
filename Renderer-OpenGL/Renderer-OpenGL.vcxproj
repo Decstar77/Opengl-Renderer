@@ -51,6 +51,8 @@
     <None Include="shaders\compute_vert.glsl" />
     <None Include="shaders\cubemap_vert.glsl" />
     <None Include="shaders\debug_vert.glsl" />
+    <None Include="shaders\deffered_shader_frag.glsl" />
+    <None Include="shaders\deffered_shader_vert.glsl" />
     <None Include="shaders\equirectangular_to_cubemap.glsl" />
     <None Include="shaders\first_compute.glsl" />
     <None Include="shaders\Compute\GPU_gaussian_blur_frag.glsl" />
@@ -59,9 +61,9 @@
     <None Include="shaders\pbr_frag.glsl" />
     <None Include="shaders\instance_test_frag.glsl" />
     <None Include="shaders\instance_test_vert.glsl" />
-    <None Include="shaders\pbr_nomaps_batch_vert.glsl" />
-    <None Include="shaders\pbr_nomaps_frag.glsl" />
-    <None Include="shaders\pbr_nomaps_vert.glsl" />
+    <None Include="shaders\forward_phong_notext_batch_vert.glsl" />
+    <None Include="shaders\forward_phong_notext_frag.glsl" />
+    <None Include="shaders\forward_phong_notext_vert.glsl" />
     <None Include="shaders\pbr_texture_frag.glsl" />
     <None Include="shaders\pbr_vert.glsl" />
     <None Include="shaders\post_processing_frag.glsl" />
@@ -69,12 +71,21 @@
     <None Include="shaders\prefilter.glsl" />
     <None Include="shaders\debug_mesh_frag.glsl" />
     <None Include="shaders\debug_mesh_vert.glsl" />
+    <None Include="shaders\sanitycheck_frag.glsl" />
+    <None Include="shaders\sanitycheck_vert.glsl" />
+    <None Include="shaders\simple_blur_frag.glsl" />
+    <None Include="shaders\simple_blur_vert.glsl" />
     <None Include="shaders\simple_shadow_map_frag.glsl" />
     <None Include="shaders\simple_shadow_map_vert.glsl" />
     <None Include="shaders\skybox_vert.glsl" />
+    <None Include="shaders\ssao_frag.glsl" />
+    <None Include="shaders\ssao_gbuffer_frag.glsl" />
+    <None Include="shaders\ssao_gbuffer_vert.glsl" />
+    <None Include="shaders\ssao_vert.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="shaders\debug_frag.glsl" />
+    <Text Include="shaders\Notes.txt" />
     <Text Include="shaders\skybox_frag.glsl" />
     <Text Include="src\IBL.txt" />
     <Text Include="src\ShadowCascadeFailure.txt" />

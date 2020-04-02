@@ -1,0 +1,22 @@
+
+SSAO: We currently have to textures eaching only having one channel GL_RED, where the first is the blured version and the second the unblurred version
+	: We could just have one texture with mulitple components GL_RG, for example. Not sure if this is better. --DEAD. Won't work because then how do you
+	: blur ? The blur shader binds a texture and then looks all round.
+
+
+
+RECAP:
+	projection matrix.
+	projection divide.
+	view matrix.
+
+
+
+
+
+
+TODO:
+	
+	
+
+

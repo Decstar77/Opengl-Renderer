@@ -20,7 +20,7 @@
 //============Forward Declerations============//
 namespace cm
 {
-	struct  Vec2;
+	struct  Vec2;	
 	struct  Vec3;
 	struct  Vec4;
 	struct  vecN;
@@ -28,11 +28,10 @@ namespace cm
 	struct  Mat2;
 	struct  Mat3;
 	struct  Mat4;
-	struct  matN;
 
 	struct Quat;
 	struct Basis;	
-	struct polar_coord;
+	struct Polar_coord;
 
 	class Transform;
 	struct Ray;	
@@ -49,31 +48,31 @@ namespace cm
 
 	//============Inline Function Declerations============//
 
-	inline  uint32_t safe_truncate_uint64(uint64_t Value)
+	inline  uint32_t SafeTruncateUint64(uint64_t Value)
 	{
 		Assert(Value <= 0xFFFFFFFF);
 		uint32_t Result = static_cast<uint32_t>(Value);
 		return(Result);
 	}
 
-	inline  float safe_truncate_double(double Value)
+	inline  float SafeTruncateDouble(double Value)
 	{
 		Assert(Value <= 0xFFFFFFFF);
 		float Result = static_cast<float>(Value);
 		return(Result);
 	}
 
-	inline  float deg_to_rad(float degrees)
+	inline  float DegToRad(float degrees)
 	{
-		return safe_truncate_double((PI * degrees) / 180);
+		return SafeTruncateDouble((PI * degrees) / 180);
 	}
 
-	inline  float rad_to_deg(float radians)
+	inline  float RadToDeg(float radians)
 	{
-		return safe_truncate_double((180 * radians) / PI);
+		return SafeTruncateDouble((180 * radians) / PI);
 	}
 
-	inline float round(float val)
+	inline float Round(float val)
 	{
 		return std::roundf(val * 1000000.0f) / 1000000.0f;
 	}
@@ -88,7 +87,7 @@ namespace cm
 		return std::ceil(val);
 	}
 
-	inline float float_chop(float val, float decimal_count)
+	inline float FloatChop(float val, float decimal_count)
 	{
 		float d_amout = powf(10, decimal_count);
 		return static_cast<float>(static_cast<int>(val * d_amout)) / d_amout;
@@ -180,13 +179,13 @@ namespace cm
 
 	//============        Other       ============//
 
-	polar_coord  canonical(float r, float theta, float z);
+	Polar_coord  Canonical(float r, float theta, float z);
 
 	uint32 GetShaderDataTypeComponentCount(ShaderDataType type);
 	
 	uint32 GetShaderDataTypeSize(ShaderDataType type);
 		
-	Mat4  perspective(float fovy, float aspect, float near, float far);
+	Mat4  Perspective(float fovy, float aspect, float near, float far);
 
 	Mat4 Orthographic(float left, float right, float top, float bottom, float _near, float _far);
 	   	 
@@ -198,19 +197,19 @@ namespace cm
 
 	Quat EulerToQuat(const Vec3 &euler_angle);
 		
-	Mat4 quat_to_mat4(const Quat &q);
+	Mat4 QuatToMat4(const Quat &q);
 
-	Quat conjugate(const Quat &a);
+	Quat Conjugate(const Quat &a);
 
 	float Mag(const Quat &a);
 
 	Quat Normalize(const Quat &a);
 
-	std::string toString(const Quat &a);
+	std::string ToString(const Quat &a);
 
-	Vec3 rotate(const Quat &r, const Vec3 &point);
+	Vec3 Rotate(const Quat &r, const Vec3 &point);
 
-	Vec3 rotate(const float &d_angle, const Vec3 &point, const Vec3 &axis);
+	Vec3 Rotate(const float &d_angle, const Vec3 &point, const Vec3 &axis);
 
 	//========Coordinate Spaces
 
@@ -232,17 +231,17 @@ namespace cm
 	
 	float  Dot(Vec3 a, Vec3 b);
 
-	float sqrd_distance(const Vec3 &a, const Vec3 &b);
+	float SqrdDistance(const Vec3 &a, const Vec3 &b);
 	
 	Vec3   Cross(Vec3 a, Vec3 b);
 	
 	Vec3   Normalize(Vec3 a);
 
-	Vec3  vec4tovec3(Vec4 &a);	
+	Vec3  Vec4ToVec3(Vec4 &a);	
 
 	bool CompareVec(const Vec3 &a, const Vec3 &b, const real &epsilon = FLOATING_POINT_ERROR_PRESCION);
 
-	std::string  toString(Vec3 a);
+	std::string  ToString(Vec3 a);
 
 	//======Vector 4
 
@@ -252,48 +251,47 @@ namespace cm
 	
 	Vec4   Normalize(Vec4 a);
 
-	Vec4  vec3tovec4(Vec3 &a, float w);
+	Vec4  Vec3ToVec4(Vec3 &a, float w);
 
-	std::string  toString(Vec4 a);
+	std::string  ToString(Vec4 a);
 
 	//========Mat3
 	
-	float  det(Mat3 a);
+	float  Det(Mat3 a);
 
-	Mat3  mat4tomat3(Mat4 &a);
-
+	Mat3  Mat4ToMat3(Mat4 &a);
 
 	//========Mat4
 
-	float  get(Mat4 a, int row, int col);
+	float Get(Mat4 a, int row, int col);
 	
-	Vec4  getColumn(Mat4 a, uint8 col);
+	Vec4  GetColumn(Mat4 a, uint8 col);
 
-	std::string  toString(Mat4 a);
+	std::string  ToString(Mat4 a);
 
-	bool  check_orthogonal(Mat4 a, float tolerance = 0.01);
+	bool  ChecOorthogonal(Mat4 a, float tolerance = 0.01);
 
-	Mat3  adjoint(Mat4 a, int row, int col);
+	Mat3  Adjoint(Mat4 a, int row, int col);
 	
 	Mat4  Inverse(Mat4 a);
 
-	Mat4  transpose(Mat4 a);
+	Mat4  Transpose(Mat4 a);
 
-	float  det(Mat4 a);
+	float  Det(Mat4 a);
 
-	Mat4  mat3tomat4(Mat3 &a, Vec4 &b);
+	Mat4  Mat3ToMat4(Mat3 &a, Vec4 &b);
 
-	Mat4  translate(Mat4 a, Vec3 translation);
+	Mat4  Translate(Mat4 a, Vec3 translation);
 
-	Mat4  translate(Mat4 a, float length, float d_angle, float z);
+	Mat4  Translate(Mat4 a, float length, float d_angle, float z);
 
-	Mat4  translate(Mat4 a, polar_coord p_coord);
+	Mat4  Translate(Mat4 a, Polar_coord p_coord);
 
-	Mat4  rotate(Mat4 a, float dangle, Vec3 axis, bool should_normalize = true);
+	Mat4  Rotate(Mat4 a, float dangle, Vec3 axis, bool should_normalize = true);
 
-	Mat4  scale_direction(Mat4 a, float k, Vec3 unit_direction, bool should_normalize = true);
+	Mat4  ScaleDirection(Mat4 a, float k, Vec3 unit_direction, bool should_normalize = true);
 
-	Mat4  scale_cardinal(Mat4 a, Vec3 direction);
+	Mat4  ScaleCardinal(Mat4 a, Vec3 direction);
 	
 	Mat4 CalculateTransformMatrix(const Vec3 &position, const Vec3 &scale, const Quat &rotation);
 	
@@ -520,7 +518,7 @@ namespace cm
 		
 	};
 
-	struct  polar_coord
+	struct  Polar_coord
 	{
 		real r;
 		real theta;

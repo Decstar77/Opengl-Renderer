@@ -83,7 +83,7 @@ GLFWwindow* CreateRenderingWindow()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); //No leagcy function
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
-	window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Test", 0, 0);
+	window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Open-Gl Renderer", 0, 0);
 	if (!window)
 	{
 		glfwTerminate();
@@ -158,7 +158,7 @@ void CreateTextures(DynaArray<Texture> *textures, DynaArray<std::string> directo
 		config.width = td.width;
 		config.height = td.height;
 
-			
+		
 		Texture t;
 		t.config = config;
 		CreateTexture(&t, td.data.data());
@@ -220,39 +220,6 @@ void InitializeStandardMeshes()
 	standard_meshes.quad = quad.CreateMesh();
 }
 
-
-Batch CreateSector(int32 x, int32 y, int32 z, uint32 dime)
-{
-	PerlinNoise pn;
-	Batch first_sector;	
-	int32 ux = dime + x;
-	int32 uy = dime + y;
-	int32 uz = dime + z;
-	for (int32 ix = x; ix < ux; ix++)
-	{
-		for (int32 iy = y; iy < uy; iy++)
-		{
-			for (int32 iz = z; iz < uz; iz++)
-			{
-				uint32 frq = 1;
-				real xx = ((real)ix / (real)dime) * frq;
-				real yy = ((real)iy / (real)dime) * frq;
-				real zz = ((real)iz / (real)dime) * frq;
-
-				real n = pn.Sample(xx, yy, zz);
-				if (n >= 0.5)
-				{
-					Transform t;
-					t.position = Vec3(ix, iy, iz);
-					t.scale = Vec3(1);
-					first_sector.transforms.push_back(t.CalcTransformMatrix());
-				}
-			}
-		}
-	}
-	return first_sector;
-}
-
 int main()
 {
 	window = CreateRenderingWindow();
@@ -277,50 +244,27 @@ int main()
 	std::cout << "Total memory: " << (float)nTotalMemoryInKB * 0.001f << std::endl;
 	std::cout << "Ava memory: " << (float)nCurAvailMemoryInKB  * 0.001f << std::endl;
 
-#if 0
-	int32 tex_w = 1280, tex_h = 720;
+	int NumberOfExtensions;
+	glGetIntegerv(GL_NUM_EXTENSIONS, &NumberOfExtensions);
+	for (int i = 0; i < NumberOfExtensions; i++) {
+		const GLubyte *ccc = glGetStringi(GL_EXTENSIONS, i);
+		//std::cout << ccc << std::endl;
+	}
 
-	TextureConfig config;
-	config.texture_format = GL_RGBA32F; 
-	config.pixel_format = GL_RGBA;
-	config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	config.width = tex_w;
-	config.height = tex_h;
-
-	//Texture new_texture = CreateTexture(config, nullptr);		
-	//glBindImageTexture(0, new_texture.object, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
-
-
-	//Shader ray_= CreateComputeShader(ReadFile("shaders/first_compute.glsl"));
-	//uint32 ray_program = ray_.shader_program;
-
-	//
-	//uint32 num_groups_x = tex_w;
-	//uint32 num_groups_y = tex_h;
-	//uint32 num_groups_z = 1;
-
-	//uint32 num_groups_size_x = 1;
-	//uint32 num_groups_size_y = 1;
-	//uint32 num_groups_size_z = 1;
-
-	//BindShader(ray_);
-
-	//glDispatchComputeGroupSizeARB(num_groups_x, num_groups_y, num_groups_z, 
-	//							  num_groups_size_x, num_groups_size_y, num_groups_size_z);
-	//// make sure writing to image has finished before read
-	//glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-#endif
-
+	if (GLEW_EXT_texture_filter_anisotropic)
+	{
+		float a = GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT;
+		std::cout << "MAX ANTI  " << a << std::endl;
+	}
 
 	//Shader qq = CreateShader(ReadFile("shaders/quad_vert.glsl"), ReadFile("shaders/quad_frag.glsl"));
 	//qq.name = "quad";
 
-	Shader pbr_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_frag.glsl"));
-	pbr_shader.name = "pbr_shader";
+	//Shader pbr_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_frag.glsl"));
+	//pbr_shader.name = "pbr_shader";
 
-	Shader pbr_texture_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_texture_frag.glsl"));
-	pbr_texture_shader.name = "pbr_texture_shader";
+	//Shader pbr_texture_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_texture_frag.glsl"));
+	//pbr_texture_shader.name = "pbr_texture_shader";
 
 	Shader cubemap_shader = CreateShader(ReadFile("shaders/skybox_vert.glsl"), ReadFile("shaders/skybox_frag.glsl"));
 	cubemap_shader.name = "cubemap_shader";
@@ -331,13 +275,25 @@ int main()
 	Shader debug_mesh_shader = CreateShader(ReadFile("shaders/debug_mesh_vert.glsl"), ReadFile("shaders/debug_mesh_frag.glsl"));
 	debug_mesh_shader.name = "debug_quad_shader";
 	
-	Shader instance_shader_test = CreateShader(ReadFile("shaders/instance_test_vert.glsl"), ReadFile("shaders/instance_test_frag.glsl"));
-	instance_shader_test.name = "instancing_test";
+	Shader deferred_shader = CreateShader(ReadFile("shaders/deffered_shader_vert.glsl"), ReadFile("shaders/deffered_shader_frag.glsl"));
+	deferred_shader.name = "deffered_shader";
+
+	Shader ssao_gbuffer_shader = CreateShader(ReadFile("shaders/ssao_gbuffer_vert.glsl"), ReadFile("shaders/ssao_gbuffer_frag.glsl"));
+	ssao_gbuffer_shader.name = "ssao_gbuffer_shader";
+
+	Shader ssao_shader = CreateShader(ReadFile("shaders/ssao_vert.glsl"), ReadFile("shaders/ssao_frag.glsl"));
+	ssao_shader.name = "ssao_vert";
+
+	Shader simple_blur_shader = CreateShader(ReadFile("shaders/simple_blur_vert.glsl"), ReadFile("shaders/simple_blur_frag.glsl"));
+	simple_blur_shader.name = "simple_blur";
+
+	//Shader instance_shader_test = CreateShader(ReadFile("shaders/instance_test_vert.glsl"), ReadFile("shaders/instance_test_frag.glsl"));
+	//instance_shader_test.name = "instancing_test";
 	
-	Shader pbr_nomaps_shader = CreateShader(ReadFile("shaders/pbr_nomaps_vert.glsl"), ReadFile("shaders/pbr_nomaps_frag.glsl"));
+	Shader pbr_nomaps_shader = CreateShader(ReadFile("shaders/forward_phong_notext_vert.glsl"), ReadFile("shaders/forward_phong_notext_frag.glsl"));
 	pbr_nomaps_shader.name = "pbr_nomaps";
 
-	Shader pbr_nomaps_batch_shader = CreateShader(ReadFile("shaders/pbr_nomaps_batch_vert.glsl"), ReadFile("shaders/pbr_nomaps_frag.glsl"));
+	Shader pbr_nomaps_batch_shader = CreateShader(ReadFile("shaders/forward_phong_notext_batch_vert.glsl"), ReadFile("shaders/forward_phong_notext_frag.glsl"));
 	pbr_nomaps_batch_shader.name = "pbr_nomaps_batch_shader";
 
 	Shader post_processing_shader = CreateShader(ReadFile("shaders/post_processing_vert.glsl"), ReadFile("shaders/post_processing_frag.glsl"));
@@ -351,6 +307,9 @@ int main()
 
 	Shader g_buffer_shader = CreateShader(ReadFile("shaders/Compute/g_buffer_vert.glsl"), ReadFile("shaders/Compute/g_buffer_frag.glsl"));
 	g_buffer_shader.name = "g_buffer_shader ";
+
+	Shader sanitycheck_shader = CreateShader(ReadFile("shaders/sanitycheck_vert.glsl"), ReadFile("shaders/sanitycheck_frag.glsl"));
+	sanitycheck_shader.name = "sanitycheck_shader ";
 
 
 	DynaArray<Shader> shaders;
@@ -372,118 +331,106 @@ int main()
 	    //"textures/bot1_rig_v01_Scene_Material_OcclusionRoughnessMetallic.png"
 	};
 
+	
+
 	CreateTextures(&textures, text_directories);
 	CreateMeshes(&meshes, mesh_directories);
+	// @HACK: Overriding this cause it has texture coords
+	standard_meshes.cube = meshes[0];
 
-	
-
-
-	camera_controller.main_camera.projection_matrix = perspective(40, ((float)WINDOW_WIDTH) / WINDOW_HEIGHT, 0.1f, 250.0f);
-	camera_controller.main_camera.target = Vec3(0);
-	camera_controller.main_camera.transform.position = Vec3(0, 4, 5);
-	camera_controller.main_camera.view_matrix = LookAt(camera_controller.main_camera.transform.position, camera_controller.main_camera.target, Vec3(0, 1, 0));
-	
 	Actor floor_tile;
 	floor_tile.mesh = standard_meshes.plane;
 	floor_tile.transform.scale = Vec3(20);
 	floor_tile.transform.rotation = EulerToQuat(Vec3(90, 0, 0));
 	floor_tile.transform.position = Vec3(-10, 0, 10);
 
+	Actor wall_front;
+	wall_front.mesh = standard_meshes.plane;
+	wall_front.transform.scale = Vec3(20);
+	wall_front.transform.rotation = EulerToQuat(Vec3(0, 0, 0));
+	wall_front.transform.position = Vec3(-10, 0, -10);
+
+	Actor wall_left;
+	wall_left.mesh = standard_meshes.plane;
+	wall_left.transform.scale = Vec3(20);
+	wall_left.transform.rotation = EulerToQuat(Vec3(0, -90, 0));
+	wall_left.transform.position = Vec3(-10, 0, 10);
+
+	Actor wall_right;
+	wall_right.mesh = standard_meshes.plane;
+	wall_right.transform.scale = Vec3(20);
+	wall_right.transform.rotation = EulerToQuat(Vec3(0, 90, 0));
+	wall_right.transform.position = Vec3(10, 0, -10);
+
 	Actor test_cube_guy;
-	test_cube_guy.mesh = standard_meshes.cube;
+	test_cube_guy.mesh = meshes[2];
+	test_cube_guy.transform.position = Vec3(0, 1, 0);
 	World main_world;
 	main_world.actors.push_back(floor_tile);
 	main_world.actors.push_back(test_cube_guy);
-	
-	uint32 dime = 5;
-	for (int32 x = -2; x < 2; x++)
-	{
-		for (int32 z = -2; z < 2; z++)
-		{
-			Batch first_sector = CreateSector(dime * x, 0, dime * z, dime);
-			CreateBatch(&first_sector, standard_meshes.cube.vao.vertex_buffers[0], standard_meshes.cube.ibo);
-			main_world.batches.push_back(first_sector);
-		}		
-	}	
-	
-	DebugAddPersistentAABBMinMax(Vec3(0, 0, 0), Vec3(5));
-
-
+	main_world.actors.push_back(wall_front);
+	main_world.actors.push_back(wall_left);
+	main_world.actors.push_back(wall_right);
 
 	RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_WIDTH);
 	RenderCommands::EnableDepthBuffer();
 	RenderCommands::EnableCubeMapSeamless();
 	RenderCommands::DepthBufferFunction(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
+	RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	UniformBuffer ubo_camera;
-	ubo_camera.lbo = BUFFER_LAYOUT(ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4);
-	CreateUniformBuffer(&ubo_camera);
-
-	UniformBuffer ubo_lighting;
-	ubo_lighting.lbo = BUFFER_LAYOUT(ShaderDataType::Float4, ShaderDataType::Float4, ShaderDataType::Float4,
-		ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4);
-	CreateUniformBuffer(&ubo_lighting);
-
-
-	DynaArray<Mat4> ubo_camera_data = { camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix };
-
-	DynaArray<Vec4> ubo_lighting_data = {
-		Vec4(0,  1, 0, 0),  // Size
-		Vec4(0), Vec4(0)		
-	};
-		
-	UniformBufferSetBindPoint(ubo_camera, 0);
-	UniformBufferSetBindPoint(ubo_lighting, 1);
-
-	WriteBufferData(ubo_camera, ubo_camera_data, 0);
-	WriteBufferData(ubo_lighting, ubo_lighting_data, 0);
-
-
-	//@TODO: Rename the fricken ubo plz
-	ShaderBindUniformBuffer(pbr_shader, 0, "Matrices");
-	ShaderBindUniformBuffer(pbr_shader, 1, "Lighting");
-	ShaderBindUniformBuffer(debug_shader, 0, "Matrices");
-	ShaderBindUniformBuffer(pbr_texture_shader, 0, "Matrices");
-	ShaderBindUniformBuffer(pbr_texture_shader, 1, "Lighting");	
-	ShaderBindUniformBuffer(debug_mesh_shader, 0, "Matrices");	
-	ShaderBindUniformBuffer(instance_shader_test, 0, "CameraMatrices");
-
-	ShaderBindUniformBuffer(pbr_nomaps_shader, 0, "WorldMatrices");
-	ShaderBindUniformBuffer(pbr_nomaps_batch_shader, 0, "WorldMatrices");
-
-	ShaderBindUniformBuffer(g_buffer_shader, 0, "WorldMatrices");
-
-	//ShaderBindUniformBuffer(pbr_nomaps_shader, 1, "LightingData");
-	//ShaderBindUniformBuffer(pbr_nomaps_batch_shader, 1, "LightingData");
-	
-	   	  
+	camera_controller.main_camera.projection_matrix = Perspective(40, ((float)WINDOW_WIDTH) / WINDOW_HEIGHT, 0.1f, 250.0f);
+	camera_controller.main_camera.target = Vec3(0);
+	camera_controller.main_camera.transform.position = Vec3(0, 4, 5);
+	camera_controller.main_camera.view_matrix = LookAt(camera_controller.main_camera.transform.position, camera_controller.main_camera.target, Vec3(0, 1, 0));
 
 	Renderer renderer;
 	renderer.render_shaders.skybox_shader = cubemap_shader;
 	renderer.render_shaders.depth_test_shader = simple_shadow_map_shader;
 	renderer.render_shaders.g_buffer_shader = g_buffer_shader;
-	renderer.render_shaders.render_shader = pbr_nomaps_shader;
-	renderer.render_shaders.render_batch_shader = pbr_nomaps_batch_shader;
+	renderer.render_shaders.ssao_gbuffer_shader = ssao_gbuffer_shader;
+	renderer.render_shaders.ssao_shader = ssao_shader;
+	renderer.render_shaders.forward_render_shader = pbr_nomaps_shader;
+	renderer.render_shaders.forward_render_batch_shader = pbr_nomaps_batch_shader;
+	renderer.render_shaders.deferred_render_shader = deferred_shader;
 	renderer.render_shaders.post_processing_shader = post_processing_shader;
-	
-	renderer.standard_meshes = standard_meshes;
-	// @HACK: Overriding this cause it has texture coords
-	renderer.standard_meshes.cube = meshes[0];
+	renderer.render_shaders.debug_shader = debug_shader;
+	renderer.render_shaders.debug_mesh_shader = debug_mesh_shader;
 
+	renderer.standard_shaders.simple_blur = simple_blur_shader;
+
+	renderer.standard_meshes = standard_meshes;
+	
 	renderer.WINDOW_WIDTH = WINDOW_WIDTH;
 	renderer.WINDOW_HEIGHT = WINDOW_HEIGHT;
 	renderer.camera = &camera_controller;
 	renderer.InitFrameBuffers();
 
-	//Informer informer;
-	//informer.CreateUBO("Matrices", BUFFER_LAYOUT(ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4), 0);
+	Informer informer;
+	informer.CreateUBO("WorldMatrices", BUFFER_LAYOUT(ShaderDataType::Mat4, ShaderDataType::Mat4,  ShaderDataType::Mat4), 0);
+	informer.CreateUBO("LightingData", BUFFER_LAYOUT(ShaderDataType::Float4, ShaderDataType::Float4, ShaderDataType::Float4,
+		ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4), 1);
 
+	informer.LinkShader("WorldMatrices", debug_shader);
+	informer.LinkShader("WorldMatrices", debug_mesh_shader);
+	informer.LinkShader("WorldMatrices", pbr_nomaps_shader);
+	informer.LinkShader("WorldMatrices", pbr_nomaps_batch_shader);	
+	informer.LinkShader("WorldMatrices", deferred_shader);	
+	informer.LinkShader("WorldMatrices", g_buffer_shader);
+
+	informer.LinkShader("LightingData", deferred_shader);
+	informer.LinkShader("LightingData", pbr_nomaps_shader);
 
 	DirectionalLight sun_light;
 	sun_light.direction = Normalize(Vec3(2, -4, 1));
-	sun_light.light_colour = Vec3(10);
+	sun_light.light_colour = Vec3(.5);
 
 	float fh = 1;
+
+	EditableMesh tri;
+	float z = 0.5;
+	tri.AddTrianlge(Vec3(-0.5, -0.5, z), Vec3(0.5, -0.5, z), Vec3(0, 0.5, z));
+	Mesh trimesh = tri.CreateMesh();
+
 	while (!glfwWindowShouldClose(window))
 	{
 		//************************************
@@ -550,14 +497,7 @@ int main()
 
 
 		/////////////////////////////////////////////////
-
-
-
-
 		//light_space_matrix = light_view * shadow_projections[0];
-
-
-
 
 		//************************************
 		// Update GPU Buffers
@@ -567,20 +507,21 @@ int main()
 										light_space_matrix };
 
 		DynaArray<Vec4> lighting_data = {
-		Vec4(0,  1, 0, 0),  // Size
+		Vec4(0,  1, 0, 0),  // Meta data for lighting, number of lights 
+		Vec4(camera_controller.main_camera.transform.position, 0),
 		Vec4(sun_light.direction, 0), Vec4(sun_light.light_colour, 0)
 		};
 
-		WriteBufferData(ubo_camera, camera_data, 0);
-		WriteBufferData(ubo_lighting, lighting_data, 0);
+		informer.UpdateUBO("WorldMatrices", camera_data);
+		informer.UpdateUBO("LightingData", lighting_data);
+
 
 		//************************************
 		// Render The Current Frame
 		//************************************
 
 		renderer.Render(main_world);
-
-
+	
 		RenderCommands::DisableDepthBuffer();
 		DebugDrawLines(&debug_shader);
 		RenderCommands::EnableDepthBuffer();
@@ -590,12 +531,12 @@ int main()
 		// Post Debug Drawing
 		////////////////////
 
-		BindShader(debug_mesh_shader);
-		glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
-		ShaderBindTexture(debug_mesh_shader, renderer.frame_shadow_map.depth_texture_attachment, 0, "mesh_texture");
-		ShaderSetMat4(debug_mesh_shader, "model", Mat4(1).arr);
-		RenderMesh(debug_mesh_shader, standard_meshes.quad);
-		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+		//BindShader(debug_mesh_shader);
+		//glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
+		//ShaderBindTexture(debug_mesh_shader, renderer.frame_shadow_map.depth_texture_attachment, 0, "mesh_texture");
+		//ShaderSetMat4(debug_mesh_shader, "model", Mat4(1).arr);
+		//RenderMesh(debug_mesh_shader, standard_meshes.quad);
+		//glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 		//// @TODO: Debug Draw Quad
 		//// @NOTE: Draw bloom buffer;

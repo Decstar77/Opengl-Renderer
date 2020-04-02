@@ -22,6 +22,38 @@ namespace cm
 
 
 	};
+
+	class InputManager
+	{
+	public:
+		//static std::vector<InputMessager *> msg;
+
+	};
+
+	class InputMessager
+	{
+		//InputMessager() { InputManager::msg.push_back(this); };
+		
+		virtual void key(int32 k) = 0;
+		virtual void mouse(real x, real y) = 0;
+	};
+
+	class Player : public InputMessager
+	{
+		
+		virtual void key(int32 k) override
+		{
+
+		}
+
+
+		virtual void mouse(real x, real y) override
+		{
+			
+		}
+
+	};
+
 	
 	class Informer
 	{
@@ -52,6 +84,8 @@ namespace cm
 		FrameBuffer frame_post_processing;
 		FrameBuffer frame_shadow_map;
 		FrameBuffer frame_g_buffer;
+		FrameBuffer frame_ssao_unblured;
+		FrameBuffer frame_ssao_blured;
 
 		RenderSettings render_settings;
 
@@ -79,6 +113,9 @@ namespace cm
 		void DeferedPass(const World &world);
 		void ForwardPass(const World &world);
 		void PostProcessingPass(const World &world);
+		void SSAOPass(const World &world);
+
+		void debug();
 
 		void DrawSkyBox();
 
@@ -86,6 +123,8 @@ namespace cm
 		void InitSkyBox();
 		void InitFrameBuffers();
 		void InitStandardMeshes();
+		
+		
 
 	};
 
