@@ -69,6 +69,7 @@ namespace cm
 		uint32 size_bytes = 0;
 		uint32 index_count = 0;
 		BufferLayout lbo;
+		VertexFlags flags = VertexFlags::READ_WRITE;
 		BufferType type = BufferType::Array_buffer;
 	};
 
@@ -77,6 +78,7 @@ namespace cm
 		uint32 object = 0;
 		uint32 index_count = 0;
 		uint32 size_bytes = 0 ;
+		VertexFlags flags = VertexFlags::READ_WRITE;
 		BufferType type = BufferType::Index_buffer;
 	};
 	
@@ -160,52 +162,22 @@ namespace cm
 		std::unordered_map<std::string, uint32> uniform_cache;
 	};
 
-	template<typename T>
-	void CreateBuffer(T *buffer, uint32 buffer_size_bytes, VertexFlags flags)
+	struct GLMesh // OpenGl
 	{
-		Assert(buffer->object == 0);
+		VertexArray vao;
+		IndexBuffer ibo;
+	};
 
-		T buff;
-		uint32 object;
-		uint32 type = static_cast<uint32>(buff.type);
-		glGenBuffers(1, &object);
-		glBindBuffer(type, object);	
-
-		glBufferStorage(type, buffer_size_bytes, NULL, static_cast<uint32>(flags));
-
-		glBindBuffer(type, 0);
-
-		buffer->object = object;		
-		buffer->size_bytes = buffer_size_bytes;
-	}
-
-	template<typename T>	
-	void BindBuffer(const T &buffer)
+	struct Batch // OpenGl
 	{
-		Assert(buffer.object != 0);
-		glBindBuffer(static_cast<uint32>(buffer.type), buffer.object);
-	}
-	
-	template<typename T>
-	void UnbindBuffer(const T &buffer)
-	{
-		uint32 type = static_cast<uint32>(buffer.type);
-		glBindBuffer(type, 0);
-	}
-
-	template<typename T>
-	void FreeBuffer(T *buffer)
-	{
-		if (buffer->object != 0)
-		{
-			glDeleteBuffers(1, &buffer->object);
-			buffer->object = 0;
-		}
-	}
+		VertexArray vao;
+		IndexBuffer ibo;
+		DynaArray<Mat4> transforms;
+	};
 
 
 	template <typename Q, typename T>
-	void ReadBufferData(Q buffer, DynaArray<T>* data, uint32 size_byte, uint32 offset_bytes)
+	void ReadBufferData(const Q &buffer, DynaArray<T> *data, uint32 size_byte, uint32 offset_bytes)
 	{
 		Assert(buffer.object != 0);
 		size_byte = size_byte == 0 ? (buffer.size_bytes - offset_bytes) : size_byte;
@@ -227,14 +199,14 @@ namespace cm
 	}
 
 	template <typename Q, typename T>
-	void WriteBufferData(Q buffer, const DynaArray<T>& data, uint32 offset_bytes)
+	void WriteBufferData(Q *buffer, const DynaArray<T>& data, uint32 offset_bytes)
 	{
-		Assert(buffer.object != 0);
-		Assert(offset_bytes + data.size() * sizeof(T) <= buffer.size_bytes);
+		Assert(buffer->object != 0);
+		Assert(offset_bytes + data.size() * sizeof(T) <= buffer->size_bytes);
 
-		uint32 type = static_cast<uint32>(buffer.type);
+		uint32 type = static_cast<uint32>(buffer->type);
 
-		glBindBuffer(type, buffer.object);
+		glBindBuffer(type, buffer->object);
 
 		void *ptr = glMapBuffer(type, GL_WRITE_ONLY);
 		ptr = static_cast<char*>(ptr) + offset_bytes;
@@ -248,6 +220,30 @@ namespace cm
 		glUnmapBuffer(type);
 		glBindBuffer(type, 0);
 	}
+	
+	//************************************
+	// Vertex Buffer Functions
+	//************************************
+
+	void CreateVertexBuffer(VertexBuffer *vbo);
+
+	void BindVertexBuffer(const VertexBuffer &vbo);
+
+	void UnbindVertexBuffer();
+
+	void FreeVerteBuffer(VertexBuffer *vbo);
+
+	//************************************
+	// Index Buffer Functions
+	//************************************
+
+	void CreateIndexBuffer(IndexBuffer *ibo);
+
+	void BindIndexBuffer(const IndexBuffer &ibo);
+
+	void UnbindIndexBuffer();
+
+	void FreeIndexBuffer(IndexBuffer *ibo);
 
 	//************************************
 	// Uniform Buffer Functions
@@ -260,6 +256,7 @@ namespace cm
 	//************************************
 	// Vertex Array Functions
 	//************************************
+
 	void BindVertexArray(const VertexArray &vao);
 	
 	void UnbindVertexArray();
@@ -315,17 +312,17 @@ namespace cm
 	
 	uint32 GetUniformLocation(Shader *shader, const std::string &uniform_name);
 	
-	void ShaderSetInt32(Shader &shader, const std::string &uniform_name, int x);
+	void ShaderSetInt32(Shader *shader, const std::string &uniform_name, int x);
 	
-	void ShaderSetFloat(Shader &shader, const std::string &uniform_name, float x);
+	void ShaderSetFloat(Shader *shader, const std::string &uniform_name, float x);
 	
-	void ShaderSetVec3(Shader &shader, const std::string &uniform_name, float x, float y, float z);
+	void ShaderSetVec3(Shader *shader, const std::string &uniform_name, float x, float y, float z);
 	
-	void ShaderSetVec3(Shader &shader, const std::string &uniform_name, float* data);
+	void ShaderSetVec3(Shader *shader, const std::string &uniform_name, float* data);
 	
-	void ShaderSetMat4(Shader &shader, const std::string &uniform_name, float* data);
+	void ShaderSetMat4(Shader *shader, const std::string &uniform_name, float* data);
 	
-	void ShaderBindUniformBuffer(Shader &shader, uint32 binding_point, const std::string &uniform_name);
+	void ShaderBindUniformBuffer(const Shader &shader, uint32 binding_point, const std::string &uniform_name);
 
 	// @TODO: Complete
 	//void ShaderBindUniformBuffersFromSource(Shader &shader);
@@ -353,6 +350,22 @@ namespace cm
 	bool CheckFrameBuffer(const FrameBuffer &buffer); // Returns true if FrameBuffer is good 
 
 	//************************************
+	// Render Functions
+	//************************************
+
+	void CreateBatch(Batch *batch, const VertexBuffer &vbo_to_batch, const IndexBuffer &ibo_of_vbo);
+
+	void FreeBatch(Batch *batch); 
+
+	//************************************
+	// Render Functions
+	//************************************
+
+	void RenderBatch(const Shader &shader, const Batch &batch); 
+
+	void RenderMesh(const Shader &shader, const GLMesh &mesh);		
+
+	//************************************
 	// Other Functions
 	//************************************
 
@@ -360,6 +373,7 @@ namespace cm
 
 	void PrintOpenglStatistics(const OpenGLStatistics &stats);
 
+	
 }
 
 

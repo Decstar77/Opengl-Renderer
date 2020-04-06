@@ -7,22 +7,16 @@
 #include "src/Math/CosmicPhysics.h"
 #include "src/Math/CosmicNoise.h"
 #include "src/OpenGL/OpenGL.h"
-#include "src/OpenGL/OpenGlRenderer.h"
-#include "src/Mesh.h"
-#include "src/GPUCompute.h"
+
+#include "src/Core/EditableMesh.h"
 #include "src/Core/Renderer.h"
+#include "src/Core/UIRenderer.h"
+
 #include "src/Debug.h"
 #include "src/Engine/AssetLoader.h"
 #include "src/Engine/Input.h"
 
 using namespace cm;
-
-struct Voxel
-{
-	Actor actor;
-	Transform transform;
-	Aabb aabb;
-};
 
 static const uint32 WINDOW_WIDTH = 1280;
 static const uint32 WINDOW_HEIGHT = 720;
@@ -107,68 +101,8 @@ GLFWwindow* CreateRenderingWindow()
 	return window;
 }
 
-void CreateMeshes(DynaArray<Mesh> *meshes, DynaArray<std::string> directories)
-{
-	//SLOW!!!!!!!!!!!!
-	for (uint32 i = 0; i < directories.size(); i++)
-	{
-		FileDataMesh data = LoadMesh(directories.at(i), true);		
-	
-		VertexBuffer vbo;
-		vbo.lbo = PNTTB_VBO_LAYOUT;
-		CreateBuffer<VertexBuffer>(&vbo, data.size_bytes, VertexFlags::READ_WRITE);
-		WriteBufferData(vbo, data.data, 0);
-		
-		VertexArray vao;
-		vao.vertex_buffers.push_back(vbo);
-
-		CreateVertexArray(&vao);
-		IndexBuffer ibo;
-		CreateBuffer<IndexBuffer>(&ibo, data.indices.size() * sizeof(uint32), VertexFlags::READ_WRITE);
-		ibo.index_count = data.indices.size();
-		ibo.size_bytes = data.indices.size() * sizeof(float);
-		WriteBufferData(ibo, data.indices, 0);
-
-		Mesh m;
-		m.vao = vao;
-		m.ibo = ibo;		
-		meshes->push_back(m);
-	}
-}
-
-void CreateTextures(DynaArray<Texture> *textures, DynaArray<std::string> directories)
-{
-	//SLOW!!!!!!!!!!!!
-	TextureConfig config;
-	config.data_type = GL_UNSIGNED_BYTE;
-	config.texture_format = GL_RGB;
-	config.pixel_format = GL_RGB;
-	config.width = 1;
-	config.height = 1;
-	DynaArray<uint8> id_data = { 255 };
-	Texture id_text;
-	id_text.config = config;
-	CreateTexture(&id_text, id_data.data());
-	textures->push_back(id_text);
-
-	for (uint32 i = 0; i < directories.size(); i++)
-	{
-		FileDataTexture<uint8> td = LoadTexture(directories.at(i));
-
-		config.width = td.width;
-		config.height = td.height;
-
-		
-		Texture t;
-		t.config = config;
-		CreateTexture(&t, td.data.data());
-		textures->push_back(t);
-	}
-}
-
 void InitializeStandardMeshes()
 {
-	RenderCommands::EnableFaceCulling();
 	EditableMesh plane;
 	// CCW
 	plane.AddTrianlge(Vec3(0, 0, 0), Vec3(1, 0, 0), Vec3(0, 1, 0));
@@ -177,7 +111,7 @@ void InitializeStandardMeshes()
 	plane.SetColour(Vec3(0.1, 0.7, 0.1));
 	plane.RecaluclateNormals();
 	//plane.FuseVertices();
-	standard_meshes.plane = plane.CreateMesh();
+	standard_meshes.plane = plane.CreateMesh(false);
 
 	EditableMesh cube;
 	// CCW
@@ -202,7 +136,7 @@ void InitializeStandardMeshes()
 
 	cube.RecaluclateNormals();
 	//cube.FuseVertices();
-	standard_meshes.cube = cube.CreateMesh();
+	standard_meshes.cube = cube.CreateMesh(false);
 
 	
 	EditableMesh quad; 
@@ -217,7 +151,7 @@ void InitializeStandardMeshes()
 	//quad.AddTrianlge(Vec3(-1, 1, 0), Vec3(1, 1, 0), Vec3(1, -1, 0));
 	//quad.AddTextureCoords(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
 	quad.RecaluclateNormals();
-	standard_meshes.quad = quad.CreateMesh();
+	standard_meshes.quad = quad.CreateMesh(false);
 }
 
 int main()
@@ -290,11 +224,9 @@ int main()
 	//Shader instance_shader_test = CreateShader(ReadFile("shaders/instance_test_vert.glsl"), ReadFile("shaders/instance_test_frag.glsl"));
 	//instance_shader_test.name = "instancing_test";
 	
-	Shader pbr_nomaps_shader = CreateShader(ReadFile("shaders/forward_phong_notext_vert.glsl"), ReadFile("shaders/forward_phong_notext_frag.glsl"));
-	pbr_nomaps_shader.name = "pbr_nomaps";
+	Shader forward_phong_notext_shader = CreateShader(ReadFile("shaders/forward_phong_notext_vert.glsl"), ReadFile("shaders/forward_phong_notext_frag.glsl"));
+	forward_phong_notext_shader.name = "forward_phong_notext_shader";
 
-	Shader pbr_nomaps_batch_shader = CreateShader(ReadFile("shaders/forward_phong_notext_batch_vert.glsl"), ReadFile("shaders/forward_phong_notext_frag.glsl"));
-	pbr_nomaps_batch_shader.name = "pbr_nomaps_batch_shader";
 
 	Shader post_processing_shader = CreateShader(ReadFile("shaders/post_processing_vert.glsl"), ReadFile("shaders/post_processing_frag.glsl"));
 	post_processing_shader.name = "post_processing_shader";
@@ -314,7 +246,6 @@ int main()
 
 	DynaArray<Shader> shaders;
 	DynaArray<Texture> textures;
-	DynaArray<Mesh> meshes;
 
 	DynaArray<std::string> mesh_directories{  
 		//"models/sponza.obj",
@@ -331,16 +262,41 @@ int main()
 	    //"textures/bot1_rig_v01_Scene_Material_OcclusionRoughnessMetallic.png"
 	};
 
+	DynaArray<EditableMesh> impmeshes;
+	//
+	LoadModel(&impmeshes, "res/models/smooth_cube.obj");
+	GLMesh impmesh = impmeshes[0].CreateMesh(false);
+	impmeshes.clear();
+
+	LoadModel(&impmeshes, "res/models/lowpoly_fps_gun.obj");
+	GLMesh gun = impmeshes[0].CreateMesh(true);
+	impmeshes.clear();
+
+
+	DynaArray<uint8> image_data;
+	Texture gun_diffuse_map;
+	LoadTexture(&image_data, &gun_diffuse_map.config, "res/textures/FPS_CGC_LowPoly_Gun_BaseColor.png");
+	CreateTexture(&gun_diffuse_map, image_data.data());
+	image_data.clear();
+
+	Texture gun_oc_r_m_map;
+	LoadTexture(&image_data, &gun_oc_r_m_map.config, "res/textures/FPS_CGC_LowPoly_Gun_OcclusionRoughnessMetallic.png");
+	CreateTexture(&gun_oc_r_m_map, image_data.data());
+	image_data.clear();
 	
 
-	CreateTextures(&textures, text_directories);
-	CreateMeshes(&meshes, mesh_directories);
+	Texture gun_normal_map;
+	LoadTexture(&image_data, &gun_normal_map.config, "res/textures/FPS_CGC_LowPoly_Gun_Normal.png");
+	CreateTexture(&gun_normal_map, image_data.data());
+	image_data.clear();
+	//LoadTexture(&image_data, &gun_diffuse_map.config, "res/textures/FPS_CGC_LowPoly_Gun_BaseColor.png");
+
 	// @HACK: Overriding this cause it has texture coords
-	standard_meshes.cube = meshes[0];
+	standard_meshes.cube = impmesh;
 
 	Actor floor_tile;
 	floor_tile.mesh = standard_meshes.plane;
-	floor_tile.transform.scale = Vec3(20);
+	floor_tile.transform.scale = Vec3(200);
 	floor_tile.transform.rotation = EulerToQuat(Vec3(90, 0, 0));
 	floor_tile.transform.position = Vec3(-10, 0, 10);
 
@@ -363,16 +319,26 @@ int main()
 	wall_right.transform.position = Vec3(10, 0, -10);
 
 	Actor test_cube_guy;
-	test_cube_guy.mesh = meshes[2];
+	test_cube_guy.mesh = gun;
+	test_cube_guy.transform.scale = Vec3(2);
+	test_cube_guy.transform.rotation = EulerToQuat(Vec3(0, -45, 0));
 	test_cube_guy.transform.position = Vec3(0, 1, 0);
+	test_cube_guy.material.diffuse_texture = &gun_diffuse_map;
+	test_cube_guy.material.occlusion_roughness_metallic = &gun_oc_r_m_map;
+	test_cube_guy.material.normal_texture = &gun_normal_map;
+
+
+
 	World main_world;
-	main_world.actors.push_back(floor_tile);
-	main_world.actors.push_back(test_cube_guy);
-	main_world.actors.push_back(wall_front);
-	main_world.actors.push_back(wall_left);
-	main_world.actors.push_back(wall_right);
+	main_world.objects.push_back(&floor_tile);
+	main_world.objects.push_back(&test_cube_guy);
+	main_world.objects.push_back(&wall_front);
+	main_world.objects.push_back(&wall_left);
+	main_world.objects.push_back(&wall_right);
 
 	RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_WIDTH);
+	RenderCommands::EnableFaceCulling();
+	RenderCommands::CullBackFace();
 	RenderCommands::EnableDepthBuffer();
 	RenderCommands::EnableCubeMapSeamless();
 	RenderCommands::DepthBufferFunction(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
@@ -383,14 +349,18 @@ int main()
 	camera_controller.main_camera.transform.position = Vec3(0, 4, 5);
 	camera_controller.main_camera.view_matrix = LookAt(camera_controller.main_camera.transform.position, camera_controller.main_camera.target, Vec3(0, 1, 0));
 
+	UIRenderer ui_renderer;
+	ui_renderer.Init(window);
+
+
+
 	Renderer renderer;
 	renderer.render_shaders.skybox_shader = cubemap_shader;
 	renderer.render_shaders.depth_test_shader = simple_shadow_map_shader;
 	renderer.render_shaders.g_buffer_shader = g_buffer_shader;
 	renderer.render_shaders.ssao_gbuffer_shader = ssao_gbuffer_shader;
 	renderer.render_shaders.ssao_shader = ssao_shader;
-	renderer.render_shaders.forward_render_shader = pbr_nomaps_shader;
-	renderer.render_shaders.forward_render_batch_shader = pbr_nomaps_batch_shader;
+	renderer.render_shaders.forward_render_shader = forward_phong_notext_shader;
 	renderer.render_shaders.deferred_render_shader = deferred_shader;
 	renderer.render_shaders.post_processing_shader = post_processing_shader;
 	renderer.render_shaders.debug_shader = debug_shader;
@@ -404,6 +374,7 @@ int main()
 	renderer.WINDOW_HEIGHT = WINDOW_HEIGHT;
 	renderer.camera = &camera_controller;
 	renderer.InitFrameBuffers();
+	renderer.InitIdentityTexture();
 
 	Informer informer;
 	informer.CreateUBO("WorldMatrices", BUFFER_LAYOUT(ShaderDataType::Mat4, ShaderDataType::Mat4,  ShaderDataType::Mat4), 0);
@@ -412,13 +383,12 @@ int main()
 
 	informer.LinkShader("WorldMatrices", debug_shader);
 	informer.LinkShader("WorldMatrices", debug_mesh_shader);
-	informer.LinkShader("WorldMatrices", pbr_nomaps_shader);
-	informer.LinkShader("WorldMatrices", pbr_nomaps_batch_shader);	
+	informer.LinkShader("WorldMatrices", forward_phong_notext_shader);
 	informer.LinkShader("WorldMatrices", deferred_shader);	
 	informer.LinkShader("WorldMatrices", g_buffer_shader);
 
 	informer.LinkShader("LightingData", deferred_shader);
-	informer.LinkShader("LightingData", pbr_nomaps_shader);
+	informer.LinkShader("LightingData", forward_phong_notext_shader);
 
 	DirectionalLight sun_light;
 	sun_light.direction = Normalize(Vec3(2, -4, 1));
@@ -426,10 +396,9 @@ int main()
 
 	float fh = 1;
 
-	EditableMesh tri;
 	float z = 0.5;
-	tri.AddTrianlge(Vec3(-0.5, -0.5, z), Vec3(0.5, -0.5, z), Vec3(0, 0.5, z));
-	Mesh trimesh = tri.CreateMesh();
+	float parr[100] = {};
+	for (int i = 0; i < 100; i++) parr[i] = 0.f;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -473,7 +442,14 @@ int main()
 		}
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
 		{
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			
+
 			fh -= 0.4 * delta_time;
+		}
+		else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
+		{
+			//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
 
 		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE))
@@ -519,7 +495,7 @@ int main()
 		//************************************
 		// Render The Current Frame
 		//************************************
-
+		
 		renderer.Render(main_world);
 	
 		RenderCommands::DisableDepthBuffer();
@@ -527,6 +503,28 @@ int main()
 		RenderCommands::EnableDepthBuffer();
 
 
+		ui_renderer.BeginFrame();
+
+		
+		ui_renderer.CreateUIWindow("Render Settings");
+		ui_renderer.CreateCheckBox("Shadows ", &renderer.render_settings.shadow_pass);
+		ui_renderer.SetWindowSize({ 350, 100 });
+		std::stringstream ss;
+		ss << "Time: " << delta_time;
+		ImGui::PlotLines(ss.str().c_str(), parr, 100, 0, "", 0, 120, ImVec2(0, 50));
+
+		ui_renderer.EndUIWindow();
+		
+
+
+
+
+
+		ImGui::ShowDemoWindow();
+
+		
+
+		ui_renderer.EndFrame();
 		////////////////////
 		// Post Debug Drawing
 		////////////////////
@@ -557,6 +555,13 @@ int main()
 		std::chrono::microseconds elapsedTime(std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime));
 		float time = elapsedTime.count();
 		delta_time = time * 0.001f * 0.001f;
+		
+		for (int i = 0; i < 99; i++)
+		{
+			parr[i] = parr[i + 1];
+		}
+		parr[99] = delta_time * 1000.f;
+
 		//std::cout << "Ms: " << time * 0.001 << std::endl;
 		//std::cout << "Sc: " << time * 0.001f * 0.001f << std::endl;		
 	}

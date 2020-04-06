@@ -1,107 +1,6 @@
 #include "Core/Renderer.h"
 namespace cm
 {
-
-	CameraController::CameraController()
-	{
-
-	}
-
-	CameraController::CameraController(Camera cam) : main_camera(cam)
-	{
-
-	}
-
-	CameraController::~CameraController()
-	{
-
-	}
-
-	void CameraController::CameraRotate(real delta_pitch, real delta_yaw)
-	{
-		main_camera.camera_yaw += delta_yaw;
-		main_camera.camera_pitch += delta_pitch;
-		// Make sure that when pitch is out of bounds, screen doesn't get flipped
-		if (main_camera.camera_pitch > 89.0f)
-		{
-			main_camera.camera_pitch = 89.0f;
-		}
-		else if (main_camera.camera_pitch < -89.0f)
-		{
-			main_camera.camera_pitch = -89.0f;
-		}
-		Vec3 front(0, 0, 0);
-		front.x = cos(DegToRad(main_camera.camera_yaw)) * cos(DegToRad(main_camera.camera_pitch));
-		front.y = sin(DegToRad(main_camera.camera_pitch));
-		front.z = sin(DegToRad(main_camera.camera_yaw)) * cos(DegToRad(main_camera.camera_pitch));
-		front = Normalize(front);
-
-		Vec3 look = main_camera.transform.position + front;
-
-		Vec3 up(0.0f, 1.0f, 0.0f); // World Space
-		Vec3 camera_reverse_direction = Normalize((look - main_camera.transform.position));
-		main_camera.transform.basis.right = Normalize(Cross(camera_reverse_direction, up));
-		main_camera.transform.basis.upward = Cross(main_camera.transform.basis.right, camera_reverse_direction);
-		main_camera.transform.basis.forward = Normalize(Cross(main_camera.transform.basis.upward, main_camera.transform.basis.right));
-	}
-
-	void CameraController::CameraMovement(real delta_time)
-	{
-		float cameraSpeed = 4 * delta_time;
-		Vec3 cameraPos = main_camera.transform.position;
-		Basis basis = main_camera.transform.basis;
-		Vec3 cameraFront = basis.forward;
-		Vec3 cameraUp = basis.upward;
-		Vec3 cameraRight = basis.right;
-
-		if (Input::GetKey(KEY_Q))
-		{
-			cameraPos.y += cameraSpeed;
-		}
-		if (Input::GetKey(KEY_E))
-		{
-			cameraPos.y -= cameraSpeed;
-		}
-		if (Input::GetKey(KEY_W))
-		{
-			cameraPos += cameraSpeed * cameraFront;
-		}
-		if (Input::GetKey(KEY_S))
-		{
-			cameraPos -= cameraSpeed * cameraFront;
-		}
-		if (Input::GetKey(KEY_A))
-		{
-			cameraPos -= cameraRight * cameraSpeed;
-		}
-		if (Input::GetKey(KEY_D))
-		{
-			cameraPos += cameraRight * cameraSpeed;
-		}
-		main_camera.transform.position = cameraPos;
-	}
-
-	Ray CameraController::RayFromCamera(const Vec2 &mouse_position, const Vec2 &window_dimenions)
-	{
-		Vec4 normal_coords = GetNormalisedDeviceCoordinates(window_dimenions.x, window_dimenions.y, mouse_position.x, mouse_position.y);
-		Vec4 view_coords = ToViewCoords(main_camera.projection_matrix, normal_coords);
-		// This -1 ensure we a have something pointing in to the screen
-		view_coords = Vec4(view_coords.x, view_coords.y, -1, 0);
-		Vec3 world_coords = ToWorldCoords(main_camera.view_matrix, view_coords);
-
-		Ray ray;
-		ray.origin = main_camera.transform.position;
-		ray.direction = Normalize(Vec3(world_coords.x, world_coords.y, world_coords.z));
-		return ray;
-	}
-
-	void CameraController::UpdateCamera(float delta_time)
-	{
-		CameraMovement(delta_time);
-		Vec3 look = main_camera.transform.position + main_camera.transform.basis.forward;
-		main_camera.view_matrix = LookAt(main_camera.transform.position, look, Vec3(0, 1, 0));
-	}
-
 	Renderer::Renderer()
 	{
 		
@@ -118,13 +17,14 @@ namespace cm
 		RenderCommands::ClearDepthBuffer();
 		RenderCommands::Clear(Colour(0, 1, 0, 1));
 
-		float near_plane = 1.0f, far_plane = 10.f;
-		float rect = 10;
+		float near_plane = 1.f, far_plane = 10.f;
+		float rect = 8;
 		Mat4 lightProjection = Orthographic(-rect, rect, rect, -rect, near_plane, far_plane);
 		//Mat4 light_view = LookAt(cpos, cpos + Normalize(target), Vec3(0, 1, 0));
 		Mat4 light_view = LookAt(Vec3(-2.0f, 4.0f, -1.0f), Vec3(0), Vec3(0, 1, 0));
 		Mat4 light_space_matrix = light_view * lightProjection;
 		
+		// @NOTE: We meant store all the shadow maps, eviorment maps etc if the first texture slots and then the others later
 		if (render_settings.shadow_pass)
 		{
 			ShadowPass(world, &light_space_matrix);
@@ -144,7 +44,7 @@ namespace cm
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
 
-		DrawSkyBox();
+		//DrawSkyBox();
 
 		if (render_settings.defferd_pass)
 		{
@@ -167,18 +67,17 @@ namespace cm
 		BindFrameBuffer(frame_shadow_map);
 		BindShader(render_shaders.depth_test_shader);
 
-		RenderCommands::ChangeViewPort(frame_shadow_map.depth_texture_attachment.config.width, 
-			frame_shadow_map.depth_texture_attachment.config.height);
-		RenderCommands::ClearDepthBuffer();
+		RenderCommands::ChangeViewPort(frame_shadow_map.colour0_texture_attachment.config.width, 
+			frame_shadow_map.colour0_texture_attachment.config.height);
+		RenderCommands::ClearColourBuffer();
 		RenderCommands::CullFrontFace();
-		
-		ShaderSetMat4(render_shaders.depth_test_shader, "lightSpaceMatrix", light_space_matrix->arr); // It's in ubo
+		ShaderSetMat4(&render_shaders.depth_test_shader, "lightSpaceMatrix", light_space_matrix->arr); // It's in ubo
 
 		RenderWorld(&render_shaders.depth_test_shader, nullptr, world);
 
 		UnbindFrameBuffer();
-		
 		RenderCommands::CullBackFace();
+		
 		RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_HEIGHT);
 	}
 
@@ -196,51 +95,42 @@ namespace cm
 
 	void Renderer::DeferedPass(const World &world)
 	{
-		//BindShader(render_shaders.debug_mesh_shader);
-		//glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
-		//ShaderBindTexture(render_shaders.debug_mesh_shader, frame_g_buffer.colour2_texture_attachment, 0, "mesh_texture");
-		//ShaderSetMat4(render_shaders.debug_mesh_shader, "model", Mat4(1).arr);
-		//RenderMesh(render_shaders.debug_mesh_shader, standard_meshes.quad);
-		//glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-		
 		BindShader(render_shaders.deferred_render_shader);
-		//
-		//glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
+		
 		ShaderBindTexture(render_shaders.deferred_render_shader, frame_g_buffer.colour0_texture_attachment, 0, "position_map");
 		ShaderBindTexture(render_shaders.deferred_render_shader, frame_g_buffer.colour1_texture_attachment, 1, "normal_map");
 		ShaderBindTexture(render_shaders.deferred_render_shader, frame_g_buffer.colour2_texture_attachment, 2, "colour_map");
 		ShaderBindTexture(render_shaders.deferred_render_shader, frame_ssao_blured.colour0_texture_attachment, 3, "ssao_map");
 		RenderMesh(render_shaders.deferred_render_shader, standard_meshes.quad);
-		//glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);	
-
-		//ShaderBindTexture(render_shaders.deferred_render_shader, frame_g_buffer.colour1_texture_attachment, 1, "normal_map");
-		//ShaderBindTexture(render_shaders.deferred_render_shader, frame_g_buffer.colour2_texture_attachment, 2, "colour_map");
-
-		// @TODO: Anything lolz
-		// @TODO: SSAO
-		// @TODO: SSRF
 	}
 
 	void Renderer::ForwardPass(const World &world)
 	{
 		BindShader(render_shaders.forward_render_shader);
-
-
+		
 		if (render_settings.shadow_pass)
 		{
-			ShaderBindTexture(render_shaders.forward_render_shader, frame_shadow_map.depth_texture_attachment, 0, "shadow_map");
+			//ShaderBindTexture(render_shaders.forward_render_shader, frame_shadow_map.colour0_texture_attachment, 0, "shadow_map");
 		}
 
-		RenderWorld(&render_shaders.forward_render_shader, &render_shaders.forward_render_batch_shader, world);		
+		for (int32 i = 0; i < world.objects.size(); i++)
+		{
+			WorldObject *a = world.objects[i];
+			a->SetTransformValues(&render_shaders.forward_render_shader);
+			a->SetMaterialValues(&render_shaders.forward_render_shader, identity_texture);
+
+
+			RenderMesh(render_shaders.forward_render_shader,a->GetMeshForRender());
+		}
 	}
 
 	void Renderer::PostProcessingPass(const World &world)
 	{
 		// @TODO: Create a better solution for the blur 
-		//bloom_blur.GPUGaussienBlur();
+		//bloom_blur.GPUGaussienBlur();		
 		BindShader(render_shaders.post_processing_shader);
 		
-		ShaderSetFloat(render_shaders.post_processing_shader, "exposure", 1.0f);
+		ShaderSetFloat(&render_shaders.post_processing_shader, "exposure", 1.0f);
 		ShaderBindTexture(render_shaders.post_processing_shader, frame_post_processing.colour0_texture_attachment, 0, "scene_texture");
 		//ShaderBindTexture(render_shaders.post_processing_shader, *bloom_blur.texture_to_blur, 1, "bloom_texture");
 
@@ -308,9 +198,9 @@ namespace cm
 		RenderCommands::ClearColourBuffer();
 		BindShader(render_shaders.ssao_shader);
 
-		ShaderSetMat4(render_shaders.ssao_shader, "projection", camera->main_camera.projection_matrix.arr);
+		ShaderSetMat4(&render_shaders.ssao_shader, "projection", camera->main_camera.projection_matrix.arr);
 		for (unsigned int i = 0; i < 32; ++i)
-			ShaderSetVec3(render_shaders.ssao_shader, "samples[" + std::to_string(i) + "]", ssaoKernel[i].arr);
+			ShaderSetVec3(&render_shaders.ssao_shader, "samples[" + std::to_string(i) + "]", ssaoKernel[i].arr);
 		ShaderBindTexture(render_shaders.ssao_shader, frame_g_buffer.colour0_texture_attachment, 0, "gPosition");
 		ShaderBindTexture(render_shaders.ssao_shader, frame_g_buffer.colour1_texture_attachment, 1, "gNormal");
 		ShaderBindTexture(render_shaders.ssao_shader, noise_texture, 2, "texNoise");
@@ -332,8 +222,8 @@ namespace cm
 	{
 		BindShader(render_shaders.debug_mesh_shader);
 		glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
-		ShaderBindTexture(render_shaders.debug_mesh_shader, frame_shadow_map.depth_texture_attachment, 0, "mesh_texture");
-		ShaderSetMat4(render_shaders.debug_mesh_shader, "model", Mat4(1).arr);
+		ShaderBindTexture(render_shaders.debug_mesh_shader, frame_shadow_map.colour0_texture_attachment, 0, "mesh_texture");
+		ShaderSetMat4(&render_shaders.debug_mesh_shader, "model", Mat4(1).arr);
 		RenderMesh(render_shaders.debug_mesh_shader, standard_meshes.quad);
 		
 
@@ -350,11 +240,12 @@ namespace cm
 		// @TODO: Fill in ubos
 		RenderCommands::DisableFaceCulling();
 		BindShader(render_shaders.skybox_shader);
-		ShaderSetMat4(render_shaders.skybox_shader, "projection", camera->main_camera.projection_matrix.arr);
-		ShaderSetMat4(render_shaders.skybox_shader, "view", camera->main_camera.view_matrix.arr);
+		ShaderSetMat4(&render_shaders.skybox_shader, "projection", camera->main_camera.projection_matrix.arr);
+		ShaderSetMat4(&render_shaders.skybox_shader, "view", camera->main_camera.view_matrix.arr);
 		RenderMesh(render_shaders.skybox_shader, standard_meshes.cube); // It has texture coords
 		RenderCommands::EnableFaceCulling();
 	}
+
 
 	void Renderer::InitShaders()
 	{
@@ -412,22 +303,21 @@ namespace cm
 		Assert(CheckFrameBuffer(post_processing));
 
 		FrameBuffer shadow_map;
-		shadow_map.depth_texture_attachment.config.texture_format = GL_DEPTH_COMPONENT32;
-		shadow_map.depth_texture_attachment.config.pixel_format = GL_DEPTH_COMPONENT;
-		shadow_map.depth_texture_attachment.config.min_filter = GL_NEAREST;
-		shadow_map.depth_texture_attachment.config.mag_filter = GL_NEAREST;
-		shadow_map.depth_texture_attachment.config.data_type = GL_FLOAT;
-		shadow_map.depth_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_BORDER;
-		shadow_map.depth_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_BORDER;
-		shadow_map.depth_texture_attachment.config.width = 1024 ;
-		shadow_map.depth_texture_attachment.config.height = 1024;
-
-		CreateTexture(&shadow_map.depth_texture_attachment, nullptr);
-		TextureSetBorder(&shadow_map.depth_texture_attachment, Vec4(1).arr);
+		shadow_map.colour0_texture_attachment.config.texture_format = GL_RG32F;
+		shadow_map.colour0_texture_attachment.config.pixel_format = GL_RG;
+		shadow_map.colour0_texture_attachment.config.data_type = GL_FLOAT;
+		shadow_map.colour0_texture_attachment.config.min_filter = GL_LINEAR;
+		shadow_map.colour0_texture_attachment.config.mag_filter = GL_LINEAR;
+		shadow_map.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_BORDER;
+		shadow_map.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_BORDER;
+		shadow_map.colour0_texture_attachment.config.width = 1024;
+		shadow_map.colour0_texture_attachment.config.height = 1024;
+		
+		CreateTexture(&shadow_map.colour0_texture_attachment, nullptr);
+		TextureSetBorder(&shadow_map.colour0_texture_attachment, Vec4(1).arr);
 
 		CreateFrameBuffer(&shadow_map);
-		FrameBufferAddDepthAttachments(&shadow_map);
-
+		FrameBufferAddColourAttachtments(&shadow_map);
 		Assert(CheckFrameBuffer(shadow_map));
 
 		FrameBuffer g_buffer;
@@ -509,12 +399,33 @@ namespace cm
 		FrameBufferAddColourAttachtments(&ssao_blured);
 		Assert(CheckFrameBuffer(ssao_blured));
 		
+		
+	
 
 		frame_post_processing = post_processing;
 		frame_shadow_map = shadow_map;
 		frame_g_buffer = g_buffer;
 		frame_ssao_unblured = ssao_unblured;		
 		frame_ssao_blured = ssao_blured;
+	}
+
+	void Renderer::InitIdentityTexture()
+	{
+		Texture id_texture;
+		id_texture.config.data_type = GL_UNSIGNED_BYTE;
+		id_texture.config.texture_format = GL_RGBA;
+		id_texture.config.pixel_format = GL_RGBA;
+		id_texture.config.wrap_s_mode = GL_REPEAT;
+		id_texture.config.wrap_t_mode = GL_REPEAT;
+		id_texture.config.wrap_r_mode = GL_REPEAT;
+		id_texture.config.width = 1;
+		id_texture.config.height = 1;
+
+		uint8 data[4] = { 255, 255, 255, 255 };
+
+		CreateTexture(&id_texture, data);
+
+		identity_texture = id_texture;
 	}
 
 	void Renderer::InitStandardMeshes()

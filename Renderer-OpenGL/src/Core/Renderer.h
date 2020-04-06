@@ -1,28 +1,14 @@
 #pragma once
-#include "OpenGL/OpenGlRenderer.h"
+#include "OpenGL/OpenGl.h"
 #include "OpenGL/RenderCommands.h"
-#include "GPUCompute.h"
+
+#include "Core/Camera.h"
+#include "Core/World.h"
 #include "Engine/Input.h"
 #include "Engine/AssetLoader.h"
-
 namespace cm
 {
-	class CameraController
-	{
-	public:
-		Camera main_camera;
-	public:
-		CameraController();
-		CameraController(Camera cam);
-		~CameraController();
-		void CameraRotate(real delta_pitch, real delta_yaw);
-		void CameraMovement(real delta_time);
-		void UpdateCamera(float delta_time);
-		Ray RayFromCamera(const Vec2 &mouse_position, const Vec2 &window_dimenions);
-
-
-	};
-
+	
 	class InputManager
 	{
 	public:
@@ -54,6 +40,37 @@ namespace cm
 
 	};
 
+	struct StandardMeshes // Unsure
+	{
+		GLMesh quad;
+		GLMesh plane;
+		GLMesh cube;
+		GLMesh sphere;
+		GLMesh cone;
+	};
+
+	struct StandardShaders // Unsure
+	{
+		Shader gpu_gaussian_blur;
+		Shader simple_blur;
+		//.. Add as needed;
+	};
+
+	struct RenderShaders // Unsure
+	{
+		Shader forward_render_shader;
+		Shader forward_render_batch_shader;
+		Shader deferred_render_shader;
+		Shader deferred_render_batch_shader;
+		Shader skybox_shader;
+		Shader post_processing_shader;
+		Shader depth_test_shader;
+		Shader g_buffer_shader;
+		Shader ssao_gbuffer_shader;
+		Shader ssao_shader;
+		Shader debug_shader;
+		Shader debug_mesh_shader;
+	};
 	
 	class Informer
 	{
@@ -69,7 +86,7 @@ namespace cm
 		void LinkShader(const std::string &name, RenderShaders render_shaders);
 		template<typename T>
 		void UpdateUBO(const std::string &name, DynaArray<T> data) 
-		{ WriteBufferData(ubos[ubo_data.at(name)], data, 0); }
+		{ WriteBufferData(&ubos[ubo_data.at(name)], data, 0); }
 
 	};
 
@@ -80,6 +97,7 @@ namespace cm
 		RenderShaders render_shaders;
 		StandardShaders standard_shaders;
 		StandardMeshes standard_meshes;
+		Texture identity_texture;
 
 		FrameBuffer frame_post_processing;
 		FrameBuffer frame_shadow_map;
@@ -94,10 +112,8 @@ namespace cm
 		uint32 WINDOW_HEIGHT;
 		CameraController *camera; // @HACK: This will not be needed once we do the informer
 
-		World render_world;
 		CubeMap default_skybox;
-		
-		GPUGaussienCompute gaussien_blur_compute;
+				
 		
 	public:
 		Renderer();
@@ -119,6 +135,7 @@ namespace cm
 
 		void DrawSkyBox();
 
+		void InitIdentityTexture();
 		void InitShaders();
 		void InitSkyBox();
 		void InitFrameBuffers();

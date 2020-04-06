@@ -82,8 +82,7 @@ namespace cm
 
 		static inline void EnableFaceCulling()
 		{
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_BACK);
+			glEnable(GL_CULL_FACE);			
 			glFrontFace(GL_CCW);
 		}
 

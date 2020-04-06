@@ -1,12 +1,12 @@
 #pragma once
 #include "Core.h"
-#include "OpenGL/OpenGlRenderer.h"
+#include "OpenGL/OpenGl.h"
 #include "GLFW/glfw3.h"
 
 
 namespace cm
 {
-	//@TODO: Move into cpp file at some point
+	// @TODO: Move into cpp file at some point
 	// @TODO: Clean up memory when terminating
 	
 	struct DebugQueue 
@@ -99,7 +99,9 @@ namespace cm
 
 		VertexBuffer vbo;
 		vbo.lbo = (DynaArray<ShaderDataType> {ShaderDataType::Float4});// padding 
-		CreateBuffer<VertexBuffer>(&vbo, sizeof(Vec4) * alloc_size, VertexFlags::READ_WRITE);
+		vbo.size_bytes = sizeof(Vec4) * alloc_size;
+		vbo.flags = VertexFlags::READ_WRITE;
+		CreateVertexBuffer(&vbo);
 		
 		debug_queue.persistent_vao.vertex_buffers.push_back(vbo);
 
@@ -115,12 +117,12 @@ namespace cm
 		}		
 	}
 
-	static void DebugDrawTexture(Shader *shader, const Texture &t, const Mesh &quad_mesh) // TODO: Remove the mesh parama
+	static void DebugDrawTexture(Shader *shader, const Texture &t, const GLMesh &quad_mesh) // TODO: Remove the mesh parama
 	{
 		BindShader(*shader);
 		Transform transform;
 		transform.position = Vec3(0, 5, 0);
-		ShaderSetMat4(*shader, "model", transform.CalcTransformMatrix().arr);
+		ShaderSetMat4(shader, "model", transform.CalcTransformMatrix().arr);
 		ShaderBindTexture(*shader, t, 0, "mesh_texture");
 		RenderMesh(*shader, quad_mesh);
 	}
@@ -128,7 +130,7 @@ namespace cm
 	static void DebugDrawLines(Shader *debug_shader)
 	{
 		//@Redo: DebugQueue stores a irrseloute and we just free the vbo inside.
-		WriteBufferData(debug_queue.persistent_vao.vertex_buffers[0], debug_queue.persistent_vertices, 0);
+		WriteBufferData(&debug_queue.persistent_vao.vertex_buffers[0], debug_queue.persistent_vertices, 0);
 
 		BindShader(*debug_shader);
 
@@ -145,9 +147,10 @@ namespace cm
 		{
 			VertexBuffer irresolute_vbo;
 			irresolute_vbo.lbo = (DynaArray<ShaderDataType> {ShaderDataType::Float4});// padding byte
-
-			CreateBuffer<VertexBuffer>(&irresolute_vbo, sizeof(Vec4) * amount, VertexFlags::READ_WRITE);
-			WriteBufferData(irresolute_vbo, debug_queue.irresolute_vertices, 0);
+			irresolute_vbo.size_bytes = sizeof(Vec4) * amount;
+			irresolute_vbo.flags = VertexFlags::READ_WRITE;
+			CreateVertexBuffer(&irresolute_vbo);
+			WriteBufferData(&irresolute_vbo, debug_queue.irresolute_vertices, 0);
 
 			VertexArray irresolute_vao;
 			irresolute_vao.vertex_buffers.push_back(irresolute_vbo);

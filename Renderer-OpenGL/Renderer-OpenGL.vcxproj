@@ -12,19 +12,29 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\Core\Camera.cpp" />
+    <ClCompile Include="src\Core\UIRenderer.cpp" />
     <ClCompile Include="src\Core\Renderer.cpp" />
+    <ClCompile Include="src\Core\World.cpp" />
     <ClCompile Include="src\Engine\AssetLoader.cpp" />
     <ClCompile Include="src\Engine\Input.cpp" />
     <ClCompile Include="src\Math\CosmicMath.cpp" />
     <ClCompile Include="src\Math\CosmicNoise.cpp" />
     <ClCompile Include="src\Math\CosmicPhysics.cpp" />
-    <ClCompile Include="src\Mesh.cpp" />
+    <ClCompile Include="src\Core\EditableMesh.cpp" />
     <ClCompile Include="src\OpenGL\BufferLayout.cpp" />
     <ClCompile Include="src\OpenGL\OpenGL.cpp" />
-    <ClCompile Include="src\GPUCompute.cpp" />
-    <ClCompile Include="src\OpenGL\OpenGlRenderer.cpp" />
+    <ClCompile Include="vendor\IMGUI\imgui.cpp" />
+    <ClCompile Include="vendor\IMGUI\imgui_demo.cpp" />
+    <ClCompile Include="vendor\IMGUI\imgui_draw.cpp" />
+    <ClCompile Include="vendor\IMGUI\imgui_impl_glfw.cpp" />
+    <ClCompile Include="vendor\IMGUI\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="vendor\IMGUI\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Core\Camera.h" />
+    <ClInclude Include="src\Core\UIRenderer.h" />
+    <ClInclude Include="src\Core\World.h" />
     <ClInclude Include="src\Engine\AssetLoader.h" />
     <ClInclude Include="src\Core.h" />
     <ClInclude Include="src\Core\Renderer.h" />
@@ -34,14 +44,19 @@
     <ClInclude Include="src\Math\CosmicMath.h" />
     <ClInclude Include="src\Math\CosmicNoise.h" />
     <ClInclude Include="src\Math\CosmicPhysics.h" />
-    <ClInclude Include="src\Mesh.h" />
+    <ClInclude Include="src\Core\EditableMesh.h" />
     <ClInclude Include="src\OpenGL\BufferLayout.h" />
-    <ClInclude Include="src\GPUCompute.h" />
     <ClInclude Include="src\OpenGL\RenderCommands.h" />
-    <ClInclude Include="src\OpenGL\OpenGlRenderer.h" />
     <ClInclude Include="src\OpenGL\OpenGL.h" />
+    <ClInclude Include="vendor\IMGUI\imconfig.h" />
+    <ClInclude Include="vendor\IMGUI\imgui.h" />
+    <ClInclude Include="vendor\IMGUI\imgui_impl_glfw.h" />
+    <ClInclude Include="vendor\IMGUI\imgui_impl_opengl3.h" />
+    <ClInclude Include="vendor\IMGUI\imgui_internal.h" />
+    <ClInclude Include="vendor\IMGUI\imstb_rectpack.h" />
+    <ClInclude Include="vendor\IMGUI\imstb_textedit.h" />
+    <ClInclude Include="vendor\IMGUI\imstb_truetype.h" />
     <ClInclude Include="vendor\std_image.h" />
-    <ClInclude Include="src\World.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\brdf_frag.glsl" />
@@ -132,12 +147,12 @@
       <PreprocessorDefinitions>GLEW_STATIC;_ENABLE_EXTENDED_ALIGNED_STORAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <AdditionalIncludeDirectories>F:\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;F:\Libraries\ASSIMP\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\lib-vc2017;F:\Libraries\GLEW\lib\Release\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\lib-vc2017;F:\Libraries\GLEW\lib\Release\x64;F:\Libraries\ASSIMP\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;assimp64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -151,14 +166,14 @@
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <AdditionalIncludeDirectories>F:\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;F:\Libraries\ASSIMP\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\lib-vc2017;F:\Libraries\GLEW\lib\Release\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\lib-vc2017;F:\Libraries\GLEW\lib\Release\x64;F:\Libraries\ASSIMP\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;assimp64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,8 +1,19 @@
 ﻿cl : Command line warning D9002: ignoring unknown option '/arch:SSE2'
-  Renderer.cpp
-f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(269): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(268): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(274): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(289): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(288): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  main.cpp
+f:\renderer-opengl\renderer-opengl\src\math\cosmicphysics.h(249): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\math\cosmicphysics.h(252): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(41): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(42): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(441): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(448): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(556): warning C4244: 'initializing': conversion from '_Rep' to 'float', possible loss of data
+          with
+          [
+              _Rep=__int64
+          ]
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'F:\Renderer-OpenGL\x64\Debug\vc120.pdb'; linking object as if no debug info
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

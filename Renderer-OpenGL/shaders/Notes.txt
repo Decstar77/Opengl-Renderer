@@ -10,13 +10,21 @@ RECAP:
 	projection divide.
 	view matrix.
 
-
+DAY:
+	Write pbr notext shader
+	Read pbr things
+	Finish vulkan triangle
+	
 
 
 
 
 TODO:
 	
-	
 
+	LOW PRIO:
+		OpenGL layout class
+		OpenGl creation of vertex buffer / array buffers
+		
+		Core dyna array
 

@@ -25,14 +25,21 @@
       <Filter>src\Math</Filter>
     </ClCompile>
     <ClCompile Include="src\Math\CosmicMath.cpp" />
-    <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\OpenGL\OpenGL.cpp" />
-    <ClCompile Include="src\OpenGL\OpenGlRenderer.cpp" />
     <ClCompile Include="src\Math\CosmicNoise.cpp" />
-    <ClCompile Include="src\GPUCompute.cpp" />
     <ClCompile Include="src\Engine\Input.cpp" />
     <ClCompile Include="src\Core\Renderer.cpp" />
     <ClCompile Include="src\Engine\AssetLoader.cpp" />
+    <ClCompile Include="src\Core\EditableMesh.cpp" />
+    <ClCompile Include="vendor\IMGUI\imgui.cpp" />
+    <ClCompile Include="vendor\IMGUI\imgui_draw.cpp" />
+    <ClCompile Include="vendor\IMGUI\imgui_impl_glfw.cpp" />
+    <ClCompile Include="vendor\IMGUI\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="vendor\IMGUI\imgui_widgets.cpp" />
+    <ClCompile Include="vendor\IMGUI\imgui_demo.cpp" />
+    <ClCompile Include="src\Core\UIRenderer.cpp" />
+    <ClCompile Include="src\Core\Camera.cpp" />
+    <ClCompile Include="src\Core\World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core.h">
@@ -53,19 +60,11 @@
     <ClInclude Include="src\OpenGL\OpenGL.h">
       <Filter>src\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="src\OpenGL\OpenGlRenderer.h">
-      <Filter>src\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\World.h">
-      <Filter>src\OpenGL</Filter>
-    </ClInclude>
     <ClInclude Include="src\Math\CosmicPhysics.h">
       <Filter>src\Math</Filter>
     </ClInclude>
     <ClInclude Include="src\Debug.h" />
-    <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\Math\CosmicNoise.h" />
-    <ClInclude Include="src\GPUCompute.h" />
     <ClInclude Include="src\Engine\Input.h" />
     <ClInclude Include="src\Core\Renderer.h" />
     <ClInclude Include="src\Engine\AssetLoader.h">
@@ -74,6 +73,18 @@
     <ClInclude Include="vendor\std_image.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\Core\EditableMesh.h" />
+    <ClInclude Include="vendor\IMGUI\imconfig.h" />
+    <ClInclude Include="vendor\IMGUI\imgui.h" />
+    <ClInclude Include="vendor\IMGUI\imgui_impl_glfw.h" />
+    <ClInclude Include="vendor\IMGUI\imgui_impl_opengl3.h" />
+    <ClInclude Include="vendor\IMGUI\imgui_internal.h" />
+    <ClInclude Include="vendor\IMGUI\imstb_rectpack.h" />
+    <ClInclude Include="vendor\IMGUI\imstb_textedit.h" />
+    <ClInclude Include="vendor\IMGUI\imstb_truetype.h" />
+    <ClInclude Include="src\Core\UIRenderer.h" />
+    <ClInclude Include="src\Core\Camera.h" />
+    <ClInclude Include="src\Core\World.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\first_compute.glsl">

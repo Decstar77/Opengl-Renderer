@@ -4,6 +4,91 @@
 
 namespace cm
 {
+
+	void CreateVertexBuffer(VertexBuffer *vbo)
+	{
+		Assert(vbo->object == 0);
+		Assert(vbo->size_bytes > 0);
+		uint32 object;
+		uint32 type = static_cast<uint32>(BufferType::Array_buffer);
+		glGenBuffers(1, &object);
+		glBindBuffer(type, object);
+
+		glBufferStorage(type, vbo->size_bytes, NULL, static_cast<uint32>(vbo->flags));
+
+		glBindBuffer(type, 0);
+
+		vbo->object = object;
+	}
+
+	void BindVertexBuffer(const VertexBuffer &vbo)
+	{
+		Assert(vbo.object != 0);
+		uint32 type = static_cast<uint32>(BufferType::Array_buffer);
+		glBindBuffer(type, vbo.object);
+	}
+
+	void UnbindVertexBuffer()
+	{
+		uint32 type = static_cast<uint32>(BufferType::Array_buffer);
+		glBindBuffer(type, 0);
+	}
+
+	void FreeVerteBuffer(VertexBuffer *vbo)
+	{
+		if (vbo->object != 0)
+		{
+			glDeleteBuffers(1, &vbo->object);
+			vbo->object = 0;
+		}
+		else
+		{
+			LOG("WARNING::FREEING_VERTEX_BUFFER:: -> buffer was already freed");
+		}
+	}
+
+	void CreateIndexBuffer(IndexBuffer *ibo)
+	{
+		Assert(ibo->object == 0);
+		Assert(ibo->size_bytes > 0);
+		uint32 object;
+		uint32 type = static_cast<uint32>(BufferType::Index_buffer);
+		glGenBuffers(1, &object);
+		glBindBuffer(type, object);
+
+		glBufferStorage(type, ibo->size_bytes, NULL, static_cast<uint32>(ibo->flags));
+
+		glBindBuffer(type, 0);
+
+		ibo->object = object;
+	}
+
+	void BindIndexBuffer(const IndexBuffer &ibo)
+	{
+		Assert(ibo.object != 0);
+		uint32 type = static_cast<uint32>(BufferType::Index_buffer);
+		glBindBuffer(type, ibo.object);
+	}
+
+	void UnbindIndexBuffer()
+	{
+		uint32 type = static_cast<uint32>(BufferType::Index_buffer);
+		glBindBuffer(type, 0);
+	}
+
+	void FreeIndexBuffer(IndexBuffer *ibo)
+	{
+		if (ibo->object != 0)
+		{
+			glDeleteBuffers(1, &ibo->object);
+			ibo->object = 0;
+		}
+		else
+		{
+			LOG("WARNING::FREEING_INDEX_BUFFER:: -> buffer was already freed");
+		}
+	}
+
 	void CreateUniformBuffer(UniformBuffer *buffer)
 	{		
 		Assert(buffer->object == 0);
@@ -52,7 +137,7 @@ namespace cm
 		{
 			VertexBuffer current_vbo = vao->vertex_buffers[i];
 			BufferLayout lbo = current_vbo.lbo;
-			BindBuffer(current_vbo);
+			BindVertexBuffer(current_vbo);
 			current_vbo.lbo.Reset();
 			uint32 stride = lbo.GetStride();
 			for (uint32 i = 0; i < lbo.GetComponentCount(); i++)
@@ -117,7 +202,7 @@ namespace cm
 		}
 
 		glBindVertexArray(buffer_id);
-		BindBuffer(vbo);
+		BindVertexBuffer(vbo);
 		uint32 stride = added_lbo.GetStride();
 		BufferLayout lbo = GetTotalVertexBufferLayout(*vao);
 		uint32 current_attrib = lbo.GetTotalAttributeCount();
@@ -158,7 +243,7 @@ namespace cm
 			added_lbo.Next();
 		}
 		glBindVertexArray(0);
-		UnbindBuffer(vbo);
+		UnbindVertexBuffer();
 
 		vao->vertex_buffers.push_back(vbo);
 	}
@@ -171,7 +256,7 @@ namespace cm
 			uint32 vbo_count = static_cast<uint32>(vao->vertex_buffers.size());
 			for (uint32 i = 0; i < vbo_count; i++)
 			{
-				FreeBuffer(&vao->vertex_buffers[i]);
+				FreeVerteBuffer(&vao->vertex_buffers[i]);
 			}
 			glDeleteVertexArrays(1, &vao->object); 
 			
@@ -203,7 +288,7 @@ namespace cm
 
 
 #if _DEBUG
-#define CHECK(type, loc) if (loc == -1) {std::cout << "ERROR::SHADER::UNIFORM::" << type << "LOCATION -> " << uniform_name  << " Shader name: " << shader.name << std::endl; return;}
+#define CHECK(type, loc) if (loc == -1) {std::cout << "ERROR::SHADER::UNIFORM::" << type << "LOCATION -> " << uniform_name  << " Shader name: " << shader->name << std::endl; return;}
 #else
 #define CHECK(type, loc)
 #endif
@@ -425,42 +510,42 @@ namespace cm
 		}
 	}
 
-	void ShaderSetInt32(Shader &shader, const std::string &uniform_name, int x)
+	void ShaderSetInt32(Shader *shader, const std::string &uniform_name, int x)
 	{
-		uint32 loc = GetUniformLocation(&shader, uniform_name);
+		uint32 loc = GetUniformLocation(shader, uniform_name);
 		CHECK("INT32", loc);
 		glUniform1i(loc, x);
 	}
 
-	void ShaderSetFloat(Shader &shader, const std::string &uniform_name, float x)
+	void ShaderSetFloat(Shader *shader, const std::string &uniform_name, float x)
 	{
-		uint32 loc = GetUniformLocation(&shader, uniform_name);
+		uint32 loc = GetUniformLocation(shader, uniform_name);
 		CHECK("FLOAT", loc);
 		glUniform1f(loc, x);
 	}
 
-	void ShaderSetVec3(Shader &shader, const std::string &uniform_name, float x, float y, float z)
+	void ShaderSetVec3(Shader *shader, const std::string &uniform_name, float x, float y, float z)
 	{
-		uint32 loc = GetUniformLocation(&shader, uniform_name);
+		uint32 loc = GetUniformLocation(shader, uniform_name);
 		CHECK("VEC3", loc);
 		glUniform3f(loc, x, y, z);
 	}
 
-	void ShaderSetVec3(Shader &shader, const std::string &uniform_name, float* data)
+	void ShaderSetVec3(Shader *shader, const std::string &uniform_name, float* data)
 	{
-		uint32 loc = GetUniformLocation(&shader, uniform_name);
+		uint32 loc = GetUniformLocation(shader, uniform_name);
 		CHECK("VEC3", loc);
 		glUniform3fv(loc, 1, data);
 	}
 
-	void ShaderSetMat4(Shader &shader, const std::string &uniform_name, float* data)
+	void ShaderSetMat4(Shader *shader, const std::string &uniform_name, float* data)
 	{
-		uint32 loc = GetUniformLocation(&shader, uniform_name);
+		uint32 loc = GetUniformLocation(shader, uniform_name);
 		CHECK("MAT4", loc);
 		glUniformMatrix4fv(loc, 1, false, data);
 	}
 
-	void ShaderBindUniformBuffer(Shader &shader, uint32 binding_point, const std::string &uniform_name)
+	void ShaderBindUniformBuffer(const Shader &shader, uint32 binding_point, const std::string &uniform_name)
 	{
 		uint32 uniformBlockIndexRed = glGetUniformBlockIndex(shader.shader_program, uniform_name.c_str());
 		glUniformBlockBinding(shader.shader_program, uniformBlockIndexRed, binding_point);
@@ -478,12 +563,11 @@ namespace cm
 		loc = GetUniformLocation(&shader, name);
 		if (loc == -1)
 		{
-			// @TODO: Make assert or something 
 			std::string ss = "ERROR::SHADER::TEXTURE: " + shader.name + " " + uniform_name;
 			LOG(ss.c_str());
 		}
 		else
-		{
+		{			
 			glUniform1i(loc, texture_slot);
 			glActiveTexture(GL_TEXTURE0 + texture_slot);
 			glBindTexture(GL_TEXTURE_2D, texture.object);
@@ -602,6 +686,95 @@ namespace cm
 		return res;
 	}
 
+	void CreateBatch(Batch *batch, const VertexBuffer &vbo_to_batch, const IndexBuffer &ibo_of_vbo)
+	{
+		Assert(batch->vao.object == 0);
+		Assert(batch->ibo.object == 0);
+		Assert(batch->transforms.size() != 0);
+		Assert(ibo_of_vbo.object != 0);
+		Assert(vbo_to_batch.object != 0);
+
+		//TODO: This is slow because we read and write. Rather we just copy from one to the other
+		uint32 mat_count = (uint32)batch->transforms.size();
+		VertexBuffer mat_vbo;
+		mat_vbo.lbo = BufferLayout({ ShaderDataType::Mat4 });
+		mat_vbo.lbo.SetAttributeDivisor(1);
+		mat_vbo.size_bytes = mat_count * sizeof(Mat4);
+		mat_vbo.flags = VertexFlags::READ_WRITE;
+		CreateVertexBuffer(&mat_vbo);
+		WriteBufferData(&mat_vbo, batch->transforms, 0);
+
+		VertexBuffer current_mesh_vbo = vbo_to_batch;
+		DynaArray<float> current_mesh_data;
+		ReadBufferData(current_mesh_vbo, &current_mesh_data, current_mesh_vbo.size_bytes, 0);
+
+		VertexBuffer mesh_vbo;
+		mesh_vbo.lbo = current_mesh_vbo.lbo;
+		mesh_vbo.size_bytes = current_mesh_vbo.size_bytes;
+		mesh_vbo.flags = VertexFlags::READ_WRITE;
+		CreateVertexBuffer(&mesh_vbo);
+		WriteBufferData(&mesh_vbo, current_mesh_data, 0);
+
+		IndexBuffer ibo;
+		ibo.size_bytes = ibo_of_vbo.size_bytes;
+		ibo.flags = VertexFlags::READ_WRITE;
+		CreateIndexBuffer(&ibo);
+		ibo.index_count = ibo_of_vbo.index_count;
+
+		DynaArray<uint32> index_data;
+		ReadBufferData(ibo_of_vbo, &index_data, ibo_of_vbo.size_bytes, 0);
+
+		WriteBufferData(&ibo, index_data, 0);
+
+		VertexArray temp_vao;
+		temp_vao.vertex_buffers.push_back(mesh_vbo);
+		temp_vao.vertex_buffers.push_back(mat_vbo);
+
+		CreateVertexArray(&temp_vao);
+
+
+		batch->vao = temp_vao;
+		batch->ibo = ibo;
+	}
+
+	void FreeBatch(Batch *batch)
+	{
+		FreeIndexBuffer(&batch->ibo);
+		FreeVertexArray(&batch->vao, true);
+		batch->transforms.clear();
+	}
+
+
+	void RenderBatch(const Shader &shader, const Batch &batch)
+	{
+		uint32 amount = (uint32)batch.transforms.size();
+		//@NOTE: Test to make sure we haven't added anything to the transforms without recreating batch
+		Assert(batch.vao.vertex_buffers[1].size_bytes / sizeof(Mat4) == amount);
+
+
+		BindShader(shader);
+		BindVertexArray(batch.vao);
+		BindIndexBuffer(batch.ibo);
+
+		glDrawElementsInstanced(GL_TRIANGLES, batch.ibo.index_count,
+			GL_UNSIGNED_INT, 0, amount);
+
+		UnbindIndexBuffer();
+		UnbindVertexArray();
+	}
+
+	void RenderMesh(const Shader &shader, const GLMesh &mesh)
+	{
+		BindShader(shader);
+
+		BindVertexArray(mesh.vao);
+		BindIndexBuffer(mesh.ibo);
+
+		glDrawElements(GL_TRIANGLES, mesh.ibo.index_count, GL_UNSIGNED_INT, 0);
+
+		UnbindIndexBuffer();
+		UnbindVertexArray();
+	}
 
 	void GetOpenglStatistics(OpenGLStatistics *stats)
 	{

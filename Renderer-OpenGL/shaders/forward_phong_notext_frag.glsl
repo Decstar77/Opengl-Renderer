@@ -25,6 +25,7 @@ in VS_OUT
 	vec3 world_position;
 	vec3 world_normal;
 	vec3 texture_coords;
+	mat3 tbn_matrix;
 	vec4 light_space_position;
 
 } vs_in;
@@ -75,14 +76,20 @@ struct SpotLight
 };
 //---------------------------
 
+uniform vec3 diffuse_colour;
+uniform vec3 specular_colour;
+uniform bool use_normal_map;
 
 //uniform float cascade_ends[3];
 uniform sampler2D shadow_map;
+uniform sampler2D colour_map;
+uniform sampler2D normal_map;
+uniform sampler2D oc_r_m_map;
+
 Material material;
 //---------------------------
-float ShadowCalculation(vec4 light_space_pos, vec3 normal, vec3 light_dir)
+float PCF(vec4 light_space_pos, vec3 normal, vec3 light_dir)
 {
-
     // transform to [-1,1] range, NDC
     vec3 projCoords = light_space_pos.xyz / light_space_pos.w;
     // transform to [0,1] range, IE The screen space coords. 
@@ -96,7 +103,7 @@ float ShadowCalculation(vec4 light_space_pos, vec3 normal, vec3 light_dir)
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
 
-	float smol = 0.000001f;
+	float smol = .1f;
 	float bias = max(smol * 10.f * (1.0 - dot(normal, light_dir)), smol); 
     // check whether current frag pos is in shadow    
 	
@@ -112,6 +119,44 @@ float ShadowCalculation(vec4 light_space_pos, vec3 normal, vec3 light_dir)
 	}
 	shadow /= 9.0;
 	return shadow;
+}
+
+float linstep(float low, float high, float v)
+{
+	return clamp((v-low)/(high-low), 0.0, 1.0);
+}
+
+
+float Variance(vec4 light_space_pos, vec3 normal, vec3 light_dir)
+{
+	// transform to [-1,1] range, NDC
+    vec3 projCoords = light_space_pos.xyz / light_space_pos.w;
+    // transform to [0,1] range, IE The screen space coords. 
+    projCoords = projCoords * 0.5 + 0.5;
+	if(projCoords.z > 1.0)
+	{
+        return 0;
+	}
+	vec2 moments = texture(shadow_map, projCoords.xy).xy;
+
+	float depth = projCoords.z;
+
+	float p = step(depth, moments.x);
+	float v = max (moments.y - moments.x * moments.x, 0.00000002);
+	float d = depth - moments.x;
+	
+	float pmax = linstep(0.2, 1.0, v / (v + d * d));
+	
+	return 1 - min(max(p, pmax), 1);
+	return max(p,  (depth <= moments.x) ? 1.f : 0.f);
+
+}
+
+float ShadowCalculation(vec4 light_space_pos, vec3 normal, vec3 light_dir)
+{
+
+	//return PCF(light_space_pos, normal, light_dir);
+	return Variance(light_space_pos, normal, light_dir);
 }
 //---------------------------
 vec3 PhongPointLight(PointLight light, vec3 normal, vec3 view_dir)
@@ -189,7 +234,7 @@ vec3 PhongDirectionalLight(DirectionalLight light, vec3 normal, vec3 view_dir)
 	
 	// Determine shadow
 	float shadow = ShadowCalculation(vs_in.light_space_position, normal, light_dir);
-	vec3 ds = (diffuse + specular) * (1 - shadow);
+	vec3 ds = (diffuse + specular) * (1 - 0);
 
 
     return (ambient + ds);
@@ -203,13 +248,25 @@ vec3 ColourPixel()
 	int directional_light_count = int (size_data.y);
 	int spot_light_count = int(size_data.z);
 
-	vec3 normal = normalize(vs_in.world_normal);	
-	vec3 view_dir = normalize(camera_world_position.xyz - vs_in.world_position);
+
 	
 	// @HACK: Hardcoded
 	material.shininess = 32.f;
-	material.diffuse = vec3(0.23, 0.48, 0.34);
-	material.specular = vec3(0.2, 0.2, 0.2);
+	material.diffuse = diffuse_colour * texture(colour_map, vs_in.texture_coords.xy).xyz;
+	material.specular = specular_colour * texture(oc_r_m_map, vs_in.texture_coords.xy).z;
+	vec3 normal = vec3(0);
+	if (use_normal_map)
+	{ 
+	    vec3 n = texture(normal_map, vs_in.texture_coords.xy).rgb;
+		n = n * 2.0f - 1.0f;
+		normal = normalize(vs_in.tbn_matrix * n);	
+	}		
+	else
+	{
+		normal = normalize(vs_in.world_normal);
+	}
+	
+	vec3 view_dir = normalize(camera_world_position.xyz - vs_in.world_position);
 
 	for (int i = 0; i < point_light_count; i++)
 	{
