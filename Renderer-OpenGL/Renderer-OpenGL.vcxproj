@@ -72,6 +72,8 @@
     <None Include="shaders\first_compute.glsl" />
     <None Include="shaders\Compute\GPU_gaussian_blur_frag.glsl" />
     <None Include="shaders\Compute\GPU_gaussian_blur_vert.glsl" />
+    <None Include="shaders\forward_pbr_notext_frag.glsl" />
+    <None Include="shaders\forward_pbr_notext_vert.glsl" />
     <None Include="shaders\irradince_convolution.glsl" />
     <None Include="shaders\pbr_frag.glsl" />
     <None Include="shaders\instance_test_frag.glsl" />
@@ -97,6 +99,7 @@
     <None Include="shaders\ssao_gbuffer_frag.glsl" />
     <None Include="shaders\ssao_gbuffer_vert.glsl" />
     <None Include="shaders\ssao_vert.glsl" />
+    <None Include="shaders\test_anim_vert.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="shaders\debug_frag.glsl" />

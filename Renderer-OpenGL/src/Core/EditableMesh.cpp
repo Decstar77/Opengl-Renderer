@@ -61,6 +61,59 @@ namespace cm
 		return mesh;
 	}
 
+	GLMesh EditableMesh::CreateAnimMesh()
+	{
+		// @TODO: Clean
+		BufferLayout l = BufferLayout(DynaArray<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float4, ShaderDataType::Float4}));
+		
+		DynaArray<float> data;
+		uint32 vert_size = static_cast<uint32>(vertices.size());
+		for (uint32 i = 0; i < vert_size; i++)
+		{
+			Vertex vert = vertices[i];
+			data.CopyFromPtr(vert.position.arr, 3 * sizeof(float));
+			data.CopyFromPtr(vert.normal.arr, 3 * sizeof(float));
+			data.push_back(vert.texture_coord.x);
+			data.push_back(vert.texture_coord.y);
+
+			// @NOTE: Bones
+
+			VertexBoneInfo vb = vertex_information[i];
+
+			data.CopyFromPtr(vb.weights, 4 * sizeof(float));
+			data.push_back(vb.bone_index[0]);
+			data.push_back(vb.bone_index[1]);
+			data.push_back(vb.bone_index[2]);
+			data.push_back(vb.bone_index[3]);
+		}
+
+		VertexBuffer vbo;
+		vbo.lbo = l;
+		vbo.size_bytes = data.size() * sizeof(real);
+		vbo.flags = VertexFlags::READ_WRITE; // Optional;
+
+		CreateVertexBuffer(&vbo);
+		WriteBufferData(&vbo, data, 0);
+
+		IndexBuffer ibo;
+		ibo.index_count = (uint32)indices.size();
+		ibo.size_bytes = indices.size() * sizeof(uint32);
+		ibo.flags = VertexFlags::READ_WRITE;
+
+		CreateIndexBuffer(&ibo);
+		WriteBufferData(&ibo, indices, 0);
+
+		VertexArray vao;
+		vao.vertex_buffers.push_back(vbo);
+		CreateVertexArray(&vao);
+
+		GLMesh mesh;
+		mesh.vao = vao;
+		mesh.ibo = ibo;
+		return mesh;
+
+	}
+
 	void EditableMesh::AddTrianlge(const Vec3 &pos1, const Vec3 &pos2, const Vec3 &pos3)
 	{
 		IndexedTriangle tri;
@@ -256,6 +309,261 @@ namespace cm
 		vertices[vertices.size() - 1].colour = colour;
 		vertices[vertices.size() - 2].colour = colour;
 		vertices[vertices.size() - 3].colour = colour;
+	}
+
+
+
+
+
+
+
+	void Matrix4f::InitScaleTransform(float ScaleX, float ScaleY, float ScaleZ)
+	{
+		m[0][0] = ScaleX; m[0][1] = 0.0f;   m[0][2] = 0.0f;   m[0][3] = 0.0f;
+		m[1][0] = 0.0f;   m[1][1] = ScaleY; m[1][2] = 0.0f;   m[1][3] = 0.0f;
+		m[2][0] = 0.0f;   m[2][1] = 0.0f;   m[2][2] = ScaleZ; m[2][3] = 0.0f;
+		m[3][0] = 0.0f;   m[3][1] = 0.0f;   m[3][2] = 0.0f;   m[3][3] = 1.0f;
+	}
+
+	void Matrix4f::InitRotateTransform(float RotateX, float RotateY, float RotateZ)
+	{
+		Matrix4f rx, ry, rz;
+
+		const float x = DegToRad(RotateX);
+		const float y = DegToRad(RotateY);
+		const float z = DegToRad(RotateZ);
+
+		rx.m[0][0] = 1.0f; rx.m[0][1] = 0.0f; rx.m[0][2] = 0.0f; rx.m[0][3] = 0.0f;
+		rx.m[1][0] = 0.0f; rx.m[1][1] = cosf(x); rx.m[1][2] = -sinf(x); rx.m[1][3] = 0.0f;
+		rx.m[2][0] = 0.0f; rx.m[2][1] = sinf(x); rx.m[2][2] = cosf(x); rx.m[2][3] = 0.0f;
+		rx.m[3][0] = 0.0f; rx.m[3][1] = 0.0f; rx.m[3][2] = 0.0f; rx.m[3][3] = 1.0f;
+
+		ry.m[0][0] = cosf(y); ry.m[0][1] = 0.0f; ry.m[0][2] = -sinf(y); ry.m[0][3] = 0.0f;
+		ry.m[1][0] = 0.0f; ry.m[1][1] = 1.0f; ry.m[1][2] = 0.0f; ry.m[1][3] = 0.0f;
+		ry.m[2][0] = sinf(y); ry.m[2][1] = 0.0f; ry.m[2][2] = cosf(y); ry.m[2][3] = 0.0f;
+		ry.m[3][0] = 0.0f; ry.m[3][1] = 0.0f; ry.m[3][2] = 0.0f; ry.m[3][3] = 1.0f;
+
+		rz.m[0][0] = cosf(z); rz.m[0][1] = -sinf(z); rz.m[0][2] = 0.0f; rz.m[0][3] = 0.0f;
+		rz.m[1][0] = sinf(z); rz.m[1][1] = cosf(z); rz.m[1][2] = 0.0f; rz.m[1][3] = 0.0f;
+		rz.m[2][0] = 0.0f; rz.m[2][1] = 0.0f; rz.m[2][2] = 1.0f; rz.m[2][3] = 0.0f;
+		rz.m[3][0] = 0.0f; rz.m[3][1] = 0.0f; rz.m[3][2] = 0.0f; rz.m[3][3] = 1.0f;
+
+		*this = rz * ry * rx;
+	}
+
+	void Matrix4f::InitTranslationTransform(float x, float y, float z)
+	{
+		m[0][0] = 1.0f; m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = x;
+		m[1][0] = 0.0f; m[1][1] = 1.0f; m[1][2] = 0.0f; m[1][3] = y;
+		m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = 1.0f; m[2][3] = z;
+		m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
+	}
+
+
+
+	void AnimationController::BoneTransformation(float tsec, DynaArray<Mat4> *transform)
+	{
+		float TicksPerSecond = (float)(scene->mAnimations[0]->mTicksPerSecond != 0 ? scene->mAnimations[0]->mTicksPerSecond : 25.0f);
+		float TimeInTicks = tsec * TicksPerSecond;
+		float AnimationTime = fmod(TimeInTicks, (float)scene->mAnimations[0]->mDuration);
+
+		Matrix4f Identity;
+		Identity.InitIdentity();
+		ReadNodeHeirarchy(AnimationTime, scene->mRootNode, Identity);
+
+
+	}
+
+	void AnimationController::CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
+	{
+		if (pNodeAnim->mNumScalingKeys == 1) {
+			Out = pNodeAnim->mScalingKeys[0].mValue;
+			return;
+		}
+
+		uint32 ScalingIndex = FindScaling(AnimationTime, pNodeAnim);
+		uint32 NextScalingIndex = (ScalingIndex + 1);
+		Assert(NextScalingIndex < pNodeAnim->mNumScalingKeys);
+		float DeltaTime = (float)(pNodeAnim->mScalingKeys[NextScalingIndex].mTime - pNodeAnim->mScalingKeys[ScalingIndex].mTime);
+		float Factor = (AnimationTime - (float)pNodeAnim->mScalingKeys[ScalingIndex].mTime) / DeltaTime;
+		Assert(Factor >= 0.0f && Factor <= 1.0f);
+		const aiVector3D& Start = pNodeAnim->mScalingKeys[ScalingIndex].mValue;
+		const aiVector3D& End = pNodeAnim->mScalingKeys[NextScalingIndex].mValue;
+		aiVector3D Delta = End - Start;
+		Out = Start + Factor * Delta;
+	}
+
+	void AnimationController::CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
+	{
+		// we need at least two values to interpolate...
+		if (pNodeAnim->mNumRotationKeys == 1) {
+			Out = pNodeAnim->mRotationKeys[0].mValue;
+			return;
+		}
+
+		uint32 RotationIndex = FindRotation(AnimationTime, pNodeAnim);
+		uint32 NextRotationIndex = (RotationIndex + 1);
+		Assert(NextRotationIndex < pNodeAnim->mNumRotationKeys);
+		float DeltaTime = (float)(pNodeAnim->mRotationKeys[NextRotationIndex].mTime - pNodeAnim->mRotationKeys[RotationIndex].mTime);
+		float Factor = (AnimationTime - (float)pNodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
+		Assert(Factor >= 0.0f && Factor <= 1.0f);
+		const aiQuaternion& StartRotationQ = pNodeAnim->mRotationKeys[RotationIndex].mValue;
+		const aiQuaternion& EndRotationQ = pNodeAnim->mRotationKeys[NextRotationIndex].mValue;
+		aiQuaternion::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
+		Out = Out.Normalize();
+	}
+
+	void AnimationController::CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
+	{
+		if (pNodeAnim->mNumPositionKeys == 1) {
+			Out = pNodeAnim->mPositionKeys[0].mValue;
+			return;
+		}
+
+		uint32 PositionIndex = FindPosition(AnimationTime, pNodeAnim);
+		uint32 NextPositionIndex = (PositionIndex + 1);
+		Assert(NextPositionIndex < pNodeAnim->mNumPositionKeys);
+		float DeltaTime = (float)(pNodeAnim->mPositionKeys[NextPositionIndex].mTime - pNodeAnim->mPositionKeys[PositionIndex].mTime);
+		float Factor = (AnimationTime - (float)pNodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
+		Assert(Factor >= 0.0f && Factor <= 1.0f);
+		const aiVector3D& Start = pNodeAnim->mPositionKeys[PositionIndex].mValue;
+		const aiVector3D& End = pNodeAnim->mPositionKeys[NextPositionIndex].mValue;
+		aiVector3D Delta = End - Start;
+		Out = Start + Factor * Delta;
+	}
+
+	const aiNodeAnim* AnimationController::FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName)
+	{
+		for (uint32 i = 0; i < pAnimation->mNumChannels; i++) {
+			const aiNodeAnim* pNodeAnim = pAnimation->mChannels[i];
+
+			if (std::string(pNodeAnim->mNodeName.data) == NodeName) {
+				return pNodeAnim;
+			}
+		}
+
+		return NULL;
+	}
+
+	uint32 AnimationController::FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim)
+	{
+		Assert(pNodeAnim->mNumScalingKeys > 0);
+
+		for (uint32 i = 0; i < pNodeAnim->mNumScalingKeys - 1; i++) {
+			if (AnimationTime < (float)pNodeAnim->mScalingKeys[i + 1].mTime) {
+				return i;
+			}
+		}
+
+		Assert(0);
+
+		return 0;
+	}
+
+	uint32 AnimationController::FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim)
+	{
+		Assert(pNodeAnim->mNumRotationKeys > 0);
+
+		for (uint32 i = 0; i < pNodeAnim->mNumRotationKeys - 1; i++) {
+			if (AnimationTime < (float)pNodeAnim->mRotationKeys[i + 1].mTime) {
+				return i;
+			}
+		}
+
+		Assert(0);
+
+		return 0;
+	}
+
+	uint32 AnimationController::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
+	{
+		for (uint32 i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++) {
+			if (AnimationTime < (float)pNodeAnim->mPositionKeys[i + 1].mTime) {
+				return i;
+			}
+		}
+
+		Assert(0);
+
+		return 0;
+	}
+
+
+	Matrix4f ToMatrix4fgawd(const aiMatrix4x4 *ai_mat)
+	{
+		Assert(sizeof(aiMatrix4x4) == sizeof(Matrix4f));
+		uint32 size = sizeof(Matrix4f);
+
+		Matrix4f a;
+		memcpy((void*)&a, (void*)ai_mat, size);
+
+		return a;
+	}
+
+	Matrix4f ToMatrix4ffrom3x3(const aiMatrix3x3 *ai_mat)
+	{
+		uint32 size = sizeof(aiMatrix3x3);
+
+		Matrix4f a;
+		memcpy((void*)&a, (void*)ai_mat, size);
+
+		return a;
+	}
+
+	void AnimationController::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform)
+	{
+		std::string NodeName(pNode->mName.data);
+
+		const aiAnimation* pAnimation = scene->mAnimations[0];
+
+		Matrix4f NodeTransformation = ToMatrix4fgawd(&pNode->mTransformation);
+
+		const aiNodeAnim* pNodeAnim = FindNodeAnim(pAnimation, NodeName);
+
+		if (pNodeAnim) {
+			// Interpolate scaling and generate scaling transformation matrix
+			aiVector3D Scaling;
+			CalcInterpolatedScaling(Scaling, AnimationTime, pNodeAnim);
+			Matrix4f ScalingM;
+			ScalingM.InitScaleTransform(Scaling.x, Scaling.y, Scaling.z);
+
+			// Interpolate rotation and generate rotation transformation matrix
+			aiQuaternion RotationQ;
+			CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
+			Matrix4f RotationM = Matrix4f(RotationQ.GetMatrix());
+
+			// Interpolate translation and generate translation transformation matrix
+			aiVector3D Translation;
+			CalcInterpolatedPosition(Translation, AnimationTime, pNodeAnim);
+			Matrix4f TranslationM;
+			TranslationM.InitTranslationTransform(Translation.x, Translation.y, Translation.z);
+
+			// Combine the above transformations
+			NodeTransformation = TranslationM * RotationM * ScalingM;
+			//NodeTransformation.Print();
+
+			Transform t;
+			t.scale = Vec3(Scaling.x, Scaling.y, Scaling.z);
+			t.rotation = Quat(RotationQ.x, RotationQ.y, RotationQ.z, RotationQ.w);
+			t.position = Vec3(Translation.x, Translation.y, Translation.z);
+
+
+		}
+
+		Matrix4f GlobalTransformation = ParentTransform * NodeTransformation;
+		//Matrix4f GlobalTransformation = NodeTransformation * ParentTransform;
+
+		if (bone_mapping.find(NodeName) != bone_mapping.end()) {
+			uint32 BoneIndex = bone_mapping[NodeName];
+			bone_information[BoneIndex].ft = global_inverse_transform * GlobalTransformation * bone_information[BoneIndex].bone_offset;
+			//bone_information[BoneIndex].ft = bone_information[BoneIndex].bone_offset * GlobalTransformation * global_inverse_transform;
+
+
+		}
+
+		for (uint32 i = 0; i < pNode->mNumChildren; i++) {
+			ReadNodeHeirarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
+		}
 	}
 
 }

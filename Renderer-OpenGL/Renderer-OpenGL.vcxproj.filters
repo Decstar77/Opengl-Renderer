@@ -147,6 +147,9 @@
     <None Include="shaders\simple_blur_frag.glsl" />
     <None Include="shaders\sanitycheck_vert.glsl" />
     <None Include="shaders\sanitycheck_frag.glsl" />
+    <None Include="shaders\forward_pbr_notext_vert.glsl" />
+    <None Include="shaders\forward_pbr_notext_frag.glsl" />
+    <None Include="shaders\test_anim_vert.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="shaders\skybox_frag.glsl">

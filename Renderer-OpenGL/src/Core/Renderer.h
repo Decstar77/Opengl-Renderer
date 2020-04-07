@@ -40,7 +40,7 @@ namespace cm
 
 	};
 
-	struct StandardMeshes // Unsure
+	struct StandardMeshes 
 	{
 		GLMesh quad;
 		GLMesh plane;
@@ -49,14 +49,14 @@ namespace cm
 		GLMesh cone;
 	};
 
-	struct StandardShaders // Unsure
+	struct StandardShaders 
 	{
 		Shader gpu_gaussian_blur;
 		Shader simple_blur;
 		//.. Add as needed;
 	};
 
-	struct RenderShaders // Unsure
+	struct RenderShaders 
 	{
 		Shader forward_render_shader;
 		Shader forward_render_batch_shader;

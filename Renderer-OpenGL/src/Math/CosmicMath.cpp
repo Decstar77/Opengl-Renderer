@@ -130,8 +130,8 @@ namespace cm
 
 	Mat4 CalculateTransformMatrix(const Vec3 & position, const Vec3 & scale, const Quat & rotation)
 	{
+		// @NOTE: T * R * S because we do the R * T first, then scale. Row major: T * R * S.
 		Mat4 model_transform(1);
-		//Apparently scale, rotate, translate. Here is rotate, translate, scale
 		model_transform = Translate(model_transform, position);
 		model_transform = QuatToMat4(Conjugate(rotation)) * model_transform;
 		model_transform = ScaleCardinal(model_transform, scale);

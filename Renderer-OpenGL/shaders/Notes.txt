@@ -3,8 +3,12 @@ SSAO: We currently have to textures eaching only having one channel GL_RED, wher
 	: We could just have one texture with mulitple components GL_RG, for example. Not sure if this is better. --DEAD. Won't work because then how do you
 	: blur ? The blur shader binds a texture and then looks all round.
 
-
-
+Notes: 
+	RenderWorld function needs to go.
+	Animation controller is not complete
+	Need to properly abstract the animation process maybe by having a gameobjects.h
+	We can only write data to a VBO on a single tpye. Eg float, change
+	
 RECAP:
 	projection matrix.
 	projection divide.
@@ -13,14 +17,13 @@ RECAP:
 DAY:
 	Write pbr notext shader
 	Read pbr things
-	Finish vulkan triangle
 	
+
 
 
 
 
 TODO:
-	
 
 	LOW PRIO:
 		OpenGL layout class

@@ -68,6 +68,11 @@ namespace cm
 			std::vector<T>::clear();
 		}
 
+		DynaArray(uint32 size) : std::vector<T>(size)
+		{
+
+		}
+
 		DynaArray(std::initializer_list<T> init) : std::vector<T> {init}
 		{
 			

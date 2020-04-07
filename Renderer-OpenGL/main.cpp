@@ -31,6 +31,41 @@ static float delta_time = 0;
 
 static bool DRAW_LIGHT_POSITIONS = false;
 
+class AnimatedActor : public  WorldObject
+{
+public:
+	GLMesh mesh;
+	Material material;
+	Transform transform;
+	AnimationController animation_controller;
+
+	virtual void SetTextures(Shader *shader) override;
+	virtual void SetMaterialValues(Shader *shader) override;
+	virtual void SetTransformValues(Shader *shader) override;
+	virtual const GLMesh &GetMeshForRender() override;
+
+};
+
+void AnimatedActor::SetTextures(Shader *shader)
+{
+	throw std::logic_error("The method or operation is not implemented.");
+}
+
+void AnimatedActor::SetMaterialValues(Shader *shader)
+{
+	ShaderSetVec3(shader, "diffuse_colour", Vec3(0.23, 0.48, 0.34).arr);
+	ShaderSetVec3(shader, "specular_colour", Vec3(0.2f).arr);
+}
+
+void AnimatedActor::SetTransformValues(Shader *shader)
+{
+	ShaderSetMat4(shader, "model", transform.CalcTransformMatrix().arr);
+}
+
+const cm::GLMesh & AnimatedActor::GetMeshForRender()
+{
+	return mesh;
+}
 
 void MousePositionCallBack(GLFWwindow *widow, double xpos, double ypos)
 {
@@ -227,6 +262,12 @@ int main()
 	Shader forward_phong_notext_shader = CreateShader(ReadFile("shaders/forward_phong_notext_vert.glsl"), ReadFile("shaders/forward_phong_notext_frag.glsl"));
 	forward_phong_notext_shader.name = "forward_phong_notext_shader";
 
+	Shader forward_pbr_notext_shader = CreateShader(ReadFile("shaders/forward_pbr_notext_vert.glsl"), ReadFile("shaders/forward_pbr_notext_frag.glsl"));
+	forward_pbr_notext_shader.name = "forward_pbr_notext_shader";
+
+	Shader animation_test_shader = CreateShader(ReadFile("shaders/test_anim_vert.glsl"), ReadFile("shaders/forward_pbr_notext_frag.glsl"));
+	animation_test_shader.name = "animation_test_shader";
+
 
 	Shader post_processing_shader = CreateShader(ReadFile("shaders/post_processing_vert.glsl"), ReadFile("shaders/post_processing_frag.glsl"));
 	post_processing_shader.name = "post_processing_shader";
@@ -273,22 +314,21 @@ int main()
 	impmeshes.clear();
 
 
-	DynaArray<uint8> image_data;
-	Texture gun_diffuse_map;
-	LoadTexture(&image_data, &gun_diffuse_map.config, "res/textures/FPS_CGC_LowPoly_Gun_BaseColor.png");
-	CreateTexture(&gun_diffuse_map, image_data.data());
-	image_data.clear();
+	//DynaArray<uint8> image_data;
+	//Texture gun_diffuse_map;
+	//LoadTexture(&image_data, &gun_diffuse_map.config, "res/textures/FPS_CGC_LowPoly_Gun_BaseColor.png");
+	//CreateTexture(&gun_diffuse_map, image_data.data());
+	//image_data.clear();
 
-	Texture gun_oc_r_m_map;
-	LoadTexture(&image_data, &gun_oc_r_m_map.config, "res/textures/FPS_CGC_LowPoly_Gun_OcclusionRoughnessMetallic.png");
-	CreateTexture(&gun_oc_r_m_map, image_data.data());
-	image_data.clear();
-	
+	//Texture gun_oc_r_m_map;
+	//LoadTexture(&image_data, &gun_oc_r_m_map.config, "res/textures/FPS_CGC_LowPoly_Gun_OcclusionRoughnessMetallic.png");
+	//CreateTexture(&gun_oc_r_m_map, image_data.data());
+	//image_data.clear();
 
-	Texture gun_normal_map;
-	LoadTexture(&image_data, &gun_normal_map.config, "res/textures/FPS_CGC_LowPoly_Gun_Normal.png");
-	CreateTexture(&gun_normal_map, image_data.data());
-	image_data.clear();
+	//Texture gun_normal_map;
+	//LoadTexture(&image_data, &gun_normal_map.config, "res/textures/FPS_CGC_LowPoly_Gun_Normal.png");
+	//CreateTexture(&gun_normal_map, image_data.data());
+	//
 	//LoadTexture(&image_data, &gun_diffuse_map.config, "res/textures/FPS_CGC_LowPoly_Gun_BaseColor.png");
 
 	// @HACK: Overriding this cause it has texture coords
@@ -318,23 +358,37 @@ int main()
 	wall_right.transform.rotation = EulerToQuat(Vec3(0, 90, 0));
 	wall_right.transform.position = Vec3(10, 0, -10);
 
-	Actor test_cube_guy;
-	test_cube_guy.mesh = gun;
-	test_cube_guy.transform.scale = Vec3(2);
-	test_cube_guy.transform.rotation = EulerToQuat(Vec3(0, -45, 0));
+	LoadModel(&impmeshes, "res/models/boblampclean.md5mesh");
+	GLMesh anim_test_mesh = impmeshes[0].CreateAnimMesh();
+
+	AnimatedActor test_cube_guy;
+	test_cube_guy.mesh = anim_test_mesh;
+	test_cube_guy.transform.scale = Vec3(.05);
+	test_cube_guy.transform.rotation = EulerToQuat(Vec3(90, 0, 0));
 	test_cube_guy.transform.position = Vec3(0, 1, 0);
-	test_cube_guy.material.diffuse_texture = &gun_diffuse_map;
-	test_cube_guy.material.occlusion_roughness_metallic = &gun_oc_r_m_map;
-	test_cube_guy.material.normal_texture = &gun_normal_map;
+	//test_cube_guy.material.diffuse_texture = &gun_diffuse_map;
+	//test_cube_guy.material.occlusion_roughness_metallic = &gun_oc_r_m_map;
+	//test_cube_guy.material.normal_texture = &gun_normal_map;
 
+	// @NOTE: This is a ToAnimController
+	// @TODO: Make it so !
 
+	test_cube_guy.animation_controller.bone_information = impmeshes[0].bone_information;
+	test_cube_guy.animation_controller.bone_mapping = impmeshes[0].bone_mapping;
+	test_cube_guy.animation_controller.vertex_information = impmeshes[0].vertex_information;
+	test_cube_guy.animation_controller.global_inverse_transform = impmeshes[0].gloabl_inverse;
+	test_cube_guy.animation_controller.scene = impmeshes[0].scene;
+	DynaArray<Mat4> mats;
+	
+	//impmeshes.clear();
+	//image_data.clear();
 
 	World main_world;
-	main_world.objects.push_back(&floor_tile);
 	main_world.objects.push_back(&test_cube_guy);
-	main_world.objects.push_back(&wall_front);
-	main_world.objects.push_back(&wall_left);
-	main_world.objects.push_back(&wall_right);
+	//main_world.objects.push_back(&floor_tile);
+	//main_world.objects.push_back(&wall_front);
+	//main_world.objects.push_back(&wall_left);
+	//main_world.objects.push_back(&wall_right);
 
 	RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_WIDTH);
 	RenderCommands::EnableFaceCulling();
@@ -360,7 +414,7 @@ int main()
 	renderer.render_shaders.g_buffer_shader = g_buffer_shader;
 	renderer.render_shaders.ssao_gbuffer_shader = ssao_gbuffer_shader;
 	renderer.render_shaders.ssao_shader = ssao_shader;
-	renderer.render_shaders.forward_render_shader = forward_phong_notext_shader;
+	renderer.render_shaders.forward_render_shader = animation_test_shader;
 	renderer.render_shaders.deferred_render_shader = deferred_shader;
 	renderer.render_shaders.post_processing_shader = post_processing_shader;
 	renderer.render_shaders.debug_shader = debug_shader;
@@ -399,7 +453,7 @@ int main()
 	float z = 0.5;
 	float parr[100] = {};
 	for (int i = 0; i < 100; i++) parr[i] = 0.f;
-
+	float run_time = 0;
 	while (!glfwWindowShouldClose(window))
 	{
 		//************************************
@@ -492,6 +546,19 @@ int main()
 		informer.UpdateUBO("LightingData", lighting_data);
 
 
+		test_cube_guy.animation_controller.BoneTransformation(run_time, &mats);
+		//
+		BindShader(animation_test_shader);
+		for (int i = 0; i < test_cube_guy.animation_controller.bone_information.size(); i++)
+		{
+			Matrix4f anim_mat = test_cube_guy.animation_controller.bone_information[i].ft;
+			std::stringstream ss;
+			ss << "gBones[" << i << "]";
+			uint32 loc = GetUniformLocation(&animation_test_shader, ss.str());
+			glUniformMatrix4fv(loc, 1, GL_TRUE, (const GLfloat*)anim_mat);
+		}
+
+
 		//************************************
 		// Render The Current Frame
 		//************************************
@@ -555,7 +622,7 @@ int main()
 		std::chrono::microseconds elapsedTime(std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime));
 		float time = elapsedTime.count();
 		delta_time = time * 0.001f * 0.001f;
-		
+		run_time += delta_time;
 		for (int i = 0; i < 99; i++)
 		{
 			parr[i] = parr[i + 1];

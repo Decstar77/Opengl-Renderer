@@ -117,7 +117,7 @@ namespace cm
 		{
 			WorldObject *a = world.objects[i];
 			a->SetTransformValues(&render_shaders.forward_render_shader);
-			a->SetMaterialValues(&render_shaders.forward_render_shader, identity_texture);
+			a->SetMaterialValues(&render_shaders.forward_render_shader);
 
 
 			RenderMesh(render_shaders.forward_render_shader,a->GetMeshForRender());

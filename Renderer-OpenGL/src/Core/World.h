@@ -2,6 +2,7 @@
 #include "Core.h"
 #include "OpenGL/OpenGl.h"
 #include "Math/CosmicMath.h"
+
 namespace cm
 {
 	class Material
@@ -17,6 +18,8 @@ namespace cm
 		Texture *normal_texture = nullptr;
 		Texture *occlusion_roughness_metallic = nullptr;
 		Texture *emssive_texture = nullptr;
+
+		Shader *shader;
 	};
 
 	struct PointLight // Out
@@ -49,24 +52,24 @@ namespace cm
 	   	 
 	class WorldObject
 	{
-	public:
-		virtual void SetMaterialValues(Shader *shader, Texture identity_texture) = 0;
+	public:		
+		virtual void SetTextures(Shader *shader) = 0;
+		virtual void SetMaterialValues(Shader *shader) = 0;
 		virtual void SetTransformValues(Shader *shader) = 0;
 		virtual const GLMesh &GetMeshForRender() = 0;
 	};
-
+	   
 	class Actor : public WorldObject
 	{
 	public:
 		Transform transform;
 		Material material;
 		GLMesh mesh;
-
-		virtual void SetMaterialValues(Shader *shader, Texture identity_texture) override;
-
+		
+		virtual void SetTextures(Shader *shader) override;
+		virtual void SetMaterialValues(Shader *shader) override;
 		virtual void SetTransformValues(Shader *shader) override;
-
-		virtual const GLMesh & GetMeshForRender() override;
+		virtual const GLMesh &GetMeshForRender() override;
 
 	};
 

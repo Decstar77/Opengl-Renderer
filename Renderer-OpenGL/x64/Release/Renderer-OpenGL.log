@@ -1,178 +1,186 @@
 ﻿cl : Command line warning D9002: ignoring unknown option '/arch:SSE2'
   main.cpp
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(54): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(61): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(53): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(60): warning C4002: too many arguments for function-like macro invocation 'Assert'
 f:\renderer-opengl\renderer-opengl\src\math\cosmicphysics.h(249): warning C4018: '<': signed/unsigned mismatch
 f:\renderer-opengl\renderer-opengl\src\math\cosmicphysics.h(252): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(41): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(42): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(169): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(189): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(214): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(216): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(236): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(237): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(259): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(260): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\debug.h(67): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\debug.h(148): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\assetloader.h(33): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\assetloader.h(49): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\assetloader.h(71): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\assetloader.h(108): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\assetloader.h(172): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\assetloader.h(270): warning C4267: 'initializing': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\assetloader.h(390): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\engine\input.h(28): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\engine\input.h(29): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\engine\input.h(33): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\main.cpp(145): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\main.cpp(172): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\main.cpp(205): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(206): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(207): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(534): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(631): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(669): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(715): warning C4244: 'initializing': conversion from 'int32' to 'real', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(719): warning C4244: 'argument': conversion from 'int32' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(795): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\main.cpp(1042): warning C4244: 'initializing': conversion from '_Rep' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(182): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(184): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(204): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(205): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\engine\input.h(25): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\engine\input.h(26): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\engine\input.h(31): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\debug.h(89): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\debug.h(173): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\main.cpp(67): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\main.cpp(94): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\main.cpp(441): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(448): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(556): warning C4244: 'initializing': conversion from '_Rep' to 'float', possible loss of data
           with
           [
               _Rep=__int64
           ]
+  Camera.cpp
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(53): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(60): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\engine\input.h(25): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\engine\input.h(26): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\engine\input.h(31): warning C4002: too many arguments for function-like macro invocation 'Assert'
+  UIRenderer.cpp
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(53): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(60): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\core\uirenderer.cpp(30): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\core\uirenderer.cpp(31): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\core\uirenderer.cpp(101): warning C4312: 'reinterpret_cast': conversion from 'uint32' to 'void *' of greater size
+f:\renderer-opengl\renderer-opengl\src\core\uirenderer.cpp(148): warning C4312: 'reinterpret_cast': conversion from 'uint32' to 'void *' of greater size
+  Renderer.cpp
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(53): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(60): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(182): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(184): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(204): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(205): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\engine\input.h(25): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\engine\input.h(26): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\engine\input.h(31): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(159): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(158): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(164): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(179): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(178): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(303): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(321): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(362): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(381): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(400): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(433): warning C4002: too many arguments for function-like macro invocation 'Assert'
+  World.cpp
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(53): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(60): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(182): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(184): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(204): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(205): warning C4002: too many arguments for function-like macro invocation 'Assert'
+  AssetLoader.cpp
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(53): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(60): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(182): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(184): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(204): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(205): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(10): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(45): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(111): warning C4002: too many arguments for function-like macro invocation 'Assert'
   Input.cpp
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(54): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(61): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\engine\input.h(28): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\engine\input.h(29): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\engine\input.h(33): warning C4002: too many arguments for function-like macro invocation 'Assert'
-  GPUCompute.cpp
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(54): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(61): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(169): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(189): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(214): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(216): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(236): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(237): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(259): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(260): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\gpucompute.cpp(7): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\gpucompute.cpp(8): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\gpucompute.cpp(9): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\gpucompute.cpp(10): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\gpucompute.cpp(27): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\gpucompute.cpp(28): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(53): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(60): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\engine\input.h(25): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\engine\input.h(26): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\engine\input.h(31): warning C4002: too many arguments for function-like macro invocation 'Assert'
   CosmicMath.cpp
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(54): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(61): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(53): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(60): warning C4002: too many arguments for function-like macro invocation 'Assert'
 f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.cpp(635): warning C4002: too many arguments for function-like macro invocation 'Assert'
 f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.cpp(655): warning C4002: too many arguments for function-like macro invocation 'Assert'
   CosmicNoise.cpp
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(54): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(61): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(53): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(60): warning C4002: too many arguments for function-like macro invocation 'Assert'
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(41): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(42): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(138): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(157): warning C4244: '=': conversion from 'const float' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(158): warning C4244: '=': conversion from 'const float' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(159): warning C4244: '=': conversion from 'const float' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(169): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(171): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(173): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(182): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(195): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(199): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(203): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(236): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(239): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(250): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.cpp(252): warning C4018: '<': signed/unsigned mismatch
   CosmicPhysics.cpp
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(54): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(61): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(53): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(60): warning C4002: too many arguments for function-like macro invocation 'Assert'
 f:\renderer-opengl\renderer-opengl\src\math\cosmicphysics.h(249): warning C4018: '<': signed/unsigned mismatch
 f:\renderer-opengl\renderer-opengl\src\math\cosmicphysics.h(252): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
-  Mesh.cpp
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(54): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(61): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(169): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(189): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(214): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(216): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(236): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(237): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(259): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(260): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\mesh.cpp(19): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\mesh.cpp(24): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
+  EditableMesh.cpp
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(53): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(60): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(182): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(184): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(204): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(205): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(40): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(48): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
   BufferLayout.cpp
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(54): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(61): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(53): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(60): warning C4002: too many arguments for function-like macro invocation 'Assert'
 f:\renderer-opengl\renderer-opengl\src\opengl\bufferlayout.cpp(31): warning C4002: too many arguments for function-like macro invocation 'Assert'
   OpenGL.cpp
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(54): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(61): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(169): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(189): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(214): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(216): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(236): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(237): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(259): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(260): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(25): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(42): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(53): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(61): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(74): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(86): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(109): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(120): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(128): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(203): warning C4101: 'geometry': unreferenced local variable
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(277): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(278): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(279): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(280): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(304): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(365): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(373): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(392): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(53): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(60): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(182): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(184): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(204): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(205): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(10): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(11): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(26): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(52): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(53): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(68): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(94): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(111): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(112): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(113): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(136): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(153): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(164): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(172): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(185): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(197): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(220): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(231): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(239): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(306): warning C4101: 'geometry': unreferenced local variable
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(359): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(360): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(361): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(383): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(389): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(400): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(401): warning C4002: too many arguments for function-like macro invocation 'Assert'
 f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(402): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(409): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(464): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(465): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(466): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(467): warning C4002: too many arguments for function-like macro invocation 'Assert'
-  OpenGlRenderer.cpp
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(54): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.h(61): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(169): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(189): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(214): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(216): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(236): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(237): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(259): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.h(260): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\openglrenderer.cpp(9): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\openglrenderer.cpp(10): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\openglrenderer.cpp(11): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\openglrenderer.cpp(12): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\openglrenderer.cpp(13): warning C4002: too many arguments for function-like macro invocation 'Assert'
-f:\renderer-opengl\renderer-opengl\src\opengl\openglrenderer.cpp(64): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(403): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(426): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(427): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(428): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(468): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(495): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(556): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(580): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(591): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(601): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(607): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(639): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(640): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(653): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(654): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(655): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(656): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(691): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(692): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(693): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(694): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(695): warning C4002: too many arguments for function-like macro invocation 'Assert'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(752): warning C4002: too many arguments for function-like macro invocation 'Assert'
+  imgui.cpp
+  imgui_demo.cpp
+  imgui_draw.cpp
+  imgui_impl_glfw.cpp
+  imgui_impl_opengl3.cpp
+  imgui_widgets.cpp
 LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
   Generating code
-  68 of 2852 functions ( 2.4%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    31 functions had inline decision re-evaluated but remain unchanged
+  All 4100 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
 glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'F:\Renderer-OpenGL\x64\Release\vc120.pdb'; linking object as if no debug info
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Release\Renderer-OpenGL.exe
