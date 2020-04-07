@@ -130,70 +130,7 @@ namespace cm
 
 			edit_mesh->vertices.push_back(vertex);
 		}
-
-
 		
-		if (hbone)
-		{			
-			DynaArray<VertexBoneInfo> vertex_information(mesh->mNumVertices);
-			DynaArray<BoneInfo> bone_information(mesh->mNumBones);
-			// @NOTE: map is helper data structure
-			std::unordered_map <std::string, uint32> bone_mapping;
-
-			uint32 bone_index_counter = 0;
-			for (uint32 i = 0; i < mesh->mNumBones; i++)
-			{
-				aiBone *bone = mesh->mBones[i];				
-				std::string cur_name = bone->mName.C_Str();
-				uint32 bone_index = 0;
-
-				// @NOTE: Bone Stage
-				if (bone_mapping.find(cur_name) == bone_mapping.end())
-				{
-					// @NOTE: First map the name to the index
-					bone_mapping[cur_name] = bone_index_counter;
-				
-					// @NOTE: Set the bone index for the vertex stage. Also inc the bone counter;
-					bone_index = bone_index_counter++;					
-				}
-				else
-				{
-
-					// @NOTE: Only happens if meshes share a bone ??
-					bone_index = bone_mapping[cur_name];
-					LOG("FOUND, ERR");
-				}
-
-				// @NOTE: Store the bone information
-				BoneInfo info;
-				info.bone_offset = Matrix4f(bone->mOffsetMatrix);
-				bone_information[bone_index] = info;
-
-
-				// @NOTE: Vertex and weighting stage
-				for (int32 j = 0; j < bone->mNumWeights; j++)
-				{
-					aiVertexWeight vertex_info = bone->mWeights[j];
-					
-					float vertex_weight = vertex_info.mWeight;
-					uint32 vertex_index = vertex_info.mVertexId;
-					uint32 next = vertex_information[vertex_index].next_space++;
-					
-					vertex_information[vertex_index].weights[next] = vertex_weight;
-					vertex_information[vertex_index].bone_index[next] = bone_index;
-				}
-
-			}
-				
-
-			// @SPEED: This is a slow copy!! Prehaps the compiler will optimize this
-			edit_mesh->bone_information = bone_information;
-			edit_mesh->bone_mapping= bone_mapping;
-			edit_mesh->vertex_information = vertex_information;
-
-		}
-
-			   		 	  
 		if (faces)
 		{
 			for (uint32 i = 0; i < mesh->mNumFaces; i++)
@@ -233,43 +170,14 @@ namespace cm
 		}
 	}
 
+
+
 	
-
-	void processAnimations(const aiScene *scene, const aiNode *node)
-	{
-		// @NOTE: This assumes we only have one animation		
-		// @TODO: Make usable for more than one
-		aiAnimation *anim = scene->mAnimations[0];
-
-		// @NOTE: This name is NOT the name of the animation
-		std::string node_name = node->mName.data; 
-		Matrix4f transformations = Matrix4f(node->mTransformation);
-
-		aiNodeAnim *anim_node = nullptr;
-		// @NOTE: Find the animation node that corrasponds with the node name
-		for (uint32 i = 0; i < anim->mNumChannels; i++)
-		{
-			aiNodeAnim *anim_n = anim->mChannels[i];
-			std::string anim_n_name = anim->mName.C_Str();
-			if (anim_n_name == node_name)
-			{
-				break;
-			}
-		}
-
-		if (anim)
-		{
-			
-		}	
-
-
-	}	
-	Assimp::Importer import;
 
 	bool LoadModel(DynaArray<EditableMesh> *meshes, const std::string &path)
 	{
-		
-		const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices);
+		Assimp::Importer import;
+		const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);
 		aiMatrix4x4 mat = scene->mRootNode->mTransformation.Inverse();
 		
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
@@ -280,43 +188,27 @@ namespace cm
 
 		processNode(scene->mRootNode, meshes, scene);
 		bool hanim = scene->HasAnimations();
-		if (hanim)
-		{			
-			EditableMesh* mesh = &meshes->at(0);
-			for (int i = 1; i < meshes->size(); i++)
+
+		
+		EditableMesh* mesh = &meshes->at(0);
+		for (int i = 1; i < meshes->size(); i++)
+		{
+			EditableMesh next = meshes->at(i);
+
+			for (int j = 0; j < next.indices.size(); j++)
 			{
-				EditableMesh next = meshes->at(i);
-
-				for (int j = 0; j < next.indices.size(); j++)
-				{
-					uint32 index = (mesh->vertices.size()) + next.indices.at(j);
-					mesh->indices.push_back(index);
-
-				}
-
-				for (int j = 0; j < next.vertices.size(); j++)
-				{
-					mesh->vertices.push_back(next.vertices.at(j));
-				}
-
-				for (int j = 0; j < next.vertex_information.size(); j++)
-				{
-					mesh->vertex_information.push_back(next.vertex_information.at(j));
-				}
-
-				for (int j = 0; j < next.bone_information.size(); j++)
-				{
-					mesh->bone_information.push_back(next.bone_information.at(j));
-				}
-
-				mesh->bone_mapping.insert(next.bone_mapping.begin(), next.bone_mapping.end());
+				uint32 index = (mesh->vertices.size()) + next.indices.at(j);
+				mesh->indices.push_back(index);
 
 			}
 
-			meshes->at(0).gloabl_inverse = Matrix4f(mat);
-			meshes->at(0).scene = scene;
-			processAnimations(scene, scene->mRootNode);
+			for (int j = 0; j < next.vertices.size(); j++)
+			{
+				mesh->vertices.push_back(next.vertices.at(j));
+			}
+					   
 		}
+	
 		// @TODO: free s
 		return true;
 	}

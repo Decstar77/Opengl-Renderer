@@ -1,5 +1,27 @@
 ﻿cl : Command line warning D9002: ignoring unknown option '/arch:SSE2'
-  AssetLoader.cpp
-f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(174): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(292): warning C4267: 'initializing': conversion from 'size_t' to 'uint32', possible loss of data
+  EditableMesh.cpp
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(40): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(48): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(285): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(286): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(287): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(288): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(295): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(303): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

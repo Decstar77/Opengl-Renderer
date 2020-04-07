@@ -61,59 +61,7 @@ namespace cm
 		return mesh;
 	}
 
-	GLMesh EditableMesh::CreateAnimMesh()
-	{
-		// @TODO: Clean
-		BufferLayout l = BufferLayout(DynaArray<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float4, ShaderDataType::Float4}));
-		
-		DynaArray<float> data;
-		uint32 vert_size = static_cast<uint32>(vertices.size());
-		for (uint32 i = 0; i < vert_size; i++)
-		{
-			Vertex vert = vertices[i];
-			data.CopyFromPtr(vert.position.arr, 3 * sizeof(float));
-			data.CopyFromPtr(vert.normal.arr, 3 * sizeof(float));
-			data.push_back(vert.texture_coord.x);
-			data.push_back(vert.texture_coord.y);
-
-			// @NOTE: Bones
-
-			VertexBoneInfo vb = vertex_information[i];
-
-			data.CopyFromPtr(vb.weights, 4 * sizeof(float));
-			data.push_back(vb.bone_index[0]);
-			data.push_back(vb.bone_index[1]);
-			data.push_back(vb.bone_index[2]);
-			data.push_back(vb.bone_index[3]);
-		}
-
-		VertexBuffer vbo;
-		vbo.lbo = l;
-		vbo.size_bytes = data.size() * sizeof(real);
-		vbo.flags = VertexFlags::READ_WRITE; // Optional;
-
-		CreateVertexBuffer(&vbo);
-		WriteBufferData(&vbo, data, 0);
-
-		IndexBuffer ibo;
-		ibo.index_count = (uint32)indices.size();
-		ibo.size_bytes = indices.size() * sizeof(uint32);
-		ibo.flags = VertexFlags::READ_WRITE;
-
-		CreateIndexBuffer(&ibo);
-		WriteBufferData(&ibo, indices, 0);
-
-		VertexArray vao;
-		vao.vertex_buffers.push_back(vbo);
-		CreateVertexArray(&vao);
-
-		GLMesh mesh;
-		mesh.vao = vao;
-		mesh.ibo = ibo;
-		return mesh;
-
-	}
-
+	
 	void EditableMesh::AddTrianlge(const Vec3 &pos1, const Vec3 &pos2, const Vec3 &pos3)
 	{
 		IndexedTriangle tri;
@@ -310,6 +258,85 @@ namespace cm
 		vertices[vertices.size() - 2].colour = colour;
 		vertices[vertices.size() - 3].colour = colour;
 	}
+	   	  
+
+
+
+
+
+	GLMesh EditableMesh::CreateAnimMesh(const std::vector<VertexBoneInfo> & vertex_information)
+	{
+		// @TODO: Clean
+		BufferLayout l = BufferLayout(DynaArray<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float4, ShaderDataType::Float4 }));
+
+		DynaArray<float> data;
+		uint32 vert_size = static_cast<uint32>(vertices.size());
+		for (uint32 i = 0; i < vert_size; i++)
+		{
+			Vertex vert = vertices[i];
+			data.CopyFromPtr(vert.position.arr, 3 * sizeof(float));
+			data.CopyFromPtr(vert.normal.arr, 3 * sizeof(float));
+			data.push_back(vert.texture_coord.x);
+			data.push_back(vert.texture_coord.y);
+
+			// @NOTE: Bones
+
+			VertexBoneInfo vb = vertex_information[i];
+			data.push_back(vb.bone_index[0]);
+			data.push_back(vb.bone_index[1]);
+			data.push_back(vb.bone_index[2]);
+			data.push_back(vb.bone_index[3]);
+			data.CopyFromPtr(vb.weights, 4 * sizeof(float));
+
+		}
+
+		VertexBuffer vbo;
+		vbo.lbo = l;
+		vbo.size_bytes = data.size() * sizeof(real);
+		vbo.flags = VertexFlags::READ_WRITE; // Optional;
+
+		CreateVertexBuffer(&vbo);
+		WriteBufferData(&vbo, data, 0);
+
+		IndexBuffer ibo;
+		ibo.index_count = (uint32)indices.size();
+		ibo.size_bytes = indices.size() * sizeof(uint32);
+		ibo.flags = VertexFlags::READ_WRITE;
+
+		CreateIndexBuffer(&ibo);
+		WriteBufferData(&ibo, indices, 0);
+
+		VertexArray vao;
+		vao.vertex_buffers.push_back(vbo);
+		CreateVertexArray(&vao);
+
+		GLMesh mesh;
+		mesh.vao = vao;
+		mesh.ibo = ibo;
+		return mesh;
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -359,7 +386,58 @@ namespace cm
 		m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
 	}
 
+	float Matrix4f::Determinant() const
+	{
+		return m[0][0] * m[1][1] * m[2][2] * m[3][3] - m[0][0] * m[1][1] * m[2][3] * m[3][2] + m[0][0] * m[1][2] * m[2][3] * m[3][1] - m[0][0] * m[1][2] * m[2][1] * m[3][3]
+			+ m[0][0] * m[1][3] * m[2][1] * m[3][2] - m[0][0] * m[1][3] * m[2][2] * m[3][1] - m[0][1] * m[1][2] * m[2][3] * m[3][0] + m[0][1] * m[1][2] * m[2][0] * m[3][3]
+			- m[0][1] * m[1][3] * m[2][0] * m[3][2] + m[0][1] * m[1][3] * m[2][2] * m[3][0] - m[0][1] * m[1][0] * m[2][2] * m[3][3] + m[0][1] * m[1][0] * m[2][3] * m[3][2]
+			+ m[0][2] * m[1][3] * m[2][0] * m[3][1] - m[0][2] * m[1][3] * m[2][1] * m[3][0] + m[0][2] * m[1][0] * m[2][1] * m[3][3] - m[0][2] * m[1][0] * m[2][3] * m[3][1]
+			+ m[0][2] * m[1][1] * m[2][3] * m[3][0] - m[0][2] * m[1][1] * m[2][0] * m[3][3] - m[0][3] * m[1][0] * m[2][1] * m[3][2] + m[0][3] * m[1][0] * m[2][2] * m[3][1]
+			- m[0][3] * m[1][1] * m[2][2] * m[3][0] + m[0][3] * m[1][1] * m[2][0] * m[3][2] - m[0][3] * m[1][2] * m[2][0] * m[3][1] + m[0][3] * m[1][2] * m[2][1] * m[3][0];
+	}
 
+	Matrix4f& Matrix4f::Inverse()
+	{
+		// Compute the reciprocal determinant
+		float det = Determinant();
+		if (det == 0.0f)
+		{
+			// Matrix not invertible. Setting all elements to nan is not really
+			// correct in a mathematical sense but it is easy to debug for the
+			// programmer.
+			/*const float nan = std::numeric_limits<float>::quiet_NaN();
+			*this = Matrix4f(
+				nan,nan,nan,nan,
+				nan,nan,nan,nan,
+				nan,nan,nan,nan,
+				nan,nan,nan,nan);*/
+	
+			return *this;
+		}
+
+		float invdet = 1.0f / det;
+
+		Matrix4f res;
+		res.m[0][0] = invdet * (m[1][1] * (m[2][2] * m[3][3] - m[2][3] * m[3][2]) + m[1][2] * (m[2][3] * m[3][1] - m[2][1] * m[3][3]) + m[1][3] * (m[2][1] * m[3][2] - m[2][2] * m[3][1]));
+		res.m[0][1] = -invdet * (m[0][1] * (m[2][2] * m[3][3] - m[2][3] * m[3][2]) + m[0][2] * (m[2][3] * m[3][1] - m[2][1] * m[3][3]) + m[0][3] * (m[2][1] * m[3][2] - m[2][2] * m[3][1]));
+		res.m[0][2] = invdet * (m[0][1] * (m[1][2] * m[3][3] - m[1][3] * m[3][2]) + m[0][2] * (m[1][3] * m[3][1] - m[1][1] * m[3][3]) + m[0][3] * (m[1][1] * m[3][2] - m[1][2] * m[3][1]));
+		res.m[0][3] = -invdet * (m[0][1] * (m[1][2] * m[2][3] - m[1][3] * m[2][2]) + m[0][2] * (m[1][3] * m[2][1] - m[1][1] * m[2][3]) + m[0][3] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]));
+		res.m[1][0] = -invdet * (m[1][0] * (m[2][2] * m[3][3] - m[2][3] * m[3][2]) + m[1][2] * (m[2][3] * m[3][0] - m[2][0] * m[3][3]) + m[1][3] * (m[2][0] * m[3][2] - m[2][2] * m[3][0]));
+		res.m[1][1] = invdet * (m[0][0] * (m[2][2] * m[3][3] - m[2][3] * m[3][2]) + m[0][2] * (m[2][3] * m[3][0] - m[2][0] * m[3][3]) + m[0][3] * (m[2][0] * m[3][2] - m[2][2] * m[3][0]));
+		res.m[1][2] = -invdet * (m[0][0] * (m[1][2] * m[3][3] - m[1][3] * m[3][2]) + m[0][2] * (m[1][3] * m[3][0] - m[1][0] * m[3][3]) + m[0][3] * (m[1][0] * m[3][2] - m[1][2] * m[3][0]));
+		res.m[1][3] = invdet * (m[0][0] * (m[1][2] * m[2][3] - m[1][3] * m[2][2]) + m[0][2] * (m[1][3] * m[2][0] - m[1][0] * m[2][3]) + m[0][3] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]));
+		res.m[2][0] = invdet * (m[1][0] * (m[2][1] * m[3][3] - m[2][3] * m[3][1]) + m[1][1] * (m[2][3] * m[3][0] - m[2][0] * m[3][3]) + m[1][3] * (m[2][0] * m[3][1] - m[2][1] * m[3][0]));
+		res.m[2][1] = -invdet * (m[0][0] * (m[2][1] * m[3][3] - m[2][3] * m[3][1]) + m[0][1] * (m[2][3] * m[3][0] - m[2][0] * m[3][3]) + m[0][3] * (m[2][0] * m[3][1] - m[2][1] * m[3][0]));
+		res.m[2][2] = invdet * (m[0][0] * (m[1][1] * m[3][3] - m[1][3] * m[3][1]) + m[0][1] * (m[1][3] * m[3][0] - m[1][0] * m[3][3]) + m[0][3] * (m[1][0] * m[3][1] - m[1][1] * m[3][0]));
+		res.m[2][3] = -invdet * (m[0][0] * (m[1][1] * m[2][3] - m[1][3] * m[2][1]) + m[0][1] * (m[1][3] * m[2][0] - m[1][0] * m[2][3]) + m[0][3] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]));
+		res.m[3][0] = -invdet * (m[1][0] * (m[2][1] * m[3][2] - m[2][2] * m[3][1]) + m[1][1] * (m[2][2] * m[3][0] - m[2][0] * m[3][2]) + m[1][2] * (m[2][0] * m[3][1] - m[2][1] * m[3][0]));
+		res.m[3][1] = invdet * (m[0][0] * (m[2][1] * m[3][2] - m[2][2] * m[3][1]) + m[0][1] * (m[2][2] * m[3][0] - m[2][0] * m[3][2]) + m[0][2] * (m[2][0] * m[3][1] - m[2][1] * m[3][0]));
+		res.m[3][2] = -invdet * (m[0][0] * (m[1][1] * m[3][2] - m[1][2] * m[3][1]) + m[0][1] * (m[1][2] * m[3][0] - m[1][0] * m[3][2]) + m[0][2] * (m[1][0] * m[3][1] - m[1][1] * m[3][0]));
+		res.m[3][3] = invdet * (m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) + m[0][1] * (m[1][2] * m[2][0] - m[1][0] * m[2][2]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]));
+		*this = res;
+
+		return *this;
+	}
 
 	void AnimationController::BoneTransformation(float tsec, DynaArray<Mat4> *transform)
 	{
@@ -565,5 +643,173 @@ namespace cm
 			ReadNodeHeirarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
 		}
 	}
+
+	bool AnimationController::InitFromScene(const aiScene* pScene, const std::string& Filename)
+	{
+		m_Entries.resize(pScene->mNumMeshes);
+		m_Textures.resize(pScene->mNumMaterials);
+
+		std::vector<Vec3> Positions;
+		std::vector<Vec3> Normals;
+		std::vector<Vec3> TexCoords;
+		std::vector<VertexBoneInfo> vertex_info;
+		std::vector<uint32> Indices;
+
+		uint32 NumVertices = 0;
+		uint32 NumIndices = 0;
+
+		// Count the number of vertices and indices
+		for (uint32 i = 0; i < m_Entries.size(); i++) {
+			m_Entries[i].MaterialIndex = pScene->mMeshes[i]->mMaterialIndex;
+			m_Entries[i].NumIndices = pScene->mMeshes[i]->mNumFaces * 3;
+			m_Entries[i].BaseVertex = NumVertices;
+			m_Entries[i].BaseIndex = NumIndices;
+
+			NumVertices += pScene->mMeshes[i]->mNumVertices;
+			NumIndices += m_Entries[i].NumIndices;
+		}
+
+		// Reserve space in the vectors for the vertex attributes and indices
+		Positions.reserve(NumVertices);
+		Normals.reserve(NumVertices);
+		TexCoords.reserve(NumVertices);
+		vertex_info.resize(NumVertices);
+		Indices.reserve(NumIndices);
+		bool one = true;
+		// Initialize the meshes in the scene one by one
+		for (uint32 i = 0; i < m_Entries.size(); i++) {
+			const aiMesh* paiMesh = pScene->mMeshes[i];
+			InitMesh(i, paiMesh, Positions, Normals, TexCoords, vertex_info, Indices);
+
+			if (i == 0)
+			{
+
+			}
+		}
+		
+		int a = 2;
+
+		EditableMesh eeMesh;
+
+		for (int i = 0; i < Positions.size(); i++)
+		{
+			Vertex v;
+			v.position = Positions[i];
+			v.normal = Vec3(0);
+			v.texture_coord = TexCoords[i];			
+			eeMesh.vertices.push_back(v);
+			
+		}
+		eeMesh.has_positions = true;
+		eeMesh.has_texture_coords = true;
+		for (int i = 0; i < Indices.size(); i++)
+		{
+			eeMesh.indices.push_back(Indices.at(i));
+		}
+		for (int i = 0; i < Indices.size(); i++)
+		{
+			if (eeMesh.indices.at(i) != emesh.indices.at(i))
+			{
+				std::cout << eeMesh.indices.at(i) << std::endl;
+			}
+		}
+
+		mesh = emesh.CreateAnimMesh(vertex_info);
+		
+		return true;
+	}
+
+	void AnimationController::InitMesh(uint32 MeshIndex, const aiMesh* paiMesh, std::vector<Vec3>& Positions, std::vector<Vec3>& Normals, std::vector<Vec3>& TexCoords, std::vector<VertexBoneInfo>& vertex_info, std::vector<unsigned int>& Indices)
+	{
+		const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
+
+		// Populate the vertex attribute vectors
+		for (uint32 i = 0; i < paiMesh->mNumVertices; i++) {
+			const aiVector3D* pPos = &(paiMesh->mVertices[i]);
+			const aiVector3D* pNormal = &(paiMesh->mNormals[i]);
+			const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][i]) : &Zero3D;
+
+			Positions.push_back(Vec3(pPos->x, pPos->y, pPos->z));
+			Normals.push_back(Vec3(0, 0, 0));
+			TexCoords.push_back(Vec3(pTexCoord->x, pTexCoord->y, 0));
+		}
+
+		LoadBones(MeshIndex, paiMesh, vertex_info);
+
+		// Populate the index buffer
+		for (uint32 i = 0; i < paiMesh->mNumFaces; i++) {
+			const aiFace& Face = paiMesh->mFaces[i];
+			Assert(Face.mNumIndices == 3);
+			Indices.push_back(m_Entries[MeshIndex].BaseVertex +  Face.mIndices[0]);
+			Indices.push_back(m_Entries[MeshIndex].BaseVertex +  Face.mIndices[1]);
+			Indices.push_back(m_Entries[MeshIndex].BaseVertex +  Face.mIndices[2]);
+		}
+	}
+
+	void AnimationController::LoadBones(uint32 MeshIndex, const aiMesh* paiMesh, std::vector<VertexBoneInfo>& vertex_info)
+	{
+		for (uint32 i = 0; i < paiMesh->mNumBones; i++) {
+			uint32 BoneIndex = 0;
+			std::string BoneName(paiMesh->mBones[i]->mName.data);
+
+			if (bone_mapping.find(BoneName) == bone_mapping.end()) {
+				// Allocate an index for a new bone
+				BoneIndex = m_NumBones;
+				m_NumBones++;
+				BoneInfo bi;
+				bone_information.push_back(bi);
+				bone_information[BoneIndex].bone_offset = paiMesh->mBones[i]->mOffsetMatrix;
+				bone_mapping[BoneName] = BoneIndex;
+			}
+			else {
+				BoneIndex = bone_mapping[BoneName];
+			}
+
+			for (uint32 j = 0; j < paiMesh->mBones[i]->mNumWeights; j++) {
+				uint32 VertexID = m_Entries[MeshIndex].BaseVertex + paiMesh->mBones[i]->mWeights[j].mVertexId;
+				std::cout << " WAT: "<< paiMesh->mBones[i]->mWeights[j].mVertexId << std::endl;
+				float Weight = paiMesh->mBones[i]->mWeights[j].mWeight;
+				vertex_info[VertexID].AddBoneData(Weight, BoneIndex);
+			}
+		}
+	}
+
+	bool AnimationController::LoadMesh(const std::string& Filename)
+	{
+
+
+
+		bool Ret = false;
+
+		scene = m_Importer.ReadFile(Filename.c_str(), aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
+
+		if (scene) {
+			global_inverse_transform = scene->mRootNode->mTransformation;
+			global_inverse_transform.Inverse();
+			Ret = InitFromScene(scene, Filename);
+		}
+		else {
+			printf("Error parsing '%s': '%s'\n", Filename.c_str(), m_Importer.GetErrorString());
+		}
+
+
+
+		return Ret;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }

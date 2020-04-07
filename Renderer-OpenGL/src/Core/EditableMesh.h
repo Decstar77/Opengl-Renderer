@@ -111,7 +111,6 @@ namespace cm
 
 
 
-
 	struct Vertex
 	{
 		Vec3 position		= Vec3(0);
@@ -120,21 +119,9 @@ namespace cm
 		Vec3 bitanget		= Vec3(0);
 		Vec3 colour			= Vec3(0);
 		Vec3 texture_coord	= Vec3(0);
+		// @NOTE BONES ?
 	};
 
-	struct VertexBoneInfo
-	{
-		uint32 bone_index[4];
-		float weights[4];
-
-		uint32 next_space = 0;
-	};
-
-	struct BoneInfo
-	{
-		Matrix4f bone_offset;
-		Matrix4f ft;
-	};
 
 	struct Edge
 	{
@@ -181,24 +168,28 @@ namespace cm
 		inline void CalculateNormal() { normal = Normalize(Cross(edge1, edge2)); }
 	};
 
-	class AnimationController
+	struct VertexBoneInfo
 	{
-	public:
-		DynaArray<VertexBoneInfo> vertex_information;
-		DynaArray<BoneInfo> bone_information;
-		std::unordered_map <std::string, uint32> bone_mapping;
-		Matrix4f global_inverse_transform;
-		const aiScene *scene;
-		void BoneTransformation(float tsec, DynaArray<Mat4> *transform);
+		uint32 bone_index[4];
+		float weights[4];
+		void AddBoneData(float Weight, uint32 id)
+		{
+			for (uint32 i = 0; i < 4; i++) {
+				if (weights[i] == 0.0) {
+					bone_index[i] = id;
+					weights[i] = Weight;
+					return;
+				}
+			}
+		}
+		uint32 next_space = 0;
+	};
 
-		void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-		void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-		void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-		const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
-		uint32 FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
-		uint32 FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
-		uint32 FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
-		void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform);
+	struct BoneInfo
+	{
+		std::string name;
+		Matrix4f bone_offset;
+		Matrix4f ft;
 	};
 
 	class EditableMesh
@@ -207,27 +198,19 @@ namespace cm
 		DynaArray<Vertex> vertices;
 		DynaArray<uint32> indices;
 		DynaArray<IndexedTriangle> tris;
-		DynaArray<VertexBoneInfo> vertex_information;
-		DynaArray<BoneInfo> bone_information;
-		std::unordered_map <std::string, uint32> bone_mapping;
-		const aiScene *scene;
-		
-		Matrix4f gloabl_inverse;
-
 
 		std::string name;
 
-		bool has_positions			= false;
-		bool has_normals			= false;
-		bool has_texture_coords		= false;
-		bool has_tanget_bitangets	= false;
-		bool has_colours			= false;
-		bool has_faces				= false;
+		bool has_positions = false;
+		bool has_normals = false;
+		bool has_texture_coords = false;
+		bool has_tanget_bitangets = false;
+		bool has_colours = false;
+		bool has_faces = false;
 
 	public:
-		
+		GLMesh CreateAnimMesh(const std::vector<VertexBoneInfo> & vertex_information);
 		GLMesh CreateMesh(bool tangets);
-		GLMesh CreateAnimMesh();
 		void LoadMesh(GLMesh mesh);
 		void AddTrianlge(const Vec3 &pos1, const Vec3 &pos2, const Vec3 &pos3);
 		void AddTextureCoords(const Vec3 &t1, const Vec3 &t2, const Vec3 &t3);
@@ -235,10 +218,65 @@ namespace cm
 		void ConvertToPNT(DynaArray<float> *data, DynaArray<uint32> *index) const;
 		void RecaluclateNormals();
 		void FuseVertices(float tollerance = FLOATING_POINT_ERROR_PRESCION);
-		
+
 		void ConvertToOther(DynaArray<float> *data, DynaArray<uint32> *index) const; //<-- Just for testing purposes
 		void SetColour(const Vec3 colour);
-		
+
 	};
+
+
+	class AnimationController
+	{
+	public:
+		void BoneTransformation(float tsec, DynaArray<Mat4> *transform);
+		struct MeshEntry {
+			MeshEntry()
+			{
+				NumIndices = 0;
+				BaseVertex = 0;
+				BaseIndex = 0;
+			}
+
+			unsigned int NumIndices;
+			unsigned int BaseVertex;
+			unsigned int BaseIndex;
+			unsigned int MaterialIndex;
+		};
+		std::vector<MeshEntry> m_Entries;
+		std::vector<Texture*> m_Textures;
+
+		const aiScene *scene;
+		std::vector<BoneInfo> bone_information;
+		std::unordered_map<std::string, uint32> bone_mapping; // maps a bone name to its index
+		EditableMesh emesh;
+		GLMesh mesh;
+		
+		uint32 m_NumBones;
+		Matrix4f global_inverse_transform;
+
+		const aiScene* m_pScene;
+		Assimp::Importer m_Importer;
+
+		bool LoadMesh(const std::string& Filename);
+		void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+		void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+		void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+		const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
+		uint32 FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
+		uint32 FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
+		uint32 FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
+		void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform);
+		bool InitFromScene(const aiScene* pScene, const std::string& Filename);
+		void InitMesh(uint32 MeshIndex,
+			const aiMesh* paiMesh,
+			std::vector<Vec3>& Positions,
+			std::vector<Vec3>& Normals,
+			std::vector<Vec3>& TexCoords,
+			std::vector<VertexBoneInfo>& Bones,
+			std::vector<unsigned int>& Indices);
+		void LoadBones(uint32 MeshIndex, const aiMesh* paiMesh, std::vector<VertexBoneInfo>& Bones);
+	};
+
+
 
 }

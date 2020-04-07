@@ -359,10 +359,14 @@ int main()
 	wall_right.transform.position = Vec3(10, 0, -10);
 
 	LoadModel(&impmeshes, "res/models/boblampclean.md5mesh");
-	GLMesh anim_test_mesh = impmeshes[0].CreateAnimMesh();
+
 
 	AnimatedActor test_cube_guy;
-	test_cube_guy.mesh = anim_test_mesh;
+	test_cube_guy.animation_controller.emesh = impmeshes[0];
+	test_cube_guy.animation_controller.LoadMesh("res/models/boblampclean.md5mesh");
+	test_cube_guy.mesh = test_cube_guy.animation_controller.mesh;
+
+	//test_cube_guy.mesh = anim_test_mesh;
 	test_cube_guy.transform.scale = Vec3(.05);
 	test_cube_guy.transform.rotation = EulerToQuat(Vec3(90, 0, 0));
 	test_cube_guy.transform.position = Vec3(0, 1, 0);
@@ -373,11 +377,6 @@ int main()
 	// @NOTE: This is a ToAnimController
 	// @TODO: Make it so !
 
-	test_cube_guy.animation_controller.bone_information = impmeshes[0].bone_information;
-	test_cube_guy.animation_controller.bone_mapping = impmeshes[0].bone_mapping;
-	test_cube_guy.animation_controller.vertex_information = impmeshes[0].vertex_information;
-	test_cube_guy.animation_controller.global_inverse_transform = impmeshes[0].gloabl_inverse;
-	test_cube_guy.animation_controller.scene = impmeshes[0].scene;
 	DynaArray<Mat4> mats;
 	
 	//impmeshes.clear();
@@ -570,28 +569,28 @@ int main()
 		RenderCommands::EnableDepthBuffer();
 
 
-		ui_renderer.BeginFrame();
+		//ui_renderer.BeginFrame();
 
-		
-		ui_renderer.CreateUIWindow("Render Settings");
-		ui_renderer.CreateCheckBox("Shadows ", &renderer.render_settings.shadow_pass);
-		ui_renderer.SetWindowSize({ 350, 100 });
-		std::stringstream ss;
-		ss << "Time: " << delta_time;
-		ImGui::PlotLines(ss.str().c_str(), parr, 100, 0, "", 0, 120, ImVec2(0, 50));
+		//
+		//ui_renderer.CreateUIWindow("Render Settings");
+		//ui_renderer.CreateCheckBox("Shadows ", &renderer.render_settings.shadow_pass);
+		//ui_renderer.SetWindowSize({ 350, 100 });
+		//std::stringstream ss;
+		//ss << "Time: " << delta_time;
+		//ImGui::PlotLines(ss.str().c_str(), parr, 100, 0, "", 0, 120, ImVec2(0, 50));
 
-		ui_renderer.EndUIWindow();
-		
-
-
+		//ui_renderer.EndUIWindow();
+		//
 
 
 
-		ImGui::ShowDemoWindow();
 
-		
 
-		ui_renderer.EndFrame();
+		//ImGui::ShowDemoWindow();
+
+		//
+
+		//ui_renderer.EndFrame();
 		////////////////////
 		// Post Debug Drawing
 		////////////////////
