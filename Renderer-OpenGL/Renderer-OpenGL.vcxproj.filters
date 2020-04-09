@@ -10,8 +10,20 @@
     <Filter Include="src\Math">
       <UniqueIdentifier>{49e5c237-5ad8-4490-b729-4cf02d8e3038}</UniqueIdentifier>
     </Filter>
+    <Filter Include="res">
+      <UniqueIdentifier>{42381a95-fbaa-4297-8e7c-187bc144d4a2}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{cf356dd1-4eb3-4f85-b517-dd163c3c9b0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Core">
+      <UniqueIdentifier>{ccc8657c-4043-41cf-8ad2-bae46f8ec461}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Engine">
+      <UniqueIdentifier>{bd2cda27-f485-444b-9a4d-57762b2c3469}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor">
+      <UniqueIdentifier>{ce3ab5ae-724c-4345-b523-aa02ade058fd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -24,22 +36,57 @@
     <ClCompile Include="src\Math\CosmicPhysics.cpp">
       <Filter>src\Math</Filter>
     </ClCompile>
-    <ClCompile Include="src\Math\CosmicMath.cpp" />
-    <ClCompile Include="src\OpenGL\OpenGL.cpp" />
-    <ClCompile Include="src\Math\CosmicNoise.cpp" />
-    <ClCompile Include="src\Engine\Input.cpp" />
-    <ClCompile Include="src\Core\Renderer.cpp" />
-    <ClCompile Include="src\Engine\AssetLoader.cpp" />
-    <ClCompile Include="src\Core\EditableMesh.cpp" />
-    <ClCompile Include="vendor\IMGUI\imgui.cpp" />
-    <ClCompile Include="vendor\IMGUI\imgui_draw.cpp" />
-    <ClCompile Include="vendor\IMGUI\imgui_impl_glfw.cpp" />
-    <ClCompile Include="vendor\IMGUI\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="vendor\IMGUI\imgui_widgets.cpp" />
-    <ClCompile Include="vendor\IMGUI\imgui_demo.cpp" />
-    <ClCompile Include="src\Core\UIRenderer.cpp" />
-    <ClCompile Include="src\Core\Camera.cpp" />
-    <ClCompile Include="src\Core\World.cpp" />
+    <ClCompile Include="src\Core\Camera.cpp">
+      <Filter>src\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Math\CosmicMath.cpp">
+      <Filter>src\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Math\CosmicNoise.cpp">
+      <Filter>src\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\AssetLoader.cpp">
+      <Filter>src\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\EditableMesh.cpp">
+      <Filter>src\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\IMGUI\imgui.cpp">
+      <Filter>vendor</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\IMGUI\imgui_demo.cpp">
+      <Filter>vendor</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\IMGUI\imgui_draw.cpp">
+      <Filter>vendor</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\IMGUI\imgui_impl_glfw.cpp">
+      <Filter>vendor</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\IMGUI\imgui_impl_opengl3.cpp">
+      <Filter>vendor</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\IMGUI\imgui_widgets.cpp">
+      <Filter>vendor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Input.cpp">
+      <Filter>src\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpenGL\OpenGL.cpp">
+      <Filter>src\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Renderer.cpp">
+      <Filter>src\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\UIRenderer.cpp">
+      <Filter>src\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\World.cpp">
+      <Filter>src\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Tutorials.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core.h">
@@ -63,28 +110,63 @@
     <ClInclude Include="src\Math\CosmicPhysics.h">
       <Filter>src\Math</Filter>
     </ClInclude>
-    <ClInclude Include="src\Debug.h" />
-    <ClInclude Include="src\Math\CosmicNoise.h" />
-    <ClInclude Include="src\Engine\Input.h" />
-    <ClInclude Include="src\Core\Renderer.h" />
-    <ClInclude Include="src\Engine\AssetLoader.h">
-      <Filter>src</Filter>
+    <ClInclude Include="src\Core\Camera.h">
+      <Filter>src\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\EditableMesh.h">
+      <Filter>src\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\CosmicNoise.h">
+      <Filter>src\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\IMGUI\imconfig.h">
+      <Filter>vendor</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\IMGUI\imgui.h">
+      <Filter>vendor</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\IMGUI\imgui_impl_glfw.h">
+      <Filter>vendor</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\IMGUI\imgui_impl_opengl3.h">
+      <Filter>vendor</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\IMGUI\imgui_internal.h">
+      <Filter>vendor</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\IMGUI\imstb_rectpack.h">
+      <Filter>vendor</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\IMGUI\imstb_textedit.h">
+      <Filter>vendor</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\IMGUI\imstb_truetype.h">
+      <Filter>vendor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Input.h">
+      <Filter>src\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Renderer.h">
+      <Filter>src\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\UIRenderer.h">
+      <Filter>src\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\World.h">
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="vendor\std_image.h">
+      <Filter>vendor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\AssetLoader.h">
+      <Filter>src\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Debug.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\EditableMesh.h" />
-    <ClInclude Include="vendor\IMGUI\imconfig.h" />
-    <ClInclude Include="vendor\IMGUI\imgui.h" />
-    <ClInclude Include="vendor\IMGUI\imgui_impl_glfw.h" />
-    <ClInclude Include="vendor\IMGUI\imgui_impl_opengl3.h" />
-    <ClInclude Include="vendor\IMGUI\imgui_internal.h" />
-    <ClInclude Include="vendor\IMGUI\imstb_rectpack.h" />
-    <ClInclude Include="vendor\IMGUI\imstb_textedit.h" />
-    <ClInclude Include="vendor\IMGUI\imstb_truetype.h" />
-    <ClInclude Include="src\Core\UIRenderer.h" />
-    <ClInclude Include="src\Core\Camera.h" />
-    <ClInclude Include="src\Core\World.h" />
+    <ClInclude Include="src\Tutorials.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\first_compute.glsl">
@@ -108,48 +190,108 @@
     <None Include="shaders\irradince_convolution.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="shaders\prefilter.glsl" />
-    <None Include="shaders\brdf_frag.glsl" />
     <None Include="shaders\debug_mesh_vert.glsl">
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\debug_mesh_frag.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="shaders\brdf_vert.glsl" />
-    <None Include="shaders\cubemap_vert.glsl" />
-    <None Include="shaders\pbr_texture_frag.glsl" />
     <None Include="shaders\instance_test_vert.glsl">
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\instance_test_frag.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="shaders\compute_vert.glsl" />
-    <None Include="shaders\post_processing_vert.glsl" />
-    <None Include="shaders\post_processing_frag.glsl" />
-    <None Include="shaders\Compute\GPU_gaussian_blur_frag.glsl" />
-    <None Include="shaders\Compute\GPU_gaussian_blur_vert.glsl" />
-    <None Include="shaders\simple_shadow_map_vert.glsl" />
-    <None Include="shaders\simple_shadow_map_frag.glsl" />
-    <None Include="shaders\Compute\g_buffer_vert.glsl" />
-    <None Include="shaders\Compute\g_buffer_frag.glsl" />
-    <None Include="shaders\deffered_shader_vert.glsl" />
-    <None Include="shaders\deffered_shader_frag.glsl" />
-    <None Include="shaders\forward_phong_notext_frag.glsl" />
-    <None Include="shaders\forward_phong_notext_vert.glsl" />
-    <None Include="shaders\forward_phong_notext_batch_vert.glsl" />
-    <None Include="shaders\ssao_gbuffer_vert.glsl" />
-    <None Include="shaders\ssao_gbuffer_frag.glsl" />
-    <None Include="shaders\ssao_vert.glsl" />
-    <None Include="shaders\ssao_frag.glsl" />
-    <None Include="shaders\simple_blur_vert.glsl" />
-    <None Include="shaders\simple_blur_frag.glsl" />
-    <None Include="shaders\sanitycheck_vert.glsl" />
-    <None Include="shaders\sanitycheck_frag.glsl" />
-    <None Include="shaders\forward_pbr_notext_vert.glsl" />
-    <None Include="shaders\forward_pbr_notext_frag.glsl" />
-    <None Include="shaders\test_anim_vert.glsl" />
+    <None Include="shaders\brdf_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\brdf_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\compute_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\cubemap_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\deffered_shader_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\deffered_shader_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\forward_pbr_notext_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\forward_pbr_notext_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\forward_phong_notext_batch_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\forward_phong_notext_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\forward_phong_notext_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\Compute\g_buffer_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\Compute\g_buffer_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\Compute\GPU_gaussian_blur_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\Compute\GPU_gaussian_blur_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\pbr_texture_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\post_processing_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\post_processing_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\prefilter.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sanitycheck_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sanitycheck_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\simple_blur_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\simple_blur_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\simple_shadow_map_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\simple_shadow_map_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\ssao_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\ssao_gbuffer_frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\ssao_gbuffer_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\ssao_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\test_anim_vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="shaders\skybox_frag.glsl">

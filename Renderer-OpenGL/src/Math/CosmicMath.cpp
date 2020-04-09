@@ -130,12 +130,29 @@ namespace cm
 
 	Mat4 CalculateTransformMatrix(const Vec3 & position, const Vec3 & scale, const Quat & rotation)
 	{
-		// @NOTE: T * R * S because we do the R * T first, then scale. Row major: T * R * S.
-		Mat4 model_transform(1);
-		model_transform = Translate(model_transform, position);
-		model_transform = QuatToMat4(Conjugate(rotation)) * model_transform;
-		model_transform = ScaleCardinal(model_transform, scale);
-		return model_transform;
+		// @NOTE: This is what stack overflow/people recommend. The order doesn't much matter in terms of major, but in term of functionality
+		//		: Example, scaling first require higher translation values.
+		Mat4 trans(1);
+		Mat4 rot(1);
+		Mat4 scl(1);
+		trans = Translate(trans, position);	
+		rot = QuatToMat4(Conjugate(rotation));
+		scl= ScaleCardinal(scl, scale);
+		return scl * rot * trans;
+	}
+
+	void Print(const Mat4 &m)
+	{
+		for (int32 i = 0; i < 16; i++)
+		{
+			std::cout << m.arr[i] << " ";
+		}
+		std::cout << std::endl;
+	}
+	
+	void PrintPretty(const Mat4 &m)
+	{
+		std::cout << ToString(m) << std::endl;
 	}
 
 	float Get(Mat4 a, int row, int col)
@@ -156,10 +173,11 @@ namespace cm
 	std::string ToString(Mat4 a)
 	{
 		std::stringstream ss;
-		ss << "| " << a.arr[0] << " " << a.arr[1] << " " << a.arr[2] << " " << a.arr[3] << " |";
-		ss << "| " << a.arr[4] << " " << a.arr[5] << " " << a.arr[6] << " " << a.arr[7] << " |";
-		ss << "| " << a.arr[8] << " " << a.arr[9] << " " << a.arr[10] << " " << a.arr[11] << " |";
-		ss << "| " << a.arr[12] << " " << a.arr[13] << " " << a.arr[14] << " " << a.arr[15] << " |";
+		std::string space = "            ";
+		ss << "| " << a.arr[0] << space << a.arr[1] << space << a.arr[2] << space << a.arr[3] << " |" << '\n';
+		ss << "| " << a.arr[4] << space << a.arr[5] << space << a.arr[6] << space << a.arr[7] << " |" << '\n';
+		ss << "| " << a.arr[8] << space << a.arr[9] << space << a.arr[10] << space << a.arr[11] << " |" << '\n';
+		ss << "| " << a.arr[12] << space << a.arr[13] << space << a.arr[14] << space << a.arr[15] << " |" << '\n';
 		return ss.str();
 	}
 
@@ -483,7 +501,7 @@ namespace cm
 
 	Mat4 QuatToMat4(const Quat &q)
 	{
-		//@Copy		
+		// @Verified
 		Mat4 mat(1);
 
 		float qxx = (q.x * q.x);

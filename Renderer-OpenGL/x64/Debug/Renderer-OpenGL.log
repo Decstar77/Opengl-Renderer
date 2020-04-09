@@ -1,27 +1,15 @@
 ﻿cl : Command line warning D9002: ignoring unknown option '/arch:SSE2'
-  EditableMesh.cpp
-f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(40): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(48): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(285): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
-          with
-          [
-              _Ty=float
-          ]
-f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(286): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
-          with
-          [
-              _Ty=float
-          ]
-f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(287): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
-          with
-          [
-              _Ty=float
-          ]
-f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(288): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
-          with
-          [
-              _Ty=float
-          ]
-f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(295): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(303): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+  AssetLoader.cpp
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(243): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(250): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(254): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(264): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(267): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(278): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(282): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(300): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(310): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(369): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(379): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(394): warning C4267: 'initializing': conversion from 'size_t' to 'uint32', possible loss of data
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

@@ -260,9 +260,54 @@ namespace cm
 	}
 	   	  
 
+	cm::GLMesh EditableMesh::CreateAnimMesh()
+	{
+		BufferLayout l = BufferLayout(DynaArray<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float4, ShaderDataType::Float4 }));
 
+		DynaArray<float> data;
+		uint32 vert_size = static_cast<uint32>(vertices.size());
+		for (uint32 i = 0; i < vert_size; i++)
+		{
+			Vertex vert = vertices[i];
+			data.CopyFromPtr(vert.position.arr, 3 * sizeof(float));
+			data.CopyFromPtr(vert.normal.arr, 3 * sizeof(float));
+			data.push_back(vert.texture_coord.x);
+			data.push_back(vert.texture_coord.y);
 
+					
+			data.push_back(vert.bone_index[0]);
+			data.push_back(vert.bone_index[1]);
+			data.push_back(vert.bone_index[2]);
+			data.push_back(vert.bone_index[3]);
+			data.CopyFromPtr(vert.bone_weights, 4 * sizeof(float));
 
+		}
+
+		VertexBuffer vbo;
+		vbo.lbo = l;
+		vbo.size_bytes = data.size() * sizeof(real);
+		vbo.flags = VertexFlags::READ_WRITE; // Optional;
+
+		CreateVertexBuffer(&vbo);
+		WriteBufferData(&vbo, data, 0);
+
+		IndexBuffer ibo;
+		ibo.index_count = (uint32)indices.size();
+		ibo.size_bytes = indices.size() * sizeof(uint32);
+		ibo.flags = VertexFlags::READ_WRITE;
+
+		CreateIndexBuffer(&ibo);
+		WriteBufferData(&ibo, indices, 0);
+
+		VertexArray vao;
+		vao.vertex_buffers.push_back(vbo);
+		CreateVertexArray(&vao);
+
+		GLMesh mesh;
+		mesh.vao = vao;
+		mesh.ibo = ibo;
+		return mesh;
+	}
 
 	GLMesh EditableMesh::CreateAnimMesh(const std::vector<VertexBoneInfo> & vertex_information)
 	{
@@ -341,6 +386,41 @@ namespace cm
 
 
 
+
+	Matrix4f ToMatrix4fgawd(const aiMatrix4x4 *ai_mat)
+	{
+		Assert(sizeof(aiMatrix4x4) == sizeof(Matrix4f));
+		uint32 size = sizeof(Matrix4f);
+
+		Matrix4f a;
+		memcpy((void*)&a, (void*)ai_mat, size);
+
+		return a;
+	}
+
+	Mat4 ToMatrix4fgawd(const Matrix4f *ai_mat)
+	{
+		Assert(sizeof(aiMatrix4x4) == sizeof(Matrix4f));
+		uint32 size = sizeof(Matrix4f);
+
+		Matrix4f ai = ai_mat->Transpose();
+		Mat4 a;
+		memcpy((void*)&a, (void *)&ai, size);
+
+		return a;
+	}
+
+	Mat4 ToMatrix4ffrom3x3(const aiMatrix3x3 *ai_mat)
+	{
+		uint32 size = sizeof(aiMatrix3x3);
+
+		Mat4 a(1);
+		a.row0 = Vec4(ai_mat->a1, ai_mat->a2, ai_mat->a3, 0);
+		a.row1 = Vec4(ai_mat->b1, ai_mat->b2, ai_mat->b3, 0);
+		a.row2 = Vec4(ai_mat->c1, ai_mat->c2, ai_mat->c3, 0);
+
+		return a;
+	}
 
 
 
@@ -438,367 +518,6 @@ namespace cm
 
 		return *this;
 	}
-
-	void AnimationController::BoneTransformation(float tsec, DynaArray<Mat4> *transform)
-	{
-		float TicksPerSecond = (float)(scene->mAnimations[0]->mTicksPerSecond != 0 ? scene->mAnimations[0]->mTicksPerSecond : 25.0f);
-		float TimeInTicks = tsec * TicksPerSecond;
-		float AnimationTime = fmod(TimeInTicks, (float)scene->mAnimations[0]->mDuration);
-
-		Matrix4f Identity;
-		Identity.InitIdentity();
-		ReadNodeHeirarchy(AnimationTime, scene->mRootNode, Identity);
-
-
-	}
-
-	void AnimationController::CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
-	{
-		if (pNodeAnim->mNumScalingKeys == 1) {
-			Out = pNodeAnim->mScalingKeys[0].mValue;
-			return;
-		}
-
-		uint32 ScalingIndex = FindScaling(AnimationTime, pNodeAnim);
-		uint32 NextScalingIndex = (ScalingIndex + 1);
-		Assert(NextScalingIndex < pNodeAnim->mNumScalingKeys);
-		float DeltaTime = (float)(pNodeAnim->mScalingKeys[NextScalingIndex].mTime - pNodeAnim->mScalingKeys[ScalingIndex].mTime);
-		float Factor = (AnimationTime - (float)pNodeAnim->mScalingKeys[ScalingIndex].mTime) / DeltaTime;
-		Assert(Factor >= 0.0f && Factor <= 1.0f);
-		const aiVector3D& Start = pNodeAnim->mScalingKeys[ScalingIndex].mValue;
-		const aiVector3D& End = pNodeAnim->mScalingKeys[NextScalingIndex].mValue;
-		aiVector3D Delta = End - Start;
-		Out = Start + Factor * Delta;
-	}
-
-	void AnimationController::CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
-	{
-		// we need at least two values to interpolate...
-		if (pNodeAnim->mNumRotationKeys == 1) {
-			Out = pNodeAnim->mRotationKeys[0].mValue;
-			return;
-		}
-
-		uint32 RotationIndex = FindRotation(AnimationTime, pNodeAnim);
-		uint32 NextRotationIndex = (RotationIndex + 1);
-		Assert(NextRotationIndex < pNodeAnim->mNumRotationKeys);
-		float DeltaTime = (float)(pNodeAnim->mRotationKeys[NextRotationIndex].mTime - pNodeAnim->mRotationKeys[RotationIndex].mTime);
-		float Factor = (AnimationTime - (float)pNodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
-		Assert(Factor >= 0.0f && Factor <= 1.0f);
-		const aiQuaternion& StartRotationQ = pNodeAnim->mRotationKeys[RotationIndex].mValue;
-		const aiQuaternion& EndRotationQ = pNodeAnim->mRotationKeys[NextRotationIndex].mValue;
-		aiQuaternion::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
-		Out = Out.Normalize();
-	}
-
-	void AnimationController::CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
-	{
-		if (pNodeAnim->mNumPositionKeys == 1) {
-			Out = pNodeAnim->mPositionKeys[0].mValue;
-			return;
-		}
-
-		uint32 PositionIndex = FindPosition(AnimationTime, pNodeAnim);
-		uint32 NextPositionIndex = (PositionIndex + 1);
-		Assert(NextPositionIndex < pNodeAnim->mNumPositionKeys);
-		float DeltaTime = (float)(pNodeAnim->mPositionKeys[NextPositionIndex].mTime - pNodeAnim->mPositionKeys[PositionIndex].mTime);
-		float Factor = (AnimationTime - (float)pNodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
-		Assert(Factor >= 0.0f && Factor <= 1.0f);
-		const aiVector3D& Start = pNodeAnim->mPositionKeys[PositionIndex].mValue;
-		const aiVector3D& End = pNodeAnim->mPositionKeys[NextPositionIndex].mValue;
-		aiVector3D Delta = End - Start;
-		Out = Start + Factor * Delta;
-	}
-
-	const aiNodeAnim* AnimationController::FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName)
-	{
-		for (uint32 i = 0; i < pAnimation->mNumChannels; i++) {
-			const aiNodeAnim* pNodeAnim = pAnimation->mChannels[i];
-
-			if (std::string(pNodeAnim->mNodeName.data) == NodeName) {
-				return pNodeAnim;
-			}
-		}
-
-		return NULL;
-	}
-
-	uint32 AnimationController::FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim)
-	{
-		Assert(pNodeAnim->mNumScalingKeys > 0);
-
-		for (uint32 i = 0; i < pNodeAnim->mNumScalingKeys - 1; i++) {
-			if (AnimationTime < (float)pNodeAnim->mScalingKeys[i + 1].mTime) {
-				return i;
-			}
-		}
-
-		Assert(0);
-
-		return 0;
-	}
-
-	uint32 AnimationController::FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim)
-	{
-		Assert(pNodeAnim->mNumRotationKeys > 0);
-
-		for (uint32 i = 0; i < pNodeAnim->mNumRotationKeys - 1; i++) {
-			if (AnimationTime < (float)pNodeAnim->mRotationKeys[i + 1].mTime) {
-				return i;
-			}
-		}
-
-		Assert(0);
-
-		return 0;
-	}
-
-	uint32 AnimationController::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
-	{
-		for (uint32 i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++) {
-			if (AnimationTime < (float)pNodeAnim->mPositionKeys[i + 1].mTime) {
-				return i;
-			}
-		}
-
-		Assert(0);
-
-		return 0;
-	}
-
-
-	Matrix4f ToMatrix4fgawd(const aiMatrix4x4 *ai_mat)
-	{
-		Assert(sizeof(aiMatrix4x4) == sizeof(Matrix4f));
-		uint32 size = sizeof(Matrix4f);
-
-		Matrix4f a;
-		memcpy((void*)&a, (void*)ai_mat, size);
-
-		return a;
-	}
-
-	Matrix4f ToMatrix4ffrom3x3(const aiMatrix3x3 *ai_mat)
-	{
-		uint32 size = sizeof(aiMatrix3x3);
-
-		Matrix4f a;
-		memcpy((void*)&a, (void*)ai_mat, size);
-
-		return a;
-	}
-
-	void AnimationController::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform)
-	{
-		std::string NodeName(pNode->mName.data);
-
-		const aiAnimation* pAnimation = scene->mAnimations[0];
-
-		Matrix4f NodeTransformation = ToMatrix4fgawd(&pNode->mTransformation);
-
-		const aiNodeAnim* pNodeAnim = FindNodeAnim(pAnimation, NodeName);
-
-		if (pNodeAnim) {
-			// Interpolate scaling and generate scaling transformation matrix
-			aiVector3D Scaling;
-			CalcInterpolatedScaling(Scaling, AnimationTime, pNodeAnim);
-			Matrix4f ScalingM;
-			ScalingM.InitScaleTransform(Scaling.x, Scaling.y, Scaling.z);
-
-			// Interpolate rotation and generate rotation transformation matrix
-			aiQuaternion RotationQ;
-			CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
-			Matrix4f RotationM = Matrix4f(RotationQ.GetMatrix());
-
-			// Interpolate translation and generate translation transformation matrix
-			aiVector3D Translation;
-			CalcInterpolatedPosition(Translation, AnimationTime, pNodeAnim);
-			Matrix4f TranslationM;
-			TranslationM.InitTranslationTransform(Translation.x, Translation.y, Translation.z);
-
-			// Combine the above transformations
-			NodeTransformation = TranslationM * RotationM * ScalingM;
-			//NodeTransformation.Print();
-
-			Transform t;
-			t.scale = Vec3(Scaling.x, Scaling.y, Scaling.z);
-			t.rotation = Quat(RotationQ.x, RotationQ.y, RotationQ.z, RotationQ.w);
-			t.position = Vec3(Translation.x, Translation.y, Translation.z);
-
-
-		}
-
-		Matrix4f GlobalTransformation = ParentTransform * NodeTransformation;
-		//Matrix4f GlobalTransformation = NodeTransformation * ParentTransform;
-
-		if (bone_mapping.find(NodeName) != bone_mapping.end()) {
-			uint32 BoneIndex = bone_mapping[NodeName];
-			bone_information[BoneIndex].ft = global_inverse_transform * GlobalTransformation * bone_information[BoneIndex].bone_offset;
-			//bone_information[BoneIndex].ft = bone_information[BoneIndex].bone_offset * GlobalTransformation * global_inverse_transform;
-
-
-		}
-
-		for (uint32 i = 0; i < pNode->mNumChildren; i++) {
-			ReadNodeHeirarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
-		}
-	}
-
-	bool AnimationController::InitFromScene(const aiScene* pScene, const std::string& Filename)
-	{
-		m_Entries.resize(pScene->mNumMeshes);
-		m_Textures.resize(pScene->mNumMaterials);
-
-		std::vector<Vec3> Positions;
-		std::vector<Vec3> Normals;
-		std::vector<Vec3> TexCoords;
-		std::vector<VertexBoneInfo> vertex_info;
-		std::vector<uint32> Indices;
-
-		uint32 NumVertices = 0;
-		uint32 NumIndices = 0;
-
-		// Count the number of vertices and indices
-		for (uint32 i = 0; i < m_Entries.size(); i++) {
-			m_Entries[i].MaterialIndex = pScene->mMeshes[i]->mMaterialIndex;
-			m_Entries[i].NumIndices = pScene->mMeshes[i]->mNumFaces * 3;
-			m_Entries[i].BaseVertex = NumVertices;
-			m_Entries[i].BaseIndex = NumIndices;
-
-			NumVertices += pScene->mMeshes[i]->mNumVertices;
-			NumIndices += m_Entries[i].NumIndices;
-		}
-
-		// Reserve space in the vectors for the vertex attributes and indices
-		Positions.reserve(NumVertices);
-		Normals.reserve(NumVertices);
-		TexCoords.reserve(NumVertices);
-		vertex_info.resize(NumVertices);
-		Indices.reserve(NumIndices);
-		bool one = true;
-		// Initialize the meshes in the scene one by one
-		for (uint32 i = 0; i < m_Entries.size(); i++) {
-			const aiMesh* paiMesh = pScene->mMeshes[i];
-			InitMesh(i, paiMesh, Positions, Normals, TexCoords, vertex_info, Indices);
-
-			if (i == 0)
-			{
-
-			}
-		}
-		
-		int a = 2;
-
-		EditableMesh eeMesh;
-
-		for (int i = 0; i < Positions.size(); i++)
-		{
-			Vertex v;
-			v.position = Positions[i];
-			v.normal = Vec3(0);
-			v.texture_coord = TexCoords[i];			
-			eeMesh.vertices.push_back(v);
-			
-		}
-		eeMesh.has_positions = true;
-		eeMesh.has_texture_coords = true;
-		for (int i = 0; i < Indices.size(); i++)
-		{
-			eeMesh.indices.push_back(Indices.at(i));
-		}
-		for (int i = 0; i < Indices.size(); i++)
-		{
-			if (eeMesh.indices.at(i) != emesh.indices.at(i))
-			{
-				std::cout << eeMesh.indices.at(i) << std::endl;
-			}
-		}
-
-		mesh = emesh.CreateAnimMesh(vertex_info);
-		
-		return true;
-	}
-
-	void AnimationController::InitMesh(uint32 MeshIndex, const aiMesh* paiMesh, std::vector<Vec3>& Positions, std::vector<Vec3>& Normals, std::vector<Vec3>& TexCoords, std::vector<VertexBoneInfo>& vertex_info, std::vector<unsigned int>& Indices)
-	{
-		const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
-
-		// Populate the vertex attribute vectors
-		for (uint32 i = 0; i < paiMesh->mNumVertices; i++) {
-			const aiVector3D* pPos = &(paiMesh->mVertices[i]);
-			const aiVector3D* pNormal = &(paiMesh->mNormals[i]);
-			const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][i]) : &Zero3D;
-
-			Positions.push_back(Vec3(pPos->x, pPos->y, pPos->z));
-			Normals.push_back(Vec3(0, 0, 0));
-			TexCoords.push_back(Vec3(pTexCoord->x, pTexCoord->y, 0));
-		}
-
-		LoadBones(MeshIndex, paiMesh, vertex_info);
-
-		// Populate the index buffer
-		for (uint32 i = 0; i < paiMesh->mNumFaces; i++) {
-			const aiFace& Face = paiMesh->mFaces[i];
-			Assert(Face.mNumIndices == 3);
-			Indices.push_back(m_Entries[MeshIndex].BaseVertex +  Face.mIndices[0]);
-			Indices.push_back(m_Entries[MeshIndex].BaseVertex +  Face.mIndices[1]);
-			Indices.push_back(m_Entries[MeshIndex].BaseVertex +  Face.mIndices[2]);
-		}
-	}
-
-	void AnimationController::LoadBones(uint32 MeshIndex, const aiMesh* paiMesh, std::vector<VertexBoneInfo>& vertex_info)
-	{
-		for (uint32 i = 0; i < paiMesh->mNumBones; i++) {
-			uint32 BoneIndex = 0;
-			std::string BoneName(paiMesh->mBones[i]->mName.data);
-
-			if (bone_mapping.find(BoneName) == bone_mapping.end()) {
-				// Allocate an index for a new bone
-				BoneIndex = m_NumBones;
-				m_NumBones++;
-				BoneInfo bi;
-				bone_information.push_back(bi);
-				bone_information[BoneIndex].bone_offset = paiMesh->mBones[i]->mOffsetMatrix;
-				bone_mapping[BoneName] = BoneIndex;
-			}
-			else {
-				BoneIndex = bone_mapping[BoneName];
-			}
-
-			for (uint32 j = 0; j < paiMesh->mBones[i]->mNumWeights; j++) {
-				uint32 VertexID = m_Entries[MeshIndex].BaseVertex + paiMesh->mBones[i]->mWeights[j].mVertexId;
-				std::cout << " WAT: "<< paiMesh->mBones[i]->mWeights[j].mVertexId << std::endl;
-				float Weight = paiMesh->mBones[i]->mWeights[j].mWeight;
-				vertex_info[VertexID].AddBoneData(Weight, BoneIndex);
-			}
-		}
-	}
-
-	bool AnimationController::LoadMesh(const std::string& Filename)
-	{
-
-
-
-		bool Ret = false;
-
-		scene = m_Importer.ReadFile(Filename.c_str(), aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
-
-		if (scene) {
-			global_inverse_transform = scene->mRootNode->mTransformation;
-			global_inverse_transform.Inverse();
-			Ret = InitFromScene(scene, Filename);
-		}
-		else {
-			printf("Error parsing '%s': '%s'\n", Filename.c_str(), m_Importer.GetErrorString());
-		}
-
-
-
-		return Ret;
-	}
-
-
-
 
 
 

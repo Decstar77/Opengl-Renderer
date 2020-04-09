@@ -24,6 +24,7 @@
     <ClCompile Include="src\Core\EditableMesh.cpp" />
     <ClCompile Include="src\OpenGL\BufferLayout.cpp" />
     <ClCompile Include="src\OpenGL\OpenGL.cpp" />
+    <ClCompile Include="src\Tutorials.cpp" />
     <ClCompile Include="vendor\IMGUI\imgui.cpp" />
     <ClCompile Include="vendor\IMGUI\imgui_demo.cpp" />
     <ClCompile Include="vendor\IMGUI\imgui_draw.cpp" />
@@ -48,6 +49,7 @@
     <ClInclude Include="src\OpenGL\BufferLayout.h" />
     <ClInclude Include="src\OpenGL\RenderCommands.h" />
     <ClInclude Include="src\OpenGL\OpenGL.h" />
+    <ClInclude Include="src\Tutorials.h" />
     <ClInclude Include="vendor\IMGUI\imconfig.h" />
     <ClInclude Include="vendor\IMGUI\imgui.h" />
     <ClInclude Include="vendor\IMGUI\imgui_impl_glfw.h" />
@@ -150,7 +152,7 @@
       <PreprocessorDefinitions>GLEW_STATIC;_ENABLE_EXTENDED_ALIGNED_STORAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <AdditionalIncludeDirectories>F:\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;F:\Libraries\ASSIMP\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;F:\Libraries\ASSIMP\include;F:\Libraries\glm-0.9.9.6\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -169,7 +171,7 @@
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <AdditionalIncludeDirectories>F:\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;F:\Libraries\ASSIMP\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;F:\Libraries\ASSIMP\include;F:\Libraries\glm-0.9.9.6\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>

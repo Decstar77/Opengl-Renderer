@@ -267,7 +267,7 @@ namespace cm
 	
 	Vec4  GetColumn(Mat4 a, uint8 col);
 
-	std::string  ToString(Mat4 a);
+	std::string ToString(Mat4 a);
 
 	bool  ChecOorthogonal(Mat4 a, float tolerance = 0.01);
 
@@ -295,7 +295,9 @@ namespace cm
 	
 	Mat4 CalculateTransformMatrix(const Vec3 &position, const Vec3 &scale, const Quat &rotation);
 	
+	void Print(const Mat4 &m);
 
+	void PrintPretty(const Mat4 &m);
 	//============Struct Definitions============//
 
 	//Vectors

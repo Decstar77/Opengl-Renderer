@@ -20,7 +20,8 @@ namespace cm
 	};
 
 	bool LoadModel(DynaArray<EditableMesh> *meshes, const std::string &path);
-
+	bool LoadModelTest(DynaArray<EditableMesh> *meshes, const std::string &path);
+	Mat4 ToMatrix4f(const aiMatrix4x4 *ai_mat);
 }
 
 

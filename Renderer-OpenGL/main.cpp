@@ -11,7 +11,7 @@
 #include "src/Core/EditableMesh.h"
 #include "src/Core/Renderer.h"
 #include "src/Core/UIRenderer.h"
-
+#include "Tutorials.h"
 #include "src/Debug.h"
 #include "src/Engine/AssetLoader.h"
 #include "src/Engine/Input.h"
@@ -37,7 +37,8 @@ public:
 	GLMesh mesh;
 	Material material;
 	Transform transform;
-	AnimationController animation_controller;
+
+	Animation animation;
 
 	virtual void SetTextures(Shader *shader) override;
 	virtual void SetMaterialValues(Shader *shader) override;
@@ -358,26 +359,33 @@ int main()
 	wall_right.transform.rotation = EulerToQuat(Vec3(0, 90, 0));
 	wall_right.transform.position = Vec3(10, 0, -10);
 
-	LoadModel(&impmeshes, "res/models/boblampclean.md5mesh");
 
+	tut::Model tut_model;
+	tut_model.loadModel("res/models/testing_anim.dae");
+
+
+
+	impmeshes.clear();
+	LoadModelTest(&impmeshes, "res/models/testing_anim.dae");
+	
 
 	AnimatedActor test_cube_guy;
-	test_cube_guy.animation_controller.emesh = impmeshes[0];
-	test_cube_guy.animation_controller.LoadMesh("res/models/boblampclean.md5mesh");
-	test_cube_guy.mesh = test_cube_guy.animation_controller.mesh;
+	EditableMesh *emesh = &impmeshes[0];
+	
 
+
+	test_cube_guy.mesh = emesh->CreateAnimMesh();
 	//test_cube_guy.mesh = anim_test_mesh;
-	test_cube_guy.transform.scale = Vec3(.05);
-	test_cube_guy.transform.rotation = EulerToQuat(Vec3(90, 0, 0));
-	test_cube_guy.transform.position = Vec3(0, 1, 0);
-	//test_cube_guy.material.diffuse_texture = &gun_diffuse_map;
-	//test_cube_guy.material.occlusion_roughness_metallic = &gun_oc_r_m_map;
-	//test_cube_guy.material.normal_texture = &gun_normal_map;
+	test_cube_guy.transform.scale = Vec3(.5);
+	test_cube_guy.transform.rotation = EulerToQuat(Vec3(90, 00, 0));
+	test_cube_guy.transform.position = Vec3(0, 0, 0);
 
-	// @NOTE: This is a ToAnimController
-	// @TODO: Make it so !
+	uint32 cha = 0;
 
-	DynaArray<Mat4> mats;
+	
+	
+
+	
 	
 	//impmeshes.clear();
 	//image_data.clear();
@@ -448,11 +456,11 @@ int main()
 	sun_light.light_colour = Vec3(.5);
 
 	float fh = 1;
-
+	DebugAddPersistentPoint(Vec3(0.0));
 	float z = 0.5;
 	float parr[100] = {};
 	for (int i = 0; i < 100; i++) parr[i] = 0.f;
-	float run_time = 0;
+	float run_time = 1;
 	while (!glfwWindowShouldClose(window))
 	{
 		//************************************
@@ -492,12 +500,13 @@ int main()
 			double x, y;
 			glfwGetCursorPos(window, &x, &y);					
 			fh += 0.4 * delta_time;
+			cha += 1;
 		}
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
 		{
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			
-
+			cha -= 1;
 			fh -= 0.4 * delta_time;
 		}
 		else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
@@ -544,24 +553,85 @@ int main()
 		informer.UpdateUBO("WorldMatrices", camera_data);
 		informer.UpdateUBO("LightingData", lighting_data);
 
-
-		test_cube_guy.animation_controller.BoneTransformation(run_time, &mats);
-		//
-		BindShader(animation_test_shader);
-		for (int i = 0; i < test_cube_guy.animation_controller.bone_information.size(); i++)
-		{
-			Matrix4f anim_mat = test_cube_guy.animation_controller.bone_information[i].ft;
-			std::stringstream ss;
-			ss << "gBones[" << i << "]";
-			uint32 loc = GetUniformLocation(&animation_test_shader, ss.str());
-			glUniformMatrix4fv(loc, 1, GL_TRUE, (const GLfloat*)anim_mat);
-		}
+		DynaArray<Mat4> mats;
+		//test_cube_guy.animation_controller.BoneTransformation(run_time, &mats);
+		////
+		//BindShader(animation_test_shader);
+		//for (int i = 0; i < test_cube_guy.animation_controller.bone_information.size(); i++)
+		//{
+		//	Matrix4f anim_mat = test_cube_guy.animation_controller.bone_information[i].ft;
+		//	std::stringstream ss;
+		//	ss << "gBones[" << i << "]";
+		//	uint32 loc = GetUniformLocation(&animation_test_shader, ss.str());
+		//	glUniformMatrix4fv(loc, 1, GL_FALSE, (const GLfloat*)(anim_mat.Transpose()));
+		//}
 
 
 		//************************************
 		// Render The Current Frame
 		//************************************
 		
+		
+		Vec3 pos = emesh->animation.channels[0].poskeys	[23]; // Time one;
+		Quat q = emesh->animation.channels[0].rotkeys	[23]; // Time one;
+		Vec3 scl = emesh->animation.channels[0].sclkeys	[23];
+
+		Mat4 scaleM = ScaleCardinal(Mat4(1), scl);
+		Mat4 rotM = QuatToMat4(q);
+		Mat4 tranM = Translate(Mat4(1), pos);
+
+		Mat4 node_transform = scaleM * rotM * tranM;
+		
+
+		Mat4 bind = emesh->animation.bones[0].inverse_bind_pose;
+		Mat4 bind2 = emesh->animation.bones[1].inverse_bind_pose;
+
+		
+		Mat4 scbind = emesh->animation.global_inverse_transform;
+
+		std::cout << "MINE: " << std::endl;
+
+		Mat4 parent = Mat4(1);				
+
+
+		Mat4 final_bone_transformation_1 = parent;
+		
+		std::cout << "Global_transform: ";
+		Print(final_bone_transformation_1);
+		std::cout << "parent_transform: ";
+		Print(parent);		
+
+		parent = final_bone_transformation_1;		
+		Mat4 final_bone_transformation_2 = node_transform * parent;
+
+		std::cout << "Global_transform: ";
+		Print(final_bone_transformation_2);
+		std::cout << "parent_transform: ";
+		Print(parent);
+		//PrintPretty(scbind);
+		//node_transform = bind * node_transform;
+		//Mat4 bind2 = node_transform * emesh->animation.bones[1].inverse_bind_pose  *bind ;	
+
+		BindShader(animation_test_shader);
+		//ShaderSetMat4(&animation_test_shader, "gBones[0]", (final_bone_transformation_1 * bind *scbind).arr);
+		//ShaderSetMat4(&animation_test_shader, "gBones[1]", (final_bone_transformation_2 * bind2 *scbind).arr);
+		
+		
+
+		
+
+
+		//Print(bind2);
+		std::cout << std::endl;
+		std::cout << std::endl;
+		std::cout << std::endl;
+		std::vector<aiMatrix4x4> tut_tran;
+		std::cout << "CORRECT: " << std::endl;
+		tut_model.boneTransform(1, tut_tran);
+		ShaderSetMat4(&animation_test_shader, "gBones[0]", ToMatrix4f(&tut_tran[0]).arr);
+		ShaderSetMat4(&animation_test_shader, "gBones[1]", ToMatrix4f(&tut_tran[1]).arr);
+
+
 		renderer.Render(main_world);
 	
 		RenderCommands::DisableDepthBuffer();
