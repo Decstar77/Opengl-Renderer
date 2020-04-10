@@ -367,15 +367,17 @@ int main()
 
 
 	impmeshes.clear();
-	LoadModelTest(&impmeshes, path);
+	
 	
 
 	AnimatedActor test_cube_guy;
-	EditableMesh *emesh = &impmeshes[0];
-	
+	EditableMesh emesh;
+	LoadModelTest(&emesh, path);
+
+	LoadModel(&impmeshes, path);
 
 
-	test_cube_guy.mesh = emesh->CreateAnimMesh();
+	test_cube_guy.mesh = emesh.CreateAnimMesh();
 	//test_cube_guy.mesh = anim_test_mesh;
 	test_cube_guy.transform.scale = Vec3(.5);
 	test_cube_guy.transform.rotation = EulerToQuat(Vec3(90, 00, 0));
@@ -725,12 +727,15 @@ int main()
 		}
 		else
 		{
-			ShaderSetMat4(&animation_test_shader, "gBones[0]", emesh->ac.bones.at(1).current_transform.arr);
-			ShaderSetMat4(&animation_test_shader, "gBones[1]", emesh->ac.bones.at(2).current_transform.arr);
+			ShaderSetMat4(&animation_test_shader, "gBones[0]", Mat4(1).arr);
+			ShaderSetMat4(&animation_test_shader, "gBones[1]", Mat4(1).arr);
+			//ShaderSetMat4(&animation_test_shader, "gBones[0]", emesh.ac.bones.at(1).current_transform.arr);
+			//ShaderSetMat4(&animation_test_shader, "gBones[1]", emesh.ac.bones.at(2).current_transform.arr);
 		}
 		
-
-
+		
+		
+		
 		//Print(write_transform1);
 		//Print(ToMatrix4f(&tut_tran[0]));
 		//Print(write_transform2);

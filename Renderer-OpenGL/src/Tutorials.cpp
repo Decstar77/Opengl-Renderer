@@ -94,25 +94,25 @@ namespace cm
 			// directoru = container for model.obj and textures and other files
 			directory = path.substr(0, path.find_last_of('/'));
 
-			cout << "scene->HasAnimations() 1: " << scene->HasAnimations() << endl;
-			cout << "scene->mNumMeshes 1: " << scene->mNumMeshes << endl;
-			cout << "scene->mAnimations[0]->mNumChannels 1: " << scene->mAnimations[0]->mNumChannels << endl;
-			cout << "scene->mAnimations[0]->mDuration 1: " << scene->mAnimations[0]->mDuration << endl;
-			cout << "scene->mAnimations[0]->mTicksPerSecond 1: " << scene->mAnimations[0]->mTicksPerSecond << endl << endl;
+			//cout << "scene->HasAnimations() 1: " << scene->HasAnimations() << endl;
+			//cout << "scene->mNumMeshes 1: " << scene->mNumMeshes << endl;
+			//cout << "scene->mAnimations[0]->mNumChannels 1: " << scene->mAnimations[0]->mNumChannels << endl;
+			//cout << "scene->mAnimations[0]->mDuration 1: " << scene->mAnimations[0]->mDuration << endl;
+			//cout << "scene->mAnimations[0]->mTicksPerSecond 1: " << scene->mAnimations[0]->mTicksPerSecond << endl << endl;
+			//
+			//cout << "		name nodes : " << endl;
+			//showNodeName(scene->mRootNode);
+			//cout << endl;
 
-			cout << "		name nodes : " << endl;
-			showNodeName(scene->mRootNode);
-			cout << endl;
-
-			cout << "		name bones : " << endl;
+			//cout << "		name bones : " << endl;
 			processNode(scene->mRootNode, scene);
 
-			cout << "		name nodes animation : " << endl;
+			//cout << "		name nodes animation : " << endl;
 			for (uint i = 0; i < scene->mAnimations[0]->mNumChannels; i++)
 			{
-				cout << scene->mAnimations[0]->mChannels[i]->mNodeName.C_Str() << endl;
+				//cout << scene->mAnimations[0]->mChannels[i]->mNodeName.C_Str() << endl;
 			}
-			cout << endl;
+			//cout << endl;
 		}
 
 		void Model::showNodeName(aiNode* node)

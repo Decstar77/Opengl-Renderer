@@ -72,7 +72,8 @@ namespace cm
 		real current_time;
 
 		// @NOTE: We reserve the [0]/0th index to be the root bone. This root bone does not actually exist in the mesh
-		// @NOTE: It is simply a place holder to make all other calculations easier
+		// @NOTE: It is simply a place holder to make all other calculations easiers
+
 		DynaArray<Bone> bones;
 		DynaArray<Animation> animations;
 		

@@ -180,16 +180,173 @@ namespace cm
 		}
 	}
 
+	void ProcessMeshCombine(aiMesh *mesh, EditableMesh *emesh, const aiScene *scene)
+	{
+		// @NOTE: Get the meta data from the current mesh.
+		bool positions = mesh->HasPositions();
+		bool normals = mesh->HasNormals();
+		bool texture_coords = mesh->HasTextureCoords(0);
+		bool tanget_bitangets = mesh->HasTangentsAndBitangents();
+		bool colours = mesh->HasVertexColors(0);
+		bool faces = mesh->HasFaces();
+		bool bones = mesh->HasBones();
+		
+		// @NOTE: This is the offest by which we combine this mesh to all the other meshes in emesh.
+		//		: Meaning, indices and vertex bone weights.
+		uint32 mesh_indices_offset = emesh->vertices.size();
+
+		// @NOTE: Construct the vertices with the available data
+		for (uint32 i = 0; i < mesh->mNumVertices; i++)
+		{
+			Vertex vertex = {};
+
+			// Positions
+			if (positions)
+			{
+				vertex.position.x = mesh->mVertices[i].x;
+				vertex.position.y = mesh->mVertices[i].y;
+				vertex.position.z = mesh->mVertices[i].z;
+			}
+
+			// Normals
+			if (normals)
+			{
+				vertex.normal.x = mesh->mNormals[i].x;
+				vertex.normal.y = mesh->mNormals[i].y;
+				vertex.normal.z = mesh->mNormals[i].z;
+			}
+
+			// Texture coordinates			
+			if (texture_coords)
+			{
+				vertex.texture_coord.x = mesh->mTextureCoords[0][i].x;
+				vertex.texture_coord.y = mesh->mTextureCoords[0][i].y;
+			}
+
+			// Tangent and bitangents
+			if (tanget_bitangets)
+			{
+				vertex.tanget.x = mesh->mTangents[i].x;
+				vertex.tanget.y = mesh->mTangents[i].y;
+				vertex.tanget.z = mesh->mTangents[i].z;
+
+				vertex.bitanget.x = mesh->mBitangents[i].x;
+				vertex.bitanget.y = mesh->mBitangents[i].y;
+				vertex.bitanget.z = mesh->mBitangents[i].z;
+			}
+
+			// Vertex Colours
+			if (colours)
+			{
+				Assert(0); // @TODO: Check before use
+				vertex.colour.x = mesh->mColors[0]->r;
+				vertex.colour.y = mesh->mColors[0]->g;
+				vertex.colour.z = mesh->mColors[0]->b;
+			}
+
+			emesh->vertices.push_back(vertex);
+		}
+
+		if (bones)
+		{
+			for (int i = 0; i < mesh->mNumBones; i++)
+			{
+				aiBone *b = mesh->mBones[i];
+				std::string cur_bone_name = b->mName.C_Str();
+				int32 bone_index = -1;
+
+				// @NOTE: Find the bone index
+				// @SPEED: Again a hash map will solve some of this.
+				for (uint32 j = 0; j < emesh->ac.bones.size(); j++)
+				{
+					std::string bone_name = emesh->ac.bones.at(j).name;
+					if (bone_name == cur_bone_name)
+					{
+						// @NOTE: Remember that the first entry is the dummy root bone;
+						bone_index = j - 1;
+						break;
+					}
+				}
+								
+				Assert(bone_index != -1); // @REASON: We couldn't find the bone index
+
+				for (uint32 j = 0; j < b->mNumWeights; j++)
+				{
+					aiVertexWeight vertex_data = b->mWeights[j];
+					uint32 vertex_index = vertex_data.mVertexId + mesh_indices_offset;
+					float vertex_weight = vertex_data.mWeight;
+					uint32 next = emesh->vertices.at(vertex_index).next;
+					emesh->vertices.at(vertex_index).bone_index[next] = bone_index;
+					emesh->vertices.at(vertex_index).bone_weights[next] = vertex_weight;
+					emesh->vertices.at(vertex_index).next++;
+					Assert(emesh->vertices.at(vertex_index).next < 4);
+				}
+			}
+		}
+
+		if (faces)
+		{			
+			for (uint32 i = 0; i < mesh->mNumFaces; i++)
+			{
+				aiFace face = mesh->mFaces[i];
+				for (uint32 j = 0; j < face.mNumIndices; j++)
+				{
+					uint32 index = face.mIndices[j] + mesh_indices_offset;
+					emesh->indices.push_back(index);
+				}
+			}
+		}
+
+		emesh->has_positions = positions;
+		emesh->has_normals = normals;
+		emesh->has_texture_coords = texture_coords;
+		emesh->has_tanget_bitangets = tanget_bitangets;
+		emesh->has_colours = colours;
+		emesh->name = mesh->mName.C_Str();
+	}
+
+	void ProcessNode(aiNode *node, EditableMesh *emesh, const aiScene * scene)
+	{
+		for (uint32 i = 0; i < node->mNumMeshes; i++)
+		{
+			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+
+			std::cout << "Mesh name " << mesh->mName.C_Str() << std::endl;
+			
+			ProcessMeshCombine(mesh, emesh, scene);			
+		}
+
+		for (uint32 i = 0; i < node->mNumChildren; i++)
+		{
+			ProcessNode(node->mChildren[i], emesh, scene);
+		}
+	}
+
 	void StoreAllBones(const aiMesh * mesh, AnimationController *ac)
 	{
-		for (int i = 0; i < mesh->mNumBones; i++)
+		for (uint32 i = 0; i < mesh->mNumBones; i++)
 		{
 			aiBone *b = mesh->mBones[i];
 			Bone bone;
 			bone.name = b->mName.C_Str();
 			bone.inverse_bind_transform = ToMatrix4f(&b->mOffsetMatrix);
 
-			ac->bones.push_back(bone);
+
+			// @NOTE: We need to check if the bone has already been added.
+			// @SPEED: Use a hash map probs
+			bool add = true;
+			for (uint32 j = 0; j < ac->bones.size(); j++)
+			{
+				if (ac->bones.at(j).name == bone.name)
+				{
+					add = false;
+					break;
+				}
+			}
+			if (add)
+			{
+				ac->bones.push_back(bone);
+			}			
 		}
 	}
 
@@ -353,30 +510,26 @@ namespace cm
 
 	}
 
-	void ProcessAnimations(const aiScene *scene, DynaArray<EditableMesh> *meshes)
+	void ProcessAnimations(const aiScene *scene, EditableMesh *emesh)
 	{
 		// @NOTE: Loop throught the all the animations, Processing bones should be independt on this.
 		Assert(scene->mNumAnimations <= 1);
+		if (!scene->HasAnimations())
+			return;
 
-		// @NOTE: Could get tricky with bone vertex data offsets, ie not done
-		Assert(meshes->size() == 1);
-		
 		aiAnimation *anim = scene->mAnimations[0];
 		Animation animation;
 		animation.duration = anim->mDuration;
 		animation.ticks_per_second = anim->mTicksPerSecond;
 		ProcessAnimationChannels(anim, &animation);
 		
-		EditableMesh *emesh = &meshes->at(0);
 		aiMatrix4x4 mat = scene->mRootNode->mTransformation;
 		mat.Inverse();
 	
 		emesh->ac.global_inverse_transform = ToMatrix4f(&mat);
 		emesh->ac.animations.push_back(animation);
 
-		ProcessBones(scene, &emesh->ac);
-
-			   		 
+		ProcessBones(scene, &emesh->ac);			   		 
 	}
 
 
@@ -399,7 +552,7 @@ namespace cm
 
 
 
-	bool LoadModelTest(DynaArray<EditableMesh> *meshes, const std::string &path)
+	bool LoadModelTest(EditableMesh *emesh, const std::string &path)
 	{
 		Assimp::Importer import;
 		const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);
@@ -412,13 +565,10 @@ namespace cm
 			return false;
 		}
 
-		processNode(scene->mRootNode, meshes, scene);
-		bool hanim = scene->HasAnimations();
+		ProcessAnimations(scene, emesh);
+		ProcessNode(scene->mRootNode, emesh, scene);
+		
 	
-		if (hanim)
-		{		
-			//ProcessAnimations(scene, meshes);
-		}
 
 
 
@@ -440,29 +590,29 @@ namespace cm
 
 		processNode(scene->mRootNode, meshes, scene);
 		bool hanim = scene->HasAnimations();
-		if (hanim)
-		{
-			std::cout << "Animation count: " << scene->mNumAnimations << std::endl;
-			aiAnimation *anim = scene->mAnimations[0];
-			std::cout << "Channel count: " << anim->mNumChannels << std::endl;
+		//if (hanim)
+		//{
+		//	std::cout << "Animation count: " << scene->mNumAnimations << std::endl;
+		//	aiAnimation *anim = scene->mAnimations[0];
+		//	std::cout << "Channel count: " << anim->mNumChannels << std::endl;
 
-			for (int i = 0; i < anim->mNumChannels; i++)
-			{
-				aiNodeAnim *ai = anim->mChannels[i];
-				std::cout << ai->mNodeName.C_Str() << std::endl;
-				std::cout << ai->mNumPositionKeys << std::endl;
-				std::cout << ai->mNumRotationKeys << std::endl;
-				std::cout << ai->mNumScalingKeys << std::endl;
-			}
-			aiMesh* mesh = scene->mMeshes[0];
+		//	for (int i = 0; i < anim->mNumChannels; i++)
+		//	{
+		//		aiNodeAnim *ai = anim->mChannels[i];
+		//		std::cout << ai->mNodeName.C_Str() << std::endl;
+		//		std::cout << ai->mNumPositionKeys << std::endl;
+		//		std::cout << ai->mNumRotationKeys << std::endl;
+		//		std::cout << ai->mNumScalingKeys << std::endl;
+		//	}
+		//	aiMesh* mesh = scene->mMeshes[0];
 
-			for (int i = 0; i < mesh->mNumBones; i++)
-			{
-				aiBone *b = mesh->mBones[i];
-				std::cout << b->mName.C_Str() << std::endl;
-			}
+		//	for (int i = 0; i < mesh->mNumBones; i++)
+		//	{
+		//		aiBone *b = mesh->mBones[i];
+		//		std::cout << b->mName.C_Str() << std::endl;
+		//	}
 
-		}
+		//}
 		
 		EditableMesh* mesh = &meshes->at(0);
 		for (int i = 1; i < meshes->size(); i++)
