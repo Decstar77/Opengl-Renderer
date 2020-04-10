@@ -69,7 +69,7 @@ namespace cm
 		bool tanget_bitangets = mesh->HasTangentsAndBitangents();
 		bool colours = mesh->HasVertexColors(0);
 		bool faces = mesh->HasFaces();
-		bool hbone = mesh->HasBones();
+		bool bones = mesh->HasBones();
 
 		for (uint32 i = 0; i < mesh->mNumVertices; i++)
 		{
@@ -121,7 +121,26 @@ namespace cm
 
 			edit_mesh->vertices.push_back(vertex);
 		}
-		
+
+		if (bones)
+		{
+			for (int i = 0; i < mesh->mNumBones; i++)
+			{
+				aiBone *b = mesh->mBones[i];
+				for (int j = 0; j < b->mNumWeights; j++)
+				{
+					aiVertexWeight vertex_data = b->mWeights[j];
+					uint32 vertex_index = vertex_data.mVertexId;
+					float vertex_weight = vertex_data.mWeight;
+					uint32 next = edit_mesh->vertices.at(vertex_index).next;
+					edit_mesh->vertices.at(vertex_index).bone_index[next] = i;
+					edit_mesh->vertices.at(vertex_index).bone_weights[next] = vertex_weight;
+					edit_mesh->vertices.at(vertex_index).next++;
+					Assert(edit_mesh->vertices.at(vertex_index).next < 4);
+				}
+			}
+		}
+
 		if (faces)
 		{
 			for (uint32 i = 0; i < mesh->mNumFaces; i++)
@@ -161,9 +180,209 @@ namespace cm
 		}
 	}
 
+	void StoreAllBones(const aiMesh * mesh, AnimationController *ac)
+	{
+		for (int i = 0; i < mesh->mNumBones; i++)
+		{
+			aiBone *b = mesh->mBones[i];
+			Bone bone;
+			bone.name = b->mName.C_Str();
+			bone.inverse_bind_transform = ToMatrix4f(&b->mOffsetMatrix);
+
+			ac->bones.push_back(bone);
+		}
+	}
+
+	const aiNode* FindRootNodeOfBones(const aiNode *node, AnimationController *ac)
+	{
+		// @NOTE: If anything this will give us problems
+		std::string name = node->mName.C_Str();
+		for (uint32 i = 1; i < ac->bones.size(); i++)
+		{
+			if (name == ac->bones.at(i).name)
+			{
+				return node->mParent;
+			}
+		}
+		for (uint32 i = 0; i < node->mNumChildren; i++)
+		{
+			return FindRootNodeOfBones(node->mChildren[i], ac);
+		}
+	}
+
+	aiMatrix4x4 CalcRootNodeTransformMatrix(const aiNode *node)
+	{
+		if (node->mParent == NULL)
+		{
+			return node->mTransformation;			
+		}
+		return CalcRootNodeTransformMatrix(node->mParent) * node->mTransformation;
+	}
+
+	void StoreNodeTransformMatrices(const aiNode *node, AnimationController *ac)
+	{
+		std::string name = node->mName.C_Str();
+				
+		for (uint32 i = 1; i < ac->bones.size(); i++)
+		{
+			if (name == ac->bones.at(i).name)
+			{
+				ac->bones[i].node_transform_matrix = ToMatrix4f(&node->mTransformation);
+				break;
+			}
+		}
+		
+		for (uint32 i = 0; i < node->mNumChildren; i++)
+		{
+			StoreNodeTransformMatrices(node->mChildren[i], ac);
+		}
+	}
+
+	void SortBoneParents(const aiNode *node, uint32 parent_index, AnimationController *ac)
+	{
+		std::string name = node->mName.C_Str();
+		for (uint32 i = 1; i < ac->bones.size(); i++)
+		{
+			if (name == ac->bones.at(i).name)
+			{
+				ac->bones[i].parent_index = parent_index;				
+				parent_index = i;				
+				break; 
+			}
+		}
+
+		for (uint32 i = 0; i < node->mNumChildren; i++)
+		{
+			SortBoneParents(node->mChildren[i], parent_index, ac);
+		}
+	}
+
+	void SortBoneChildren(AnimationController *ac)
+	{
+		// @NOTE: This assumes the bone array's parents are correctly set and sorted
+		// @NOTE: Start at one as we don't care about root
+		for (uint32 i = 1; i < ac->bones.size(); i++)
+		{
+			int32 current_bone_parent = ac->bones.at(i).parent_index;
+
+			// @NOTE: Check that the bone does indeed have a parent
+			Assert(current_bone_parent != -1); 
+
+			ac->bones.at(current_bone_parent).child_indices.push_back(i);
+		}
+	}
+
+
+	void ProcessBones(const aiScene *scene, AnimationController *ac)
+	{
+		// @NOTE: Order is important
+		// @NOTE: Create a dummy root node. This bone doesn't actually exist in the mesh
+		Bone root;
+		ac->bones.push_back(root);			   
+		
+		// @NOTE: Store all the bones in the scene
+		for (uint32 i = 0; i < scene->mNumMeshes; i++)
+		{
+			aiMesh* mesh = scene->mMeshes[i];
+			StoreAllBones(mesh, ac);
+		}
+
+		// @NOTE: Find the root node of the bones found
+		const aiNode *root_node = FindRootNodeOfBones(scene->mRootNode, ac);
+		
+		// @NOTE: Calculate the root node transform of the bones
+		aiMatrix4x4 root_node_transform_matrix = CalcRootNodeTransformMatrix(root_node);
+		
+		// @NOTE: Store the info
+		ac->bones[0].name = root_node->mName.C_Str();	
+		ac->bones[0].name += "---ROOT_BONE---";
+		ac->bones[0].node_transform_matrix = ToMatrix4f(&root_node_transform_matrix) ;
+		ac->bones[0].inverse_bind_transform = Mat4(0);
+
+		// @NOTE: Store all the bone's node's node transformation matrix in the bones
+		StoreNodeTransformMatrices(root_node, ac);
+
+		// @NOTE: Create the bone tree, 0 references the root node
+		SortBoneParents(root_node, 0, ac);
+
+		// @NOTE: This can only happen if the parents are set. See function for deets
+		SortBoneChildren(ac);
+	}
+
+	void ProcessAnimationChannels(aiAnimation *anim, Animation *animation)
+	{
+		//Assert(anim->mNumChannels == 1);
+		for (int i = 0; i < anim->mNumChannels; i++)
+		{
+			aiNodeAnim *ai = anim->mChannels[i];
+			AnimationChannel chanel;
+			chanel.name = ai->mNodeName.C_Str();
+			animation->channels.push_back(chanel);
+			for (int j = 0; j < ai->mNumPositionKeys; j++)
+			{
+				Vec3 pos = Vec3(ai->mPositionKeys[j].mValue.x, ai->mPositionKeys[j].mValue.y, ai->mPositionKeys[j].mValue.z);
+				float time = ai->mPositionKeys[j].mTime;
+				animation->channels[i].poskeys[j] = pos;
+				animation->channels[i].postime[j] = time;
+			}
+
+			for (int j = 0; j < ai->mNumRotationKeys; j++)
+			{
+				Quat rot = Quat(ai->mRotationKeys[j].mValue.x, ai->mRotationKeys[j].mValue.y, ai->mRotationKeys[j].mValue.z, ai->mRotationKeys[j].mValue.w);
+				float time = ai->mRotationKeys[j].mTime;
+				animation->channels[i].rotkeys[j] = rot;
+				animation->channels[i].rottime[j] = time;
+			}
+
+			for (int j = 0; j < ai->mNumScalingKeys; j++)
+			{
+				Vec3 pos = Vec3(ai->mScalingKeys[j].mValue.x, ai->mScalingKeys[j].mValue.y, ai->mScalingKeys[j].mValue.z);
+				float time = ai->mScalingKeys[j].mTime;
+				animation->channels[i].sclkeys[j] = pos;
+				animation->channels[i].scltime[j] = time;
+			}
+		}
+	}
+
+	void LinkAnimation(const aiNode* p_node, const aiMatrix4x4 parent_transform)
+	{
+		std::string node_name(p_node->mName.data);
+		aiMatrix4x4 node_transform = p_node->mTransformation;
+
+
+
+	}
+
+	void ProcessAnimations(const aiScene *scene, DynaArray<EditableMesh> *meshes)
+	{
+		// @NOTE: Loop throught the all the animations, Processing bones should be independt on this.
+		Assert(scene->mNumAnimations <= 1);
+
+		// @NOTE: Could get tricky with bone vertex data offsets, ie not done
+		Assert(meshes->size() == 1);
+		
+		aiAnimation *anim = scene->mAnimations[0];
+		Animation animation;
+		animation.duration = anim->mDuration;
+		animation.ticks_per_second = anim->mTicksPerSecond;
+		ProcessAnimationChannels(anim, &animation);
+		
+		EditableMesh *emesh = &meshes->at(0);
+		aiMatrix4x4 mat = scene->mRootNode->mTransformation;
+		mat.Inverse();
+	
+		emesh->ac.global_inverse_transform = ToMatrix4f(&mat);
+		emesh->ac.animations.push_back(animation);
+
+		ProcessBones(scene, &emesh->ac);
+
+			   		 
+	}
+
+
 	Mat4 ToMatrix4f(const aiMatrix4x4 *ai_mat)
 	{
-		Assert(sizeof(aiMatrix4x4) == sizeof(Matrix4f));
+		
 		uint32 size = sizeof(Mat4);
 
 		
@@ -176,42 +395,17 @@ namespace cm
 		return a;
 	}
 
-	Mat4 ToMatrix4f(const Matrix4f *ai_mat)
-	{
-		Assert(sizeof(aiMatrix4x4) == sizeof(Matrix4f));
-		uint32 size = sizeof(Matrix4f);
 
-		Matrix4f ai = ai_mat->Transpose();
-		Mat4 a;
-		memcpy((void*)&a, (void *)&ai, size);
 
-		return a;
-	}
-
-	void doAnim(aiNode *node, Animation *anim, aiMatrix4x4 parent )
-	{
-		aiMatrix4x4 local = node->mTransformation;
-		aiMatrix4x4 global_transform = parent * local;
-		
-		if (node->mName.C_Str() == anim->channels[0].name)
-		{
-			anim->bones[1].node_transform = ToMatrix4f(&global_transform);
-			return;
-		}
-
-		for (uint32 i = 0; i < node->mNumChildren; i++)
-		{
-			doAnim(node->mChildren[i], anim, global_transform);
-		}
-	}
 
 
 	bool LoadModelTest(DynaArray<EditableMesh> *meshes, const std::string &path)
 	{
 		Assimp::Importer import;
 		const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);
-		aiMatrix4x4 mat = scene->mRootNode->mTransformation.Inverse();
-
+		aiMatrix4x4 mat = scene->mRootNode->mTransformation;
+		mat.Inverse();
+		
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
 			std::cout << "ERROR::ASSIMP:: " << import.GetErrorString() << std::endl;
@@ -220,124 +414,10 @@ namespace cm
 
 		processNode(scene->mRootNode, meshes, scene);
 		bool hanim = scene->HasAnimations();
-		std::cout << std::endl;
-		std::cout << std::endl;
-		std::cout << std::endl;
-				
-		if (hanim)
-		{			
-			EditableMesh *emesh = &meshes->at(0);
-			emesh->animation.global_inverse_transform = ToMatrix4f(&mat);
-			
 	
-
-			std::cout << "Animation count: " << scene->mNumAnimations << std::endl;
-			std::cout << "Mesh count: " << scene->mNumMeshes << std::endl;
-			aiAnimation *anim = scene->mAnimations[0];
-			std::cout << std::endl;
-			std::cout << "Animation name: " << anim->mName.C_Str() << std::endl;
-			std::cout << "Morph count: " << anim->mNumMorphMeshChannels << std::endl;
-			std::cout << "Mesh count: " << anim->mNumMeshChannels << std::endl;
-			std::cout << "Channel count: " << anim->mNumChannels << std::endl;
-			std::cout << std::endl;
-			for (int i = 0; i < anim->mNumChannels; i++)
-			{
-				aiNodeAnim *ai = anim->mChannels[i];
-				
-				std::cout << "Node name: " << ai->mNodeName.C_Str() << std::endl;
-				std::cout << "Pos key count" << ai->mNumPositionKeys << std::endl;
-				emesh->animation.channels[i].name = ai->mNodeName.C_Str();
-				for (int j = 0; j < ai->mNumPositionKeys; j++)
-				{
-
-					Vec3 pos = Vec3(ai->mPositionKeys[j].mValue.x, ai->mPositionKeys[j].mValue.y, ai->mPositionKeys[j].mValue.z);
-					float time = ai->mPositionKeys[j].mTime;
-					emesh->animation.channels[i].poskeys[j] = pos;
-					emesh->animation.channels[i].postime[j] = time;
-					//std::cout << ai->mPositionKeys[j].mTime << " " << std::endl;
-					//std::cout << ai->mPositionKeys[j].mValue.x << " ";
-					//std::cout << ai->mPositionKeys[j].mValue.y << " ";
-					//std::cout << ai->mPositionKeys[j].mValue.x << " ";
-				}
-
-				std::cout << "Rot key count" << ai->mNumRotationKeys << std::endl;
-				for (int j = 0; j < ai->mNumRotationKeys; j++)
-				{
-					Quat rot = Quat(ai->mRotationKeys[j].mValue.x, ai->mRotationKeys[j].mValue.y, ai->mRotationKeys[j].mValue.z, ai->mRotationKeys[j].mValue.w);
-					float time = ai->mRotationKeys[j].mTime;
-					emesh->animation.channels[i].rotkeys[j] = rot;
-					emesh->animation.channels[i].rottime[j] = time;
-					//std::cout << "Time: "<< ai->mRotationKeys[j].mTime << " " << std::endl;
-					//std::cout << ai->mRotationKeys[j].mValue.x << " ";
-					//std::cout << ai->mRotationKeys[j].mValue.y << " ";
-					//std::cout << ai->mRotationKeys[j].mValue.x << " ";
-					//std::cout << std::endl;
-				}
-							   
-				std::cout << "Scl key count" << ai->mNumScalingKeys << std::endl;
-				for (int j = 0; j < ai->mNumScalingKeys; j++)
-				{
-					
-					Vec3 pos = Vec3(ai->mScalingKeys[j].mValue.x, ai->mScalingKeys[j].mValue.y, ai->mScalingKeys[j].mValue.z);
-					float time = ai->mScalingKeys[j].mTime;
-					emesh->animation.channels[i].sclkeys[j] = pos;
-					emesh->animation.channels[i].scltime[j] = time;					
-					//std::cout << ai->mScalingKeys[j].mTime << " " << std::endl;
-					//std::cout << ai->mScalingKeys[j].mValue.x << " ";
-					//std::cout << ai->mScalingKeys[j].mValue.y << " ";
-					//std::cout << ai->mScalingKeys[j].mValue.x << " ";
-				}
-			}
-
-			aiMesh* mesh = scene->mMeshes[0];
-			std::cout << std::endl;
-			std::cout << "Bone count: " << mesh->mNumBones << std::endl;
-			std::cout << "Vertex count: " << mesh->mNumVertices << std::endl;
-			emesh->animation.bones[0].child = &emesh->animation.bones[1];
-			emesh->animation.bones[1].child = &emesh->animation.bones[2];
-			emesh->animation.bones[2].child = nullptr;
-
-			for (int i = 0; i < mesh->mNumBones; i++)
-			{
-				aiBone *b = mesh->mBones[i];
-				std::cout << b->mName.C_Str() << std::endl;
-
-				emesh->animation.bones[i].name = b->mName.C_Str();
-				emesh->animation.bones[i].inverse_bind_pose = ToMatrix4f(&b->mOffsetMatrix);	
-				Print(ToMatrix4f(&b->mOffsetMatrix));
-				Matrix4f m = Matrix4f(b->mOffsetMatrix);
-				
-				for (int j = 0; j < b->mNumWeights; j++)
-				{
-					aiVertexWeight vertex_data = b->mWeights[j];
-
-					uint32 vertex_index = vertex_data.mVertexId;
-					float vertex_weight = vertex_data.mWeight;
-					uint32 next = emesh->vertices.at(vertex_index).next;
-					emesh->vertices.at(vertex_index).bone_index[next] = i;
-					emesh->vertices.at(vertex_index).bone_weights[next] = vertex_weight;
-					emesh->vertices.at(vertex_index).next++;
-					Assert(emesh->vertices.at(vertex_index).next < 4);					
-				}				
-			}
-
-			aiMatrix4x4 identity_matrix;
-			doAnim(scene->mRootNode, &emesh->animation, identity_matrix);
-			
-			//for (int i = 0; i < emesh->vertices.size(); i++)
-			//{
-			//	Vertex v = emesh->vertices.at(i);
-			//	for (int j = 0; j < 4; j++)
-			//	{
-			//		std::cout << "J = " << j << std::endl;
-			//		std::cout << "Bone index: " << v.bone_index[j] << std::endl;
-			//		std::cout << "Bone weights: " << v.bone_weights[j] << std::endl;
-			//	}
-			//	
-			//}
-
-
-
+		if (hanim)
+		{		
+			//ProcessAnimations(scene, meshes);
 		}
 
 

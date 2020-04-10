@@ -363,172 +363,97 @@ namespace cm
 	}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	Matrix4f ToMatrix4fgawd(const aiMatrix4x4 *ai_mat)
+	void AnimationController::Play(const std::string &name)
 	{
-		Assert(sizeof(aiMatrix4x4) == sizeof(Matrix4f));
-		uint32 size = sizeof(Matrix4f);
-
-		Matrix4f a;
-		memcpy((void*)&a, (void*)ai_mat, size);
-
-		return a;
-	}
-
-	Mat4 ToMatrix4fgawd(const Matrix4f *ai_mat)
-	{
-		Assert(sizeof(aiMatrix4x4) == sizeof(Matrix4f));
-		uint32 size = sizeof(Matrix4f);
-
-		Matrix4f ai = ai_mat->Transpose();
-		Mat4 a;
-		memcpy((void*)&a, (void *)&ai, size);
-
-		return a;
-	}
-
-	Mat4 ToMatrix4ffrom3x3(const aiMatrix3x3 *ai_mat)
-	{
-		uint32 size = sizeof(aiMatrix3x3);
-
-		Mat4 a(1);
-		a.row0 = Vec4(ai_mat->a1, ai_mat->a2, ai_mat->a3, 0);
-		a.row1 = Vec4(ai_mat->b1, ai_mat->b2, ai_mat->b3, 0);
-		a.row2 = Vec4(ai_mat->c1, ai_mat->c2, ai_mat->c3, 0);
-
-		return a;
-	}
-
-
-
-	void Matrix4f::InitScaleTransform(float ScaleX, float ScaleY, float ScaleZ)
-	{
-		m[0][0] = ScaleX; m[0][1] = 0.0f;   m[0][2] = 0.0f;   m[0][3] = 0.0f;
-		m[1][0] = 0.0f;   m[1][1] = ScaleY; m[1][2] = 0.0f;   m[1][3] = 0.0f;
-		m[2][0] = 0.0f;   m[2][1] = 0.0f;   m[2][2] = ScaleZ; m[2][3] = 0.0f;
-		m[3][0] = 0.0f;   m[3][1] = 0.0f;   m[3][2] = 0.0f;   m[3][3] = 1.0f;
-	}
-
-	void Matrix4f::InitRotateTransform(float RotateX, float RotateY, float RotateZ)
-	{
-		Matrix4f rx, ry, rz;
-
-		const float x = DegToRad(RotateX);
-		const float y = DegToRad(RotateY);
-		const float z = DegToRad(RotateZ);
-
-		rx.m[0][0] = 1.0f; rx.m[0][1] = 0.0f; rx.m[0][2] = 0.0f; rx.m[0][3] = 0.0f;
-		rx.m[1][0] = 0.0f; rx.m[1][1] = cosf(x); rx.m[1][2] = -sinf(x); rx.m[1][3] = 0.0f;
-		rx.m[2][0] = 0.0f; rx.m[2][1] = sinf(x); rx.m[2][2] = cosf(x); rx.m[2][3] = 0.0f;
-		rx.m[3][0] = 0.0f; rx.m[3][1] = 0.0f; rx.m[3][2] = 0.0f; rx.m[3][3] = 1.0f;
-
-		ry.m[0][0] = cosf(y); ry.m[0][1] = 0.0f; ry.m[0][2] = -sinf(y); ry.m[0][3] = 0.0f;
-		ry.m[1][0] = 0.0f; ry.m[1][1] = 1.0f; ry.m[1][2] = 0.0f; ry.m[1][3] = 0.0f;
-		ry.m[2][0] = sinf(y); ry.m[2][1] = 0.0f; ry.m[2][2] = cosf(y); ry.m[2][3] = 0.0f;
-		ry.m[3][0] = 0.0f; ry.m[3][1] = 0.0f; ry.m[3][2] = 0.0f; ry.m[3][3] = 1.0f;
-
-		rz.m[0][0] = cosf(z); rz.m[0][1] = -sinf(z); rz.m[0][2] = 0.0f; rz.m[0][3] = 0.0f;
-		rz.m[1][0] = sinf(z); rz.m[1][1] = cosf(z); rz.m[1][2] = 0.0f; rz.m[1][3] = 0.0f;
-		rz.m[2][0] = 0.0f; rz.m[2][1] = 0.0f; rz.m[2][2] = 1.0f; rz.m[2][3] = 0.0f;
-		rz.m[3][0] = 0.0f; rz.m[3][1] = 0.0f; rz.m[3][2] = 0.0f; rz.m[3][3] = 1.0f;
-
-		*this = rz * ry * rx;
-	}
-
-	void Matrix4f::InitTranslationTransform(float x, float y, float z)
-	{
-		m[0][0] = 1.0f; m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = x;
-		m[1][0] = 0.0f; m[1][1] = 1.0f; m[1][2] = 0.0f; m[1][3] = y;
-		m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = 1.0f; m[2][3] = z;
-		m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
-	}
-
-	float Matrix4f::Determinant() const
-	{
-		return m[0][0] * m[1][1] * m[2][2] * m[3][3] - m[0][0] * m[1][1] * m[2][3] * m[3][2] + m[0][0] * m[1][2] * m[2][3] * m[3][1] - m[0][0] * m[1][2] * m[2][1] * m[3][3]
-			+ m[0][0] * m[1][3] * m[2][1] * m[3][2] - m[0][0] * m[1][3] * m[2][2] * m[3][1] - m[0][1] * m[1][2] * m[2][3] * m[3][0] + m[0][1] * m[1][2] * m[2][0] * m[3][3]
-			- m[0][1] * m[1][3] * m[2][0] * m[3][2] + m[0][1] * m[1][3] * m[2][2] * m[3][0] - m[0][1] * m[1][0] * m[2][2] * m[3][3] + m[0][1] * m[1][0] * m[2][3] * m[3][2]
-			+ m[0][2] * m[1][3] * m[2][0] * m[3][1] - m[0][2] * m[1][3] * m[2][1] * m[3][0] + m[0][2] * m[1][0] * m[2][1] * m[3][3] - m[0][2] * m[1][0] * m[2][3] * m[3][1]
-			+ m[0][2] * m[1][1] * m[2][3] * m[3][0] - m[0][2] * m[1][1] * m[2][0] * m[3][3] - m[0][3] * m[1][0] * m[2][1] * m[3][2] + m[0][3] * m[1][0] * m[2][2] * m[3][1]
-			- m[0][3] * m[1][1] * m[2][2] * m[3][0] + m[0][3] * m[1][1] * m[2][0] * m[3][2] - m[0][3] * m[1][2] * m[2][0] * m[3][1] + m[0][3] * m[1][2] * m[2][1] * m[3][0];
-	}
-
-	Matrix4f& Matrix4f::Inverse()
-	{
-		// Compute the reciprocal determinant
-		float det = Determinant();
-		if (det == 0.0f)
+		for (uint32 i = 0; i < animations.size(); i++)
 		{
-			// Matrix not invertible. Setting all elements to nan is not really
-			// correct in a mathematical sense but it is easy to debug for the
-			// programmer.
-			/*const float nan = std::numeric_limits<float>::quiet_NaN();
-			*this = Matrix4f(
-				nan,nan,nan,nan,
-				nan,nan,nan,nan,
-				nan,nan,nan,nan,
-				nan,nan,nan,nan);*/
-	
-			return *this;
+
+
+		}
+	}
+
+	void AnimationController::Play(uint32 animation_index)
+	{
+		Assert(animation_index < animations.size());
+		Assert(animation_index >= 0);
+
+		Animation * anim = &animations[animation_index];
+		anim->Play(current_time, &bones);
+
+		for (int32 i = 0; i < bones.size(); i++)
+		{
+			bones[i].current_transform = bones[i].current_transform * global_inverse_transform;
 		}
 
-		float invdet = 1.0f / det;
-
-		Matrix4f res;
-		res.m[0][0] = invdet * (m[1][1] * (m[2][2] * m[3][3] - m[2][3] * m[3][2]) + m[1][2] * (m[2][3] * m[3][1] - m[2][1] * m[3][3]) + m[1][3] * (m[2][1] * m[3][2] - m[2][2] * m[3][1]));
-		res.m[0][1] = -invdet * (m[0][1] * (m[2][2] * m[3][3] - m[2][3] * m[3][2]) + m[0][2] * (m[2][3] * m[3][1] - m[2][1] * m[3][3]) + m[0][3] * (m[2][1] * m[3][2] - m[2][2] * m[3][1]));
-		res.m[0][2] = invdet * (m[0][1] * (m[1][2] * m[3][3] - m[1][3] * m[3][2]) + m[0][2] * (m[1][3] * m[3][1] - m[1][1] * m[3][3]) + m[0][3] * (m[1][1] * m[3][2] - m[1][2] * m[3][1]));
-		res.m[0][3] = -invdet * (m[0][1] * (m[1][2] * m[2][3] - m[1][3] * m[2][2]) + m[0][2] * (m[1][3] * m[2][1] - m[1][1] * m[2][3]) + m[0][3] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]));
-		res.m[1][0] = -invdet * (m[1][0] * (m[2][2] * m[3][3] - m[2][3] * m[3][2]) + m[1][2] * (m[2][3] * m[3][0] - m[2][0] * m[3][3]) + m[1][3] * (m[2][0] * m[3][2] - m[2][2] * m[3][0]));
-		res.m[1][1] = invdet * (m[0][0] * (m[2][2] * m[3][3] - m[2][3] * m[3][2]) + m[0][2] * (m[2][3] * m[3][0] - m[2][0] * m[3][3]) + m[0][3] * (m[2][0] * m[3][2] - m[2][2] * m[3][0]));
-		res.m[1][2] = -invdet * (m[0][0] * (m[1][2] * m[3][3] - m[1][3] * m[3][2]) + m[0][2] * (m[1][3] * m[3][0] - m[1][0] * m[3][3]) + m[0][3] * (m[1][0] * m[3][2] - m[1][2] * m[3][0]));
-		res.m[1][3] = invdet * (m[0][0] * (m[1][2] * m[2][3] - m[1][3] * m[2][2]) + m[0][2] * (m[1][3] * m[2][0] - m[1][0] * m[2][3]) + m[0][3] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]));
-		res.m[2][0] = invdet * (m[1][0] * (m[2][1] * m[3][3] - m[2][3] * m[3][1]) + m[1][1] * (m[2][3] * m[3][0] - m[2][0] * m[3][3]) + m[1][3] * (m[2][0] * m[3][1] - m[2][1] * m[3][0]));
-		res.m[2][1] = -invdet * (m[0][0] * (m[2][1] * m[3][3] - m[2][3] * m[3][1]) + m[0][1] * (m[2][3] * m[3][0] - m[2][0] * m[3][3]) + m[0][3] * (m[2][0] * m[3][1] - m[2][1] * m[3][0]));
-		res.m[2][2] = invdet * (m[0][0] * (m[1][1] * m[3][3] - m[1][3] * m[3][1]) + m[0][1] * (m[1][3] * m[3][0] - m[1][0] * m[3][3]) + m[0][3] * (m[1][0] * m[3][1] - m[1][1] * m[3][0]));
-		res.m[2][3] = -invdet * (m[0][0] * (m[1][1] * m[2][3] - m[1][3] * m[2][1]) + m[0][1] * (m[1][3] * m[2][0] - m[1][0] * m[2][3]) + m[0][3] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]));
-		res.m[3][0] = -invdet * (m[1][0] * (m[2][1] * m[3][2] - m[2][2] * m[3][1]) + m[1][1] * (m[2][2] * m[3][0] - m[2][0] * m[3][2]) + m[1][2] * (m[2][0] * m[3][1] - m[2][1] * m[3][0]));
-		res.m[3][1] = invdet * (m[0][0] * (m[2][1] * m[3][2] - m[2][2] * m[3][1]) + m[0][1] * (m[2][2] * m[3][0] - m[2][0] * m[3][2]) + m[0][2] * (m[2][0] * m[3][1] - m[2][1] * m[3][0]));
-		res.m[3][2] = -invdet * (m[0][0] * (m[1][1] * m[3][2] - m[1][2] * m[3][1]) + m[0][1] * (m[1][2] * m[3][0] - m[1][0] * m[3][2]) + m[0][2] * (m[1][0] * m[3][1] - m[1][1] * m[3][0]));
-		res.m[3][3] = invdet * (m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) + m[0][1] * (m[1][2] * m[2][0] - m[1][0] * m[2][2]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]));
-		*this = res;
-
-		return *this;
 	}
 
+	void Animation::Play(real time,  DynaArray<Bone> *bones)
+	{
+		// @TODO: Time calcs
+		real32 time_in_ticks = time * ticks_per_second;
+		real32 animation_time = fmod(time_in_ticks, duration);
+			   
+		working_bones = bones;
+		AnimateBones(animation_time, &bones->at(0), Mat4(1));
+	}
+
+	void Animation::AnimateBones(const real &animation_time, Bone *bone, const Mat4 &parent_transform)
+	{
+		std::string bone_name = bone->name;
+		Mat4 node_transform = bone->node_transform_matrix;
+
+		// @NOTE: Returns -1 if nothing is found
+		int32 channel_index = GetAnimationChannel(bone_name);
+
+		if (channel_index != -1)
+		{
+			Assert(channel_index < channels.size());
+			Assert(channel_index >= 0);
+			
+			Vec3 pos	= channels[channel_index].poskeys[60]; // Time one;
+			Quat q		= channels[channel_index].rotkeys[60]; // Time one;
+			Vec3 scl	= channels[channel_index].sclkeys[60];
+
+			Mat4 scaleM = ScaleCardinal(Mat4(1), scl);
+			Mat4 rotM = QuatToMat4(q);
+			Mat4 tranM = Translate(Mat4(1), pos);
+
+			node_transform = scaleM * rotM * tranM;
+		}
+
+		Mat4 global_transform = node_transform * parent_transform;
+		
+		bone->current_transform = bone->inverse_bind_transform * global_transform;
+		//std::cout << bone_name << std::endl;
+		//std::cout << "parent_transform: ";
+		//Print(parent_transform);
+		//std::cout << "node_transform: ";
+		//Print(node_transform);
+		//std::cout << "Global_transform: ";
+		//Print(global_transform);
+		//std::cout << "bind_transform: ";
+		//Print(bone->inverse_bind_transform);
+		//std::cout << "final_transform: ";
+		//Print(bone->current_transform);
+		//std::cout << std::endl;
 
 
+		for (uint32 i = 0; i < bone->child_indices.size(); i++)
+		{
+			uint32 next_bone_index = bone->child_indices.at(i);
+			Bone *next_bone = &working_bones->at(next_bone_index);
+			AnimateBones(animation_time, next_bone, global_transform);
+		}
+	}
 
-
-
-
-
-
-
-
-
+	int32 Animation::GetAnimationChannel(const std::string &bone_name)
+	{		
+		for (uint32 i = 0; i < channels.size(); i++)
+		{
+			if (channels[i].name == bone_name)
+				return i;
+		}
+		return -1;
+	}
 
 }

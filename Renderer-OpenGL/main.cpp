@@ -361,12 +361,13 @@ int main()
 
 
 	tut::Model tut_model;
-	tut_model.loadModel("res/models/testing_anim.dae");
+	std::string path = "res/models/testing_anim.dae";
+	tut_model.loadModel(path);
 
 
 
 	impmeshes.clear();
-	LoadModelTest(&impmeshes, "res/models/testing_anim.dae");
+	LoadModelTest(&impmeshes, path);
 	
 
 	AnimatedActor test_cube_guy;
@@ -461,6 +462,7 @@ int main()
 	float parr[100] = {};
 	for (int i = 0; i < 100; i++) parr[i] = 0.f;
 	float run_time = 1;
+	bool toggel = false;
 	while (!glfwWindowShouldClose(window))
 	{
 		//************************************
@@ -501,6 +503,7 @@ int main()
 			glfwGetCursorPos(window, &x, &y);					
 			fh += 0.4 * delta_time;
 			cha += 1;
+			toggel = true;
 		}
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
 		{
@@ -508,10 +511,12 @@ int main()
 			
 			cha -= 1;
 			fh -= 0.4 * delta_time;
+			
 		}
-		else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
+		else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
 		{
 			//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			toggel = false;
 		}
 
 		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE))
@@ -572,65 +577,164 @@ int main()
 		//************************************
 		
 		
-		Vec3 pos = emesh->animation.channels[0].poskeys	[23]; // Time one;
-		Quat q = emesh->animation.channels[0].rotkeys	[23]; // Time one;
-		Vec3 scl = emesh->animation.channels[0].sclkeys	[23];
 
-		Mat4 scaleM = ScaleCardinal(Mat4(1), scl);
-		Mat4 rotM = QuatToMat4(q);
-		Mat4 tranM = Translate(Mat4(1), pos);
+		//
 
-		Mat4 node_transform = scaleM * rotM * tranM;
-		
+		//Mat4 bind1 = emesh->animation.bones[0].inverse_bind_pose;
+		//Mat4 bind2 = emesh->animation.bones[1].inverse_bind_pose;
 
-		Mat4 bind = emesh->animation.bones[0].inverse_bind_pose;
-		Mat4 bind2 = emesh->animation.bones[1].inverse_bind_pose;
+		//Mat4 off1 = emesh->animation.bones[0].node_transform;
+		//Mat4 off2 = emesh->animation.bones[1].node_transform;
 
-		
-		Mat4 scbind = emesh->animation.global_inverse_transform;
+		//Mat4 scbind = emesh->animation.global_inverse_transform;
 
-		std::cout << "MINE: " << std::endl;
+		//				
+		//
+		//Mat4 final_bone_transformation_1 = off1;
+		//Mat4 write_transform1 = final_bone_transformation_1 * bind1 * scbind;
+	
+	
+		//
+		//Mat4 final_bone_transformation_2 = node_transform * off2;
+		//Mat4 write_transform2 = final_bone_transformation_2 * bind2 * scbind;
 
-		Mat4 parent = Mat4(1);				
+
+		//std::cout << std::endl;
+		//std::cout << std::endl;
+		//std::cout << "My Math" << std::endl;
+		//std::cout << "parent_transform: ";
+		//Print(off1);
+		//std::cout << "node_transform: ";
+		//Print(off1);
+		//std::cout << "Global_transform: ";
+		//Print(final_bone_transformation_1);
+		//std::cout << "bind_transform: ";
+		//Print(bind1);
+		//std::cout << std::endl;
+
+		//std::cout << "ARM2" << std::endl;
+		//std::cout << "parent_transform: ";
+		//Print(off2);
+		//std::cout << "node_transform: ";
+		//Print(node_transform);
+		//std::cout << "Global_transform: ";
+		//Print(final_bone_transformation_2);
+		//std::cout << "bind_transform: ";
+		//Print(bind2);
+		//std::cout << std::endl;
 
 
-		Mat4 final_bone_transformation_1 = parent;
-		
-		std::cout << "Global_transform: ";
-		Print(final_bone_transformation_1);
-		std::cout << "parent_transform: ";
-		Print(parent);		
+		//std::cout << "Ai Math" << std::endl;
 
-		parent = final_bone_transformation_1;		
-		Mat4 final_bone_transformation_2 = node_transform * parent;
+	
+		//std::cout << "parent_transform: ";
+		//glm::mat4 glmmt = tut_model.aiToGlm(emesh->animation.bones[0].aip);
+		//tut::Print(glmmt);
+		//std::cout << "node_transform: ";
+		//Print(node_transform);
+		//std::cout << "Global_transform: ";
+		//Print(final_bone_transformation_2);
+		//glmmt = tut_model.aiToGlm(emesh->animation.bones[0].aibind);
+		//std::cout << "bind_transform: ";
+		//tut::Print(glmmt);
+		//std::cout << std::endl;
 
-		std::cout << "Global_transform: ";
-		Print(final_bone_transformation_2);
-		std::cout << "parent_transform: ";
-		Print(parent);
+
+		//std::cout << "ARM2" << std::endl;
+		//std::cout << "parent_transform: ";
+		//glmmt = tut_model.aiToGlm(emesh->animation.bones[1].aip);
+		//tut::Print(glmmt);
+		//std::cout << "node_transform: ";
+		//Print(node_transform);
+		//std::cout << "Global_transform: ";
+		//Print(final_bone_transformation_2);
+		//glmmt = tut_model.aiToGlm(emesh->animation.bones[1].aibind);
+		//std::cout << "bind_transform: ";
+		//tut::Print(glmmt);
+		//std::cout << std::endl;
+
 		//PrintPretty(scbind);
 		//node_transform = bind * node_transform;
 		//Mat4 bind2 = node_transform * emesh->animation.bones[1].inverse_bind_pose  *bind ;	
+		
 
 		BindShader(animation_test_shader);
-		//ShaderSetMat4(&animation_test_shader, "gBones[0]", (final_bone_transformation_1 * bind *scbind).arr);
-		//ShaderSetMat4(&animation_test_shader, "gBones[1]", (final_bone_transformation_2 * bind2 *scbind).arr);
-		
-		
+		//ShaderSetMat4(&animation_test_shader, "gBones[0]", (final_bone_transformation_1 * bind * scbind).arr);
+		//ShaderSetMat4(&animation_test_shader, "gBones[1]", (final_bone_transformation_2 * bind2 * scbind).arr);
+	
+		//std::cout << emesh->ac.bones[0].name << std::endl;
+		//Print(emesh->ac.bones[0].node_transform_matrix);
 
-		
+		//std::cout << emesh->ac.bones[1].name << std::endl;
+		//Print(emesh->ac.bones[1].node_transform_matrix);
+
+		//std::cout << emesh->ac.bones[2].name << std::endl;
+		//Print(emesh->ac.bones[2].node_transform_matrix);
+
+		//Vec3 pos = emesh->ac.animations.at(0).channels[0].poskeys[23]; // Time one;
+		//Quat q = emesh->ac.animations.at(0).channels[0].rotkeys[23]; // Time one;
+		//Vec3 scl = emesh->ac.animations.at(0).channels[0].sclkeys[23];
+
+		//Mat4 scaleM = ScaleCardinal(Mat4(1), scl);
+		//Mat4 rotM = QuatToMat4(q);
+		//Mat4 tranM = Translate(Mat4(1), pos);
+
+		//Mat4 node_transform = scaleM * rotM * tranM;
+
+		//Mat4 parent_transform = emesh->ac.bones[0].node_transform_matrix;
+
+		//Mat4 bind1 = emesh->ac.bones[1].inverse_bind_transform;
+		//Mat4 bind2 = emesh->ac.bones[2].inverse_bind_transform;
+		//		
+		//Mat4 node1 = emesh->ac.bones[1].node_transform_matrix;
+		//Mat4 node2 = node_transform;
+
+		//Mat4 global1 = node1 * parent_transform;
+		//Mat4 global2 = node2 * parent_transform;
+
+		//Mat4 final1 = bind1 * global1  * emesh->ac.global_inverse_transform;
+		//Mat4 final2 = bind2 * global2 * emesh->ac.global_inverse_transform;
+		//
+
+		//emesh->ac.Play(0);
 
 
-		//Print(bind2);
-		std::cout << std::endl;
-		std::cout << std::endl;
-		std::cout << std::endl;
+		//std::cout << "CORRECT: " << std::endl;
+		//std::cout << "parent_transform: ";
+		//Print(parent_transform);
+		//std::cout << "node_transform: ";
+		//Print(node1);
+		//std::cout << "Global_transform: ";
+		//Print(global1);
+		//std::cout << "bind_transform: ";
+		//Print(bind1);
+		//std::cout << "final_transform: ";
+		//Print(final1);
+		//Print(emesh->ac.bones.at(0).current_transform);
+		//std::cout << "globalinverse: ";
+		//Print(emesh->ac.global_inverse_transform);
+		//std::cout << std::endl;
+
 		std::vector<aiMatrix4x4> tut_tran;
-		std::cout << "CORRECT: " << std::endl;
-		tut_model.boneTransform(1, tut_tran);
-		ShaderSetMat4(&animation_test_shader, "gBones[0]", ToMatrix4f(&tut_tran[0]).arr);
-		ShaderSetMat4(&animation_test_shader, "gBones[1]", ToMatrix4f(&tut_tran[1]).arr);
+		
+		tut_model.boneTransform(3, tut_tran);
+		if (true)
+		{
+			ShaderSetMat4(&animation_test_shader, "gBones[0]", ToMatrix4f(&tut_tran[0]).arr);
+			ShaderSetMat4(&animation_test_shader, "gBones[1]", ToMatrix4f(&tut_tran[1]).arr);
+		}
+		else
+		{
+			ShaderSetMat4(&animation_test_shader, "gBones[0]", emesh->ac.bones.at(1).current_transform.arr);
+			ShaderSetMat4(&animation_test_shader, "gBones[1]", emesh->ac.bones.at(2).current_transform.arr);
+		}
+		
 
+
+		//Print(write_transform1);
+		//Print(ToMatrix4f(&tut_tran[0]));
+		//Print(write_transform2);
+		//Print(ToMatrix4f(&tut_tran[1]));
 
 		renderer.Render(main_world);
 	

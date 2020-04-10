@@ -26,16 +26,19 @@ namespace cm
 	{
 	public:
 		std::string name = "Empty";
-		Mat4 inverse_bind_pose;
-		Mat4 node_transform;
-		Bone *child;
+		Mat4 current_transform;
+		Mat4 inverse_bind_transform;
+		Mat4 node_transform_matrix;
+		// @NOTE: Assume there is only one parent. -1 is an invaild value
+		int32 parent_index = -1;			
+		// @NOTE: Child bones indices. -1 is an invaild value
+		DynaArray<int32> child_indices;		
 	};
 
 	class AnimationChannel
 	{
 	public:
-		Bone *bone;
-
+		int32 bone_index = -1;
 		std::string name;
 		float postime[250];
 		Vec3 poskeys[250];
@@ -49,117 +52,35 @@ namespace cm
 
 	class Animation
 	{
-	public:
-		float duration;
-		float tick_per_second;
-		Bone bones[3]; // @NOTE: This is mesh, maybe put in animation controller
-		AnimationChannel channels[2];
-		Mat4 global_inverse_transform;
+	public:		
+		float duration = 0;	
+		float ticks_per_second = 0;
+		DynaArray<AnimationChannel> channels;
+		DynaArray<Bone> *working_bones;
+		void Play(real time, DynaArray<Bone> *bones);
+		void AnimateBones(const real &animation_time, Bone *bone, const Mat4 &parent_transform);
+		
+		int32 GetAnimationChannel(const std::string &bone_name);
+		int32 findPosition(float p_animation_time, const aiNodeAnim* p_node_anim);
+		int32 findRotation(float p_animation_time, const aiNodeAnim* p_node_anim);
+		int32 findScaling(float p_animation_time, const aiNodeAnim* p_node_anim);
 	};
 
-	class Matrix4f
+	class AnimationController
 	{
 	public:
-		float m[4][4];
+		real current_time;
 
-		Matrix4f()
-		{
-		}
+		// @NOTE: We reserve the [0]/0th index to be the root bone. This root bone does not actually exist in the mesh
+		// @NOTE: It is simply a place holder to make all other calculations easier
+		DynaArray<Bone> bones;
+		DynaArray<Animation> animations;
+		
+		void Play(const std::string &name);
+		void Play(uint32 animation_index);
 
-		// constructor from Assimp matrix
-		Matrix4f(const aiMatrix4x4& AssimpMatrix)
-		{
-			m[0][0] = AssimpMatrix.a1; m[0][1] = AssimpMatrix.a2; m[0][2] = AssimpMatrix.a3; m[0][3] = AssimpMatrix.a4;
-			m[1][0] = AssimpMatrix.b1; m[1][1] = AssimpMatrix.b2; m[1][2] = AssimpMatrix.b3; m[1][3] = AssimpMatrix.b4;
-			m[2][0] = AssimpMatrix.c1; m[2][1] = AssimpMatrix.c2; m[2][2] = AssimpMatrix.c3; m[2][3] = AssimpMatrix.c4;
-			m[3][0] = AssimpMatrix.d1; m[3][1] = AssimpMatrix.d2; m[3][2] = AssimpMatrix.d3; m[3][3] = AssimpMatrix.d4;
-		}
-
-		Matrix4f(const aiMatrix3x3& AssimpMatrix)
-		{
-			m[0][0] = AssimpMatrix.a1; m[0][1] = AssimpMatrix.a2; m[0][2] = AssimpMatrix.a3; m[0][3] = 0.0f;
-			m[1][0] = AssimpMatrix.b1; m[1][1] = AssimpMatrix.b2; m[1][2] = AssimpMatrix.b3; m[1][3] = 0.0f;
-			m[2][0] = AssimpMatrix.c1; m[2][1] = AssimpMatrix.c2; m[2][2] = AssimpMatrix.c3; m[2][3] = 0.0f;
-			m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
-		}
-
-		Matrix4f(float a00, float a01, float a02, float a03,
-			float a10, float a11, float a12, float a13,
-			float a20, float a21, float a22, float a23,
-			float a30, float a31, float a32, float a33)
-		{
-			m[0][0] = a00; m[0][1] = a01; m[0][2] = a02; m[0][3] = a03;
-			m[1][0] = a10; m[1][1] = a11; m[1][2] = a12; m[1][3] = a13;
-			m[2][0] = a20; m[2][1] = a21; m[2][2] = a22; m[2][3] = a23;
-			m[3][0] = a30; m[3][1] = a31; m[3][2] = a32; m[3][3] = a33;
-		}
-
-
-		Matrix4f Transpose() const
-		{
-			Matrix4f n;
-
-			for (unsigned int i = 0; i < 4; i++) {
-				for (unsigned int j = 0; j < 4; j++) {
-					n.m[i][j] = m[j][i];
-				}
-			}
-
-			return n;
-		}
-
-
-		inline void InitIdentity()
-		{
-			m[0][0] = 1.0f; m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = 0.0f;
-			m[1][0] = 0.0f; m[1][1] = 1.0f; m[1][2] = 0.0f; m[1][3] = 0.0f;
-			m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = 1.0f; m[2][3] = 0.0f;
-			m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
-		}
-
-		inline Matrix4f operator*(const Matrix4f& Right) const
-		{
-			Matrix4f Ret;
-
-			for (unsigned int i = 0; i < 4; i++) {
-				for (unsigned int j = 0; j < 4; j++) {
-					Ret.m[i][j] = m[i][0] * Right.m[0][j] +
-						m[i][1] * Right.m[1][j] +
-						m[i][2] * Right.m[2][j] +
-						m[i][3] * Right.m[3][j];
-				}
-			}
-
-			return Ret;
-		}
-
-		operator const float*() const
-		{
-			return &(m[0][0]);
-		}
-
-		void Print() const
-		{
-			Matrix4f m = *this;
-			m = m.Transpose();
-			const GLfloat *f =  (const GLfloat*)m;
-			std::string space = "            ";
-			space = " ";
-			for (int i = 0; i < 16; i++)
-				std::cout << f[i] << space;
-			std::cout << std::endl;
-		}
-
-		float Determinant() const;
-
-		Matrix4f& Inverse();
-
-		void InitScaleTransform(float ScaleX, float ScaleY, float ScaleZ);
-		void InitRotateTransform(float RotateX, float RotateY, float RotateZ);
-		void InitTranslationTransform(float x, float y, float z);
+		Mat4 global_inverse_transform;
 	};
-
-
 
 
 	struct Edge
@@ -224,12 +145,7 @@ namespace cm
 		uint32 next_space = 0;
 	};
 
-	struct BoneInfo
-	{
-		std::string name;
-		Matrix4f bone_space_to_mesh_space;
-		Matrix4f ft;
-	};
+
 
 	class EditableMesh
 	{
@@ -241,7 +157,7 @@ namespace cm
 		std::string name;
 		
 		Animation animation;
-
+		AnimationController ac;
 		bool has_positions = false;
 		bool has_normals = false;
 		bool has_texture_coords = false;

@@ -72,7 +72,7 @@ namespace cm
 
 			// result: a specific transformation will affect a particular vertex with a certain force.
 
-			scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+			scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);
 
 			if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 			{
@@ -309,6 +309,7 @@ namespace cm
 			float delta_time = (float)(p_node_anim->mPositionKeys[next_position_index].mTime - p_node_anim->mPositionKeys[position_index].mTime);
 			// ������ = (���� ������� ������ �� ������ �������� ��������� �����) / �� ���� ����� �������
 			float factor = (p_animation_time - (float)p_node_anim->mPositionKeys[position_index].mTime) / delta_time;
+			factor = std::clamp(factor, 0.f, 1.f);
 			assert(factor >= 0.0f && factor <= 1.0f);
 			aiVector3D start = p_node_anim->mPositionKeys[position_index].mValue;
 			aiVector3D end = p_node_anim->mPositionKeys[next_position_index].mValue;
@@ -338,7 +339,7 @@ namespace cm
 			//cout << "animation_time: " << p_animation_time << endl;
 			//cout << "animation_time - mRotationKeys[rotation_index].mTime: " << (p_animation_time - (float)p_node_anim->mRotationKeys[rotation_index].mTime) << endl;
 			//cout << "factor: " << factor << endl << endl << endl;
-
+			factor = std::clamp(factor, 0.f, 1.f);
 			assert(factor >= 0.0f && factor <= 1.0f);
 			aiQuaternion start_quat = p_node_anim->mRotationKeys[rotation_index].mValue;
 			aiQuaternion end_quat = p_node_anim->mRotationKeys[next_rotation_index].mValue;
@@ -360,6 +361,7 @@ namespace cm
 			float delta_time = (float)(p_node_anim->mScalingKeys[next_scaling_index].mTime - p_node_anim->mScalingKeys[scaling_index].mTime);
 			// ������ = (���� ������� ������ �� ������ �������� ��������� �����) / �� ���� ����� �������
 			float  factor = (p_animation_time - (float)p_node_anim->mScalingKeys[scaling_index].mTime) / delta_time;
+			factor = std::clamp(factor, 0.f, 1.f);
 			assert(factor >= 0.0f && factor <= 1.0f);
 			aiVector3D start = p_node_anim->mScalingKeys[scaling_index].mValue;
 			aiVector3D end = p_node_anim->mScalingKeys[next_scaling_index].mValue;
@@ -430,6 +432,12 @@ namespace cm
 
 			}
 			
+			//cout << "parent_transform: ";
+			//Print(aiToGlm(parent_transform));
+
+			//cout << "local_transform: ";
+			//Print(aiToGlm(node_transform));
+
 			aiMatrix4x4 global_transform = parent_transform * node_transform;
 
 			
@@ -438,11 +446,21 @@ namespace cm
 			{
 				uint bone_index = m_bone_mapping[node_name];
 				m_bone_matrices[bone_index].final_world_transform = m_global_inverse_transform * global_transform * m_bone_matrices[bone_index].offset_matrix;
-				std::cout << node_name << std::endl;
-				cout << "Global_transform: ";
-				Print(aiToGlm(global_transform));
-				cout << "parent_transform: ";
-				Print(aiToGlm(parent_transform));
+				//std::cout << node_name << std::endl;
+				//cout << "parent_transform: ";
+				//Print(aiToGlm(parent_transform));
+				//cout << "node_transform: ";
+				//Print(aiToGlm(node_transform));
+				//cout << "Global_transform: ";
+				//Print(aiToGlm(global_transform));
+				//cout << "bind_transform: ";
+				//Print(aiToGlm(m_bone_matrices[bone_index].offset_matrix));
+				//cout << "final_transform: ";
+				//Print(aiToGlm(m_bone_matrices[bone_index].final_world_transform));
+				//std::cout << "globalinverse: ";
+				//Print(aiToGlm(m_global_inverse_transform));
+
+				//std::cout << std::endl;
 			}
 
 			for (uint i = 0; i < p_node->mNumChildren; i++)
