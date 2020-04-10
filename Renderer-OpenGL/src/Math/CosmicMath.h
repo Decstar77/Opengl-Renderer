@@ -87,6 +87,11 @@ namespace cm
 		return std::ceil(val);
 	}
 
+	inline int32 Sign(const real &val)
+	{
+		return (0 < val) - (val < 0);
+	}
+
 	inline float FloatChop(float val, float decimal_count)
 	{
 		float d_amout = powf(10, decimal_count);
@@ -196,14 +201,16 @@ namespace cm
 	//=========Orientation
 
 	Quat EulerToQuat(const Vec3 &euler_angle);
-		
-	Mat4 QuatToMat4(const Quat &q);
+	
+	Quat Slerp(const Quat &a, const Quat &b, const real32 &t);
 
 	Quat Conjugate(const Quat &a);
 
-	float Mag(const Quat &a);
-
 	Quat Normalize(const Quat &a);
+
+	Mat4 QuatToMat4(const Quat &q);
+
+	float Mag(const Quat &a);
 
 	std::string ToString(const Quat &a);
 

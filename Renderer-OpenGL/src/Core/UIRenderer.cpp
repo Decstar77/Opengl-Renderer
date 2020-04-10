@@ -40,7 +40,7 @@ namespace cm
 		}
 		else
 		{
-			LOG("UIRENNDERER::FREE -> Tried to free something that was not created");
+			LOGC("UIRENNDERER::FREE -> Tried to free something that was not created");
 		}
 	}
 

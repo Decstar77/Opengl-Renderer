@@ -490,14 +490,31 @@ namespace cm
 		Vec3 s = Vec3(sin(DegToRad(euler_angle.x) / 2), sin(DegToRad(euler_angle.y) / 2), sin(DegToRad(euler_angle.z) / 2));
 
 		Quat q;
-
 		q.x = s.x * c.y * c.z - c.x * s.y * s.z;
 		q.y = c.x * s.y * c.z + s.x * c.y * s.z;
 		q.z = c.x * c.y * s.z - s.x * s.y * c.z;
 		q.w = c.x * c.y * c.z + s.x * s.y * s.z;
+
 		return q;
 	}
+	
+	Quat Slerp(const Quat &a, const Quat &b, const real32 &t)
+	{
+		Quat an = Normalize(a);
+		Quat bn = Normalize(b);
 
+		real32 d = an.x * bn.x + an.y * bn.y + an.z * bn.z + an.w * bn.w;
+		real32 tinv = 1.0f - t;
+		int32 ds = Sign(d);
+
+		Quat result;		
+		result.x = an.x * tinv + ds * t * bn.x;
+		result.y = an.y * tinv + ds * t * bn.y;
+		result.z = an.z * tinv + ds * t * bn.z;
+		result.w = an.w * tinv + ds * t * bn.w;
+		
+		return Normalize(result);
+	}
 
 	Mat4 QuatToMat4(const Quat &q)
 	{

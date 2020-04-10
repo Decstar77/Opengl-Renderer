@@ -43,7 +43,7 @@ namespace cm
 		}
 		else
 		{
-			LOG("WARNING::FREEING_VERTEX_BUFFER:: -> buffer was already freed");
+			LOGC("WARNING::FREEING_VERTEX_BUFFER:: -> buffer was already freed");
 		}
 	}
 
@@ -85,7 +85,7 @@ namespace cm
 		}
 		else
 		{
-			LOG("WARNING::FREEING_INDEX_BUFFER:: -> buffer was already freed");
+			LOGC("WARNING::FREEING_INDEX_BUFFER:: -> buffer was already freed");
 		}
 	}
 
@@ -564,7 +564,7 @@ namespace cm
 		if (loc == -1)
 		{
 			std::string ss = "ERROR::SHADER::TEXTURE: " + shader.name + " " + uniform_name;
-			LOG(ss.c_str());
+			LOGC(ss.c_str());
 		}
 		else
 		{			
@@ -678,7 +678,7 @@ namespace cm
 
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		{
-			LOG("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
+			LOGC("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
 			res = false;
 		}
 

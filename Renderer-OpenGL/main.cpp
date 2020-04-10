@@ -46,6 +46,47 @@ public:
 	virtual const GLMesh &GetMeshForRender() override;
 
 };
+// @TODO: Overload operators
+class Array
+{
+public:
+	Array() {}
+	Array(const uint32 &size_bytes) { Resize(size_bytes); }
+	Array(const Array &arr) = delete;
+
+	uint32 size;
+	void *data;
+	
+
+	void Resize(uint32 size_bytes) 
+	{
+		data = malloc(size_bytes);
+		size = size_bytes;	
+	}
+	
+	void Free()
+	{
+		free(data);
+		data = nullptr;
+		size = 0;
+	}
+
+	template<typename T>
+	T Get(uint32 index) 
+	{
+		T *t = (T*)data;
+		return t[index];
+	}
+
+	template<typename T>
+	void Set(uint32 index, const T &value)
+	{
+		T *t = (T*)data;
+		t[index] = value;
+	}
+
+};
+
 
 void AnimatedActor::SetTextures(Shader *shader)
 {
@@ -315,6 +356,9 @@ int main()
 	impmeshes.clear();
 
 
+	Array cmarr;
+	cmarr.Resize(sizeof(Bone) * 50);
+	Mat4 cmcurr = cmarr.Get<Mat4>(0);
 	//DynaArray<uint8> image_data;
 	//Texture gun_diffuse_map;
 	//LoadTexture(&image_data, &gun_diffuse_map.config, "res/textures/FPS_CGC_LowPoly_Gun_BaseColor.png");
@@ -374,22 +418,22 @@ int main()
 	EditableMesh emesh;
 	LoadModelTest(&emesh, path);
 
-	LoadModel(&impmeshes, path);
+	//LoadModel(&impmeshes, path);
 
 
 	test_cube_guy.mesh = emesh.CreateAnimMesh();
 	//test_cube_guy.mesh = anim_test_mesh;
 	test_cube_guy.transform.scale = Vec3(.5);
-	test_cube_guy.transform.rotation = EulerToQuat(Vec3(90, 00, 0));
+	test_cube_guy.transform.rotation = EulerToQuat(Vec3(0, 0, 0));
 	test_cube_guy.transform.position = Vec3(0, 0, 0);
 
 	uint32 cha = 0;
 
 	
 	
+	LOG("This is a log" << "And this");
 
-	
-	
+
 	//impmeshes.clear();
 	//image_data.clear();
 
@@ -719,18 +763,27 @@ int main()
 
 		std::vector<aiMatrix4x4> tut_tran;
 		
-		tut_model.boneTransform(3, tut_tran);
-		if (true)
+		tut_model.boneTransform(0.2, tut_tran);
+		emesh.ac.current_time = fh;
+		emesh.ac.Play(0);
+		if (false)
 		{
-			ShaderSetMat4(&animation_test_shader, "gBones[0]", ToMatrix4f(&tut_tran[0]).arr);
-			ShaderSetMat4(&animation_test_shader, "gBones[1]", ToMatrix4f(&tut_tran[1]).arr);
+			for (int32 i = 0; i < tut_tran.size(); i++)
+			{
+				std::stringstream ss;
+				ss << "gBones[" << (i) << "]";
+				ShaderSetMat4(&animation_test_shader, ss.str(), ToMatrix4f(&tut_tran[i]).arr);
+			}
 		}
 		else
 		{
-			ShaderSetMat4(&animation_test_shader, "gBones[0]", Mat4(1).arr);
-			ShaderSetMat4(&animation_test_shader, "gBones[1]", Mat4(1).arr);
-			//ShaderSetMat4(&animation_test_shader, "gBones[0]", emesh.ac.bones.at(1).current_transform.arr);
-			//ShaderSetMat4(&animation_test_shader, "gBones[1]", emesh.ac.bones.at(2).current_transform.arr);
+			for (int32 i = 1; i < emesh.ac.bones.size(); i++)
+			{
+				std::stringstream ss;
+				ss << "gBones[" << (i - 1) << "]";
+				ShaderSetMat4(&animation_test_shader, ss.str(), emesh.ac.bones.at(i).current_transform.arr);
+			}
+			
 		}
 		
 		
@@ -811,8 +864,8 @@ int main()
 		//std::cout << "Sc: " << time * 0.001f * 0.001f << std::endl;		
 	}
 
-	LOG("CLEAING GLFW");	
+	LOGC("CLEAING GLFW");	
 	glfwTerminate();
-	LOG("FINISHING");
+	LOGC("FINISHING");
 	return 0;
 }

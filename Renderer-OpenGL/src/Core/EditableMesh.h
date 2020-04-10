@@ -25,13 +25,13 @@ namespace cm
 	struct Bone
 	{
 	public:
-		std::string name = "Empty";
 		Mat4 current_transform;
 		Mat4 inverse_bind_transform;
 		Mat4 node_transform_matrix;
 		// @NOTE: Assume there is only one parent. -1 is an invaild value
 		int32 parent_index = -1;			
 		// @NOTE: Child bones indices. -1 is an invaild value
+		std::string name = "Empty";
 		DynaArray<int32> child_indices;		
 	};
 
@@ -40,13 +40,13 @@ namespace cm
 	public:
 		int32 bone_index = -1;
 		std::string name;
-		float postime[250];
+		real32 postime[250];
 		Vec3 poskeys[250];
 
-		float rottime[250];
+		real32 rottime[250];
 		Quat rotkeys[250];
 
-		float scltime[250];
+		real32 scltime[250];
 		Vec3 sclkeys[250];
 	};
 
@@ -61,9 +61,14 @@ namespace cm
 		void AnimateBones(const real &animation_time, Bone *bone, const Mat4 &parent_transform);
 		
 		int32 GetAnimationChannel(const std::string &bone_name);
-		int32 findPosition(float p_animation_time, const aiNodeAnim* p_node_anim);
-		int32 findRotation(float p_animation_time, const aiNodeAnim* p_node_anim);
-		int32 findScaling(float p_animation_time, const aiNodeAnim* p_node_anim);
+
+		Vec3 CalculateInterpolatedScaling(const real32 &animation_time, const int32 &keyset_index);
+		Vec3 CalculateInterpolatedPosition(const real32 &animation_time, const int32 &keyset_index);
+		Quat CalculateInterpolatedRotation(const real32 &animation_time, const int32 &keyset_index);
+
+		int32 FindPosition(const real32 &animation_time, const int32 &keyset_index);
+		int32 FindRotation(const real32 &animation_time, const int32 &keyset_index);
+		int32 FindScaling(const real32 &animation_time, const int32 &keyset_index);
 	};
 
 	class AnimationController

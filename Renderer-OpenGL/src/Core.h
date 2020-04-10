@@ -12,13 +12,24 @@
 #else
 #define Assert()
 #endif
+#ifdef _DEBUG
 
+#define LOG(...)	printf(__FUNCTION__); \
+					printf(" Line: %d ", __LINE__); \
+					std::cout << __VA_ARGS__ << '\n';
 
+#define LOGC(str)	printf(__FUNCTION__); \
+					printf(" Line: %d ", __LINE__); \
+					printf(str); printf(" \n");
 
-
-#define LOG(str, ...) printf(__FUNCTION__); \
+#define LOGC(str, ...) printf(__FUNCTION__); \
 					  printf(" Line: %d ", __LINE__); \
 					  printf(str, __VA_ARGS__); printf(" \n");
+#else
+	#define LOG(...)
+	#define LOGC(str)
+	#define LOGC(str, ...)
+#endif
 
 #define PNT_VBO_LAYOUT BufferLayout(DynaArray<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2 }))
 #define PNTTB_VBO_LAYOUT BufferLayout(DynaArray<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float3, ShaderDataType::Float3 }))
@@ -37,7 +48,6 @@
 #define MOUSE_KEY_AMOUNT 32
 #define KEY_CODE_AMOUNT 1024
 
-
 typedef uint8_t		uint8;
 typedef uint16_t	uint16;
 typedef uint32_t	uint32;
@@ -54,6 +64,8 @@ typedef double real64;
 //Utils!!
 namespace cm
 {	
+
+
 	template<typename T>
 	class DynaArray : public std::vector<T> 
 	{
@@ -83,4 +95,6 @@ namespace cm
 			std::vector<T>::insert(std::vector<T>::end(), &ptr[0], &ptr[size_bytes / sizeof(T)]);
 		}
 	};
+
+
 }

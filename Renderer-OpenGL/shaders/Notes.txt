@@ -13,6 +13,9 @@ RECAP:
 	projection matrix.
 	projection divide.
 	view matrix.
+	slerp
+	quats
+	transforms
 
 DAY:
 	Write pbr notext shader

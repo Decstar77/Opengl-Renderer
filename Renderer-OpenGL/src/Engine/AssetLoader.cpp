@@ -56,8 +56,20 @@ namespace cm
 		}		
 	}
 
+	Mat4 ToMatrix4f(const aiMatrix4x4 *ai_mat)
+	{
+
+		uint32 size = sizeof(Mat4);
 
 
+		Mat4 a;
+		a.row0 = Vec4(ai_mat->a1, ai_mat->a2, ai_mat->a3, ai_mat->a4);
+		a.row1 = Vec4(ai_mat->b1, ai_mat->b2, ai_mat->b3, ai_mat->b4);
+		a.row2 = Vec4(ai_mat->c1, ai_mat->c2, ai_mat->c3, ai_mat->c4);
+		a.row3 = Vec4(ai_mat->d1, ai_mat->d2, ai_mat->d3, ai_mat->d4);
+		a = Transpose(a);
+		return a;
+	}
 
 	void processMesh(aiMesh *mesh, EditableMesh *edit_mesh, const aiScene *scene)
 	{
@@ -238,10 +250,10 @@ namespace cm
 			// Vertex Colours
 			if (colours)
 			{
-				Assert(0); // @TODO: Check before use
-				vertex.colour.x = mesh->mColors[0]->r;
-				vertex.colour.y = mesh->mColors[0]->g;
-				vertex.colour.z = mesh->mColors[0]->b;
+				//Assert(0); // @TODO: Check before use
+				//vertex.colour.x = mesh->mColors[0]->r;
+				//vertex.colour.y = mesh->mColors[0]->g;
+				//vertex.colour.z = mesh->mColors[0]->b;
 			}
 
 			emesh->vertices.push_back(vertex);
@@ -274,12 +286,24 @@ namespace cm
 				{
 					aiVertexWeight vertex_data = b->mWeights[j];
 					uint32 vertex_index = vertex_data.mVertexId + mesh_indices_offset;
-					float vertex_weight = vertex_data.mWeight;
+					real32 vertex_weight = vertex_data.mWeight;
 					uint32 next = emesh->vertices.at(vertex_index).next;
-					emesh->vertices.at(vertex_index).bone_index[next] = bone_index;
-					emesh->vertices.at(vertex_index).bone_weights[next] = vertex_weight;
-					emesh->vertices.at(vertex_index).next++;
-					Assert(emesh->vertices.at(vertex_index).next < 4);
+					// @TODO: Import options
+					real32 vertex_weight_cull = 0.1f;
+					if (vertex_weight >= vertex_weight_cull)
+					{
+						if (emesh->vertices.at(vertex_index).next < 4)
+						{
+							emesh->vertices.at(vertex_index).bone_index[next] = bone_index;
+							emesh->vertices.at(vertex_index).bone_weights[next] = vertex_weight;
+							emesh->vertices.at(vertex_index).next++;
+						}
+					}
+					else
+					{
+						LOG("Culled: " << vertex_index << " at weight = " << vertex_weight);
+					}
+					//Assert(emesh->vertices.at(vertex_index).next < 4);
 				}
 			}
 		}
@@ -363,8 +387,13 @@ namespace cm
 		}
 		for (uint32 i = 0; i < node->mNumChildren; i++)
 		{
-			return FindRootNodeOfBones(node->mChildren[i], ac);
+			const aiNode *child = FindRootNodeOfBones(node->mChildren[i], ac);
+			if (child != nullptr)
+			{
+				return child;
+			}				
 		}
+		return nullptr;
 	}
 
 	aiMatrix4x4 CalcRootNodeTransformMatrix(const aiNode *node)
@@ -429,43 +458,6 @@ namespace cm
 		}
 	}
 
-
-	void ProcessBones(const aiScene *scene, AnimationController *ac)
-	{
-		// @NOTE: Order is important
-		// @NOTE: Create a dummy root node. This bone doesn't actually exist in the mesh
-		Bone root;
-		ac->bones.push_back(root);			   
-		
-		// @NOTE: Store all the bones in the scene
-		for (uint32 i = 0; i < scene->mNumMeshes; i++)
-		{
-			aiMesh* mesh = scene->mMeshes[i];
-			StoreAllBones(mesh, ac);
-		}
-
-		// @NOTE: Find the root node of the bones found
-		const aiNode *root_node = FindRootNodeOfBones(scene->mRootNode, ac);
-		
-		// @NOTE: Calculate the root node transform of the bones
-		aiMatrix4x4 root_node_transform_matrix = CalcRootNodeTransformMatrix(root_node);
-		
-		// @NOTE: Store the info
-		ac->bones[0].name = root_node->mName.C_Str();	
-		ac->bones[0].name += "---ROOT_BONE---";
-		ac->bones[0].node_transform_matrix = ToMatrix4f(&root_node_transform_matrix) ;
-		ac->bones[0].inverse_bind_transform = Mat4(0);
-
-		// @NOTE: Store all the bone's node's node transformation matrix in the bones
-		StoreNodeTransformMatrices(root_node, ac);
-
-		// @NOTE: Create the bone tree, 0 references the root node
-		SortBoneParents(root_node, 0, ac);
-
-		// @NOTE: This can only happen if the parents are set. See function for deets
-		SortBoneChildren(ac);
-	}
-
 	void ProcessAnimationChannels(aiAnimation *anim, Animation *animation)
 	{
 		//Assert(anim->mNumChannels == 1);
@@ -501,52 +493,76 @@ namespace cm
 		}
 	}
 
-	void LinkAnimation(const aiNode* p_node, const aiMatrix4x4 parent_transform)
+	void ProcessBones(const aiScene *scene, AnimationController *ac)
 	{
-		std::string node_name(p_node->mName.data);
-		aiMatrix4x4 node_transform = p_node->mTransformation;
+		// @NOTE: Order is important
+		// @NOTE: Create a dummy root node. This bone doesn't actually exist in the mesh
+		Bone root;
+		ac->bones.push_back(root);
 
+		// @NOTE: Store all the bones in the scene
+		for (uint32 i = 0; i < scene->mNumMeshes; i++)
+		{
+			aiMesh* mesh = scene->mMeshes[i];
+			StoreAllBones(mesh, ac);
+		}
 
+		// @NOTE: Find the root node of the bones found
+		const aiNode *root_node = FindRootNodeOfBones(scene->mRootNode, ac);		
 
+		// @NOTE: Calculate the root node transform of the bones
+		aiMatrix4x4 root_node_transform_matrix = CalcRootNodeTransformMatrix(root_node);
+
+		// @NOTE: Store the info
+		ac->bones[0].name = root_node->mName.C_Str();
+		ac->bones[0].name += "---ROOT_BONE---";
+		ac->bones[0].node_transform_matrix = ToMatrix4f(&root_node_transform_matrix);
+		ac->bones[0].inverse_bind_transform = Mat4(0);
+
+		// @NOTE: Store all the bone's node's node transformation matrix in the bones
+		StoreNodeTransformMatrices(root_node, ac);
+
+		// @NOTE: Create the bone tree, 0 references the root node
+		SortBoneParents(root_node, 0, ac);
+
+		// @NOTE: This can only happen if the parents are set. See function for deets
+		SortBoneChildren(ac);
 	}
 
 	void ProcessAnimations(const aiScene *scene, EditableMesh *emesh)
 	{
-		// @NOTE: Loop throught the all the animations, Processing bones should be independt on this.
+		// @NTODO: Loop throught the all the animations, Processing bones should be independt on this.
 		Assert(scene->mNumAnimations <= 1);
 		if (!scene->HasAnimations())
 			return;
 
+		// @NOTE: Get current animation
 		aiAnimation *anim = scene->mAnimations[0];
+
+		// @NOTE: Create new animation
 		Animation animation;
 		animation.duration = anim->mDuration;
 		animation.ticks_per_second = anim->mTicksPerSecond;
 		ProcessAnimationChannels(anim, &animation);
 		
+		// @NOTE: Get scene transform
 		aiMatrix4x4 mat = scene->mRootNode->mTransformation;
 		mat.Inverse();
-	
+
+		// @NOTE Update mesh
 		emesh->ac.global_inverse_transform = ToMatrix4f(&mat);
 		emesh->ac.animations.push_back(animation);
 
+		// @NOTE: Construct bone tree
 		ProcessBones(scene, &emesh->ac);			   		 
 	}
 
-
-	Mat4 ToMatrix4f(const aiMatrix4x4 *ai_mat)
+	void ProcessError(const std::string &err)
 	{
-		
-		uint32 size = sizeof(Mat4);
-
-		
-		Mat4 a;
-		a.row0 = Vec4(ai_mat->a1, ai_mat->a2, ai_mat->a3, ai_mat->a4);
-		a.row1 = Vec4(ai_mat->b1, ai_mat->b2, ai_mat->b3, ai_mat->b4);
-		a.row2 = Vec4(ai_mat->c1, ai_mat->c2, ai_mat->c3, ai_mat->c4);
-		a.row3 = Vec4(ai_mat->d1, ai_mat->d2, ai_mat->d3, ai_mat->d4);
-		a = Transpose(a);
-		return a;
+		// @TODO: Log file ?
+		LOG("ERROR:ASSIMP -> " << err);
 	}
+
 
 
 
@@ -555,25 +571,22 @@ namespace cm
 	bool LoadModelTest(EditableMesh *emesh, const std::string &path)
 	{
 		Assimp::Importer import;
+	
 		const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);
-		aiMatrix4x4 mat = scene->mRootNode->mTransformation;
-		mat.Inverse();
-		
-		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+
+		bool result = scene || !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || scene->mRootNode;
+		if (result)
 		{
-			std::cout << "ERROR::ASSIMP:: " << import.GetErrorString() << std::endl;
-			return false;
+			ProcessAnimations(scene, emesh);
+			ProcessNode(scene->mRootNode, emesh, scene);			
+		}
+		else
+		{
+			ProcessError(import.GetErrorString());
 		}
 
-		ProcessAnimations(scene, emesh);
-		ProcessNode(scene->mRootNode, emesh, scene);
-		
-	
-
-
-
-		// @TODO: free s
-		return true;
+		import.FreeScene();
+		return result;
 	}
 
 	bool LoadModel(DynaArray<EditableMesh> *meshes, const std::string &path)

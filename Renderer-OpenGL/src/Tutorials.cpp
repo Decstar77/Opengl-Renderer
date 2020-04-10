@@ -309,6 +309,7 @@ namespace cm
 			float delta_time = (float)(p_node_anim->mPositionKeys[next_position_index].mTime - p_node_anim->mPositionKeys[position_index].mTime);
 			// ������ = (���� ������� ������ �� ������ �������� ��������� �����) / �� ���� ����� �������
 			float factor = (p_animation_time - (float)p_node_anim->mPositionKeys[position_index].mTime) / delta_time;
+			//LOG("Legend factor time: " << delta_time);
 			factor = std::clamp(factor, 0.f, 1.f);
 			assert(factor >= 0.0f && factor <= 1.0f);
 			aiVector3D start = p_node_anim->mPositionKeys[position_index].mValue;
@@ -477,7 +478,7 @@ namespace cm
 			double time_in_ticks = time_in_sec * ticks_per_second;
 			float animation_time = fmod(time_in_ticks, scene->mAnimations[0]->mDuration); //������� �� ����� (������� �� ������)
 			// animation_time - ���� ������� ������ � ���� ������ �� ������ �������� (�� ������� �������� ����� � �������� )
-
+			
 			readNodeHierarchy(time_in_sec, scene->mRootNode, identity_matrix);
 
 			transforms.resize(m_num_bones);
