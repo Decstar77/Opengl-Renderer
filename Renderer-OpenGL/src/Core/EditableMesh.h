@@ -5,7 +5,7 @@
 
 namespace cm
 {
-
+	#define MAX_VERTEX_BONE_COUNT 4
 	struct Vertex
 	{
 		Vec3 position = Vec3(0);
@@ -14,9 +14,9 @@ namespace cm
 		Vec3 bitanget = Vec3(0);
 		Vec3 colour = Vec3(0);
 		Vec3 texture_coord = Vec3(0);
-		uint32 next = 0;
-		uint32 bone_index[4] = { 0, 0, 0, 0 };
-		float bone_weights[4] = { 0, 0, 0, 0 };
+		uint32 next = 0;		
+		uint32 bone_index[MAX_VERTEX_BONE_COUNT] = { 0, 0, 0, 0 };
+		float bone_weights[MAX_VERTEX_BONE_COUNT] = { 0, 0, 0, 0 };
 	};
 
 	struct Edge

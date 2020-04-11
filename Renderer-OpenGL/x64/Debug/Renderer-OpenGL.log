@@ -1,5 +1,19 @@
 ﻿cl : Command line warning D9002: ignoring unknown option '/arch:SSE2'
-  Animation.cpp
+  AssetLoader.cpp
 f:\renderer-opengl\renderer-opengl\src\core.h(27): warning C4005: 'LOGC': macro redefinition
   f:\renderer-opengl\renderer-opengl\src\core.h(23): note: see previous definition of 'LOGC'
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(139): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(142): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(227): warning C4267: 'initializing': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(283): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(508): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(527): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(530): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(535): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(538): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(543): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(546): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(601): warning C4244: '=': conversion from 'double' to 'real32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(602): warning C4244: '=': conversion from 'double' to 'real32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(694): warning C4267: 'initializing': conversion from 'size_t' to 'uint32', possible loss of data
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

@@ -42,6 +42,7 @@
 #define BYTES_TO_MEGABYTES 0.000001f
 #define BIT(x) (1 << x)
 #define REAL_MAX FLT_MAX
+#define	REAK32_MAX FLT_MAX
 #define FLOATING_POINT_ERROR_PRESCION 0.0001f
 
 

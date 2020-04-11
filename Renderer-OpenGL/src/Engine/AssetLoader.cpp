@@ -192,6 +192,25 @@ namespace cm
 		}
 	}
 
+	int32 FindMinVertexWeight(Vertex vertex)
+	{
+		real32 min_weight = REAL_MAX;
+		int32 min_index = -1;
+
+		for (uint32 i = 0; i < MAX_VERTEX_BONE_COUNT; i++)
+		{
+			real32 current_weight = vertex.bone_weights[i];
+
+			if (current_weight < min_weight)
+			{
+				min_index = i;
+				min_weight = current_weight;
+			}
+		}
+
+		return min_index;
+	}
+
 	void ProcessMeshCombine(aiMesh *mesh, EditableMesh *emesh, const aiScene *scene)
 	{
 		// @NOTE: Get the meta data from the current mesh.
@@ -287,8 +306,32 @@ namespace cm
 					aiVertexWeight vertex_data = b->mWeights[j];
 					uint32 vertex_index = vertex_data.mVertexId + mesh_indices_offset;
 					real32 vertex_weight = vertex_data.mWeight;
-					uint32 next = emesh->vertices.at(vertex_index).next;
+					
 					// @TODO: Import options
+					real32 vertex_weight_cull = 0.01f;				
+#if 1
+					if (vertex_weight >= vertex_weight_cull)
+					{						
+						// @NOTE: Finds the min vertex weight and store in index						
+						//		: If current weight is greater than the lowest weight 
+						//		: it is added else ignored
+						
+						int32 index = FindMinVertexWeight(emesh->vertices.at(vertex_index));
+						real32 min_vertex_weight = emesh->vertices.at(vertex_index).bone_weights[index];
+						
+						if (vertex_weight > min_vertex_weight)
+						{
+							emesh->vertices.at(vertex_index).bone_index[index] = bone_index;
+							emesh->vertices.at(vertex_index).bone_weights[index] = vertex_weight;
+							if (min_vertex_weight != 0)
+							{
+								LOG("Replaced weight: " << min_vertex_weight << " With: " << vertex_weight << " Delta " << vertex_weight - min_vertex_weight);
+							}
+							
+						}
+					}
+#else
+					uint32 next = emesh->vertices.at(vertex_index).next;
 					real32 vertex_weight_cull = 0.1f;
 					if (vertex_weight >= vertex_weight_cull)
 					{
@@ -303,6 +346,8 @@ namespace cm
 					{
 						LOG("Culled: " << vertex_index << " at weight = " << vertex_weight);
 					}
+
+#endif
 					//Assert(emesh->vertices.at(vertex_index).next < 4);
 				}
 			}
@@ -446,7 +491,7 @@ namespace cm
 	void SortBoneChildren(AnimationController *ac)
 	{
 		// @NOTE: This assumes the bone array's parents are correctly set and sorted
-		// @NOTE: Start at one as we don't care about root
+		//		: Start at one as we don't care about root
 		for (uint32 i = 1; i < ac->bones.size(); i++)
 		{
 			int32 current_bone_parent = ac->bones.at(i).parent_index;
@@ -460,7 +505,6 @@ namespace cm
 
 	void ProcessAnimationChannels(aiAnimation *anim, Animation *animation)
 	{
-		//Assert(anim->mNumChannels == 1);
 		for (int i = 0; i < anim->mNumChannels; i++)
 		{
 			aiNodeAnim *ai = anim->mChannels[i];
@@ -509,7 +553,7 @@ namespace cm
 	void ProcessBones(const aiScene *scene, AnimationController *ac)
 	{
 		// @NOTE: Order is important
-		// @NOTE: Create a dummy root node. This bone doesn't actually exist in the mesh
+		//		: Create a dummy root node. This bone doesn't actually exist in the mesh
 		Bone root;
 		ac->bones.push_back(root);
 
