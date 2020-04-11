@@ -8,7 +8,7 @@ namespace cm
 
 	}
 
-	BufferLayout::BufferLayout(DynaArray<ShaderDataType> layout) : layout(layout), current_offset(0),
+	BufferLayout::BufferLayout(std::vector<ShaderDataType> layout) : layout(layout), current_offset(0),
 		current_next(0), number_components((uint32)layout.size()), attribute_divisor(0)
 	{
 		stride = 0;

@@ -31,7 +31,7 @@ namespace cm
 		};
 
 		// Possible directions vectors for unit cubes
-		DynaArray<Vec3> cases2D = {
+		std::vector<Vec3> cases2D = {
 			Vec3(1, 1, 0),
 			Vec3(-1, 1, 0),
 			Vec3(1, -1, 0),
@@ -42,7 +42,7 @@ namespace cm
 			Vec3(0, -sqrt(2), 0)
 		};
 		
-		DynaArray<Vec3> cases3D =
+		std::vector<Vec3> cases3D =
 		{
 			Vec3(1,1,0),
 			Vec3(-1,1,0),

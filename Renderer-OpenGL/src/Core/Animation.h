@@ -17,7 +17,7 @@ namespace cm
 
 		// @NOTE: Child bones indices. -1 is an invaild value
 		std::string name = "Empty";
-		DynaArray<int32> child_indices;
+		std::vector<int32> child_indices;
 	};
 
 	class AnimationFrames
@@ -25,14 +25,14 @@ namespace cm
 	public:
 		int32 bone_index = -1;
 		std::string bone_name;
-		DynaArray<real32> postime;
-		DynaArray<Vec3> poskeys;
+		std::vector<real32> postime;
+		std::vector<Vec3> poskeys;
 
-		DynaArray<real32> rottime;
-		DynaArray<Quat> rotkeys;
+		std::vector<real32> rottime;
+		std::vector<Quat> rotkeys;
 
-		DynaArray<real32> scltime;
-		DynaArray<Vec3> sclkeys;
+		std::vector<real32> scltime;
+		std::vector<Vec3> sclkeys;
 	};
 
 	enum class AnimationFlags
@@ -49,11 +49,11 @@ namespace cm
 		real32 animation_speed = 1;
 		AnimationFlags flags = AnimationFlags::Loop;
 		std::string name;
-		DynaArray<AnimationFrames> frames;
-		DynaArray<Bone> *working_bones;
+		std::vector<AnimationFrames> frames;
+		std::vector<Bone> *working_bones;
 	
 	public:
-		void Play(real time, DynaArray<Bone> *bones);
+		void Play(real time, std::vector<Bone> *bones);
 		void AnimateBones(const real &animation_time, Bone *bone, const Mat4 &parent_transform);
 
 		int32 GetAnimationChannel(const std::string &bone_name);
@@ -76,10 +76,10 @@ namespace cm
 		
 		// @NOTE: We reserve the [0]/0th index to be the root bone. This root bone does not actually exist in the mesh
 		//  	: It is simply a place holder to make all other calculations easiers
-		DynaArray<Bone> bones;	
+		std::vector<Bone> bones;	
 
 		// @NOTE: All the animation key frames the corrapsond some of the bones
-		DynaArray<Animation> animations;
+		std::vector<Animation> animations;
 
 		void Play(const std::string &name);
 		void Play(uint32 animation_index);

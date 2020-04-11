@@ -85,7 +85,7 @@ namespace cm
 	struct VertexArray
 	{
 		uint32 object = 0;		
-		DynaArray<VertexBuffer> vertex_buffers;
+		std::vector<VertexBuffer> vertex_buffers;
 	};
 
 	struct TextureConfig
@@ -172,12 +172,12 @@ namespace cm
 	{
 		VertexArray vao;
 		IndexBuffer ibo;
-		DynaArray<Mat4> transforms;
+		std::vector<Mat4> transforms;
 	};
 
 
 	template <typename Q, typename T>
-	void ReadBufferData(const Q &buffer, DynaArray<T> *data, uint32 size_byte, uint32 offset_bytes)
+	void ReadBufferData(const Q &buffer, std::vector<T> *data, uint32 size_byte, uint32 offset_bytes)
 	{
 		Assert(buffer.object != 0);
 		size_byte = size_byte == 0 ? (buffer.size_bytes - offset_bytes) : size_byte;
@@ -199,7 +199,7 @@ namespace cm
 	}
 
 	template <typename Q, typename T>
-	void WriteBufferData(Q *buffer, const DynaArray<T>& data, uint32 offset_bytes)
+	void WriteBufferData(Q *buffer, const std::vector<T>& data, uint32 offset_bytes)
 	{
 		Assert(buffer->object != 0);
 		Assert(offset_bytes + data.size() * sizeof(T) <= buffer->size_bytes);
@@ -289,7 +289,7 @@ namespace cm
 	
 	void CreateCubeMap(CubeMap *cube_map, const void **data);
 
-	void CreateCubeMapFrom6(CubeMap *cube_map, DynaArray<Texture> textures);
+	void CreateCubeMapFrom6(CubeMap *cube_map, std::vector<Texture> textures);
 
 	//************************************
 	// Shader Functions

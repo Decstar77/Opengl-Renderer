@@ -11,8 +11,8 @@ namespace cm
 		//		2) We might not use all the data stored in the vertex, ie vert colours, tangets.
 
 
-		DynaArray<real> vert_data;
-		DynaArray<uint32> index_data;
+		std::vector<real> vert_data;
+		std::vector<uint32> index_data;
 		BufferLayout layout = {};
 		if (tangets)
 		{
@@ -139,7 +139,7 @@ namespace cm
 		uint32 size = static_cast<uint32>(vertices.size());
 		uint32 half_size = (uint32)std::ceilf((float)size / 2.f);
 
-		DynaArray<uint32> marked_doubles;
+		std::vector<uint32> marked_doubles;
 		marked_doubles.resize(vertices.size());
 
 		for (uint32 i = 0; i < half_size; i++)
@@ -208,7 +208,7 @@ namespace cm
 	}
 
 
-	void EditableMesh::ConvertToPNT(DynaArray<float> *data, DynaArray<uint32> *index) const
+	void EditableMesh::ConvertToPNT(std::vector<float> *data, std::vector<uint32> *index) const
 	{
 		//@Speed: Prehaps resize arr before hand
 		uint32 index_counter = 0;
@@ -217,8 +217,8 @@ namespace cm
 		for (uint32 i = 0; i < vert_size; i++)
 		{
 			Vertex vert = vertices[i];
-			data->CopyFromPtr(vert.position.arr, 3 * sizeof(float));
-			data->CopyFromPtr(vert.normal.arr, 3 * sizeof(float));
+			data->insert(data->end(), &vert.position.arr[0], &vert.position.arr[3 * sizeof(float) / sizeof(float)]);
+			data->insert(data->end(), &vert.normal.arr[0], &vert.normal.arr[3 * sizeof(float) / sizeof(float)]);
 			data->push_back(vert.texture_coord.x);
 			data->push_back(vert.texture_coord.y);
 		}
@@ -236,18 +236,19 @@ namespace cm
 		
 	}
 
-	void EditableMesh::ConvertToOther(DynaArray<float> *data, DynaArray<uint32> *index) const
+	void EditableMesh::ConvertToOther(std::vector<float> *data, std::vector<uint32> *index) const
 	{
 		uint32 vert_size = static_cast<uint32>(vertices.size());
 		for (uint32 i = 0; i < vert_size; i++)
 		{
 			Vertex vert = vertices[i];
-			data->CopyFromPtr(vert.position.arr, 3 * sizeof(float));
-			data->CopyFromPtr(vert.normal.arr, 3 * sizeof(float));
+			data->insert(data->end(), &vert.position.arr[0], &vert.position.arr[3 * sizeof(float) / sizeof(float)]);
+			data->insert(data->end(), &vert.normal.arr[0], &vert.normal.arr[3 * sizeof(float) / sizeof(float)]);
 			data->push_back(vert.texture_coord.x);
 			data->push_back(vert.texture_coord.y);
-			data->CopyFromPtr(vert.tanget.arr, 3 * sizeof(float));
-			data->CopyFromPtr(vert.bitanget.arr, 3 * sizeof(float));
+			data->insert(data->end(), &vert.tanget.arr[0], &vert.tanget.arr[3 * sizeof(float) / sizeof(float)]);
+			data->insert(data->end(), &vert.bitanget.arr[0], &vert.bitanget.arr[3 * sizeof(float) / sizeof(float)]);
+
 		}
 	}
 
@@ -262,25 +263,33 @@ namespace cm
 
 	cm::GLMesh EditableMesh::CreateAnimMesh()
 	{
-		BufferLayout l = BufferLayout(DynaArray<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float4, ShaderDataType::Float4 }));
+		BufferLayout l = BufferLayout(std::vector<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float4, ShaderDataType::Float4 }));
 
-		DynaArray<float> data;
+		std::vector<float> data;
 		uint32 vert_size = static_cast<uint32>(vertices.size());
 		for (uint32 i = 0; i < vert_size; i++)
 		{
 			Vertex vert = vertices[i];
-			data.CopyFromPtr(vert.position.arr, 3 * sizeof(float));
-			data.CopyFromPtr(vert.normal.arr, 3 * sizeof(float));
+			data.push_back(vert.position.x);
+			data.push_back(vert.position.y);
+			data.push_back(vert.position.z);
+
+			data.push_back(vert.normal.x);
+			data.push_back(vert.normal.y);
+			data.push_back(vert.normal.z);
+
 			data.push_back(vert.texture_coord.x);
 			data.push_back(vert.texture_coord.y);
-
-					
+								
 			data.push_back(vert.bone_index[0]);
 			data.push_back(vert.bone_index[1]);
 			data.push_back(vert.bone_index[2]);
 			data.push_back(vert.bone_index[3]);
-			data.CopyFromPtr(vert.bone_weights, 4 * sizeof(float));
 
+			data.push_back(vert.bone_weights[0]);
+			data.push_back(vert.bone_weights[1]);
+			data.push_back(vert.bone_weights[2]);
+			data.push_back(vert.bone_weights[3]);
 		}
 
 		VertexBuffer vbo;
@@ -309,57 +318,5 @@ namespace cm
 		return mesh;
 	}
 
-	GLMesh EditableMesh::CreateAnimMesh(const std::vector<VertexBoneInfo> & vertex_information)
-	{
-		// @TODO: Clean
-		BufferLayout l = BufferLayout(DynaArray<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float4, ShaderDataType::Float4 }));
-
-		DynaArray<float> data;
-		uint32 vert_size = static_cast<uint32>(vertices.size());
-		for (uint32 i = 0; i < vert_size; i++)
-		{
-			Vertex vert = vertices[i];
-			data.CopyFromPtr(vert.position.arr, 3 * sizeof(float));
-			data.CopyFromPtr(vert.normal.arr, 3 * sizeof(float));
-			data.push_back(vert.texture_coord.x);
-			data.push_back(vert.texture_coord.y);
-
-			// @NOTE: Bones
-
-			VertexBoneInfo vb = vertex_information[i];
-			data.push_back(vb.bone_index[0]);
-			data.push_back(vb.bone_index[1]);
-			data.push_back(vb.bone_index[2]);
-			data.push_back(vb.bone_index[3]);
-			data.CopyFromPtr(vb.weights, 4 * sizeof(float));
-
-		}
-
-		VertexBuffer vbo;
-		vbo.lbo = l;
-		vbo.size_bytes = data.size() * sizeof(real);
-		vbo.flags = VertexFlags::READ_WRITE; // Optional;
-
-		CreateVertexBuffer(&vbo);
-		WriteBufferData(&vbo, data, 0);
-
-		IndexBuffer ibo;
-		ibo.index_count = (uint32)indices.size();
-		ibo.size_bytes = indices.size() * sizeof(uint32);
-		ibo.flags = VertexFlags::READ_WRITE;
-
-		CreateIndexBuffer(&ibo);
-		WriteBufferData(&ibo, indices, 0);
-
-		VertexArray vao;
-		vao.vertex_buffers.push_back(vbo);
-		CreateVertexArray(&vao);
-
-		GLMesh mesh;
-		mesh.vao = vao;
-		mesh.ibo = ibo;
-		return mesh;
-
-	}
-
+	
 }

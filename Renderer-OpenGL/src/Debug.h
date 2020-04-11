@@ -13,9 +13,9 @@ namespace cm
 	{
 		uint32 MAX_VERTICES_SIZE;
 		VertexArray persistent_vao;
-		DynaArray<Vec3> irresolute_vertices;
-		DynaArray<Vec3> persistent_vertices;
-		DynaArray<Vec3> colours;
+		std::vector<Vec3> irresolute_vertices;
+		std::vector<Vec3> persistent_vertices;
+		std::vector<Vec3> colours;
 	};
 
 	// @NOTE: We could do something like this
@@ -98,7 +98,7 @@ namespace cm
 
 
 		VertexBuffer vbo;
-		vbo.lbo = (DynaArray<ShaderDataType> {ShaderDataType::Float4});// padding 
+		vbo.lbo = (std::vector<ShaderDataType> {ShaderDataType::Float4});// padding 
 		vbo.size_bytes = sizeof(Vec4) * alloc_size;
 		vbo.flags = VertexFlags::READ_WRITE;
 		CreateVertexBuffer(&vbo);
@@ -146,7 +146,7 @@ namespace cm
 		if (amount > 0)
 		{
 			VertexBuffer irresolute_vbo;
-			irresolute_vbo.lbo = (DynaArray<ShaderDataType> {ShaderDataType::Float4});// padding byte
+			irresolute_vbo.lbo = (std::vector<ShaderDataType> {ShaderDataType::Float4});// padding byte
 			irresolute_vbo.size_bytes = sizeof(Vec4) * amount;
 			irresolute_vbo.flags = VertexFlags::READ_WRITE;
 			CreateVertexBuffer(&irresolute_vbo);

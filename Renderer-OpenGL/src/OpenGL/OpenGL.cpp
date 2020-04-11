@@ -463,7 +463,7 @@ namespace cm
 		cube_map->object = obj;
 	}
 
-	void CreateCubeMapFrom6(CubeMap *cubemap, DynaArray<Texture> textures)
+	void CreateCubeMapFrom6(CubeMap *cubemap, std::vector<Texture> textures)
 	{
 		Assert(0);
 		//DynaArray<uint8> cubemap_data[6] = {};
@@ -705,7 +705,7 @@ namespace cm
 		WriteBufferData(&mat_vbo, batch->transforms, 0);
 
 		VertexBuffer current_mesh_vbo = vbo_to_batch;
-		DynaArray<float> current_mesh_data;
+		std::vector<float> current_mesh_data;
 		ReadBufferData(current_mesh_vbo, &current_mesh_data, current_mesh_vbo.size_bytes, 0);
 
 		VertexBuffer mesh_vbo;
@@ -721,7 +721,7 @@ namespace cm
 		CreateIndexBuffer(&ibo);
 		ibo.index_count = ibo_of_vbo.index_count;
 
-		DynaArray<uint32> index_data;
+		std::vector<uint32> index_data;
 		ReadBufferData(ibo_of_vbo, &index_data, ibo_of_vbo.size_bytes, 0);
 
 		WriteBufferData(&ibo, index_data, 0);

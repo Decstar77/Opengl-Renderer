@@ -76,13 +76,13 @@ namespace cm
 	struct World // out
 	{
 		RenderSettings render_settings;
-		DynaArray<WorldObject*> objects;
+		std::vector<WorldObject*> objects;
 		
 
 		//Lighting
 		DirectionalLight dir;
-		DynaArray<SpotLight> spot_lights;
-		DynaArray<PointLight> point_lights;
+		std::vector<SpotLight> spot_lights;
+		std::vector<PointLight> point_lights;
 	};
 
 

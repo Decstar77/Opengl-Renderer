@@ -12,14 +12,14 @@ namespace cm
 		uint32 number_components;
 		uint32 stride;
 
-		DynaArray<ShaderDataType> layout;
+		std::vector<ShaderDataType> layout;
 		uint32 current_offset;
 		uint32 current_next;
 		uint32 attribute_divisor;
 
 	public:
 		BufferLayout();
-		BufferLayout(DynaArray<ShaderDataType> layout);		
+		BufferLayout(std::vector<ShaderDataType> layout);		
 		~BufferLayout();
 
 		void Reset();

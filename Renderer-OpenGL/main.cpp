@@ -327,10 +327,10 @@ int main()
 	sanitycheck_shader.name = "sanitycheck_shader ";
 
 
-	DynaArray<Shader> shaders;
-	DynaArray<Texture> textures;
+	std::vector<Shader> shaders;
+	std::vector<Texture> textures;
 
-	DynaArray<std::string> mesh_directories{  
+	std::vector<std::string> mesh_directories{  
 		//"models/sponza.obj",
 		"models/voxel_cube.obj",
 		//"models/smooth_cube.obj",
@@ -339,13 +339,13 @@ int main()
 		"models/quad.obj",		
 		//"models/claud_bot.obj",
 	};
-	DynaArray<std::string> text_directories{ 		
+	std::vector<std::string> text_directories{ 		
 		//"textures/bot1_rig_v01_Scene_Material_BaseColor.png",
 		//"textures/bot1_rig_v01_Scene_Material_Normal.png",
 	    //"textures/bot1_rig_v01_Scene_Material_OcclusionRoughnessMetallic.png"
 	};
 
-	DynaArray<EditableMesh> impmeshes;
+	std::vector<EditableMesh> impmeshes;
 	//
 	LoadModel(&impmeshes, "res/models/smooth_cube.obj");
 	GLMesh impmesh = impmeshes[0].CreateMesh(false);
@@ -593,10 +593,10 @@ int main()
 		// Update GPU Buffers
 		//************************************
 
-		DynaArray<Mat4> camera_data = { camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix,
+		std::vector<Mat4> camera_data = { camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix,
 										light_space_matrix };
 
-		DynaArray<Vec4> lighting_data = {
+		std::vector<Vec4> lighting_data = {
 		Vec4(0,  1, 0, 0),  // Meta data for lighting, number of lights 
 		Vec4(camera_controller.main_camera.transform.position, 0),
 		Vec4(sun_light.direction, 0), Vec4(sun_light.light_colour, 0)
@@ -605,7 +605,7 @@ int main()
 		informer.UpdateUBO("WorldMatrices", camera_data);
 		informer.UpdateUBO("LightingData", lighting_data);
 
-		DynaArray<Mat4> mats;
+		std::vector<Mat4> mats;
 
 
 

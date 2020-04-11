@@ -143,7 +143,7 @@ namespace cm
 	class OvercrowdingSpringForceGenerator : public ForceGenerator
 	{		
 	public:
-		DynaArray<PointMass*> bodies;
+		std::vector<PointMass*> bodies;
 		//Spring constant <--- make this large
 		real k; 
 		//Rest length <--- make this larger than the collision_lenth else we are extending the spring mathmaticly
@@ -240,7 +240,7 @@ namespace cm
 	public:
 		uint32 iterations;
 		//Everything that has pass in here IS colliding in some way
-		void Resolve(DynaArray<PointMassContact> contacts, float delta)
+		void Resolve(std::vector<PointMassContact> contacts, float delta)
 		{
 			if (contacts.size() == 0)
 			{

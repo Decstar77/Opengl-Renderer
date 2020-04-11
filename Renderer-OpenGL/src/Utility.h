@@ -1,44 +1,14 @@
 #pragma once
 #include "Core.h"
 #include <vector>
+#include <array>
 #include <unordered_map>
 #include <algorithm>
 #include <memory>
 
 namespace cm
 {
-
-	template<typename T>
-	class DynaArray : public std::vector<T>
-	{
-	public:
-		DynaArray() : std::vector<T>{}
-		{
-
-		}
-
-		~DynaArray()
-		{
-			std::vector<T>::clear();
-		}
-
-		DynaArray(uint32 size) : std::vector<T>(size)
-		{
-
-		}
-
-		DynaArray(std::initializer_list<T> init) : std::vector<T>{ init }
-		{
-
-		}
-
-		inline void CopyFromPtr(T *ptr, uint32 size_bytes)
-		{
-			std::vector<T>::insert(std::vector<T>::end(), &ptr[0], &ptr[size_bytes / sizeof(T)]);
-		}
-	};
-
-
+	
 	/* @NOTES:
 			1) The equal and copy functions are shallow clones
 			2) Expects you to manually free the memory
@@ -47,6 +17,7 @@ namespace cm
 			   the new buffer will be lost.
 			4) 
 	*/
+#if 0
 	template<typename T>
 	class Array
 	{		
@@ -164,5 +135,5 @@ namespace cm
 		data = new_data;
 		this->count = count;
 	}
-
+#endif
 }

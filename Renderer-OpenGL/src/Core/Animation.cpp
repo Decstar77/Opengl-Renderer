@@ -42,7 +42,7 @@ namespace cm
 		//}
 	}
 
-	void Animation::Play(real time, DynaArray<Bone> *bones)
+	void Animation::Play(real time, std::vector<Bone> *bones)
 	{		
 		real32 time_in_ticks = time * ticks_per_second * animation_speed;		
 		real32 animation_time = 0;		

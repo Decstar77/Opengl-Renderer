@@ -16,7 +16,7 @@ namespace cm
 		return ss.str();
 	}
 
-	bool LoadTexture(DynaArray<uint8> *storage, TextureConfig *config, const std::string &file_directory)
+	bool LoadTexture(std::vector<uint8> *storage, TextureConfig *config, const std::string &file_directory)
 	{
 		int32 width = 0;
 		int32 height = 0;
@@ -45,7 +45,8 @@ namespace cm
 				Assert(0); // @REASON: We have no support channel count
 			}
 			uint32 size_bytes = width * height * nrChannels * sizeof(uint8);
-			storage->CopyFromPtr(data, size_bytes);
+			storage->insert(storage->end(), &data[0], &data[size_bytes / sizeof(uint8)]);
+
 			stbi_image_free(data);
 			return true;
 		}
@@ -174,7 +175,7 @@ namespace cm
 		edit_mesh->name = mesh->mName.C_Str();
 	}
 
-	void processNode(aiNode *node, DynaArray<EditableMesh> *meshes, const aiScene *scene)
+	void processNode(aiNode *node, std::vector<EditableMesh> *meshes, const aiScene *scene)
 	{		
 		for (uint32 i = 0; i < node->mNumMeshes; i++)
 		{					
@@ -649,7 +650,7 @@ namespace cm
 		return result;
 	}
 
-	bool LoadModel(DynaArray<EditableMesh> *meshes, const std::string &path)
+	bool LoadModel(std::vector<EditableMesh> *meshes, const std::string &path)
 	{
 		Assimp::Importer import;
 		const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);

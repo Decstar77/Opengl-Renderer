@@ -76,7 +76,7 @@ namespace cm
 	{
 	public:		
 		std::unordered_map<std::string, int32> ubo_data;
-		DynaArray<UniformBuffer> ubos;
+		std::vector<UniformBuffer> ubos;
 	public:
 		Informer();
 		~Informer();
@@ -85,7 +85,7 @@ namespace cm
 		void LinkShader(const std::string &name, Shader shader);
 		void LinkShader(const std::string &name, RenderShaders render_shaders);
 		template<typename T>
-		void UpdateUBO(const std::string &name, DynaArray<T> data) 
+		void UpdateUBO(const std::string &name, std::vector<T> data) 
 		{ WriteBufferData(&ubos[ubo_data.at(name)], data, 0); }
 
 	};

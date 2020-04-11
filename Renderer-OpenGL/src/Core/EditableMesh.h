@@ -86,9 +86,9 @@ namespace cm
 	class EditableMesh
 	{
 	public:
-		DynaArray<Vertex> vertices;
-		DynaArray<uint32> indices;
-		DynaArray<IndexedTriangle> tris;
+		std::vector<Vertex> vertices;
+		std::vector<uint32> indices;
+		std::vector<IndexedTriangle> tris;
 
 		std::string name;
 		
@@ -101,17 +101,16 @@ namespace cm
 
 	public:
 		GLMesh CreateAnimMesh();
-		GLMesh CreateAnimMesh(const std::vector<VertexBoneInfo> & vertex_information);
 		GLMesh CreateMesh(bool tangets);
 		void LoadMesh(GLMesh mesh);
 		void AddTrianlge(const Vec3 &pos1, const Vec3 &pos2, const Vec3 &pos3);
 		void AddTextureCoords(const Vec3 &t1, const Vec3 &t2, const Vec3 &t3);
 		void AddTrianlge(const Vertex &p1, const Vertex &p2, const Vertex &p3);
-		void ConvertToPNT(DynaArray<float> *data, DynaArray<uint32> *index) const;
+		void ConvertToPNT(std::vector<float> *data, std::vector<uint32> *index) const;
 		void RecaluclateNormals();
 		void FuseVertices(float tollerance = FLOATING_POINT_ERROR_PRESCION);
 
-		void ConvertToOther(DynaArray<float> *data, DynaArray<uint32> *index) const; //<-- Just for testing purposes
+		void ConvertToOther(std::vector<float> *data, std::vector<uint32> *index) const; //<-- Just for testing purposes
 		void SetColour(const Vec3 colour);
 
 	};

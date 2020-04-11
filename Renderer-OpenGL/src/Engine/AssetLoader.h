@@ -22,8 +22,8 @@ namespace cm
 		bool vertex_weight_enforcement = false;
 		real32 vertex_weight_cull = 0.01f;		
 
-		DynaArray<EditableMesh> resulting_meshes;
-		DynaArray<AnimationController> resulting_animation_controllers;
+		std::vector<EditableMesh> resulting_meshes;
+		std::vector<AnimationController> resulting_animation_controllers;
 		//uint32 mesh_count = 0;
 		//EditableMesh *resulting_mesh = nullptr;
 
@@ -36,12 +36,12 @@ namespace cm
 
 	std::string ReadFile(const std::string &file_directory);
 	
-	bool LoadTexture(DynaArray<uint8> *storage, TextureConfig *config, const std::string &file_directory);
+	bool LoadTexture(std::vector<uint8> *storage, TextureConfig *config, const std::string &file_directory);
 
 
 	
 
-	bool LoadModel(DynaArray<EditableMesh> *meshes, const std::string &path);
+	bool LoadModel(std::vector<EditableMesh> *meshes, const std::string &path);
 	bool LoadModel(ModeImport *model_import);
 	Mat4 ToMatrix4f(const aiMatrix4x4 *ai_mat);
 }
