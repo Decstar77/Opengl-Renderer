@@ -356,9 +356,7 @@ int main()
 	impmeshes.clear();
 
 
-	Array cmarr;
-	cmarr.Resize(sizeof(Bone) * 50);
-	Mat4 cmcurr = cmarr.Get<Mat4>(0);
+
 	//DynaArray<uint8> image_data;
 	//Texture gun_diffuse_map;
 	//LoadTexture(&image_data, &gun_diffuse_map.config, "res/textures/FPS_CGC_LowPoly_Gun_BaseColor.png");

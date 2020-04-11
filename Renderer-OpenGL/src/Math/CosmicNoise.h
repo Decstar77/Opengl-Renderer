@@ -1,7 +1,7 @@
 #pragma once
 #include "Core.h"
 #include "CosmicMath.h"
-
+#include "Utility.h"
 namespace cm
 {
 	//Many thanks to this dude

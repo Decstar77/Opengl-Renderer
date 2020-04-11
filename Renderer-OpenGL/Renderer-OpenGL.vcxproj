@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\Core\Animation.cpp" />
     <ClCompile Include="src\Core\Camera.cpp" />
     <ClCompile Include="src\Core\UIRenderer.cpp" />
     <ClCompile Include="src\Core\Renderer.cpp" />
@@ -33,6 +34,7 @@
     <ClCompile Include="vendor\IMGUI\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Core\Animation.h" />
     <ClInclude Include="src\Core\Camera.h" />
     <ClInclude Include="src\Core\UIRenderer.h" />
     <ClInclude Include="src\Core\World.h" />

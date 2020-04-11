@@ -1,4 +1,28 @@
 ﻿cl : Command line warning D9002: ignoring unknown option '/arch:SSE2'
+  main.cpp
+f:\renderer-opengl\renderer-opengl\src\core.h(27): warning C4005: 'LOGC': macro redefinition
+  f:\renderer-opengl\renderer-opengl\src\core.h(23): note: see previous definition of 'LOGC'
+f:\renderer-opengl\renderer-opengl\src\math\cosmicphysics.h(250): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\math\cosmicphysics.h(253): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(41): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(42): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(548): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(557): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(852): warning C4244: 'initializing': conversion from '_Rep' to 'float', possible loss of data
+          with
+          [
+              _Rep=__int64
+          ]
+  Renderer.cpp
+f:\renderer-opengl\renderer-opengl\src\core.h(27): warning C4005: 'LOGC': macro redefinition
+  f:\renderer-opengl\renderer-opengl\src\core.h(23): note: see previous definition of 'LOGC'
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(159): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(158): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(164): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(179): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(178): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   AssetLoader.cpp
 f:\renderer-opengl\renderer-opengl\src\core.h(27): warning C4005: 'LOGC': macro redefinition
   f:\renderer-opengl\renderer-opengl\src\core.h(23): note: see previous definition of 'LOGC'
@@ -16,4 +40,57 @@ f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(502): warning C424
 f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(557): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(558): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(650): warning C4267: 'initializing': conversion from 'size_t' to 'uint32', possible loss of data
+  EditableMesh.cpp
+f:\renderer-opengl\renderer-opengl\src\core.h(27): warning C4005: 'LOGC': macro redefinition
+  f:\renderer-opengl\renderer-opengl\src\core.h(23): note: see previous definition of 'LOGC'
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(40): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(48): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(278): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
+          with
+          [
+              _Ty=real32
+          ]
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(279): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
+          with
+          [
+              _Ty=real32
+          ]
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(280): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
+          with
+          [
+              _Ty=real32
+          ]
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(281): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
+          with
+          [
+              _Ty=real32
+          ]
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(288): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(296): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(330): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
+          with
+          [
+              _Ty=real32
+          ]
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(331): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
+          with
+          [
+              _Ty=real32
+          ]
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(332): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
+          with
+          [
+              _Ty=real32
+          ]
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(333): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
+          with
+          [
+              _Ty=real32
+          ]
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(340): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(348): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+  Generating Code...
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'F:\Renderer-OpenGL\x64\Debug\vc120.pdb'; linking object as if no debug info
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

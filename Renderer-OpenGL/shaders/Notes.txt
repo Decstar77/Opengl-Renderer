@@ -4,10 +4,8 @@ SSAO: We currently have to textures eaching only having one channel GL_RED, wher
 	: blur ? The blur shader binds a texture and then looks all round.
 
 Notes: 
-	RenderWorld function needs to go.
-	Animation controller is not complete
-	Need to properly abstract the animation process maybe by having a gameobjects.h
-	We can only write data to a VBO on a single tpye. Eg float, change
+	
+	
 	
 RECAP:
 	projection matrix.
@@ -27,6 +25,17 @@ DAY:
 
 
 TODO:
+	HIGH PRIO:
+		Need to properly abstract the animation process maybe by having a gameobjects.h
+		We can only write data to a VBO on a single tpye. Eg float, change
+		Implement array class. Im not sure if it worth it though...
+		Sort out shader mayhem !
+		Mode import options
+
+	MED PRIO:
+		RenderWorld function needs to go.
+		Animation controller is not complete
+	
 
 	LOW PRIO:
 		OpenGL layout class

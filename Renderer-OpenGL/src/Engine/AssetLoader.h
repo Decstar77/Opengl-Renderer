@@ -6,7 +6,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include "Core/EditableMesh.h"
-
+#include "Core/Animation.h"
 namespace cm
 {
 
@@ -14,10 +14,6 @@ namespace cm
 	
 	bool LoadTexture(DynaArray<uint8> *storage, TextureConfig *config, const std::string &file_directory);
 
-	struct ModelCreateInfo
-	{
-
-	};
 
 	bool LoadModel(DynaArray<EditableMesh> *meshes, const std::string &path);
 	bool LoadModelTest(EditableMesh *emesh, const std::string &path);
