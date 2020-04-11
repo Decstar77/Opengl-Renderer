@@ -1,11 +1,16 @@
 #pragma once
 #include "Core.h"
+#include "Math/CosmicMath.h"
+
+// @NOTE: Apparently this doesn't work, therefore I've defined it in the visual studio pre processor
+//#define IMGUI_IMPL_OPENGL_LOADER_GLEW
+
 #include "../vendor/IMGUI/imgui.h"
 #include "../vendor/IMGUI/imgui_impl_glfw.h"
 #include "../vendor/IMGUI/imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
 
-#include "Math/CosmicMath.h"
+
 
 namespace cm
 {

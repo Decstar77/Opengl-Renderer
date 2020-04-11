@@ -34,7 +34,7 @@ namespace cm
 
 		Animation * anim = &animations[current_animation_index];
 		anim->Play(current_time, &bones);
-
+		
 		// @NOTE: Global transform I've turned off. I think it's unnessariy
 		//for (uint32 i = 0; i < bones.size(); i++)
 		//{

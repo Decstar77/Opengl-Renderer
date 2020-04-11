@@ -90,7 +90,7 @@ namespace cm
 
 	};
 
-	class Renderer
+	class WorldRenderer
 	{
 
 	public:
@@ -116,8 +116,8 @@ namespace cm
 				
 		
 	public:
-		Renderer();
-		Renderer(RenderShaders render_shaders, StandardShaders standard_shaders);
+		WorldRenderer();
+		WorldRenderer(RenderShaders render_shaders, StandardShaders standard_shaders);
 
 		void Render();
 		void Render(const World &world);

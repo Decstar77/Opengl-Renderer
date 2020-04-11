@@ -25,6 +25,9 @@
     <Filter Include="vendor">
       <UniqueIdentifier>{ce3ab5ae-724c-4345-b523-aa02ade058fd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="vendor\Imgui">
+      <UniqueIdentifier>{1185ebf9-79b0-474a-a993-cd8b529dff11}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -51,24 +54,6 @@
     <ClCompile Include="src\Core\EditableMesh.cpp">
       <Filter>src\Core</Filter>
     </ClCompile>
-    <ClCompile Include="vendor\IMGUI\imgui.cpp">
-      <Filter>vendor</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\IMGUI\imgui_demo.cpp">
-      <Filter>vendor</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\IMGUI\imgui_draw.cpp">
-      <Filter>vendor</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\IMGUI\imgui_impl_glfw.cpp">
-      <Filter>vendor</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\IMGUI\imgui_impl_opengl3.cpp">
-      <Filter>vendor</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\IMGUI\imgui_widgets.cpp">
-      <Filter>vendor</Filter>
-    </ClCompile>
     <ClCompile Include="src\Engine\Input.cpp">
       <Filter>src\Engine</Filter>
     </ClCompile>
@@ -92,6 +77,27 @@
     </ClCompile>
     <ClCompile Include="src\Utility.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Sandbox.cpp">
+      <Filter>src\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\IMGUI\imgui.cpp">
+      <Filter>vendor\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\IMGUI\imgui_demo.cpp">
+      <Filter>vendor\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\IMGUI\imgui_draw.cpp">
+      <Filter>vendor\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\IMGUI\imgui_impl_glfw.cpp">
+      <Filter>vendor\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\IMGUI\imgui_impl_opengl3.cpp">
+      <Filter>vendor\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\IMGUI\imgui_widgets.cpp">
+      <Filter>vendor\Imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -125,30 +131,6 @@
     <ClInclude Include="src\Math\CosmicNoise.h">
       <Filter>src\Math</Filter>
     </ClInclude>
-    <ClInclude Include="vendor\IMGUI\imconfig.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\IMGUI\imgui.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\IMGUI\imgui_impl_glfw.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\IMGUI\imgui_impl_opengl3.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\IMGUI\imgui_internal.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\IMGUI\imstb_rectpack.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\IMGUI\imstb_textedit.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\IMGUI\imstb_truetype.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
     <ClInclude Include="src\Engine\Input.h">
       <Filter>src\Engine</Filter>
     </ClInclude>
@@ -160,9 +142,6 @@
     </ClInclude>
     <ClInclude Include="src\Core\World.h">
       <Filter>src\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\std_image.h">
-      <Filter>vendor</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine\AssetLoader.h">
       <Filter>src\Engine</Filter>
@@ -178,6 +157,36 @@
     </ClInclude>
     <ClInclude Include="src\Utility.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Sandbox.h">
+      <Filter>src\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\std_image.h">
+      <Filter>vendor</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\IMGUI\imconfig.h">
+      <Filter>vendor\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\IMGUI\imgui.h">
+      <Filter>vendor\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\IMGUI\imgui_impl_glfw.h">
+      <Filter>vendor\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\IMGUI\imgui_impl_opengl3.h">
+      <Filter>vendor\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\IMGUI\imgui_internal.h">
+      <Filter>vendor\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\IMGUI\imstb_rectpack.h">
+      <Filter>vendor\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\IMGUI\imstb_textedit.h">
+      <Filter>vendor\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\IMGUI\imstb_truetype.h">
+      <Filter>vendor\Imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

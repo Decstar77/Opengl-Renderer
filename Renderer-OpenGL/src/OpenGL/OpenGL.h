@@ -162,19 +162,22 @@ namespace cm
 		std::unordered_map<std::string, uint32> uniform_cache;
 	};
 
-	struct GLMesh // OpenGl
+	struct GLMesh
 	{
 		VertexArray vao;
 		IndexBuffer ibo;
 	};
 
-	struct Batch // OpenGl
+	struct Batch 
 	{
 		VertexArray vao;
 		IndexBuffer ibo;
 		std::vector<Mat4> transforms;
 	};
-
+	
+	//************************************
+	// Write Buffer Functions C++ Templated
+	//************************************
 
 	template <typename Q, typename T>
 	void ReadBufferData(const Q &buffer, std::vector<T> *data, uint32 size_byte, uint32 offset_bytes)
@@ -221,6 +224,45 @@ namespace cm
 		glBindBuffer(type, 0);
 	}
 	
+	template <typename Q>
+	void ReadBufferData(const Q &buffer, void *data, uint32 size_byte, uint32 offset_bytes)
+	{
+		Assert(buffer.object != 0);
+		size_byte = size_byte == 0 ? (buffer.size_bytes - offset_bytes) : size_byte;
+		Assert(offset_bytes + size_byte <= buffer.size_bytes);
+		Assert(0); // @REASON: Untested
+		uint32 type = static_cast<uint32>(buffer.type);
+
+		glBindBuffer(type, buffer.object);
+
+		void *ptr = glMapBuffer(type, GL_READ_ONLY);
+		ptr = static_cast<char*>(ptr) + offset_bytes;
+
+		memcpy(data, ptr, size_byte);
+
+		glUnmapBuffer(type);
+		glBindBuffer(type, 0);
+	}
+
+	template <typename Q>
+	void WriteBufferData(Q *buffer, void *data, uint32 size_bytes, uint32 offset_bytes)
+	{
+		Assert(buffer->object != 0);
+		Assert(offset_bytes + size_bytes <= buffer->size_bytes);
+		Assert(0); // @REASON: Untested
+		uint32 type = static_cast<uint32>(buffer->type);
+
+		glBindBuffer(type, buffer->object);
+
+		void *ptr = glMapBuffer(type, GL_WRITE_ONLY);
+		ptr = static_cast<char*>(ptr) + offset_bytes;
+		
+		memcpy(ptr, data, size_bytes);
+
+		glUnmapBuffer(type);
+		glBindBuffer(type, 0);
+	}
+
 	//************************************
 	// Vertex Buffer Functions
 	//************************************

@@ -15,6 +15,7 @@
 #include "src/Debug.h"
 #include "src/Engine/AssetLoader.h"
 #include "src/Engine/Input.h"
+#include "src/Core/Sandbox.h"
 
 using namespace cm;
 
@@ -30,84 +31,7 @@ static float delta_time = 0;
 
 
 static bool DRAW_LIGHT_POSITIONS = false;
-
-class AnimatedActor : public  WorldObject
-{
-public:
-	GLMesh mesh;
-	Material material;
-	Transform transform;
-
-	AnimationController animation_controller;
-
-	virtual void SetTextures(Shader *shader) override;
-	virtual void SetMaterialValues(Shader *shader) override;
-	virtual void SetTransformValues(Shader *shader) override;
-	virtual const GLMesh &GetMeshForRender() override;
-
-};
-// @TODO: Overload operators
-class Array
-{
-public:
-	Array() {}
-	Array(const uint32 &size_bytes) { Resize(size_bytes); }
-	Array(const Array &arr) = delete;
-
-	uint32 size;
-	void *data;
-	
-
-	void Resize(uint32 size_bytes) 
-	{
-		data = malloc(size_bytes);
-		size = size_bytes;	
-	}
-	
-	void Free()
-	{
-		free(data);
-		data = nullptr;
-		size = 0;
-	}
-
-	template<typename T>
-	T Get(uint32 index) 
-	{
-		T *t = (T*)data;
-		return t[index];
-	}
-
-	template<typename T>
-	void Set(uint32 index, const T &value)
-	{
-		T *t = (T*)data;
-		t[index] = value;
-	}
-
-};
-
-
-void AnimatedActor::SetTextures(Shader *shader)
-{
-	throw std::logic_error("The method or operation is not implemented.");
-}
-
-void AnimatedActor::SetMaterialValues(Shader *shader)
-{
-	ShaderSetVec3(shader, "diffuse_colour", Vec3(0.23, 0.48, 0.34).arr);
-	ShaderSetVec3(shader, "specular_colour", Vec3(0.2f).arr);
-}
-
-void AnimatedActor::SetTransformValues(Shader *shader)
-{
-	ShaderSetMat4(shader, "model", transform.CalcTransformMatrix().arr);
-}
-
-const cm::GLMesh & AnimatedActor::GetMeshForRender()
-{
-	return mesh;
-}
+static bool move_camera = false;
 
 void MousePositionCallBack(GLFWwindow *widow, double xpos, double ypos)
 {
@@ -120,8 +44,11 @@ void MousePositionCallBack(GLFWwindow *widow, double xpos, double ypos)
 
 	xoffset *= MOUSE_SENSITIVITY;
 	yoffset *= MOUSE_SENSITIVITY;
+	if (move_camera)
+	{
+		camera_controller.CameraRotate(yoffset, xoffset);
+	}
 	
-	camera_controller.CameraRotate(yoffset, xoffset);
 	Input::SetMousePosition(current_mouse.x, current_mouse.y);
 }
 
@@ -162,8 +89,8 @@ GLFWwindow* CreateRenderingWindow()
 	}
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
@@ -347,13 +274,14 @@ int main()
 
 	std::vector<EditableMesh> impmeshes;
 	//
-	LoadModel(&impmeshes, "res/models/smooth_cube.obj");
-	GLMesh impmesh = impmeshes[0].CreateMesh(false);
+	ModeImport cube_import;
+	cube_import.import_animations = false;
+	cube_import.path = "res/models/smooth_cube.obj";
+
+	LoadModel(&cube_import);
+	GLMesh impmesh = cube_import.resulting_meshes[0].CreateMesh(false);
 	impmeshes.clear();
 
-	LoadModel(&impmeshes, "res/models/lowpoly_fps_gun.obj");
-	GLMesh gun = impmeshes[0].CreateMesh(true);
-	impmeshes.clear();
 
 
 
@@ -420,7 +348,6 @@ int main()
 
 	LoadModel(&model_import);
 	EditableMesh emesh = model_import.resulting_meshes[0];
-	//LoadModel(&impmeshes, path);
 
 
 	test_cube_guy.mesh = emesh.CreateAnimMesh();
@@ -435,8 +362,6 @@ int main()
 	LOG("This is a log" << "And this");
 
 
-	//impmeshes.clear();
-	//image_data.clear();
 
 	World main_world;
 	main_world.objects.push_back(&test_cube_guy);
@@ -461,9 +386,7 @@ int main()
 	UIRenderer ui_renderer;
 	ui_renderer.Init(window);
 
-
-
-	Renderer renderer;
+	WorldRenderer renderer;
 	renderer.render_shaders.skybox_shader = cubemap_shader;
 	renderer.render_shaders.depth_test_shader = simple_shadow_map_shader;
 	renderer.render_shaders.g_buffer_shader = g_buffer_shader;
@@ -522,7 +445,7 @@ int main()
 		//************************************
 		// Process Custom Events
 		//************************************
-		camera_controller.UpdateCamera(delta_time);
+		
 
 		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_F5))
 		{
@@ -554,7 +477,7 @@ int main()
 		}
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
 		{
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			
 			
 			cha -= 1;
 			fh -= 0.4 * delta_time;
@@ -562,7 +485,7 @@ int main()
 		}
 		else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
 		{
-			//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			
 			toggel = false;
 		}
 
@@ -570,6 +493,21 @@ int main()
 		{
 			glfwSetWindowShouldClose(window, 1);
 		}
+
+		
+
+		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE))
+		{			
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			camera_controller.UpdateCamera(delta_time);
+			move_camera = true;
+		}
+		else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE))
+		{
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			move_camera = false;			
+		}
+		
 
 		
 		static Vec3 distance_to_dir = Vec3(-2.0f, 4.0f, -1.0f) - camera_controller.main_camera.transform.position;
@@ -652,28 +590,57 @@ int main()
 		RenderCommands::EnableDepthBuffer();
 
 
-		//ui_renderer.BeginFrame();
+#if 1
+		ui_renderer.BeginFrame();
 
-		//
-		//ui_renderer.CreateUIWindow("Render Settings");
-		//ui_renderer.CreateCheckBox("Shadows ", &renderer.render_settings.shadow_pass);
-		//ui_renderer.SetWindowSize({ 350, 100 });
-		//std::stringstream ss;
-		//ss << "Time: " << delta_time;
-		//ImGui::PlotLines(ss.str().c_str(), parr, 100, 0, "", 0, 120, ImVec2(0, 50));
+		
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+		
+		ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImVec2 pos = viewport->GetWorkPos();
+		pos.x += 1280 - 300;
+		ImGui::SetNextWindowPos(pos);
+		ImGui::SetNextWindowSize(ImVec2(300,720));
+		ImGui::SetNextWindowViewport(viewport->ID);
+		
+		bool p_open;
+		ImGui::Begin("DockSpace Demo", &p_open, window_flags);
+		
+		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+		ImGui::DockSpace(dockspace_id);
+		
+		ImGui::End();
 
-		//ui_renderer.EndUIWindow();
-		//
 
 
 
 
+
+
+
+		ui_renderer.CreateUIWindow("Asset library");		
+		ui_renderer.EndUIWindow();
+				
+		
+		ui_renderer.CreateUIWindow("Render Settings");
+		ui_renderer.CreateCheckBox("Shadows ", &renderer.render_settings.shadow_pass);
+		ui_renderer.SetWindowSize({ 350, 100 });
+		std::stringstream ss;
+		ss << "Time: " << delta_time;
+		ImGui::PlotLines(ss.str().c_str(), parr, 100, 0, "", 0, 120, ImVec2(0, 50));
+		ui_renderer.EndUIWindow();
+		
+		
+		ui_renderer.CreateUIWindow("Console");
+		ui_renderer.EndUIWindow();
 
 		//ImGui::ShowDemoWindow();
 
-		//
-
-		//ui_renderer.EndFrame();
+		ui_renderer.EndFrame();
+#endif
+		
 		////////////////////
 		// Post Debug Drawing
 		////////////////////

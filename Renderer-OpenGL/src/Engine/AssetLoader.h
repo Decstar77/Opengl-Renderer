@@ -11,6 +11,9 @@ namespace cm
 {
 	class ModeImport
 	{	
+	private:
+
+
 	public:
 		bool import_animations = true;
 		bool import_mesh_combine = true;
@@ -30,7 +33,7 @@ namespace cm
 		//uint32 animation_controller_count = 0;
 		//AnimationController *animation_controller = nullptr;
 
-		String path;
+		std::string path;
 	};
 
 

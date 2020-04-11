@@ -20,12 +20,29 @@ namespace cm
 
 	void UIRenderer::Init(GLFWwindow *window)
 	{
+		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
+		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
+
 		ImGui::StyleColorsClassic();
 
+		ImGuiStyle& style = ImGui::GetStyle();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			style.WindowRounding = 0.0f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
+
+
 		bool window_res = ImGui_ImplGlfw_InitForOpenGL(window, true);
-		bool opengl_res = ImGui_ImplOpenGL3_Init("#version 130");
+		bool opengl_res = ImGui_ImplOpenGL3_Init("#version 410");
 
 		Assert(window_res); // @REASON: Failed init for glfw openGl
 		Assert(opengl_res); // @REASON: Failed init for openGl3 
@@ -47,7 +64,20 @@ namespace cm
 	void UIRenderer::EndFrame()
 	{
 		ImGui::Render();
+		ImGuiIO& io = ImGui::GetIO();
+
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		io.DisplaySize = ImVec2(1280, 720);
+
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+			glfwMakeContextCurrent(backup_current_context);
+		}
+
 	}
 
 	void UIRenderer::BeginFrame()

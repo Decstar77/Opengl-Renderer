@@ -26,24 +26,17 @@ DAY:
 
 TODO:
 	HIGH PRIO:
-		
-		We can only write data to a VBO on a single tpye. Eg float, change
-		Sort out shader mayhem !
-		
+		Sort out shader mayhem !		
 		Rewrite EdiableMesh class.
-		Figure out how to write to gpu animation data nicely 
-		Math lib need formating like opengl.h (GARETH)
-		Imgui docking!
-
-
+		Figure out how to write to gpu animation data nicely
+		Platform window needs abstraction
+	
 	MED PRIO:
 		RenderWorld function needs to go.
-		
-		Need to properly abstract the animation process maybe by having a gameobjects.h
-		Implement array class. Im not sure if it worth it though...
+				
+		Implement array class. Im not sure if it worth it though... (HARRRRD)
+		Math lib need formating like opengl.h, const &&& (GARETH)
 
 	LOW PRIO:
-		OpenGL layout class
-		
-		Core dyna array
+		OpenGL layout class		
 

@@ -22,23 +22,24 @@ namespace cm
 		Shader *shader;
 	};
 
-	struct PointLight // Out
+	struct PointLight 
 	{
 		Vec3 light_colour;
 		Vec3 light_position;
 	};
 
-	struct DirectionalLight // Out
+	struct DirectionalLight 
 	{
 		Vec3 light_colour;
 		Vec3 direction;
 	};
 
-	struct SpotLight // Out
+	struct SpotLight 
 	{
 		Vec3 light_colour;
 		Vec3 light_position;
-		Vec4 direction; // w = raduis
+		// @NOTE: direction.w = raduis
+		Vec4 direction; 
 	};
 
 	struct RenderSettings
@@ -58,22 +59,8 @@ namespace cm
 		virtual void SetTransformValues(Shader *shader) = 0;
 		virtual const GLMesh &GetMeshForRender() = 0;
 	};
-	   
-	class Actor : public WorldObject
-	{
-	public:
-		Transform transform;
-		Material material;
-		GLMesh mesh;
-		
-		virtual void SetTextures(Shader *shader) override;
-		virtual void SetMaterialValues(Shader *shader) override;
-		virtual void SetTransformValues(Shader *shader) override;
-		virtual const GLMesh &GetMeshForRender() override;
 
-	};
-
-	struct World // out
+	struct World 
 	{
 		RenderSettings render_settings;
 		std::vector<WorldObject*> objects;

@@ -54,6 +54,8 @@ namespace cm
 	
 	public:
 		void Play(real time, std::vector<Bone> *bones);
+
+	private:
 		void AnimateBones(const real &animation_time, Bone *bone, const Mat4 &parent_transform);
 
 		int32 GetAnimationChannel(const std::string &bone_name);

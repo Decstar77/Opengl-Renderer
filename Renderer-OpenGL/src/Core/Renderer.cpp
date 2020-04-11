@@ -1,17 +1,17 @@
 #include "Core/Renderer.h"
 namespace cm
 {
-	Renderer::Renderer()
+	WorldRenderer::WorldRenderer()
 	{
 		
 	}
 
-	Renderer::Renderer(RenderShaders render_shaders, StandardShaders standard_shaders) : render_shaders(render_shaders), standard_shaders(standard_shaders)
+	WorldRenderer::WorldRenderer(RenderShaders render_shaders, StandardShaders standard_shaders) : render_shaders(render_shaders), standard_shaders(standard_shaders)
 	{
 		
 	}
 
-	void Renderer::Render(const World &world)
+	void WorldRenderer::Render(const World &world)
 	{
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
@@ -62,7 +62,7 @@ namespace cm
 
 	}
 
-	void Renderer::ShadowPass(const World &world, Mat4 *light_space_matrix)
+	void WorldRenderer::ShadowPass(const World &world, Mat4 *light_space_matrix)
 	{
 		BindFrameBuffer(frame_shadow_map);
 		BindShader(render_shaders.depth_test_shader);
@@ -81,7 +81,7 @@ namespace cm
 		RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_HEIGHT);
 	}
 
-	void Renderer::GBufferPass(const World &world)
+	void WorldRenderer::GBufferPass(const World &world)
 	{
 		BindFrameBuffer(frame_g_buffer);
 		BindShader(render_shaders.g_buffer_shader);
@@ -93,7 +93,7 @@ namespace cm
 		UnbindFrameBuffer();
 	}
 
-	void Renderer::DeferedPass(const World &world)
+	void WorldRenderer::DeferedPass(const World &world)
 	{
 		BindShader(render_shaders.deferred_render_shader);
 		
@@ -104,7 +104,7 @@ namespace cm
 		RenderMesh(render_shaders.deferred_render_shader, standard_meshes.quad);
 	}
 
-	void Renderer::ForwardPass(const World &world)
+	void WorldRenderer::ForwardPass(const World &world)
 	{
 		BindShader(render_shaders.forward_render_shader);
 		
@@ -124,7 +124,7 @@ namespace cm
 		}
 	}
 
-	void Renderer::PostProcessingPass(const World &world)
+	void WorldRenderer::PostProcessingPass(const World &world)
 	{
 		// @TODO: Create a better solution for the blur 
 		//bloom_blur.GPUGaussienBlur();		
@@ -137,7 +137,7 @@ namespace cm
 		RenderMesh(render_shaders.post_processing_shader, standard_meshes.quad);
 	}
 
-	void Renderer::SSAOPass(const World &world)
+	void WorldRenderer::SSAOPass(const World &world)
 	{
 		// @STEP: Fill in the gbuffer. Note, this is all view space things.
 		BindFrameBuffer(frame_g_buffer);
@@ -218,7 +218,7 @@ namespace cm
 
 	}
 
-	void Renderer::debug()
+	void WorldRenderer::debug()
 	{
 		BindShader(render_shaders.debug_mesh_shader);
 		glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
@@ -235,7 +235,7 @@ namespace cm
 		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	}
 
-	void Renderer::DrawSkyBox()
+	void WorldRenderer::DrawSkyBox()
 	{
 		// @TODO: Fill in ubos
 		RenderCommands::DisableFaceCulling();
@@ -247,7 +247,7 @@ namespace cm
 	}
 
 
-	void Renderer::InitShaders()
+	void WorldRenderer::InitShaders()
 	{
 		// @TODO: Fix up AssetLoader for linking errors
 		//Shader cubemap_shader = CreateShader(ReadFile("shaders/Rendering/skybox_vert.glsl"), ReadFile("shaders/Rendering/skybox_frag.glsl"));
@@ -272,7 +272,7 @@ namespace cm
 		//g_buffer_shader.name = "g_buffer_shader ";
 	}
 
-	void Renderer::InitFrameBuffers()
+	void WorldRenderer::InitFrameBuffers()
 	{
 		FrameBuffer post_processing;
 		CreateFrameBuffer(&post_processing);
@@ -409,7 +409,7 @@ namespace cm
 		frame_ssao_blured = ssao_blured;
 	}
 
-	void Renderer::InitIdentityTexture()
+	void WorldRenderer::InitIdentityTexture()
 	{
 		Texture id_texture;
 		id_texture.config.data_type = GL_UNSIGNED_BYTE;
@@ -428,12 +428,12 @@ namespace cm
 		identity_texture = id_texture;
 	}
 
-	void Renderer::InitStandardMeshes()
+	void WorldRenderer::InitStandardMeshes()
 	{
 		Assert(0);
 	}
 
-	void Renderer::InitSkyBox()
+	void WorldRenderer::InitSkyBox()
 	{
 		CubeMap default_skybox0;
 		default_skybox0.config.data_type = GL_FLOAT;
