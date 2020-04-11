@@ -6,7 +6,6 @@
 namespace cm
 {
 
-
 	struct Vertex
 	{
 		Vec3 position = Vec3(0);
@@ -19,9 +18,6 @@ namespace cm
 		uint32 bone_index[4] = { 0, 0, 0, 0 };
 		float bone_weights[4] = { 0, 0, 0, 0 };
 	};
-
-
-
 
 	struct Edge
 	{

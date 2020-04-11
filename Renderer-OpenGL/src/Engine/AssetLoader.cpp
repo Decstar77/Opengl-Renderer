@@ -469,7 +469,7 @@ namespace cm
 			// @NOTE: Add first to avoid coping 
 			animation->frames.push_back(frame);
 
-			animation->frames[i].name = ai->mNodeName.C_Str();
+			animation->frames[i].bone_name = ai->mNodeName.C_Str();
 
 			animation->frames[i].poskeys.resize(ai->mNumPositionKeys);
 			animation->frames[i].postime.resize(ai->mNumPositionKeys);

@@ -26,20 +26,25 @@ DAY:
 
 TODO:
 	HIGH PRIO:
-		Need to properly abstract the animation process maybe by having a gameobjects.h
+		
 		We can only write data to a VBO on a single tpye. Eg float, change
-		Implement array class. Im not sure if it worth it though...
 		Sort out shader mayhem !
 		Mode import options
+		Rewrite EdiableMesh class IT HAS AC!!
+		Figure out how to write to gpu animation data nicely 
+		Math lib need formating like opengl.h
+		Imgui docking!
+		Need to redo vertex wieght clacl
+
 
 	MED PRIO:
 		RenderWorld function needs to go.
-		Animation controller is not complete
-	
+		
+		Need to properly abstract the animation process maybe by having a gameobjects.h
+		Implement array class. Im not sure if it worth it though...
 
 	LOW PRIO:
 		OpenGL layout class
-		OpenGl creation of vertex buffer / array buffers
 		
 		Core dyna array
 

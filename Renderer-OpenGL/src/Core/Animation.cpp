@@ -8,31 +8,56 @@ namespace cm
 	{
 		for (uint32 i = 0; i < animations.size(); i++)
 		{
-
-
+			if (name == animations[i].name)
+			{
+				current_animation_index = i;
+				break;
+			}
 		}
+		Assert(0); // @REASON: Could not find animation with that name
 	}
 
 	void AnimationController::Play(uint32 animation_index)
 	{
 		Assert(animation_index < animations.size());
 		Assert(animation_index >= 0);
+		current_animation_index = animation_index;
+	}
 
-		Animation * anim = &animations[animation_index];
+	void AnimationController::Update(real32 delta_time)
+	{
+		current_time += delta_time;
+		if (current_time >= 10000)
+		{
+			current_time -= 10000;
+		}			
+
+		Animation * anim = &animations[current_animation_index];
 		anim->Play(current_time, &bones);
 
-		for (int32 i = 0; i < bones.size(); i++)
-		{
-			//bones[i].current_transform = bones[i].current_transform * global_inverse_transform;
-		}
-
+		// @NOTE: Global transform I've turned off. I think it's unnessariy
+		//for (uint32 i = 0; i < bones.size(); i++)
+		//{
+		//	bones[i].current_transform = bones[i].current_transform * global_inverse_transform;
+		//}
 	}
 
 	void Animation::Play(real time, DynaArray<Bone> *bones)
 	{
 		// @TODO: Time calcs
-		real32 time_in_ticks = time * ticks_per_second;
-		real32 animation_time = fmod(time_in_ticks, duration);
+		real32 time_in_ticks = time * ticks_per_second * animation_speed;		
+		real32 animation_time = 0;		
+		switch (flags)
+		{			
+			case AnimationFlags::Once: animation_time = Clamp(time_in_ticks, 0, duration - 0.01f); break; 
+			case AnimationFlags::Loop: animation_time = fmod(time_in_ticks, duration);  break;
+			default: return;			
+		}
+
+
+		// @NOTE: This could be an optimatiztion that checks if we are at resting positions
+		//if (fequal(animation_time, duration, 0.02f) || fequal(animation_time, 0, 0.02f)) { return; }
+	
 
 		working_bones = bones;
 		AnimateBones(animation_time, &bones->at(0), Mat4(1));
@@ -92,7 +117,7 @@ namespace cm
 	{
 		for (uint32 i = 0; i < frames.size(); i++)
 		{
-			if (frames[i].name == bone_name)
+			if (frames[i].bone_name == bone_name)
 				return i;
 		}
 		return -1;

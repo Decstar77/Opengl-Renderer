@@ -24,7 +24,7 @@ namespace cm
 	{
 	public:
 		int32 bone_index = -1;
-		std::string name;
+		std::string bone_name;
 		DynaArray<real32> postime;
 		DynaArray<Vec3> poskeys;
 
@@ -35,13 +35,24 @@ namespace cm
 		DynaArray<Vec3> sclkeys;
 	};
 
+	enum class AnimationFlags
+	{
+		Loop = 0,
+		Once = 1
+	};
+
 	class Animation
 	{
 	public:
-		float duration = 0;
-		float ticks_per_second = 0;
+		real32 duration = 0;
+		real32 ticks_per_second = 0;
+		real32 animation_speed = 1;
+		AnimationFlags flags = AnimationFlags::Loop;
+		std::string name;
 		DynaArray<AnimationFrames> frames;
 		DynaArray<Bone> *working_bones;
+	
+	public:
 		void Play(real time, DynaArray<Bone> *bones);
 		void AnimateBones(const real &animation_time, Bone *bone, const Mat4 &parent_transform);
 
@@ -59,18 +70,21 @@ namespace cm
 	class AnimationController
 	{
 	public:
-		real current_time;
-
+		uint32 current_animation_index;
+		real32 current_time;
+		Mat4 global_inverse_transform;
+		
 		// @NOTE: We reserve the [0]/0th index to be the root bone. This root bone does not actually exist in the mesh
-		// @NOTE: It is simply a place holder to make all other calculations easiers
+		//  	: It is simply a place holder to make all other calculations easiers
+		DynaArray<Bone> bones;	
 
-		DynaArray<Bone> bones;
+		// @NOTE: All the animation key frames the corrapsond some of the bones
 		DynaArray<Animation> animations;
 
 		void Play(const std::string &name);
 		void Play(uint32 animation_index);
 
-		Mat4 global_inverse_transform;
+		void Update(real32 delta_time);		
 	};
 
 
