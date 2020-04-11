@@ -57,7 +57,7 @@ namespace cm
 		}		
 	}
 
-	Mat4 ToMatrix4f(const aiMatrix4x4 *ai_mat)
+	Mat4 ModeImport::ToMatrix4f(const aiMatrix4x4 *ai_mat)
 	{
 
 		uint32 size = sizeof(Mat4);
@@ -72,128 +72,8 @@ namespace cm
 		return a;
 	}
 
-	void processMesh(aiMesh *mesh, EditableMesh *edit_mesh, const aiScene *scene)
-	{
-		// Walk through each of the mesh's vertices
 
-		bool positions = mesh->HasPositions();
-		bool normals = mesh->HasNormals();
-		bool texture_coords = mesh->HasTextureCoords(0);
-		bool tanget_bitangets = mesh->HasTangentsAndBitangents();
-		bool colours = mesh->HasVertexColors(0);
-		bool faces = mesh->HasFaces();
-		bool bones = mesh->HasBones();
-
-		for (uint32 i = 0; i < mesh->mNumVertices; i++)
-		{
-			Vertex vertex = {};
-
-			// Positions
-			if (positions)
-			{
-				vertex.position.x = mesh->mVertices[i].x;
-				vertex.position.y = mesh->mVertices[i].y;
-				vertex.position.z = mesh->mVertices[i].z;
-			}
-
-			// Normals
-			if (normals)
-			{
-				vertex.normal.x = mesh->mNormals[i].x;
-				vertex.normal.y = mesh->mNormals[i].y;
-				vertex.normal.z = mesh->mNormals[i].z;
-			}
-
-			// Texture coordinates			
-			if (texture_coords)
-			{
-				vertex.texture_coord.x = mesh->mTextureCoords[0][i].x;
-				vertex.texture_coord.y = mesh->mTextureCoords[0][i].y;
-			}
-
-			// Tangent and bitangents
-			if (tanget_bitangets)
-			{
-				vertex.tanget.x = mesh->mTangents[i].x;
-				vertex.tanget.y = mesh->mTangents[i].y;
-				vertex.tanget.z = mesh->mTangents[i].z;
-
-				vertex.bitanget.x = mesh->mBitangents[i].x;
-				vertex.bitanget.y = mesh->mBitangents[i].y;
-				vertex.bitanget.z = mesh->mBitangents[i].z;
-			}
-
-			// Vertex Colours
-			if (colours)
-			{
-				Assert(0); // @TODO: Check before use
-				vertex.colour.x = mesh->mColors[0]->r;
-				vertex.colour.y = mesh->mColors[0]->g;
-				vertex.colour.z = mesh->mColors[0]->b;
-			}
-
-			edit_mesh->vertices.push_back(vertex);
-		}
-
-		if (bones)
-		{
-			for (int i = 0; i < mesh->mNumBones; i++)
-			{
-				aiBone *b = mesh->mBones[i];
-				for (int j = 0; j < b->mNumWeights; j++)
-				{
-					aiVertexWeight vertex_data = b->mWeights[j];
-					uint32 vertex_index = vertex_data.mVertexId;
-					float vertex_weight = vertex_data.mWeight;
-					uint32 next = edit_mesh->vertices.at(vertex_index).next;
-					edit_mesh->vertices.at(vertex_index).bone_index[next] = i;
-					edit_mesh->vertices.at(vertex_index).bone_weights[next] = vertex_weight;
-					edit_mesh->vertices.at(vertex_index).next++;
-					Assert(edit_mesh->vertices.at(vertex_index).next < 4);
-				}
-			}
-		}
-
-		if (faces)
-		{
-			for (uint32 i = 0; i < mesh->mNumFaces; i++)
-			{
-				aiFace face = mesh->mFaces[i];
-				for (uint32 j = 0; j < face.mNumIndices; j++)
-				{
-					edit_mesh->indices.push_back(face.mIndices[j]);
-				}
-
-			}
-		}
-
-		edit_mesh->has_positions = positions;
-		edit_mesh->has_normals = normals;
-		edit_mesh->has_texture_coords = texture_coords;
-		edit_mesh->has_tanget_bitangets = tanget_bitangets;
-		edit_mesh->has_colours = colours;
-		edit_mesh->name = mesh->mName.C_Str();
-	}
-
-	void processNode(aiNode *node, std::vector<EditableMesh> *meshes, const aiScene *scene)
-	{		
-		for (uint32 i = 0; i < node->mNumMeshes; i++)
-		{					
-			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			
-			EditableMesh edit_mesh;
-			processMesh(mesh, &edit_mesh, scene);
-
-			meshes->push_back(edit_mesh);
-		}
-
-		for (uint32 i = 0; i < node->mNumChildren; i++)
-		{
-			processNode(node->mChildren[i], meshes,  scene);
-		}
-	}
-
-	int32 FindMinVertexWeight(Vertex vertex)
+	int32 ModeImport::FindMinVertexWeight(Vertex vertex)
 	{
 		real32 min_weight = REAL_MAX;
 		int32 min_index = -1;
@@ -212,7 +92,7 @@ namespace cm
 		return min_index;
 	}
 
-	void ProcessMeshCombine(aiMesh *mesh, ModeImport *model_import, const aiScene *scene)
+	void ModeImport::ProcessMeshCombine(aiMesh *mesh, ModeImport *model_import, const aiScene *scene)
 	{
 		// @NOTE: Get the meta data from the current mesh.
 		bool positions = mesh->HasPositions();
@@ -359,7 +239,7 @@ namespace cm
 		emesh->name = mesh->mName.C_Str();
 	}
 
-	void ProcessMesh(aiNode *node, ModeImport *model_import, const aiScene * scene)
+	void ModeImport::ProcessMesh(aiNode *node, ModeImport *model_import, const aiScene * scene)
 	{
 		for (uint32 i = 0; i < node->mNumMeshes; i++)
 		{
@@ -376,7 +256,9 @@ namespace cm
 		}
 	}
 
-	void StoreAllBones(const aiMesh * mesh, AnimationController *ac)
+
+
+	void ModeImport::StoreAllBones(const aiMesh * mesh, AnimationController *ac)
 	{
 		for (uint32 i = 0; i < mesh->mNumBones; i++)
 		{
@@ -404,7 +286,7 @@ namespace cm
 		}
 	}
 
-	const aiNode* FindRootNodeOfBones(const aiNode *node, AnimationController *ac)
+	const aiNode* ModeImport::FindRootNodeOfBones(const aiNode *node, AnimationController *ac)
 	{
 		// @NOTE: If anything this will give us problems
 		std::string name = node->mName.C_Str();
@@ -426,7 +308,7 @@ namespace cm
 		return nullptr;
 	}
 
-	aiMatrix4x4 CalcRootNodeTransformMatrix(const aiNode *node)
+	aiMatrix4x4 ModeImport::CalcRootNodeTransformMatrix(const aiNode *node)
 	{
 		if (node->mParent == NULL)
 		{
@@ -435,7 +317,7 @@ namespace cm
 		return CalcRootNodeTransformMatrix(node->mParent) * node->mTransformation;
 	}
 
-	void StoreNodeTransformMatrices(const aiNode *node, AnimationController *ac)
+	void ModeImport::StoreNodeTransformMatrices(const aiNode *node, AnimationController *ac)
 	{
 		std::string name = node->mName.C_Str();
 				
@@ -454,7 +336,7 @@ namespace cm
 		}
 	}
 
-	void SortBoneParents(const aiNode *node, uint32 parent_index, AnimationController *ac)
+	void ModeImport::SortBoneParents(const aiNode *node, uint32 parent_index, AnimationController *ac)
 	{
 		std::string name = node->mName.C_Str();
 		for (uint32 i = 1; i < ac->bones.size(); i++)
@@ -473,7 +355,7 @@ namespace cm
 		}
 	}
 
-	void SortBoneChildren(AnimationController *ac)
+	void ModeImport::SortBoneChildren(AnimationController *ac)
 	{
 		// @NOTE: This assumes the bone array's parents are correctly set and sorted
 		//		: Start at one as we don't care about root
@@ -488,7 +370,7 @@ namespace cm
 		}
 	}
 
-	void ProcessAnimationChannels(aiAnimation *anim, Animation *animation)
+	void ModeImport::ProcessAnimationChannels(aiAnimation *anim, Animation *animation)
 	{
 		for (int i = 0; i < anim->mNumChannels; i++)
 		{
@@ -535,7 +417,7 @@ namespace cm
 		}
 	}
 
-	void ProcessBones(const aiScene *scene, AnimationController *ac)
+	void ModeImport::ProcessBones(const aiScene *scene, AnimationController *ac)
 	{
 		// @NOTE: Order is important
 		//		: Create a dummy root node. This bone doesn't actually exist in the mesh
@@ -570,8 +452,8 @@ namespace cm
 		// @NOTE: This can only happen if the parents are set. See function for deets
 		SortBoneChildren(ac);
 	}
-
-	void ProcessAnimations(const aiScene *scene, AnimationController *ac)
+	
+	void ModeImport::ProcessAnimations(const aiScene *scene, AnimationController *ac)
 	{
 		// @NTODO: Loop throught the all the animations, Processing bones should be independt on this.
 		Assert(scene->mNumAnimations <= 1);
@@ -606,40 +488,27 @@ namespace cm
 		LOG("ERROR:ASSIMP -> " << err);
 	}
 
-
-
-
-
-
-	bool LoadModel(ModeImport *model_import)
+	bool ModeImport::Load()
 	{
 		Assimp::Importer import;
-				
-		// @TODO: Process flags
-		const aiScene *scene = import.ReadFile(model_import->path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);
+		Assert(model_paths.size() == 1);
+		const aiScene *scene = import.ReadFile(this->model_paths[0], aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);
 		bool result = scene || !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || scene->mRootNode;
-				
+
+
 		// @TODO: We do not support multi meshes
-		Assert(model_import->import_mesh_combine == true);
+		Assert(import_mesh_combine == true);
 
-		// @TODO: I know I know, new..
-		//model_import->mesh_count = 1;
-		//model_import->resulting_mesh = new EditableMesh();
-		//
-		//model_import->animation_controller_count = 1;
-		//model_import->animation_controller = new AnimationController();
-
-		//delete model_import->animation_controller;
-		model_import->resulting_meshes.resize(1);
-		model_import->resulting_animation_controllers.resize(1);
+		resulting_meshes.resize(1);
+		resulting_animation_controllers.resize(1);
 
 		if (result)
 		{
-			if (model_import->import_animations)
+			if (import_animations)
 			{
-				ProcessAnimations(scene, &model_import->resulting_animation_controllers[0]);
-			}			
-			ProcessMesh(scene->mRootNode, model_import, scene);
+				ProcessAnimations(scene, &this->resulting_animation_controllers[0]);
+			}
+			ProcessMesh(scene->mRootNode, this, scene);
 		}
 		else
 		{
@@ -650,66 +519,49 @@ namespace cm
 		return result;
 	}
 
-	bool LoadModel(std::vector<EditableMesh> *meshes, const std::string &path)
-	{
-		Assimp::Importer import;
-		const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);
-		aiMatrix4x4 mat = scene->mRootNode->mTransformation.Inverse();
-		
-		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
-		{
-			std::cout << "ERROR::ASSIMP:: " << import.GetErrorString() << std::endl;
-			return false;
-		}
 
-		processNode(scene->mRootNode, meshes, scene);
-		bool hanim = scene->HasAnimations();
-		//if (hanim)
-		//{
-		//	std::cout << "Animation count: " << scene->mNumAnimations << std::endl;
-		//	aiAnimation *anim = scene->mAnimations[0];
-		//	std::cout << "Channel count: " << anim->mNumChannels << std::endl;
 
-		//	for (int i = 0; i < anim->mNumChannels; i++)
-		//	{
-		//		aiNodeAnim *ai = anim->mChannels[i];
-		//		std::cout << ai->mNodeName.C_Str() << std::endl;
-		//		std::cout << ai->mNumPositionKeys << std::endl;
-		//		std::cout << ai->mNumRotationKeys << std::endl;
-		//		std::cout << ai->mNumScalingKeys << std::endl;
-		//	}
-		//	aiMesh* mesh = scene->mMeshes[0];
 
-		//	for (int i = 0; i < mesh->mNumBones; i++)
-		//	{
-		//		aiBone *b = mesh->mBones[i];
-		//		std::cout << b->mName.C_Str() << std::endl;
-		//	}
+	//bool LoadModel(ModeImport *model_import)
+	//{
+	//	Assimp::Importer import;
+	//			
+	//	// @TODO: Process flags
+	//	const aiScene *scene = import.ReadFile(model_import->path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);
+	//	bool result = scene || !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || scene->mRootNode;
+	//			
+	//	// @TODO: We do not support multi meshes
+	//	Assert(model_import->import_mesh_combine == true);
 
-		//}
-		
-		EditableMesh* mesh = &meshes->at(0);
-		for (int i = 1; i < meshes->size(); i++)
-		{
-			EditableMesh next = meshes->at(i);
+	//	// @TODO: I know I know, new..
+	//	//model_import->mesh_count = 1;
+	//	//model_import->resulting_mesh = new EditableMesh();
+	//	//
+	//	//model_import->animation_controller_count = 1;
+	//	//model_import->animation_controller = new AnimationController();
 
-			for (int j = 0; j < next.indices.size(); j++)
-			{
-				uint32 index = (mesh->vertices.size()) + next.indices.at(j);
-				mesh->indices.push_back(index);
+	//	//delete model_import->animation_controller;
+	//	model_import->resulting_meshes.resize(1);
+	//	model_import->resulting_animation_controllers.resize(1);
 
-			}
+	//	if (result)
+	//	{
+	//		if (model_import->import_animations)
+	//		{
+	//			ProcessAnimations(scene, &model_import->resulting_animation_controllers[0]);
+	//		}			
+	//		ProcessMesh(scene->mRootNode, model_import, scene);
+	//	}
+	//	else
+	//	{
+	//		ProcessError(import.GetErrorString());
+	//	}
 
-			for (int j = 0; j < next.vertices.size(); j++)
-			{
-				mesh->vertices.push_back(next.vertices.at(j));
-			}
-					   
-		}
+	//	import.FreeScene();
+	//	return result;
+	//}
+
 	
-		// @TODO: free s
-		return true;
-	}
 
 
 

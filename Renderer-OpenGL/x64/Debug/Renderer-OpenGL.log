@@ -8,9 +8,9 @@ f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(39): warning C4244: 'a
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(41): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(42): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(474): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(483): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(672): warning C4244: 'initializing': conversion from '_Rep' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(473): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(482): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(671): warning C4244: 'initializing': conversion from '_Rep' to 'float', possible loss of data
           with
           [
               _Rep=__int64

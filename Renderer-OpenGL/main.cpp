@@ -272,17 +272,12 @@ int main()
 	    //"textures/bot1_rig_v01_Scene_Material_OcclusionRoughnessMetallic.png"
 	};
 
-	std::vector<EditableMesh> impmeshes;
-	//
 	ModeImport cube_import;
 	cube_import.import_animations = false;
-	cube_import.path = "res/models/smooth_cube.obj";
+	cube_import.model_paths.push_back("res/models/smooth_cube.obj");
 
-	LoadModel(&cube_import);
+	cube_import.Load();
 	GLMesh impmesh = cube_import.resulting_meshes[0].CreateMesh(false);
-	impmeshes.clear();
-
-
 
 
 	//DynaArray<uint8> image_data;
@@ -336,19 +331,16 @@ int main()
 
 
 
-	impmeshes.clear();
-	
 	
 
 	AnimatedActor test_cube_guy;
 	
 
 	ModeImport model_import;
-	model_import.path = path;
-
-	LoadModel(&model_import);
+	model_import.model_paths.push_back(path);
+	model_import.Load();
+	
 	EditableMesh emesh = model_import.resulting_meshes[0];
-
 
 	test_cube_guy.mesh = emesh.CreateAnimMesh();
 	test_cube_guy.animation_controller = model_import.resulting_animation_controllers[0];
@@ -568,7 +560,7 @@ int main()
 			{
 				std::stringstream ss;
 				ss << "gBones[" << (i) << "]";
-				ShaderSetMat4(&animation_test_shader, ss.str(), ToMatrix4f(&tut_tran[i]).arr);
+				//ShaderSetMat4(&animation_test_shader, ss.str(), ToMatrix4f(&tut_tran[i]).arr);
 			}
 		}
 		else

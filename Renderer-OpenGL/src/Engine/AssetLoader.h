@@ -12,7 +12,24 @@ namespace cm
 	class ModeImport
 	{	
 	private:
+		Mat4 ToMatrix4f(const aiMatrix4x4 *ai_mat);
+		aiMatrix4x4 CalcRootNodeTransformMatrix(const aiNode *node);
 
+		int32 FindMinVertexWeight(Vertex vertex);
+		const aiNode* FindRootNodeOfBones(const aiNode *node, AnimationController *ac);
+
+		
+		void StoreAllBones(const aiMesh * mesh, AnimationController *ac);
+		void StoreNodeTransformMatrices(const aiNode *node, AnimationController *ac);
+
+		void SortBoneParents(const aiNode *node, uint32 parent_index, AnimationController *ac);
+		void SortBoneChildren(AnimationController *ac);
+		
+		void ProcessAnimationChannels(aiAnimation *anim, Animation *animation);
+		void ProcessBones(const aiScene *scene, AnimationController *ac);
+		void ProcessAnimations(const aiScene *scene, AnimationController *ac);
+		void ProcessMeshCombine(aiMesh *mesh, ModeImport *model_import, const aiScene *scene);
+		void ProcessMesh(aiNode *node, ModeImport *model_import, const aiScene * scene);
 
 	public:
 		bool import_animations = true;
@@ -27,13 +44,13 @@ namespace cm
 
 		std::vector<EditableMesh> resulting_meshes;
 		std::vector<AnimationController> resulting_animation_controllers;
-		//uint32 mesh_count = 0;
-		//EditableMesh *resulting_mesh = nullptr;
+		std::vector<std::string> model_paths;
 
-		//uint32 animation_controller_count = 0;
-		//AnimationController *animation_controller = nullptr;
+	public:
+		// @TODO: Multi-thread
+		// @TOOD: Multi-mesh
+		bool Load();		
 
-		std::string path;
 	};
 
 
@@ -44,9 +61,7 @@ namespace cm
 
 	
 
-	bool LoadModel(std::vector<EditableMesh> *meshes, const std::string &path);
-	bool LoadModel(ModeImport *model_import);
-	Mat4 ToMatrix4f(const aiMatrix4x4 *ai_mat);
+	
 }
 
 
