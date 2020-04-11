@@ -29,12 +29,11 @@ TODO:
 		
 		We can only write data to a VBO on a single tpye. Eg float, change
 		Sort out shader mayhem !
-		Mode import options
-		Rewrite EdiableMesh class IT HAS AC!!
+		
+		Rewrite EdiableMesh class.
 		Figure out how to write to gpu animation data nicely 
-		Math lib need formating like opengl.h
+		Math lib need formating like opengl.h (GARETH)
 		Imgui docking!
-		Need to redo vertex wieght clacl
 
 
 	MED PRIO:

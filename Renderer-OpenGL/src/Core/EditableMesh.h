@@ -92,8 +92,6 @@ namespace cm
 
 		std::string name;
 		
-		Animation animation;
-		AnimationController ac;
 		bool has_positions = false;
 		bool has_normals = false;
 		bool has_texture_coords = false;

@@ -211,7 +211,7 @@ namespace cm
 		return min_index;
 	}
 
-	void ProcessMeshCombine(aiMesh *mesh, EditableMesh *emesh, const aiScene *scene)
+	void ProcessMeshCombine(aiMesh *mesh, ModeImport *model_import, const aiScene *scene)
 	{
 		// @NOTE: Get the meta data from the current mesh.
 		bool positions = mesh->HasPositions();
@@ -224,6 +224,8 @@ namespace cm
 		
 		// @NOTE: This is the offest by which we combine this mesh to all the other meshes in emesh.
 		//		: Meaning, indices and vertex bone weights.
+		EditableMesh *emesh = &model_import->resulting_meshes.at(0);
+		AnimationController *ac = &model_import->resulting_animation_controllers.at(0);
 		uint32 mesh_indices_offset = emesh->vertices.size();
 
 		// @NOTE: Construct the vertices with the available data
@@ -240,7 +242,7 @@ namespace cm
 			}
 
 			// Normals
-			if (normals)
+			if (normals && model_import->vertex_normals)
 			{
 				vertex.normal.x = mesh->mNormals[i].x;
 				vertex.normal.y = mesh->mNormals[i].y;
@@ -248,14 +250,14 @@ namespace cm
 			}
 
 			// Texture coordinates			
-			if (texture_coords)
+			if (texture_coords && model_import->vertex_texture_coords)
 			{
 				vertex.texture_coord.x = mesh->mTextureCoords[0][i].x;
 				vertex.texture_coord.y = mesh->mTextureCoords[0][i].y;
 			}
 
 			// Tangent and bitangents
-			if (tanget_bitangets)
+			if (tanget_bitangets && model_import->vertex_binorms_tangents)
 			{
 				vertex.tanget.x = mesh->mTangents[i].x;
 				vertex.tanget.y = mesh->mTangents[i].y;
@@ -267,18 +269,18 @@ namespace cm
 			}
 
 			// Vertex Colours
-			if (colours)
+			if (colours && model_import->vertex_colours)
 			{
-				//Assert(0); // @TODO: Check before use
-				//vertex.colour.x = mesh->mColors[0]->r;
-				//vertex.colour.y = mesh->mColors[0]->g;
-				//vertex.colour.z = mesh->mColors[0]->b;
+				Assert(0); // @TODO: Check before use
+				vertex.colour.x = mesh->mColors[0]->r;
+				vertex.colour.y = mesh->mColors[0]->g;
+				vertex.colour.z = mesh->mColors[0]->b;
 			}
 
 			emesh->vertices.push_back(vertex);
 		}
 
-		if (bones)
+		if (bones && model_import->import_animations)
 		{
 			for (int i = 0; i < mesh->mNumBones; i++)
 			{
@@ -288,9 +290,10 @@ namespace cm
 
 				// @NOTE: Find the bone index
 				// @SPEED: Again a hash map will solve some of this.
-				for (uint32 j = 0; j < emesh->ac.bones.size(); j++)
+				for (uint32 j = 0; j < ac->bones.size(); j++)
 				{
-					std::string bone_name = emesh->ac.bones.at(j).name;
+					std::string bone_name = ac->bones.at(j).name;
+					
 					if (bone_name == cur_bone_name)
 					{
 						// @NOTE: Remember that the first entry is the dummy root bone;
@@ -304,18 +307,19 @@ namespace cm
 				for (uint32 j = 0; j < b->mNumWeights; j++)
 				{
 					aiVertexWeight vertex_data = b->mWeights[j];
+
 					uint32 vertex_index = vertex_data.mVertexId + mesh_indices_offset;
 					real32 vertex_weight = vertex_data.mWeight;
 					
-					// @TODO: Import options
-					real32 vertex_weight_cull = 0.01f;				
-#if 1
+					// @TODO: Support more than 4 weights
+					Assert(model_import->vertex_weight_enforcement == false);
+
+					real32 vertex_weight_cull = model_import->vertex_weight_cull;				
+					// @NOTE: Finds the min vertex weight and store in index						
+					//		: If current weight is greater than the lowest weight 
+					//		: it is added else ignored
 					if (vertex_weight >= vertex_weight_cull)
-					{						
-						// @NOTE: Finds the min vertex weight and store in index						
-						//		: If current weight is greater than the lowest weight 
-						//		: it is added else ignored
-						
+					{					
 						int32 index = FindMinVertexWeight(emesh->vertices.at(vertex_index));
 						real32 min_vertex_weight = emesh->vertices.at(vertex_index).bone_weights[index];
 						
@@ -326,29 +330,9 @@ namespace cm
 							if (min_vertex_weight != 0)
 							{
 								LOG("Replaced weight: " << min_vertex_weight << " With: " << vertex_weight << " Delta " << vertex_weight - min_vertex_weight);
-							}
-							
+							}							
 						}
-					}
-#else
-					uint32 next = emesh->vertices.at(vertex_index).next;
-					real32 vertex_weight_cull = 0.1f;
-					if (vertex_weight >= vertex_weight_cull)
-					{
-						if (emesh->vertices.at(vertex_index).next < 4)
-						{
-							emesh->vertices.at(vertex_index).bone_index[next] = bone_index;
-							emesh->vertices.at(vertex_index).bone_weights[next] = vertex_weight;
-							emesh->vertices.at(vertex_index).next++;
-						}
-					}
-					else
-					{
-						LOG("Culled: " << vertex_index << " at weight = " << vertex_weight);
-					}
-
-#endif
-					//Assert(emesh->vertices.at(vertex_index).next < 4);
+					}				
 				}
 			}
 		}
@@ -374,7 +358,7 @@ namespace cm
 		emesh->name = mesh->mName.C_Str();
 	}
 
-	void ProcessNode(aiNode *node, EditableMesh *emesh, const aiScene * scene)
+	void ProcessMesh(aiNode *node, ModeImport *model_import, const aiScene * scene)
 	{
 		for (uint32 i = 0; i < node->mNumMeshes; i++)
 		{
@@ -382,12 +366,12 @@ namespace cm
 
 			std::cout << "Mesh name " << mesh->mName.C_Str() << std::endl;
 			
-			ProcessMeshCombine(mesh, emesh, scene);			
+			ProcessMeshCombine(mesh, model_import, scene);
 		}
 
 		for (uint32 i = 0; i < node->mNumChildren; i++)
 		{
-			ProcessNode(node->mChildren[i], emesh, scene);
+			ProcessMesh(node->mChildren[i], model_import, scene);
 		}
 	}
 
@@ -586,13 +570,14 @@ namespace cm
 		SortBoneChildren(ac);
 	}
 
-	void ProcessAnimations(const aiScene *scene, EditableMesh *emesh)
+	void ProcessAnimations(const aiScene *scene, AnimationController *ac)
 	{
 		// @NTODO: Loop throught the all the animations, Processing bones should be independt on this.
 		Assert(scene->mNumAnimations <= 1);
 		if (!scene->HasAnimations())
+		{
 			return;
-
+		}
 		// @NOTE: Get current animation
 		aiAnimation *anim = scene->mAnimations[0];
 
@@ -607,11 +592,11 @@ namespace cm
 		mat.Inverse();
 
 		// @NOTE Update mesh
-		emesh->ac.global_inverse_transform = ToMatrix4f(&mat);
-		emesh->ac.animations.push_back(animation);
+		ac->global_inverse_transform = ToMatrix4f(&mat);
+		ac->animations.push_back(animation);
 
 		// @NOTE: Construct bone tree
-		ProcessBones(scene, &emesh->ac);			   		 
+		ProcessBones(scene, ac);			   		 
 	}
 
 	void ProcessError(const std::string &err)
@@ -625,17 +610,35 @@ namespace cm
 
 
 
-	bool LoadModelTest(EditableMesh *emesh, const std::string &path)
+	bool LoadModel(ModeImport *model_import)
 	{
 		Assimp::Importer import;
-	
-		const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);
-
+				
+		// @TODO: Process flags
+		const aiScene *scene = import.ReadFile(model_import->path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);
 		bool result = scene || !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || scene->mRootNode;
+				
+		// @TODO: We do not support multi meshes
+		Assert(model_import->import_mesh_combine == true);
+
+		// @TODO: I know I know, new..
+		//model_import->mesh_count = 1;
+		//model_import->resulting_mesh = new EditableMesh();
+		//
+		//model_import->animation_controller_count = 1;
+		//model_import->animation_controller = new AnimationController();
+
+		//delete model_import->animation_controller;
+		model_import->resulting_meshes.resize(1);
+		model_import->resulting_animation_controllers.resize(1);
+
 		if (result)
 		{
-			ProcessAnimations(scene, emesh);
-			ProcessNode(scene->mRootNode, emesh, scene);			
+			if (model_import->import_animations)
+			{
+				ProcessAnimations(scene, &model_import->resulting_animation_controllers[0]);
+			}			
+			ProcessMesh(scene->mRootNode, model_import, scene);
 		}
 		else
 		{

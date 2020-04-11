@@ -26,6 +26,7 @@
     <ClCompile Include="src\OpenGL\BufferLayout.cpp" />
     <ClCompile Include="src\OpenGL\OpenGL.cpp" />
     <ClCompile Include="src\Tutorials.cpp" />
+    <ClCompile Include="src\Utility.cpp" />
     <ClCompile Include="vendor\IMGUI\imgui.cpp" />
     <ClCompile Include="vendor\IMGUI\imgui_demo.cpp" />
     <ClCompile Include="vendor\IMGUI\imgui_draw.cpp" />
@@ -52,6 +53,7 @@
     <ClInclude Include="src\OpenGL\RenderCommands.h" />
     <ClInclude Include="src\OpenGL\OpenGL.h" />
     <ClInclude Include="src\Tutorials.h" />
+    <ClInclude Include="src\Utility.h" />
     <ClInclude Include="vendor\IMGUI\imconfig.h" />
     <ClInclude Include="vendor\IMGUI\imgui.h" />
     <ClInclude Include="vendor\IMGUI\imgui_impl_glfw.h" />

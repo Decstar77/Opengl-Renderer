@@ -90,6 +90,9 @@
     <ClCompile Include="src\Core\Animation.cpp">
       <Filter>src\Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\Utility.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core.h">
@@ -172,6 +175,9 @@
     </ClInclude>
     <ClInclude Include="src\Core\Animation.h">
       <Filter>src\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

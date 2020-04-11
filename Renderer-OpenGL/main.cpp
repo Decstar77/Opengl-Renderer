@@ -38,7 +38,7 @@ public:
 	Material material;
 	Transform transform;
 
-	Animation animation;
+	AnimationController animation_controller;
 
 	virtual void SetTextures(Shader *shader) override;
 	virtual void SetMaterialValues(Shader *shader) override;
@@ -413,21 +413,24 @@ int main()
 	
 
 	AnimatedActor test_cube_guy;
-	EditableMesh emesh;
-	LoadModelTest(&emesh, path);
+	
 
+	ModeImport model_import;
+	model_import.path = path;
+
+	LoadModel(&model_import);
+	EditableMesh emesh = model_import.resulting_meshes[0];
 	//LoadModel(&impmeshes, path);
 
 
 	test_cube_guy.mesh = emesh.CreateAnimMesh();
+	test_cube_guy.animation_controller = model_import.resulting_animation_controllers[0];
 	//test_cube_guy.mesh = anim_test_mesh;
 	test_cube_guy.transform.scale = Vec3(.5);
 	test_cube_guy.transform.rotation = EulerToQuat(Vec3(0, 0, 0));
 	test_cube_guy.transform.position = Vec3(0, 0, 0);
 
-	uint32 cha = 0;
-
-	
+	uint32 cha = 0;	
 	
 	LOG("This is a log" << "And this");
 
@@ -618,8 +621,8 @@ int main()
 		std::vector<aiMatrix4x4> tut_tran;
 		
 		tut_model.boneTransform(0.2, tut_tran);
-		emesh.ac.Play(0);
-		emesh.ac.Update(delta_time);
+		test_cube_guy.animation_controller.Play(0);
+		test_cube_guy.animation_controller.Update(delta_time);
 
 		if (false)
 		{
@@ -632,11 +635,11 @@ int main()
 		}
 		else
 		{
-			for (int32 i = 1; i < emesh.ac.bones.size(); i++)
+			for (int32 i = 1; i < test_cube_guy.animation_controller.bones.size(); i++)
 			{
 				std::stringstream ss;
 				ss << "gBones[" << (i - 1) << "]";
-				ShaderSetMat4(&animation_test_shader, ss.str(), emesh.ac.bones.at(i).current_transform.arr);
+				ShaderSetMat4(&animation_test_shader, ss.str(), test_cube_guy.animation_controller.bones.at(i).current_transform.arr);
 			}
 			
 		}

@@ -62,3 +62,5 @@ typedef int64_t int64;
 typedef float real;
 typedef float real32;
 typedef double real64;
+
+typedef std::string String;

@@ -9,24 +9,28 @@
 #include "Core/Animation.h"
 namespace cm
 {
-	struct ModeImport
-	{		
-		bool import_animations = false;
-		bool import_combine = true;
+	class ModeImport
+	{	
+	public:
+		bool import_animations = true;
+		bool import_mesh_combine = true;
 
 		bool vertex_normals = true;
+		bool vertex_texture_coords = true;
 		bool vertex_colours = false;
 		bool vertex_binorms_tangents = false;
 		bool vertex_weight_enforcement = false;
 		real32 vertex_weight_cull = 0.01f;		
 
-		uint32 mesh_count = 0;
-		EditableMesh *resulting_mesh = nullptr;
+		DynaArray<EditableMesh> resulting_meshes;
+		DynaArray<AnimationController> resulting_animation_controllers;
+		//uint32 mesh_count = 0;
+		//EditableMesh *resulting_mesh = nullptr;
 
-		uint32 animation_controller_count = 0;
-		AnimationController *animation_controller = nullptr;
+		//uint32 animation_controller_count = 0;
+		//AnimationController *animation_controller = nullptr;
 
-		std::string path;
+		String path;
 	};
 
 
@@ -38,7 +42,7 @@ namespace cm
 	
 
 	bool LoadModel(DynaArray<EditableMesh> *meshes, const std::string &path);
-	bool LoadModelTest(EditableMesh *emesh, const std::string &path);
+	bool LoadModel(ModeImport *model_import);
 	Mat4 ToMatrix4f(const aiMatrix4x4 *ai_mat);
 }
 

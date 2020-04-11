@@ -43,10 +43,10 @@ namespace cm
 	}
 
 	void Animation::Play(real time, DynaArray<Bone> *bones)
-	{
-		// @TODO: Time calcs
+	{		
 		real32 time_in_ticks = time * ticks_per_second * animation_speed;		
 		real32 animation_time = 0;		
+		
 		switch (flags)
 		{			
 			case AnimationFlags::Once: animation_time = Clamp(time_in_ticks, 0, duration - 0.01f); break; 
@@ -91,20 +91,6 @@ namespace cm
 
 		bone->current_transform = bone->inverse_bind_transform * global_transform;
 
-		//std::cout << bone_name << std::endl;
-		//std::cout << "parent_transform: ";
-		//Print(parent_transform);
-		//std::cout << "node_transform: ";
-		//Print(node_transform);
-		//std::cout << "Global_transform: ";
-		//Print(global_transform);
-		//std::cout << "bind_transform: ";
-		//Print(bone->inverse_bind_transform);
-		//std::cout << "final_transform: ";
-		//Print(bone->current_transform);
-		//std::cout << std::endl;
-
-
 		for (uint32 i = 0; i < bone->child_indices.size(); i++)
 		{
 			uint32 next_bone_index = bone->child_indices.at(i);
@@ -128,7 +114,10 @@ namespace cm
 	{
 		const AnimationFrames &keyset = frames[keyset_index];
 
-		// TODO: Make sure the keyset has more than one key
+		if (keyset.poskeys.size() == 1)
+		{
+			return keyset.poskeys[0];
+		}
 
 		int32 position_index = FindPosition(animation_time, keyset_index);
 		int32 next_position_index = position_index + 1;
@@ -137,12 +126,7 @@ namespace cm
 
 		real32 factor = (animation_time - keyset.postime[position_index]) / delta_time;
 
-		if (factor < 0 || factor >= 1)
-		{
-			//LOG("Warning clamping factor, factor = " << factor);
-		}
 		factor = Clamp(factor, 0.f, 1.f);
-
 
 		Vec3 start = keyset.poskeys[position_index];
 		Vec3 end = keyset.poskeys[next_position_index];
@@ -156,7 +140,10 @@ namespace cm
 	{
 		const AnimationFrames &keyset = frames[keyset_index];
 
-		// TODO: Make sure the keyset has more than one key
+		if (keyset.poskeys.size() == 1)
+		{
+			return keyset.rotkeys[0];
+		}
 
 		int32 rotation_index = FindRotation(animation_time, keyset_index);
 		int32 next_rotation_index = rotation_index + 1;
@@ -165,10 +152,6 @@ namespace cm
 
 		real32 factor = (animation_time - keyset.rottime[rotation_index]) / delta_time;
 
-		if (factor < 0 || factor >= 1)
-		{
-			//LOG("Warning clamping factor, factor = " << factor);
-		}
 		factor = Clamp(factor, 0.f, 1.f);
 
 		Quat start = keyset.rotkeys[rotation_index];
@@ -184,7 +167,10 @@ namespace cm
 	{
 		const AnimationFrames &keyset = frames[keyset_index];
 
-		// TODO: Make sure the keyset has more than one key
+		if (keyset.sclkeys.size() == 1)
+		{
+			return keyset.poskeys[0];
+		}
 
 		int32 scaling_index = FindScaling(animation_time, keyset_index);
 		int32 next_scaling_index = scaling_index + 1;
@@ -193,12 +179,7 @@ namespace cm
 
 		real32 factor = (animation_time - keyset.scltime[scaling_index]) / delta_time;
 
-		if (factor < 0 || factor >= 1)
-		{
-			//LOG("Warning clamping factor, factor = " << factor);
-		}
 		factor = Clamp(factor, 0.f, 1.f);
-
 
 		Vec3 start = keyset.sclkeys[scaling_index];
 		Vec3 end = keyset.sclkeys[next_scaling_index];
