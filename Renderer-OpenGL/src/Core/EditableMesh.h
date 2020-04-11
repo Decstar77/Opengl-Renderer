@@ -35,19 +35,19 @@ namespace cm
 		DynaArray<int32> child_indices;		
 	};
 
-	class AnimationChannel
+	class AnimationFrames
 	{
 	public:
 		int32 bone_index = -1;
 		std::string name;
-		real32 postime[250];
-		Vec3 poskeys[250];
+		DynaArray<real32> postime;
+		DynaArray<Vec3> poskeys;
 
-		real32 rottime[250];
-		Quat rotkeys[250];
+	 	DynaArray<real32> rottime;
+		DynaArray<Quat> rotkeys;
 
-		real32 scltime[250];
-		Vec3 sclkeys[250];
+		DynaArray<real32> scltime;
+		DynaArray<Vec3> sclkeys;
 	};
 
 	class Animation
@@ -55,7 +55,7 @@ namespace cm
 	public:		
 		float duration = 0;	
 		float ticks_per_second = 0;
-		DynaArray<AnimationChannel> channels;
+		DynaArray<AnimationFrames> frames;
 		DynaArray<Bone> *working_bones;
 		void Play(real time, DynaArray<Bone> *bones);
 		void AnimateBones(const real &animation_time, Bone *bone, const Mat4 &parent_transform);

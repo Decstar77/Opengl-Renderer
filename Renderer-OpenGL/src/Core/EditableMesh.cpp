@@ -407,7 +407,7 @@ namespace cm
 
 		if (keyset_index != -1)
 		{
-			Assert(keyset_index < channels.size());
+			Assert(keyset_index < frames.size());
 			Assert(keyset_index >= 0);
 			
 			Vec3 pos	= CalculateInterpolatedPosition(animation_time, keyset_index); 
@@ -449,9 +449,9 @@ namespace cm
 
 	int32 Animation::GetAnimationChannel(const std::string &bone_name)
 	{		
-		for (uint32 i = 0; i < channels.size(); i++)
+		for (uint32 i = 0; i < frames.size(); i++)
 		{
-			if (channels[i].name == bone_name)
+			if (frames[i].name == bone_name)
 				return i;
 		}
 		return -1;
@@ -460,7 +460,7 @@ namespace cm
 
 	cm::Vec3 Animation::CalculateInterpolatedPosition(const real32 &animation_time, const int32 &keyset_index)
 	{
-		const AnimationChannel &keyset = channels[keyset_index];
+		const AnimationFrames &keyset = frames[keyset_index];
 
 		// TODO: Make sure the keyset has more than one key
 
@@ -488,7 +488,7 @@ namespace cm
 
 	cm::Quat Animation::CalculateInterpolatedRotation(const real32 &animation_time, const int32 &keyset_index)
 	{		
-		const AnimationChannel &keyset = channels[keyset_index];
+		const AnimationFrames &keyset = frames[keyset_index];
 
 		// TODO: Make sure the keyset has more than one key
 
@@ -516,7 +516,7 @@ namespace cm
 
 	cm::Vec3 Animation::CalculateInterpolatedScaling(const real32 &animation_time, const int32 &keyset_index)
 	{
-		const AnimationChannel &keyset = channels[keyset_index];
+		const AnimationFrames &keyset = frames[keyset_index];
 
 		// TODO: Make sure the keyset has more than one key
 
@@ -543,9 +543,9 @@ namespace cm
 
 	int32 Animation::FindPosition(const real32 &animation_time, const int32 &keyset_index)
 	{
-		const AnimationChannel &keyset = channels[keyset_index];
+		const AnimationFrames &keyset = frames[keyset_index];
 
-		for (uint32 i = 0; i < 248; i++)
+		for (uint32 i = 0; i < keyset.postime.size(); i++)
 		{
 			if (animation_time < keyset.postime[i + 1])
 			{
@@ -559,9 +559,9 @@ namespace cm
 
 	int32 Animation::FindRotation(const real32 &animation_time, const int32 &keyset_index)
 	{
-		const AnimationChannel &keyset = channels[keyset_index];
+		const AnimationFrames &keyset = frames[keyset_index];
 
-		for (uint32 i = 0; i < 248; i++)
+		for (uint32 i = 0; i < keyset.rottime.size(); i++)
 		{
 			if (animation_time < keyset.rottime[i + 1])
 			{
@@ -575,9 +575,9 @@ namespace cm
 
 	int32 Animation::FindScaling(const real32 &animation_time, const int32 &keyset_index)
 	{
-		const AnimationChannel &keyset = channels[keyset_index];
+		const AnimationFrames &keyset = frames[keyset_index];
 		
-		for (uint32 i = 0; i < 248; i++)
+		for (uint32 i = 0; i < keyset.scltime.size(); i++)
 		{
 			if (animation_time < keyset.scltime[i + 1])
 			{

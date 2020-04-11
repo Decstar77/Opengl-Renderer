@@ -464,32 +464,45 @@ namespace cm
 		for (int i = 0; i < anim->mNumChannels; i++)
 		{
 			aiNodeAnim *ai = anim->mChannels[i];
-			AnimationChannel chanel;
-			chanel.name = ai->mNodeName.C_Str();
-			animation->channels.push_back(chanel);
+			AnimationFrames frame;
+
+			// @NOTE: Add first to avoid coping 
+			animation->frames.push_back(frame);
+
+			animation->frames[i].name = ai->mNodeName.C_Str();
+
+			animation->frames[i].poskeys.resize(ai->mNumPositionKeys);
+			animation->frames[i].postime.resize(ai->mNumPositionKeys);
+
+			animation->frames[i].rotkeys.resize(ai->mNumRotationKeys);
+			animation->frames[i].rottime.resize(ai->mNumRotationKeys);
+
+			animation->frames[i].sclkeys.resize(ai->mNumScalingKeys);
+			animation->frames[i].scltime.resize(ai->mNumScalingKeys);
+
 			for (int j = 0; j < ai->mNumPositionKeys; j++)
 			{
 				Vec3 pos = Vec3(ai->mPositionKeys[j].mValue.x, ai->mPositionKeys[j].mValue.y, ai->mPositionKeys[j].mValue.z);
 				float time = ai->mPositionKeys[j].mTime;
-				animation->channels[i].poskeys[j] = pos;
-				animation->channels[i].postime[j] = time;
+				animation->frames[i].poskeys[j] = pos;
+				animation->frames[i].postime[j] = time;
 			}
 
 			for (int j = 0; j < ai->mNumRotationKeys; j++)
 			{
 				Quat rot = Quat(ai->mRotationKeys[j].mValue.x, ai->mRotationKeys[j].mValue.y, ai->mRotationKeys[j].mValue.z, ai->mRotationKeys[j].mValue.w);
 				float time = ai->mRotationKeys[j].mTime;
-				animation->channels[i].rotkeys[j] = rot;
-				animation->channels[i].rottime[j] = time;
+				animation->frames[i].rotkeys[j] = rot;
+				animation->frames[i].rottime[j] = time;
 			}
 
 			for (int j = 0; j < ai->mNumScalingKeys; j++)
 			{
 				Vec3 pos = Vec3(ai->mScalingKeys[j].mValue.x, ai->mScalingKeys[j].mValue.y, ai->mScalingKeys[j].mValue.z);
 				float time = ai->mScalingKeys[j].mTime;
-				animation->channels[i].sclkeys[j] = pos;
-				animation->channels[i].scltime[j] = time;
-			}
+				animation->frames[i].sclkeys[j] = pos;
+				animation->frames[i].scltime[j] = time;
+			}						
 		}
 	}
 
