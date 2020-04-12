@@ -28,278 +28,125 @@ in VS_OUT
 	vec4 light_space_position;
 
 } vs_in;
-//---------------------------
-struct Material 
-{
-    vec3 diffuse;
-    vec3 specular;
-    float shininess;
-}; 
-//---------------------------
-struct DirectionalLight 
-{
-    vec3 direction;
-	
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-};
-//---------------------------
-struct PointLight 
-{
-    vec3 position;
-    
-    float constant;
-    float linear;
-    float quadratic;
-	
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-};
-//---------------------------
-struct SpotLight 
-{
-    vec3 position;
-    vec3 direction;
-    float cut_off;
-    float outer_cut_off;
-  
-    float constant;
-    float linear;
-    float quadratic;
-  
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;       
-};
-//---------------------------
 
-uniform vec3 diffuse_colour;
-uniform vec3 specular_colour;
-uniform sampler2D shadow_map;
+uniform float material_roughness;
 
 
-Material material;
-//---------------------------
-float PCF(vec4 light_space_pos, vec3 normal, vec3 light_dir)
+
+#define pi 3.14159
+#define ue_surface_reflection_zero_ncidence 0.04
+#define light_count 1
+float GGX(vec3 n, vec3 h, float a)
 {
-    // transform to [-1,1] range, NDC
-    vec3 projCoords = light_space_pos.xyz / light_space_pos.w;
-    // transform to [0,1] range, IE The screen space coords. 
-    projCoords = projCoords * 0.5 + 0.5;
+	float a2 = a * a;
 
-	if(projCoords.z > 1.0)
-	{
-        return 0.0;
-	}
-	
-    // get depth of current fragment from light's perspective
-    float currentDepth = projCoords.z;
+	float hdot = max(dot(n, h), 0.0);
+	float hdot2 = hdot * hdot;
 
-	float smol = .1f;
-	float bias = max(smol * 10.f * (1.0 - dot(normal, light_dir)), smol); 
-    // check whether current frag pos is in shadow    
-	
-	float shadow = 0.0;
-	vec2 texelSize = 1.0 / textureSize(shadow_map, 0);
-	for(int x = -1; x <= 1; ++x)
-	{
-	    for(int y = -1; y <= 1; ++y)
-	    {
-	        float pcfDepth = texture(shadow_map, projCoords.xy + vec2(x, y) * texelSize).r; 
-	        shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
-	    }    
-	}
-	shadow /= 9.0;
-	return shadow;
+	float demon = ( hdot2 * (a2 - 1.0) + 1.0);
+	demon = pi * demon * demon;
+
+	float res = a2 / demon;
+
+	return res;
 }
 
-float linstep(float low, float high, float v)
+float GeometrySchlick(float dott, float k)
 {
-	return clamp((v-low)/(high-low), 0.0, 1.0);
+	// @NOTE: This is like a facny lerp
+	float nume = dott;
+	float demon = dott * (1 - k) + k;
+	return nume/demon;
+}
+
+float GeometrySmith(vec3 normal, vec3 view, vec3 light, float k)
+{
+	float ndotv = max(dot(normal, view), 0.0);
+	float ndotl = max(dot(normal, light), 0.0);
+	
+	float gg1 = GeometrySchlick(ndotv, k);
+	float gg2 = GeometrySchlick(ndotl, k);
+
+	return gg1 * gg2;
+}
+
+vec3 FresnelSchlick(float cos_theta, vec3 f0)
+{
+    return f0 + (1.0 - f0) * pow(1.0 - cos_theta, 5.0);
 }
 
 
-float Variance(vec4 light_space_pos, vec3 normal, vec3 light_dir)
-{
-	// transform to [-1,1] range, NDC
-    vec3 projCoords = light_space_pos.xyz / light_space_pos.w;
-    // transform to [0,1] range, IE The screen space coords. 
-    projCoords = projCoords * 0.5 + 0.5;
-	if(projCoords.z > 1.0)
-	{
-        return 0;
-	}
-	vec2 moments = texture(shadow_map, projCoords.xy).xy;
 
-	float depth = projCoords.z;
-
-	float p = step(depth, moments.x);
-	float v = max (moments.y - moments.x * moments.x, 0.00000002);
-	float d = depth - moments.x;
-	
-	float pmax = linstep(0.2, 1.0, v / (v + d * d));
-	
-	return 1 - min(max(p, pmax), 1);
-	return max(p,  (depth <= moments.x) ? 1.f : 0.f);
-
-}
-
-float ShadowCalculation(vec4 light_space_pos, vec3 normal, vec3 light_dir)
-{
-
-	//return PCF(light_space_pos, normal, light_dir);
-	return Variance(light_space_pos, normal, light_dir);
-}
-//---------------------------
-vec3 PhongPointLight(PointLight light, vec3 normal, vec3 view_dir)
-{
-    vec3 lightDir = normalize(light.position - vs_in.world_position);
-    
-	// diffuse shading
-    float diff = max(dot(normal, lightDir), 0.0);
-   
-    // specular shading
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(view_dir, reflectDir), 0.0), material.shininess);
-    
-	// attenuation
-    float distance = length(light.position - vs_in.world_position);
-    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
-    
-	// combine results    
-	vec3 ambient = light.ambient *			material.diffuse;
-    vec3 diffuse = light.diffuse * diff *	material.diffuse;
-    vec3 specular = light.specular * spec * material.specular;
-    ambient *= attenuation;
-    diffuse *= attenuation;
-    specular *= attenuation;
-
-    return (ambient + diffuse + specular);
-}
-//---------------------------
-vec3 PhongSpotLight(SpotLight light, vec3 normal, vec3 view_dir)
-{
-    vec3 lightDir = normalize(light.position - vs_in.world_position);
-    
-	// diffuse shading
-    float diff = max(dot(normal, lightDir), 0.0);
-    
-	// specular shading
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(view_dir, reflectDir), 0.0), material.shininess);
-    
-	// attenuation
-    float distance = length(light.position - vs_in.world_position);
-    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
-    
-	// spotlight intensity
-    float theta = dot(lightDir, normalize(-light.direction)); 
-    float epsilon = light.cut_off - light.outer_cut_off;
-    float intensity = clamp((theta - light.outer_cut_off) / epsilon, 0.0, 1.0);
-    
-	// combine results
-    vec3 ambient = light.ambient * material.diffuse;
-    vec3 diffuse = light.diffuse * diff * material.diffuse;
-    vec3 specular = light.specular * spec * material.specular, TexCoords;
-    ambient *= attenuation * intensity;
-    diffuse *= attenuation * intensity;
-    specular *= attenuation * intensity;
-
-    return (ambient + diffuse + specular);
-}
-//---------------------------
-vec3 PhongDirectionalLight(DirectionalLight light, vec3 normal, vec3 view_dir)
-{
-    vec3 light_dir = normalize(-light.direction); //Frag pos to the light
-
-    // Diffuse shading
-    float diff = max(dot(normal, light_dir ), 0.0);
-
-    // Specular shading
-    vec3 reflectDir = reflect(-light_dir , normal);
-    float spec = pow(max(dot(view_dir, reflectDir), 0.0), material.shininess);
-
-    // Combine results
-    vec3 ambient = light.ambient * material.diffuse;
-    vec3 diffuse = light.diffuse * diff * material.diffuse;
-    vec3 specular = light.specular * spec * material.specular;
-	
-	// Determine shadow
-	float shadow = ShadowCalculation(vs_in.light_space_position, normal, light_dir);
-	vec3 ds = (diffuse + specular) * (1 - 0);
-
-
-    return (ambient + ds);
-}
-//---------------------------
-vec3 ColourPixel()
-{	
-	vec3 final_colour = vec3(0);
-
-	int point_light_count =int (size_data.x);
-	int directional_light_count = int (size_data.y);
-	int spot_light_count = int(size_data.z);
-
-
-	
-	// @HACK: Hardcoded
-	material.shininess = 32.f;
-	material.diffuse = diffuse_colour;
-	material.specular = specular_colour;
-	vec3 normal = normalize(vs_in.world_normal);	
-	vec3 view_dir = normalize(camera_world_position.xyz - vs_in.world_position);
-
-	for (int i = 0; i < point_light_count; i++)
-	{
-		PointLight light;
-		light.position = vec3(-3, 2, 0);    
-		light.constant = 1.0f;
-		light.linear = 0.09;
-		light.quadratic = 0.032;	
-		light.ambient = vec3(0.05f);
-		light.diffuse = vec3(0.8f);
-		light.specular = vec3(1);
-
-		final_colour += PhongPointLight(light, normal, view_dir);
-	}
-
-	for (int i = 0; i < directional_light_count; i++)
-	{
-		DirectionalLight light;
-		light.direction = normalize( dir_light_direction.xyz );	
-		light.ambient	= vec3(0.05f, 0.05f, 0.05f);
-		light.diffuse	= vec3(0.4f, 0.4f, 0.4f);
-		light.specular	= vec3(0.5f, 0.5f, 0.5f);
-
-		final_colour += PhongDirectionalLight(light, normal, view_dir);
-	}	
-	
-	for (int i = 0; i < spot_light_count; i++)
-	{
-		SpotLight light;
-		light.position = vec3(0, 5, 0);
-		light.direction = vec3 (0, -1 ,0);
-		light.cut_off = cos(radians(12.5f));
-		light.outer_cut_off = cos(radians(15.0f));
-		light.constant  = 1.0f;
-		light.linear	= 0.09;
-		light.quadratic = 0.032;  
-		light.ambient	= vec3(0.05f, 0.05f, 0.05f);
-		light.diffuse	= vec3(0.4f, 0.4f, 0.4f);
-		light.specular	= vec3(0.5f, 0.5f, 0.5f);
-		
-		final_colour += PhongSpotLight(light, normal, view_dir);
-	}
-
-	return final_colour;
-}
 
 void main()
-{		
-	vec3 colour = ColourPixel();
+{
+	// @NOTE: Get the lighting properties
+	vec3 light_pos =  vec3(0, 5, 2);
+	vec3 light_colour = vec3(23.47, 21.31, 20.79);
+
+	// @NOTE: Calculate the world vectors
+	vec3 world_pos 	= vs_in.world_position; 	
+	vec3 viewDir    = normalize(camera_world_position.xyz - world_pos); // wo
+	vec3 normal 	= normalize(vs_in.world_normal);
+	
+	// @NOTE: Get material properties
+	float metallic = 0;
+	float roughness = material_roughness;
+	vec3 albedo = vec3(0.23, 0.48, 0.34);
+
+	// @NOTE: Calculate constants
+	float a = (roughness * roughness);
+	vec3 f0 = mix(vec3(ue_surface_reflection_zero_ncidence), albedo, metallic);	
+	float k = ((a + 1)*(a + 1))/8.0;
+
+	vec3 lo = vec3(0);
+	for (int i = 0; i < light_count; i++)
+	{
+		// @NOTE: Calculate lighting vectors
+		vec3 lightDir   = normalize(light_pos - world_pos); // wi
+		vec3 halfwayDir = normalize(lightDir + viewDir);
+
+		// @NOTE: wi * n
+		float ndotwi = max(dot(normal, lightDir), 0.0);
+		float ndotwo = max(dot(normal, viewDir), 0.0);
+
+		// @NOTE: Total radiance Li		
+		float dist = length(light_pos - world_pos);
+		float dist2 = dist * dist;
+
+		float attun = 1.0 / dist2;
+
+		vec3 radiance = light_colour * attun;		
+		
+		// @NOTE: Cook-torrance BRDF
+		// @NOTE: Calculate distribution
+		float d = GGX(normal, halfwayDir, a);
+
+		// @NOTE: Calculate geometry
+		float g = GeometrySmith(normal, viewDir, lightDir, k);
+
+		// @NOTE: Calculate fersnel
+		vec3 f = FresnelSchlick(max(dot(halfwayDir, viewDir), 0.0), f0);
+
+		// @NOTE: F cook torrance -- Specular		
+		vec3 fc = ( d * g * f ) / max( 4 * ndotwo * ndotwi, 0.000001);
+
+		// @NOTE: F lambert -- Diffuse
+		vec3 fl = ( albedo / pi );
+
+		// @NOTE: Specular ratio
+		vec3 ks = f; // Whys is this fresnel ?
+		
+		// @NOTE: Diffuse ratio
+		vec3 kd  = (vec3(1) - ks) * (1 - metallic); 
+
+		vec3 brdf = (kd * fl + fc); 
+
+		lo += brdf * radiance * ndotwi;
+	}
+
+	//float c = GeometrySmith(normal, viewDir, lightDir, k);
+	
+	vec3 colour = lo;
 	FragColour = vec4(colour, 1);
-	float brightness = dot(FragColour.rgb, vec3(0.2126, 0.7152, 0.0722));
-	BrightColor = brightness < 10.0 ? vec4(0) : vec4(FragColour.rgb, 1);
 }

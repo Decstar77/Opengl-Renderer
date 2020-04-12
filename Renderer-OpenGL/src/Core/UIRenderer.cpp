@@ -199,4 +199,63 @@ namespace cm
 		size->x = temp.x;
 		size->y = temp.y;
 	}
+
+	void EditorConsole::Log(const std::string &msg)
+	{
+		current << msg << '\n';
+	}
+
+	void EditorConsole::Update()
+	{
+		ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiCond_FirstUseEver);
+		ImGui::Begin(title.c_str());
+
+		if (ImGui::SmallButton("Clear")) { Clear(); } ImGui::SameLine();
+		bool copy_to_clipboard = ImGui::SmallButton("Copy");
+
+		ImGui::Separator();
+		const real32 footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing(); // 1 separator, 1 input text
+		
+		ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar); // Leave room for 1 separator + 1 InputText
+
+		if (copy_to_clipboard)
+			ImGui::LogToClipboard();
+
+		std::string info = current.str();
+		
+		if (Filter.PassFilter(info.c_str()))
+		{
+			ImGui::TextUnformatted(info.c_str());
+		}
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
+
+
+
+		if (copy_to_clipboard)
+			ImGui::LogFinish();
+		ImGui::PopStyleVar();
+		ImGui::EndChild();
+
+		ImGui::Separator();
+
+
+		//// @NOTE: Commands
+		if (ImGui::InputText("Input", input_buffer, IM_ARRAYSIZE(input_buffer)))
+		{
+			LOG(input_buffer);
+		}
+		
+		ImGui::End();
+
+	}
+
+	void EditorConsole::Clear()
+	{
+		// @NOTE: C++ man.... you'd think the .clear() would do...
+		//		: Yup this is how you clear a stringstream
+		history.str(std::string());
+		current.str(std::string());
+		commands.str(std::string());
+	}
+
 }

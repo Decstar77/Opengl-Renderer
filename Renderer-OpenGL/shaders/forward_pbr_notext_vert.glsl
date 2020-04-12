@@ -12,8 +12,6 @@ layout (std140, binding = 0) uniform  WorldMatrices
 	mat4 light_space_matrix;
 };
 
-uniform mat4 model;
-
 out VS_OUT 
 {
 	vec3 world_position;
@@ -23,6 +21,7 @@ out VS_OUT
 	vec4 light_space_position;
 } vs_out;
 
+uniform mat4 model;
 
 
 

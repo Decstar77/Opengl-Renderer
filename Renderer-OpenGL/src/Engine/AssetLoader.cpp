@@ -492,7 +492,7 @@ namespace cm
 	{
 		Assimp::Importer import;
 		Assert(model_paths.size() == 1);
-		const aiScene *scene = import.ReadFile(this->model_paths[0], aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);
+		const aiScene *scene = import.ReadFile(this->model_paths[0], aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
 		bool result = scene || !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || scene->mRootNode;
 
 

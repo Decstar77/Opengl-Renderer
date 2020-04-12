@@ -68,6 +68,29 @@ namespace cm
 
 	};
 
+	class EditorConsole
+	{
+	public:
+		void Log(const std::string &msg);
+		void Update();
+		void Clear();
+
+	public:
+		std::string title = "Console";
+
+	private:
+		char input_buffer[256];
+		std::stringstream commands;
+		std::stringstream current;
+		std::stringstream history;
+
+
+		ImGuiTextFilter	Filter;
+		bool AutoScroll;
+		bool ScrollToBottom;
+
+	};
+
 
 
 }

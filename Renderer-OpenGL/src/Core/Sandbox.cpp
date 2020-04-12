@@ -25,14 +25,12 @@ namespace cm
 		{
 			ShaderBindTexture(*shader, *material.occlusion_roughness_metallic, 3, "emssive_map");
 		}
-
 	}
 
 	void Actor::SetMaterialValues(Shader *shader)
-	{
-		ShaderSetVec3(shader, "diffuse_colour", Vec3(0.23, 0.48, 0.34).arr);
-
-		ShaderSetVec3(shader, "specular_colour", Vec3(0.2f).arr);
+	{		
+		ShaderSetFloat(shader, "material_roughness", material.roughness);
+		//ShaderSetVec3(shader, "specular_colour", Vec3(0.2f).arr);
 	}
 
 	void Actor::SetTransformValues(Shader *shader)
@@ -53,8 +51,8 @@ namespace cm
 
 	void AnimatedActor::SetMaterialValues(Shader *shader)
 	{
-		ShaderSetVec3(shader, "diffuse_colour", Vec3(0.23, 0.48, 0.34).arr);
-		ShaderSetVec3(shader, "specular_colour", Vec3(0.2f).arr);
+		//ShaderSetVec3(shader, "diffuse_colour", Vec3(0.23, 0.48, 0.34).arr);
+		//ShaderSetVec3(shader, "specular_colour", Vec3(0.2f).arr);
 	}
 
 	void AnimatedActor::SetTransformValues(Shader *shader)

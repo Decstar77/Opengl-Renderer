@@ -234,6 +234,9 @@ int main()
 	Shader forward_pbr_notext_shader = CreateShader(ReadFile("shaders/forward_pbr_notext_vert.glsl"), ReadFile("shaders/forward_pbr_notext_frag.glsl"));
 	forward_pbr_notext_shader.name = "forward_pbr_notext_shader";
 
+	Shader simple_phong_shader = CreateShader(ReadFile("shaders/simple_phong_vert.glsl"), ReadFile("shaders/simple_phong_frag.glsl"));
+	simple_phong_shader.name = "simple_phong_shader";
+
 	Shader animation_test_shader = CreateShader(ReadFile("shaders/test_anim_vert.glsl"), ReadFile("shaders/forward_pbr_notext_frag.glsl"));
 	animation_test_shader.name = "animation_test_shader";
 
@@ -266,19 +269,21 @@ int main()
 		"models/quad.obj",		
 		//"models/claud_bot.obj",
 	};
-	std::vector<std::string> text_directories{ 		
-		//"textures/bot1_rig_v01_Scene_Material_BaseColor.png",
-		//"textures/bot1_rig_v01_Scene_Material_Normal.png",
-	    //"textures/bot1_rig_v01_Scene_Material_OcclusionRoughnessMetallic.png"
-	};
+
 
 	ModeImport cube_import;
 	cube_import.import_animations = false;
 	cube_import.model_paths.push_back("res/models/smooth_cube.obj");
-
+	// @HACK: Overriding this cause it has texture coords
 	cube_import.Load();
 	GLMesh impmesh = cube_import.resulting_meshes[0].CreateMesh(false);
+	standard_meshes.cube = impmesh;
 
+	ModeImport shpere_import;
+	shpere_import.import_animations = false;
+	shpere_import.model_paths.push_back("res/models/sphere.obj");
+	shpere_import.Load();
+	standard_meshes.sphere = shpere_import.resulting_meshes[0].CreateMesh(false);
 
 	//DynaArray<uint8> image_data;
 	//Texture gun_diffuse_map;
@@ -297,9 +302,13 @@ int main()
 	//
 	//LoadTexture(&image_data, &gun_diffuse_map.config, "res/textures/FPS_CGC_LowPoly_Gun_BaseColor.png");
 
-	// @HACK: Overriding this cause it has texture coords
-	standard_meshes.cube = impmesh;
 
+
+	//tut::Model tut_model;
+	//std::string path = "res/models/man.dae";
+	//tut_model.loadModel(path);
+
+	
 	Actor floor_tile;
 	floor_tile.mesh = standard_meshes.plane;
 	floor_tile.transform.scale = Vec3(200);
@@ -323,45 +332,50 @@ int main()
 	wall_right.transform.scale = Vec3(20);
 	wall_right.transform.rotation = EulerToQuat(Vec3(0, 90, 0));
 	wall_right.transform.position = Vec3(10, 0, -10);
-
-
-	tut::Model tut_model;
-	std::string path = "res/models/man.dae";
-	tut_model.loadModel(path);
-
-
-
 	
+	Actor spheres[6];
+	for (int32 i = 0; i < 6; i++)
+	{
+		Actor sphere;
+		sphere.mesh = standard_meshes.sphere;
+		sphere.transform.scale = Vec3(0.5);
+		sphere.transform.position = Vec3(-4 + i * 2, 4, 0);
+		sphere.material.roughness = (((real32)i) / 6.f) + 0.2;
+		spheres[i] = sphere;
+	}
 
-	AnimatedActor test_cube_guy;
+
+	   
 	
-
 	ModeImport model_import;
-	model_import.model_paths.push_back(path);
+	model_import.model_paths.push_back("res/models/man.dae");
 	model_import.Load();
-	
+	AnimatedActor test_cube_guy;	
 	EditableMesh emesh = model_import.resulting_meshes[0];
-
 	test_cube_guy.mesh = emesh.CreateAnimMesh();
-	test_cube_guy.animation_controller = model_import.resulting_animation_controllers[0];
-	//test_cube_guy.mesh = anim_test_mesh;
+	test_cube_guy.animation_controller = model_import.resulting_animation_controllers[0];	
 	test_cube_guy.transform.scale = Vec3(.5);
 	test_cube_guy.transform.rotation = EulerToQuat(Vec3(0, 0, 0));
 	test_cube_guy.transform.position = Vec3(0, 0, 0);
 
-	uint32 cha = 0;	
-	
-	LOG("This is a log" << "And this");
 
 
 
 	World main_world;
-	main_world.objects.push_back(&test_cube_guy);
+	//main_world.objects.push_back(&test_cube_guy);
 	//main_world.objects.push_back(&floor_tile);
 	//main_world.objects.push_back(&wall_front);
 	//main_world.objects.push_back(&wall_left);
 	//main_world.objects.push_back(&wall_right);
 
+	main_world.objects.push_back(&spheres[0]);
+	main_world.objects.push_back(&spheres[1]);
+	main_world.objects.push_back(&spheres[2]);
+	main_world.objects.push_back(&spheres[3]);
+	main_world.objects.push_back(&spheres[4]);
+	main_world.objects.push_back(&spheres[5]);
+
+	
 	RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_WIDTH);
 	RenderCommands::EnableFaceCulling();
 	RenderCommands::CullBackFace();
@@ -384,7 +398,7 @@ int main()
 	renderer.render_shaders.g_buffer_shader = g_buffer_shader;
 	renderer.render_shaders.ssao_gbuffer_shader = ssao_gbuffer_shader;
 	renderer.render_shaders.ssao_shader = ssao_shader;
-	renderer.render_shaders.forward_render_shader = animation_test_shader;
+	renderer.render_shaders.forward_render_shader = simple_phong_shader;
 	renderer.render_shaders.deferred_render_shader = deferred_shader;
 	renderer.render_shaders.post_processing_shader = post_processing_shader;
 	renderer.render_shaders.debug_shader = debug_shader;
@@ -417,6 +431,9 @@ int main()
 	DirectionalLight sun_light;
 	sun_light.direction = Normalize(Vec3(2, -4, 1));
 	sun_light.light_colour = Vec3(.5);
+	EditorConsole console;
+	console.Log("Messhge");
+
 
 	float fh = 1;
 	DebugAddPersistentPoint(Vec3(0.0));
@@ -444,10 +461,8 @@ int main()
 			FreeShader(&cubemap_shader);
 			cubemap_shader = CreateShader(ReadFile("shaders/skybox_vert.glsl"), ReadFile("shaders/skybox_frag.glsl"));
 			
-			//FreeShader(&pbr_shader);
-			//pbr_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_frag.glsl"));
-			//ShaderBindUniformBuffer(pbr_shader, 0, "Matrices");
-			//ShaderBindUniformBuffer(pbr_shader, 1, "Lighting");
+			FreeShader(&forward_pbr_notext_shader);
+			forward_pbr_notext_shader = CreateShader(ReadFile("shaders/forward_pbr_notext_vert.glsl"), ReadFile("shaders/forward_pbr_notext_frag.glsl"));
 
 			//FreeShader(&pbr_texture_shader);
 			//pbr_texture_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_texture_frag.glsl"));
@@ -464,14 +479,14 @@ int main()
 			double x, y;
 			glfwGetCursorPos(window, &x, &y);					
 			fh += 0.4 * delta_time;
-			cha += 1;
+
 			toggel = true;
 		}
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
 		{
 			
 			
-			cha -= 1;
+
 			fh -= 0.4 * delta_time;
 			
 		}
@@ -537,7 +552,7 @@ int main()
 
 		std::vector<Mat4> mats;
 
-
+		DebugAddIrresolutePoint(Vec3(0, 5, 2));
 
 		//************************************
 		// Render The Current Frame
@@ -545,7 +560,7 @@ int main()
 		
 	
 		
-
+#if 0
 		BindShader(animation_test_shader);
 
 		std::vector<aiMatrix4x4> tut_tran;
@@ -572,8 +587,8 @@ int main()
 				ShaderSetMat4(&animation_test_shader, ss.str(), test_cube_guy.animation_controller.bones.at(i).current_transform.arr);
 			}
 			
-		}
-		
+		}		
+#endif
 
 		renderer.Render(main_world);
 	
@@ -604,15 +619,20 @@ int main()
 		ImGui::DockSpace(dockspace_id);
 		
 		ImGui::End();
+		console.Update();
 
+		
+		
 
-
-
-
-
+		
 
 
 		ui_renderer.CreateUIWindow("Asset library");		
+
+
+
+
+
 		ui_renderer.EndUIWindow();
 				
 		
@@ -628,7 +648,7 @@ int main()
 		ui_renderer.CreateUIWindow("Console");
 		ui_renderer.EndUIWindow();
 
-		//ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
 
 		ui_renderer.EndFrame();
 #endif
