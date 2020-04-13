@@ -8,47 +8,6 @@
 #include "Engine/AssetLoader.h"
 namespace cm
 {
-	
-	class InputManager
-	{
-	public:
-		//static std::vector<InputMessager *> msg;
-
-	};
-
-	class InputMessager
-	{
-		//InputMessager() { InputManager::msg.push_back(this); };
-		
-		virtual void key(int32 k) = 0;
-		virtual void mouse(real x, real y) = 0;
-	};
-
-	class Player : public InputMessager
-	{
-		
-		virtual void key(int32 k) override
-		{
-
-		}
-
-
-		virtual void mouse(real x, real y) override
-		{
-			
-		}
-
-	};
-
-	struct StandardMeshes 
-	{
-		GLMesh quad;
-		GLMesh plane;
-		GLMesh cube;
-		GLMesh sphere;
-		GLMesh cone;
-	};
-
 	struct StandardShaders 
 	{
 		Shader gpu_gaussian_blur;
@@ -96,7 +55,6 @@ namespace cm
 	public:
 		RenderShaders render_shaders;
 		StandardShaders standard_shaders;
-		StandardMeshes standard_meshes;
 		Texture identity_texture;
 
 		FrameBuffer frame_post_processing;
@@ -110,7 +68,7 @@ namespace cm
 		// @TODO: Window struct
 		uint32 WINDOW_WIDTH;
 		uint32 WINDOW_HEIGHT;
-		CameraController *camera; // @HACK: This will not be needed once we do the informer
+		CameraController *camera; // @HACK: This will not be needed once we do the informer, skybox probs
 
 		CubeMap default_skybox;
 				

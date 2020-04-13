@@ -38,7 +38,11 @@ void main()
 	colour = mix(colour_b, colour_a, t);
 	//colour = colour_a;
 
+	colour = texture(environmentMap, WorldPos).rgb;
+
 	FragColour = vec4(colour, 1);
+
+
 	//Don't write to the bright buffer;
 	BrightColor = vec4(0);
 }

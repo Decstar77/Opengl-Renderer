@@ -1,7 +1,7 @@
 #pragma once
 #include "Core.h"
 #include "Math/CosmicMath.h"
-
+#include "GLFW/glfw3.h"
 
 namespace cm
 {
@@ -17,6 +17,11 @@ namespace cm
 		bool current_key_codes[KEY_CODE_AMOUNT] = {};
 	};
 
+
+
+
+	
+	class InputCallBacks;
 	class Input
 	{
 	public:
@@ -34,9 +39,13 @@ namespace cm
 		inline static Vec2 GetMousePosition() { return mouse_data.position; }
 		inline static Vec2 GetMouseLastPosition() { return last_mouse_data.position; }
 
-		inline static void SetMousePosition(const real &x, const real &y) 
+		inline static void MousePositionCall(GLFWwindow *widow, double xpos, double ypos) {};
+		//inline static RegisterCallBack() {}
+
+		inline static void SetMousePosition(const real32 &x, const real32 &y) 
 		{ last_mouse_data.position = mouse_data.position; mouse_data.position = Vec2(x, y); }
 		
+		static std::vector<InputCallBacks *> msg;
 	private:
 
 		static MouseData last_mouse_data;
@@ -45,18 +54,42 @@ namespace cm
 		static KeyData last_key_data;
 		static KeyData key_data;
 
-		Input() = default;
+
+
+	private:
+		Input() = delete;
 		Input(Input &i) = delete;
 		Input& operator=(const Input&) = delete;
 		
 	};
 
+	class InputCallBacks
+	{
+		InputCallBacks() { Input::msg.push_back(this); }
+		
+		virtual void KeyCallBack(int32 k) = 0;
+		virtual void MousePosition(real x, real y) = 0;
+	};
+
+	class Player : public InputCallBacks
+	{
+
+		virtual void KeyCallBack(int32 k) override
+		{
+
+		}
+
+
+		virtual void MousePosition(real x, real y) override
+		{
+
+		}
+
+	};
+
 #pragma region KEY_CODES
-
-
-
 	//************************************
-	// Copied From glfw. This way I don't have to include glfw
+	// Copied From glfw. 
 	//************************************
 	#define KEY_UNKNOWN            -1
 	#define KEY_SPACE              32

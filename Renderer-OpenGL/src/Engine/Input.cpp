@@ -7,6 +7,9 @@ namespace cm
 	MouseData Input::last_mouse_data = {};
 
 	KeyData Input::key_data = {};
+
+	std::vector<InputCallBacks *> Input::msg = {};
+
 	KeyData Input::last_key_data = {};
 
 

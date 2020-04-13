@@ -10,31 +10,32 @@ namespace cm
 	class Actor : public WorldObject
 	{
 	public:
+		uint32 render_flags = RENDERFLAG_CAST_SHADOWS;
 		Transform transform;
 		Material material;
 		GLMesh mesh;
 
-		virtual void SetTextures(Shader *shader) override;
-		virtual void SetMaterialValues(Shader *shader) override;
-		virtual void SetTransformValues(Shader *shader) override;
-		virtual const GLMesh &GetMeshForRender() override;
-
+		virtual const GLMesh GetMeshForRender() const override;
+		virtual const Material GetMaterial() const override;
+		virtual const Transform GetTransfrom() const override;
+		virtual const Mat4 GetTransformMatrix() const override;
+		virtual const uint32 GetRenderFlags() const override;
 	};
 
 	class AnimatedActor : public  WorldObject
 	{
 	public:
+		uint32 render_flags = RENDERFLAG_CAST_SHADOWS | RENDERFLAG_HAS_ANIMATION;
 		GLMesh mesh;
 		Material material;
 		Transform transform;
-
 		AnimationController animation_controller;
 
-		virtual void SetTextures(Shader *shader) override;
-		virtual void SetMaterialValues(Shader *shader) override;
-		virtual void SetTransformValues(Shader *shader) override;
-		virtual const GLMesh &GetMeshForRender() override;
-
+		virtual const Material GetMaterial() const override;
+		virtual const Transform GetTransfrom() const override;
+		virtual const Mat4 GetTransformMatrix() const override;
+		virtual const uint32 GetRenderFlags() const override;
+		virtual const GLMesh GetMeshForRender() const override;
 	};
 
 

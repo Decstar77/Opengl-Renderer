@@ -24,7 +24,6 @@ static const uint32 WINDOW_HEIGHT = 720;
 static const float MOUSE_SENSITIVITY = 0.08f;
 
 static CameraController camera_controller = {};
-static StandardMeshes standard_meshes = {};
 static MassAggregateEngine physics_engine;
 static GLFWwindow *window = nullptr;
 static float delta_time = 0;
@@ -115,7 +114,7 @@ void InitializeStandardMeshes()
 	plane.SetColour(Vec3(0.1, 0.7, 0.1));
 	plane.RecaluclateNormals();
 	//plane.FuseVertices();
-	standard_meshes.plane = plane.CreateMesh(false);
+	StandardMeshes::plane = plane.CreateMesh(false);
 
 	EditableMesh cube;
 	// CCW
@@ -140,7 +139,7 @@ void InitializeStandardMeshes()
 
 	cube.RecaluclateNormals();
 	//cube.FuseVertices();
-	standard_meshes.cube = cube.CreateMesh(false);
+	StandardMeshes::cube = cube.CreateMesh(false);
 
 	
 	EditableMesh quad; 
@@ -155,7 +154,7 @@ void InitializeStandardMeshes()
 	//quad.AddTrianlge(Vec3(-1, 1, 0), Vec3(1, 1, 0), Vec3(1, -1, 0));
 	//quad.AddTextureCoords(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
 	quad.RecaluclateNormals();
-	standard_meshes.quad = quad.CreateMesh(false);
+	StandardMeshes::quad = quad.CreateMesh(false);
 }
 
 int main()
@@ -273,17 +272,17 @@ int main()
 
 	ModeImport cube_import;
 	cube_import.import_animations = false;
-	cube_import.model_paths.push_back("res/models/smooth_cube.obj");
+	cube_import.model_paths.push_back("res/models/cube.obj");
 	// @HACK: Overriding this cause it has texture coords
 	cube_import.Load();
 	GLMesh impmesh = cube_import.resulting_meshes[0].CreateMesh(false);
-	standard_meshes.cube = impmesh;
+	StandardMeshes::cube = impmesh;
 
 	ModeImport shpere_import;
 	shpere_import.import_animations = false;
 	shpere_import.model_paths.push_back("res/models/sphere.obj");
 	shpere_import.Load();
-	standard_meshes.sphere = shpere_import.resulting_meshes[0].CreateMesh(false);
+	StandardMeshes::sphere = shpere_import.resulting_meshes[0].CreateMesh(false);
 
 	//DynaArray<uint8> image_data;
 	//Texture gun_diffuse_map;
@@ -310,25 +309,25 @@ int main()
 
 	
 	Actor floor_tile;
-	floor_tile.mesh = standard_meshes.plane;
+	floor_tile.mesh = StandardMeshes::plane;
 	floor_tile.transform.scale = Vec3(200);
 	floor_tile.transform.rotation = EulerToQuat(Vec3(90, 0, 0));
 	floor_tile.transform.position = Vec3(-10, 0, 10);
 
 	Actor wall_front;
-	wall_front.mesh = standard_meshes.plane;
+	wall_front.mesh = StandardMeshes::plane;
 	wall_front.transform.scale = Vec3(20);
 	wall_front.transform.rotation = EulerToQuat(Vec3(0, 0, 0));
 	wall_front.transform.position = Vec3(-10, 0, -10);
 
 	Actor wall_left;
-	wall_left.mesh = standard_meshes.plane;
+	wall_left.mesh = StandardMeshes::plane;
 	wall_left.transform.scale = Vec3(20);
 	wall_left.transform.rotation = EulerToQuat(Vec3(0, -90, 0));
 	wall_left.transform.position = Vec3(-10, 0, 10);
 
 	Actor wall_right;
-	wall_right.mesh = standard_meshes.plane;
+	wall_right.mesh = StandardMeshes::plane;
 	wall_right.transform.scale = Vec3(20);
 	wall_right.transform.rotation = EulerToQuat(Vec3(0, 90, 0));
 	wall_right.transform.position = Vec3(10, 0, -10);
@@ -337,19 +336,51 @@ int main()
 	for (int32 i = 0; i < 6; i++)
 	{
 		Actor sphere;
-		sphere.mesh = standard_meshes.sphere;
+		sphere.mesh = StandardMeshes::sphere;
 		sphere.transform.scale = Vec3(0.5);
 		sphere.transform.position = Vec3(-4 + i * 2, 4, 0);
+		
 		sphere.material.roughness = (((real32)i) / 6.f) + 0.2;
+		
+		sphere.material.forward_shader = &forward_pbr_notext_shader;
+		sphere.material.shadow_shader = &forward_phong_notext_shader;
+		sphere.material.gbuffer_shader= &forward_phong_notext_shader;
+		sphere.material.instance_shader = &forward_phong_notext_shader;
+		
 		spheres[i] = sphere;
 	}
 
 
+	TextureImport texture_import;
+	texture_import.texture_paths.push_back("res/textures/studio_small_03_2k.hdr");
+	texture_import.Load();
 	   
-	
+
+
+
+	Texture hdri;
+	hdri.config = texture_import.texture_configs[0];
+	CreateTexture(&hdri, texture_import.texture_data[0].data());
+
+	CubeMap hdri_cube_map;
+	hdri_cube_map.config.texture_format = GL_RGB32F;
+	hdri_cube_map.config.pixel_format = GL_RGB;
+	hdri_cube_map.config.width = 512;
+	hdri_cube_map.config.height = 512;
+	CreateCubeMap(&hdri_cube_map, nullptr);
+
+
+	EquirectangularToCubemap eqi_to_map;
+	eqi_to_map.Create();
+	eqi_to_map.Convert(hdri, &hdri_cube_map);
+	eqi_to_map.Free();
+
+
 	ModeImport model_import;
 	model_import.model_paths.push_back("res/models/man.dae");
 	model_import.Load();
+
+
 	AnimatedActor test_cube_guy;	
 	EditableMesh emesh = model_import.resulting_meshes[0];
 	test_cube_guy.mesh = emesh.CreateAnimMesh();
@@ -388,17 +419,14 @@ int main()
 	camera_controller.main_camera.target = Vec3(0);
 	camera_controller.main_camera.transform.position = Vec3(0, 4, 5);
 	camera_controller.main_camera.view_matrix = LookAt(camera_controller.main_camera.transform.position, camera_controller.main_camera.target, Vec3(0, 1, 0));
-
-	UIRenderer ui_renderer;
-	ui_renderer.Init(window);
-
+	   
 	WorldRenderer renderer;
 	renderer.render_shaders.skybox_shader = cubemap_shader;
 	renderer.render_shaders.depth_test_shader = simple_shadow_map_shader;
 	renderer.render_shaders.g_buffer_shader = g_buffer_shader;
 	renderer.render_shaders.ssao_gbuffer_shader = ssao_gbuffer_shader;
 	renderer.render_shaders.ssao_shader = ssao_shader;
-	renderer.render_shaders.forward_render_shader = simple_phong_shader;
+	renderer.render_shaders.forward_render_shader = forward_pbr_notext_shader;
 	renderer.render_shaders.deferred_render_shader = deferred_shader;
 	renderer.render_shaders.post_processing_shader = post_processing_shader;
 	renderer.render_shaders.debug_shader = debug_shader;
@@ -406,8 +434,8 @@ int main()
 
 	renderer.standard_shaders.simple_blur = simple_blur_shader;
 
-	renderer.standard_meshes = standard_meshes;
-	
+	renderer.default_skybox = hdri_cube_map;
+
 	renderer.WINDOW_WIDTH = WINDOW_WIDTH;
 	renderer.WINDOW_HEIGHT = WINDOW_HEIGHT;
 	renderer.camera = &camera_controller;
@@ -427,19 +455,33 @@ int main()
 
 	informer.LinkShader("LightingData", deferred_shader);
 	informer.LinkShader("LightingData", forward_phong_notext_shader);
+	
+	UIRenderer ui_renderer;
+	ui_renderer.Init(window);
+
+	EditorConsole console;
+	console.Log("*****WELCOME TO A BAD RENDERER*****");
+	console.Log("General Stats");
+	console.Log("Vendor: " + opengl_stats.vendor);
+	console.Log("Renderer: " + opengl_stats.renderer);
+	console.Log("Version: " + opengl_stats.version);
+	console.Log("Shader lang: " + opengl_stats.shading_lang);
+
+	EditorRender editor_render_window;
+	editor_render_window.delta_time = 0;
+	editor_render_window.render_settings = &renderer.render_settings;
+	
 
 	DirectionalLight sun_light;
 	sun_light.direction = Normalize(Vec3(2, -4, 1));
 	sun_light.light_colour = Vec3(.5);
-	EditorConsole console;
-	console.Log("Messhge");
 
 
 	float fh = 1;
 	DebugAddPersistentPoint(Vec3(0.0));
 	float z = 0.5;
-	float parr[100] = {};
-	for (int i = 0; i < 100; i++) parr[i] = 0.f;
+	
+	
 	float run_time = 1;
 	bool toggel = false;
 	while (!glfwWindowShouldClose(window))
@@ -589,7 +631,7 @@ int main()
 			
 		}		
 #endif
-
+	
 		renderer.Render(main_world);
 	
 		RenderCommands::DisableDepthBuffer();
@@ -619,36 +661,19 @@ int main()
 		ImGui::DockSpace(dockspace_id);
 		
 		ImGui::End();
-		console.Update();
 
 		
 		
 
-		
+		console.UpdateAndDraw();
+
+		editor_render_window.delta_time = delta_time;
+		editor_render_window.UpdateAndDraw();
 
 
-		ui_renderer.CreateUIWindow("Asset library");		
-
-
-
-
-
-		ui_renderer.EndUIWindow();
-				
-		
-		ui_renderer.CreateUIWindow("Render Settings");
-		ui_renderer.CreateCheckBox("Shadows ", &renderer.render_settings.shadow_pass);
-		ui_renderer.SetWindowSize({ 350, 100 });
-		std::stringstream ss;
-		ss << "Time: " << delta_time;
-		ImGui::PlotLines(ss.str().c_str(), parr, 100, 0, "", 0, 120, ImVec2(0, 50));
-		ui_renderer.EndUIWindow();
-		
-		
-		ui_renderer.CreateUIWindow("Console");
-		ui_renderer.EndUIWindow();
-
+			
 		ImGui::ShowDemoWindow();
+
 
 		ui_renderer.EndFrame();
 #endif
@@ -657,12 +682,12 @@ int main()
 		// Post Debug Drawing
 		////////////////////
 
-		//BindShader(debug_mesh_shader);
-		//glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
-		//ShaderBindTexture(debug_mesh_shader, renderer.frame_shadow_map.depth_texture_attachment, 0, "mesh_texture");
-		//ShaderSetMat4(debug_mesh_shader, "model", Mat4(1).arr);
-		//RenderMesh(debug_mesh_shader, standard_meshes.quad);
-		//glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+		BindShader(debug_mesh_shader);
+		glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
+		ShaderBindTexture(debug_mesh_shader, hdri, 0, "mesh_texture");
+		ShaderSetMat4(&debug_mesh_shader, "model", Mat4(1).arr);
+		RenderMesh(debug_mesh_shader, StandardMeshes::quad);
+		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 		//// @TODO: Debug Draw Quad
 		//// @NOTE: Draw bloom buffer;
@@ -684,11 +709,7 @@ int main()
 		float time = elapsedTime.count();
 		delta_time = time * 0.001f * 0.001f;
 		run_time += delta_time;
-		for (int i = 0; i < 99; i++)
-		{
-			parr[i] = parr[i + 1];
-		}
-		parr[99] = delta_time * 1000.f;
+
 
 		//std::cout << "Ms: " << time * 0.001 << std::endl;
 		//std::cout << "Sc: " << time * 0.001f * 0.001f << std::endl;		

@@ -25,6 +25,8 @@ namespace cm
 		Mat4 light_space_matrix = light_view * lightProjection;
 		
 		// @NOTE: We meant store all the shadow maps, eviorment maps etc if the first texture slots and then the others later
+		
+
 		if (render_settings.shadow_pass)
 		{
 			ShadowPass(world, &light_space_matrix);
@@ -44,7 +46,7 @@ namespace cm
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
 
-		//DrawSkyBox();
+		DrawSkyBox();
 
 		if (render_settings.defferd_pass)
 		{
@@ -101,13 +103,11 @@ namespace cm
 		ShaderBindTexture(render_shaders.deferred_render_shader, frame_g_buffer.colour1_texture_attachment, 1, "normal_map");
 		ShaderBindTexture(render_shaders.deferred_render_shader, frame_g_buffer.colour2_texture_attachment, 2, "colour_map");
 		ShaderBindTexture(render_shaders.deferred_render_shader, frame_ssao_blured.colour0_texture_attachment, 3, "ssao_map");
-		RenderMesh(render_shaders.deferred_render_shader, standard_meshes.quad);
+		RenderMesh(render_shaders.deferred_render_shader, StandardMeshes::quad);
 	}
 
 	void WorldRenderer::ForwardPass(const World &world)
-	{
-		BindShader(render_shaders.forward_render_shader);
-		
+	{		
 		if (render_settings.shadow_pass)
 		{
 			//ShaderBindTexture(render_shaders.forward_render_shader, frame_shadow_map.colour0_texture_attachment, 0, "shadow_map");
@@ -116,11 +116,20 @@ namespace cm
 		for (int32 i = 0; i < world.objects.size(); i++)
 		{
 			WorldObject *a = world.objects[i];
-			a->SetTransformValues(&render_shaders.forward_render_shader);
-			a->SetMaterialValues(&render_shaders.forward_render_shader);
+			Transform transform = a->GetTransfrom();
+			Material mat = a->GetMaterial();
+			Mat4 transform_matrix = a->GetTransformMatrix();
+			uint32 flags = a->GetRenderFlags();
+			
+			Shader forward_shader = *mat.forward_shader;
 
+			BindShader(forward_shader);
 
-			RenderMesh(render_shaders.forward_render_shader,a->GetMeshForRender());
+			
+			ShaderSetFloat(&forward_shader, "material_roughness", mat.roughness);
+			ShaderSetMat4(&forward_shader, "model", transform_matrix.arr);
+
+			RenderMesh(forward_shader, a->GetMeshForRender());
 		}
 	}
 
@@ -134,7 +143,7 @@ namespace cm
 		ShaderBindTexture(render_shaders.post_processing_shader, frame_post_processing.colour0_texture_attachment, 0, "scene_texture");
 		//ShaderBindTexture(render_shaders.post_processing_shader, *bloom_blur.texture_to_blur, 1, "bloom_texture");
 
-		RenderMesh(render_shaders.post_processing_shader, standard_meshes.quad);
+		RenderMesh(render_shaders.post_processing_shader, StandardMeshes::quad);
 	}
 
 	void WorldRenderer::SSAOPass(const World &world)
@@ -205,7 +214,7 @@ namespace cm
 		ShaderBindTexture(render_shaders.ssao_shader, frame_g_buffer.colour1_texture_attachment, 1, "gNormal");
 		ShaderBindTexture(render_shaders.ssao_shader, noise_texture, 2, "texNoise");
 
-		RenderMesh(render_shaders.ssao_shader, standard_meshes.quad);
+		RenderMesh(render_shaders.ssao_shader, StandardMeshes::quad);
 
 
 		BindFrameBuffer(frame_ssao_blured);
@@ -214,7 +223,7 @@ namespace cm
 		
 		ShaderBindTexture(standard_shaders.simple_blur, frame_ssao_unblured.colour0_texture_attachment, 0, "texture_to_blur");		
 		
-		RenderMesh(standard_shaders.simple_blur, standard_meshes.quad);
+		RenderMesh(standard_shaders.simple_blur, StandardMeshes::quad);
 
 	}
 
@@ -224,12 +233,12 @@ namespace cm
 		glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
 		ShaderBindTexture(render_shaders.debug_mesh_shader, frame_shadow_map.colour0_texture_attachment, 0, "mesh_texture");
 		ShaderSetMat4(&render_shaders.debug_mesh_shader, "model", Mat4(1).arr);
-		RenderMesh(render_shaders.debug_mesh_shader, standard_meshes.quad);
+		RenderMesh(render_shaders.debug_mesh_shader, StandardMeshes::quad);
 		
 
 		ShaderBindTexture(render_shaders.debug_mesh_shader, frame_ssao_blured.colour0_texture_attachment, 0, "mesh_texture");
 		glViewport(WINDOW_WIDTH / 4, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
-		RenderMesh(render_shaders.debug_mesh_shader, standard_meshes.quad);
+		RenderMesh(render_shaders.debug_mesh_shader, StandardMeshes::quad);
 		
 
 		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -237,12 +246,21 @@ namespace cm
 
 	void WorldRenderer::DrawSkyBox()
 	{
-		// @TODO: Fill in ubos
 		RenderCommands::DisableFaceCulling();
+		
 		BindShader(render_shaders.skybox_shader);
+
+		// @TODO: Fill in ubos
 		ShaderSetMat4(&render_shaders.skybox_shader, "projection", camera->main_camera.projection_matrix.arr);
 		ShaderSetMat4(&render_shaders.skybox_shader, "view", camera->main_camera.view_matrix.arr);
-		RenderMesh(render_shaders.skybox_shader, standard_meshes.cube); // It has texture coords
+		
+		if (default_skybox.object != 0)
+		{
+			ShaderBindCubeMap(&render_shaders.skybox_shader, default_skybox, 0, "environmentMap");
+		}
+
+		RenderMesh(render_shaders.skybox_shader, StandardMeshes::cube); 
+		
 		RenderCommands::EnableFaceCulling();
 	}
 
@@ -296,11 +314,12 @@ namespace cm
 		post_processing.render_attchment.width = WINDOW_WIDTH;
 		post_processing.render_attchment.height = WINDOW_HEIGHT;
 
-		FrameBufferAddColourAttachtments(&post_processing);
-		FrameBufferAddColourAttachtments(&post_processing);
+		FrameBufferBindColourAttachtments(&post_processing);
+		FrameBufferBindColourAttachtments(&post_processing);
 		FrameAddBufferRenderAttachtment(&post_processing);
 
 		Assert(CheckFrameBuffer(post_processing));
+		UnbindFrameBuffer();
 
 		FrameBuffer shadow_map;
 		shadow_map.colour0_texture_attachment.config.texture_format = GL_RG32F;
@@ -317,8 +336,9 @@ namespace cm
 		TextureSetBorder(&shadow_map.colour0_texture_attachment, Vec4(1).arr);
 
 		CreateFrameBuffer(&shadow_map);
-		FrameBufferAddColourAttachtments(&shadow_map);
+		FrameBufferBindColourAttachtments(&shadow_map);
 		Assert(CheckFrameBuffer(shadow_map));
+		UnbindFrameBuffer();
 
 		FrameBuffer g_buffer;
 
@@ -357,9 +377,10 @@ namespace cm
 		CreateTexture(&g_buffer.colour2_texture_attachment, nullptr);
 		CreateFrameBuffer(&g_buffer);
 
-		FrameBufferAddColourAttachtments(&g_buffer);
+		FrameBufferBindColourAttachtments(&g_buffer);
 		FrameAddBufferRenderAttachtment(&g_buffer);
 		Assert(CheckFrameBuffer(g_buffer));
+		UnbindFrameBuffer();
 
 		FrameBuffer ssao_unblured;
 		
@@ -377,9 +398,10 @@ namespace cm
 		CreateTexture(&ssao_unblured.colour0_texture_attachment, nullptr);
 		CreateFrameBuffer(&ssao_unblured);
 
-		FrameBufferAddColourAttachtments(&ssao_unblured);		
+		FrameBufferBindColourAttachtments(&ssao_unblured);		
 		Assert(CheckFrameBuffer(ssao_unblured));
-	
+		UnbindFrameBuffer();
+
 		FrameBuffer ssao_blured;
 		
 		ssao_blured.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
@@ -396,11 +418,9 @@ namespace cm
 		CreateTexture(&ssao_blured.colour0_texture_attachment, nullptr);
 		CreateFrameBuffer(&ssao_blured);
 
-		FrameBufferAddColourAttachtments(&ssao_blured);
+		FrameBufferBindColourAttachtments(&ssao_blured);
 		Assert(CheckFrameBuffer(ssao_blured));
-		
-		
-	
+		UnbindFrameBuffer();
 
 		frame_post_processing = post_processing;
 		frame_shadow_map = shadow_map;

@@ -17,7 +17,7 @@ namespace cm
 
 	//============Vector3 Functions============//
 
-	float Dot(const Vec3 a, const Vec3 b)
+	float Dot(const Vec3 &a, const Vec3 &b)
 	{
 		return a.x * b.x + a.y * b.y + a.z * b.z;
 	}
@@ -27,12 +27,12 @@ namespace cm
 		return (a.x - b.x)*(a.x - b.x) + (a.y - b.y)*(a.y - b.y) + (a.z - b.z)*(a.z - b.z);
 	}
 
-	float Mag(Vec3 a)
+	float Mag(const Vec3 &a)
 	{
 		return sqrt(a.x*a.x + a.y * a.y + a.z * a.z);
 	}
 
-	Vec3 Cross(Vec3 a, Vec3 b)
+	Vec3 Cross(const Vec3 &a, const Vec3 &b)
 	{
 		float x = a.y * b.z - b.y * a.z;
 		float y = a.z * b.x - b.z * a.x;
@@ -40,7 +40,7 @@ namespace cm
 		return Vec3(x, y, z);
 	}
 
-	Vec3 Normalize(Vec3 a)
+	Vec3 Normalize(const Vec3 &a)
 	{
 		float magA = Mag(a);
 		//Assert(magA != 0);
@@ -48,7 +48,7 @@ namespace cm
 		return Vec3(div);
 	}
 
-	Vec3 Vec4ToVec3(Vec4 &a)
+	Vec3 Vec4ToVec3(const Vec4 &a)
 	{
 		return Vec3(a.x, a.y, a.z);
 	}
@@ -62,7 +62,7 @@ namespace cm
 		return resx && resy && resz;
 	}
 
-	std::string ToString(Vec3 a)
+	std::string ToString(const Vec3 &a)
 	{
 		std::stringstream ss;
 		ss << '(' << a.x << ", " << a.y << ", " << a.z << ')';
@@ -71,17 +71,17 @@ namespace cm
 
 	//============Vector4 Functions============//
 
-	float Dot(Vec4 a, Vec4 b)
+	float Dot(const Vec4 &a, const Vec4 &b)
 	{
 		return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
 	}
 
-	float Mag(Vec4 a)
+	float Mag(const Vec4 &a)
 	{
 		return sqrt(a.x*a.x + a.y * a.y + a.z * a.z + a.w *a.w);
 	}
 
-	Vec4 Normalize(Vec4 a)
+	Vec4 Normalize(const Vec4 &a)
 	{
 		float magA = Mag(a);
 		if (magA != 1)
@@ -92,12 +92,12 @@ namespace cm
 		return a;
 	}
 
-	Vec4 Vec3ToVec4(Vec3 &a, float w)
+	Vec4 Vec3ToVec4(const Vec3 &a, const real32 &w)
 	{
 		return Vec4(a.x, a.y, a.z, w);
 	}
 
-	std::string ToString(Vec4 a)
+	std::string ToString(const Vec4 &a)
 	{
 		std::stringstream ss;
 		ss << '(' << a.x << ", " << a.y << ", " << a.z << ", " << a.w << ')';
@@ -111,7 +111,7 @@ namespace cm
 
 	//============Mat3 Functions==============//
 
-	float Det(Mat3 a)
+	real32 Det(const Mat3 &a)
 	{
 		float f = a.arr[0] * (a.arr[4] * a.arr[8] - a.arr[7] * a.arr[5]);
 		float b = a.arr[1] * (a.arr[3] * a.arr[8] - a.arr[6] * a.arr[5]);
@@ -119,7 +119,7 @@ namespace cm
 		return f - b + c;
 	}
 
-	Mat3 Mat4ToMat3(Mat4 &a)
+	Mat3 Mat4ToMat3(const Mat4 &a)
 	{
 		Mat3 result(1);
 		result.row0 = Vec4ToVec3(a.row0);
@@ -155,12 +155,12 @@ namespace cm
 		std::cout << ToString(m) << std::endl;
 	}
 
-	float Get(Mat4 a, int row, int col)
+	real32 Get(const Mat4 &a, const int32 &row, const int32 &col)
 	{
 		return a.arr[4 * row + col];
 	}
 
-	Vec4 GetColumn(Mat4 a, uint8 col)
+	Vec4 GetColumn(const Mat4 &a, const uint8 &col)
 	{
 		Vec4 column(0, 0, 0, 0);
 		column.x = a.arr[4 * 0 + col];
@@ -170,7 +170,7 @@ namespace cm
 		return column;
 	}
 
-	std::string ToString(Mat4 a)
+	std::string ToString(const Mat4 &a)
 	{
 		std::stringstream ss;
 		std::string space = "            ";
@@ -181,7 +181,7 @@ namespace cm
 		return ss.str();
 	}
 
-	Mat3 Adjoint(Mat4 a, int row, int col)
+	Mat3 Adjoint(const Mat4 &a, const int32 &row, const int32 &col)
 	{
 		Mat3 result(1);
 		int index = 0;
@@ -199,7 +199,7 @@ namespace cm
 		return result;
 	}
 
-	float Det(Mat4 a)
+	float Det(const Mat4 &a)
 	{
 		float f = a.arr[0] * (
 			a.arr[5] * (a.arr[10] * a.arr[15] - a.arr[11] * a.arr[14]) +
@@ -224,7 +224,7 @@ namespace cm
 		return f - b + c - d;
 	}
 
-	Mat4 Mat3ToMat4(Mat3 & a, Vec4 & b)
+	Mat4 Mat3ToMat4(const Mat3 &a, const Vec4 &b)
 	{
 		Mat4 result(1);
 		result.row0 = Vec3ToVec4(a.row0, 0);
@@ -234,7 +234,7 @@ namespace cm
 		return result;
 	}
 
-	bool ChecOorthogonal(Mat4 a, float tolerance)
+	bool CheckOrthogonal(const Mat4 &a, const real32 tolerance)
 	{
 		Mat4 result = a * Transpose(a);
 		for (int i = 0; i < 4; i++)
@@ -251,9 +251,9 @@ namespace cm
 		return a;
 	}
 
-	Mat4 Inverse(Mat4 a)
+	Mat4 Inverse(const Mat4 &a)
 	{
-		if (ChecOorthogonal(a))
+		if (CheckOrthogonal(a))
 		{
 			return Transpose(a);
 		}
@@ -293,7 +293,7 @@ namespace cm
 		return a;
 	}
 
-	Mat4 Translate(Mat4 a, float length, float d_angle, float z)
+	Mat4 Translate(Mat4 a, real32 length, real32 d_angle, real32 z)
 	{
 		Polar_coord p_coord = Canonical(length, d_angle, z);
 		a.row3 = Vec4(p_coord.r * cosf(p_coord.theta), p_coord.r * sinf(p_coord.theta), p_coord.z, 1) * a;
@@ -306,7 +306,7 @@ namespace cm
 		return a;
 	}
 
-	Mat4 Rotate(Mat4 a, float d_angle, Vec3 axis, bool should_normalize)
+	Mat4 Rotate(Mat4 a, real32 d_angle, Vec3 axis, bool should_normalize)
 	{
 		if (should_normalize && Mag(axis) != 1)
 		{
@@ -376,22 +376,22 @@ namespace cm
 		return a;
 	}
 
-	Mat4 Perspective(float fovy, float aspect, float fnear, float ffar)
+	Mat4 Perspective(const real32 &dfovy, const real32 &aspect, const real32 &fnear, const real32 &ffar)
 	{
 		Mat4 p(1);
-		fovy = DegToRad(fovy);
-		float half_tan_fovy = tan(fovy / 2);
+		real32 fovy = DegToRad(dfovy);
+		real32 half_tan_fovy = tan(fovy / 2);
 		p.row0 = Vec4((1 / (aspect * half_tan_fovy)), 0, 0, 0);
 		p.row1 = Vec4(0, 1 / half_tan_fovy, 0, 0);
 
-		float a = -(ffar + fnear) / (ffar - fnear);
-		float b = (-2 * ffar * fnear) / (ffar - fnear);
+		real32 a = -(ffar + fnear) / (ffar - fnear);
+		real32 b = (-2 * ffar * fnear) / (ffar - fnear);
 		p.row2 = Vec4(0, 0, a, -1);
 		p.row3 = Vec4(0, 0, b, 0);
 		return p;
 	}
 
-	Mat4 Orthographic(float left, float right, float top, float bottom, float _near, float _far)
+	Mat4 Orthographic(const real32 &left, const real32 &right, const real32 &top, const real32 &bottom, const real32 &_near, const real32 &_far)
 	{
 		Mat4 result(1);
 		result.row0 = Vec4(2 / (right - left), 0, 0, 0);
@@ -401,7 +401,7 @@ namespace cm
 		return result;
 	}
 
-	Mat4 LookAt(Vec3 position, Vec3 target, Vec3 up)
+	Mat4 LookAt(const Vec3 &position, const Vec3 &target, const Vec3 &up)
 	{
 
 		Vec3 camera_reverse_direction = Normalize((target - position));
@@ -545,7 +545,7 @@ namespace cm
 		return mat;
 	}
 
-	Vec3 Rotate(const float &d_angle, const Vec3 &point, const Vec3 &axis)
+	Vec3 Rotate(const real32 &d_angle, const Vec3 &point, const Vec3 &axis)
 	{
 		//@Speed, normalizing to be safe
 		Vec3 ax = Normalize(axis);
@@ -602,20 +602,20 @@ namespace cm
 	/////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////
 
-	Vec4 GetNormalisedDeviceCoordinates(const float & window_width, const float & window_height, const float & mouse_x,
-		const float & mouse_y)
+	Vec4 GetNormalisedDeviceCoordinates(const real32 &window_width, const real32 &window_height, const real32 &mouse_x,
+		const real32 &mouse_y)
 	{
 		//This is actualy clip space when the vec4 with -1 and 1
 		return Vec4(2 * mouse_x / window_width - 1, -(2 * mouse_y / window_height - 1), -1, 1);
 	}
 
-	Vec4 ToViewCoords(Mat4 & projection_matrix, Vec4 & viewCoords)
+	Vec4 ToViewCoords(const Mat4 &projection_matrix, const Vec4 &viewCoords)
 	{
 		Mat4 invproj = Inverse(projection_matrix);
 		return viewCoords * invproj;
 	}
 
-	Vec3 ToWorldCoords(Mat4 & view_matrix, Vec4 & viewCoords)
+	Vec3 ToWorldCoords(const Mat4 &view_matrix, const Vec4 &viewCoords)
 	{
 		Mat4 invView = Inverse(view_matrix);
 		Vec4 worldSpace = viewCoords * invView;
@@ -627,7 +627,7 @@ namespace cm
 	/////////////////////////////////////////////////////////////////////////////////////////
 		   
 	//============Other Functions============//
-	Polar_coord Canonical(float r, float theta, float z)
+	Polar_coord Canonical(real32 r, real32 theta, real32 z)
 	{
 		theta = DegToRad(theta);
 		if (r == 0)

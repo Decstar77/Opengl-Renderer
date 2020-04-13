@@ -148,9 +148,11 @@ namespace cm
 		uint32 object = 0;
 
 		RenderBuffer render_attchment;
+
 		Texture colour0_texture_attachment;
 		Texture colour1_texture_attachment;
 		Texture colour2_texture_attachment;
+
 		Texture depth_texture_attachment;
 	};
 		
@@ -168,6 +170,15 @@ namespace cm
 		IndexBuffer ibo;
 	};
 
+	struct StandardMeshes
+	{	
+		static GLMesh quad;
+		static GLMesh plane;
+		static GLMesh cube;
+		static GLMesh sphere;
+		static GLMesh cone;
+	};
+	
 	struct Batch 
 	{
 		VertexArray vao;
@@ -369,7 +380,9 @@ namespace cm
 	// @TODO: Complete
 	//void ShaderBindUniformBuffersFromSource(Shader &shader);
 
-	void ShaderBindTexture(Shader &shader, Texture texture, uint8 texture_slot, const std::string &uniform_name);
+	void ShaderBindTexture(Shader &shader, const Texture &texture, uint8 texture_slot, const std::string &uniform_name);
+
+	void ShaderBindCubeMap(Shader *shader, const CubeMap &cube_map, uint8 texture_slot, const std::string &uniform_name);
 
 	//************************************
 	// FrameBuffer Functions
@@ -379,11 +392,13 @@ namespace cm
 	
 	void UnbindFrameBuffer();
 	
-	void FreeFrameBuffer(FrameBuffer *fbo);
+	void FreeFrameBuffer(FrameBuffer *fbo, bool attachments);
 	
+	void FreeRenderBuffer(RenderBuffer *rb);
+
 	void CreateFrameBuffer(FrameBuffer *fbo);
-	
-	void FrameBufferAddColourAttachtments(FrameBuffer *buffer);
+		
+	void FrameBufferBindColourAttachtments(FrameBuffer *buffer);
 	
 	void FrameBufferAddDepthAttachments(FrameBuffer *buffer);
 

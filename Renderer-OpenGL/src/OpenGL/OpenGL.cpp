@@ -4,6 +4,15 @@
 
 namespace cm
 {
+	cm::GLMesh StandardMeshes::quad;
+
+	cm::GLMesh StandardMeshes::plane;
+
+	cm::GLMesh StandardMeshes::cube;
+
+	cm::GLMesh StandardMeshes::sphere;
+
+	cm::GLMesh StandardMeshes::cone;
 
 	void CreateVertexBuffer(VertexBuffer *vbo)
 	{
@@ -416,9 +425,12 @@ namespace cm
 
 	void FreeTexture(Texture *texture)
 	{
-		glDeleteTextures(1, &texture->object);
-		texture->config.width = 0;
-		texture->config.height = 0;		
+		if (texture->object != 0)
+		{
+			glDeleteTextures(1, &texture->object);
+			texture->object = 0;
+		}
+		
 	}
 
 	void CreateCubeMap(CubeMap *cube_map, const void **data)
@@ -551,7 +563,7 @@ namespace cm
 		glUniformBlockBinding(shader.shader_program, uniformBlockIndexRed, binding_point);
 	}
 
-	void ShaderBindTexture(Shader &shader, Texture texture, uint8 texture_slot, const std::string &uniform_name)
+	void ShaderBindTexture(Shader &shader, const Texture &texture, uint8 texture_slot, const std::string &uniform_name)
 	{
 		Assert(texture_slot < 4);
 		uint32 loc = -1;
@@ -573,7 +585,30 @@ namespace cm
 			glBindTexture(GL_TEXTURE_2D, texture.object);
 		}		
 	}
+	
+	void ShaderBindCubeMap(Shader *shader, const CubeMap &cube_map, uint8 texture_slot, const std::string &uniform_name)
+	{
+		Assert(texture_slot < 4);
+		uint32 loc = -1;
+		std::string name = uniform_name;
+		if (uniform_name == "")
+		{
+			name = cube_map.config.uniform_name;
+		}
 
+		loc = GetUniformLocation(shader, name);
+		if (loc == -1)
+		{
+			std::string ss = "ERROR::SHADER::TEXTURE: " + shader->name + " " + uniform_name;
+			LOGC(ss.c_str());
+		}
+		else
+		{
+			glUniform1i(loc, texture_slot);
+			glActiveTexture(GL_TEXTURE0 + texture_slot);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, cube_map.object);
+		}
+	}
 
 	void BindFrameBuffer(const FrameBuffer &fbo)
 	{
@@ -586,13 +621,39 @@ namespace cm
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void FreeFrameBuffer(FrameBuffer *fbo)
-	{
-		Assert(0); //@TODO: We need to free the colour buffers etc
+	void FreeFrameBuffer(FrameBuffer *fbo, bool attachments)
+	{		
 		if (fbo->object != 0)
 		{
 			glDeleteFramebuffers(1, &fbo->object);
 			fbo->object = 0;
+			if (attachments)
+			{
+				Texture *texture;
+				texture = &fbo->colour0_texture_attachment;
+				FreeTexture(texture);
+
+				texture = &fbo->colour1_texture_attachment;
+				FreeTexture(texture);
+
+				texture = &fbo->colour2_texture_attachment;
+				FreeTexture(texture);
+
+				texture = &fbo->depth_texture_attachment;
+				FreeTexture(texture);
+
+				RenderBuffer *render_buffer = &fbo->render_attchment;
+				FreeRenderBuffer(render_buffer);
+			}			
+		}
+	}
+
+	void FreeRenderBuffer(RenderBuffer *rb)
+	{
+		if (rb->object != 0)
+		{
+			glDeleteRenderbuffers(1, &rb->object);
+			rb->object = 0;
 		}
 	}
 
@@ -602,34 +663,49 @@ namespace cm
 		glGenFramebuffers(1, &fbo->object);
 	}
 
-	void FrameBufferAddColourAttachtments(FrameBuffer *buffer)
+	void FrameBufferBindColourAttachtments(FrameBuffer *buffer)
 	{
 		Assert(buffer->object != 0);
 		BindFrameBuffer(*buffer);
-		Texture *texture = &buffer->colour0_texture_attachment;
+		
 
 		uint32 count = 0;
 		uint32 attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
 								GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 
-		for (int32 i = 0; i < 3; i++)
+		Texture *texture = nullptr;
+		
+		texture = &buffer->colour0_texture_attachment;
+		if (texture->object != 0)
 		{
-			if (texture[i].object != 0)
-			{
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D,
-					texture[i].object, 0);
-				glDrawBuffer(GL_COLOR_ATTACHMENT0 + i);
-				count++;
-			}
-			else
-			{
-				break;
-			}
+			uint32 type = texture->config.type;
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, type,
+				texture->object, 0);
+			glDrawBuffer(GL_COLOR_ATTACHMENT0);
+			count++;
+		}		
+		
+		texture = &buffer->colour1_texture_attachment;
+		if (texture->object != 0)
+		{
+			uint32 type = texture->config.type;
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, type,
+				texture->object, 0);
+			glDrawBuffer(GL_COLOR_ATTACHMENT1);
+			count++;
+		}
+
+		texture = &buffer->colour2_texture_attachment;
+		if (texture->object != 0)
+		{
+			uint32 type = texture->config.type;
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, type,
+				texture->object, 0);
+			glDrawBuffer(GL_COLOR_ATTACHMENT2);
+			count++;
 		}
 		
 		glDrawBuffers(count, attachments);
-
-
 		UnbindFrameBuffer();
 	}
 
@@ -815,8 +891,4 @@ namespace cm
 		printf("max local work group invocations %i\n", stats.work_grp_inv);
 		printf("/*************OPENGL_STATS*************/ \n");
 	}
-
-
-
-
 }

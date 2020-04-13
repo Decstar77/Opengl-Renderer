@@ -1,10 +1,10 @@
 #pragma once
 #include "Core.h"
+#include "Core/World.h"
 #include "Math/CosmicMath.h"
 
 // @NOTE: Apparently this doesn't work, therefore I've defined it in the visual studio pre processor
 //#define IMGUI_IMPL_OPENGL_LOADER_GLEW
-
 #include "../vendor/IMGUI/imgui.h"
 #include "../vendor/IMGUI/imgui_impl_glfw.h"
 #include "../vendor/IMGUI/imgui_impl_opengl3.h"
@@ -72,8 +72,9 @@ namespace cm
 	{
 	public:
 		void Log(const std::string &msg);
-		void Update();
+		void UpdateAndDraw();
 		void Clear();
+		void ExeCommand(const std::string &cmd);
 
 	public:
 		std::string title = "Console";
@@ -88,9 +89,20 @@ namespace cm
 		ImGuiTextFilter	Filter;
 		bool AutoScroll;
 		bool ScrollToBottom;
-
 	};
 
+	class EditorRender
+	{
+	public: 
+		RenderSettings *render_settings = nullptr;
+		real32 delta_time = 0;
+		real32 fps_graph[100] = {};
 
+
+	public:
+		void UpdateAndDraw();
+
+
+	};
 
 }

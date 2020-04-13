@@ -204,8 +204,8 @@ namespace cm
 	{
 		current << msg << '\n';
 	}
-
-	void EditorConsole::Update()
+	static void  Strtrim(char* str) { char* str_end = str + strlen(str); while (str_end > str && str_end[-1] == ' ') str_end--; *str_end = 0; }
+	void EditorConsole::UpdateAndDraw()
 	{
 		ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiCond_FirstUseEver);
 		ImGui::Begin(title.c_str());
@@ -219,7 +219,9 @@ namespace cm
 		ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar); // Leave room for 1 separator + 1 InputText
 
 		if (copy_to_clipboard)
+		{
 			ImGui::LogToClipboard();
+		}
 
 		std::string info = current.str();
 		
@@ -228,21 +230,22 @@ namespace cm
 			ImGui::TextUnformatted(info.c_str());
 		}
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
-
-
-
-		if (copy_to_clipboard)
+			   
+		if (copy_to_clipboard) 
+		{
 			ImGui::LogFinish();
+		}
 		ImGui::PopStyleVar();
 		ImGui::EndChild();
 
 		ImGui::Separator();
 
-
 		//// @NOTE: Commands
-		if (ImGui::InputText("Input", input_buffer, IM_ARRAYSIZE(input_buffer)))
+		if (ImGui::InputText("Input", input_buffer, IM_ARRAYSIZE(input_buffer), ImGuiInputTextFlags_EnterReturnsTrue))
 		{
-			LOG(input_buffer);
+			std::string cmd = input_buffer;			
+			ExeCommand(cmd);
+			strcpy_s(input_buffer, "");
 		}
 		
 		ImGui::End();
@@ -256,6 +259,49 @@ namespace cm
 		history.str(std::string());
 		current.str(std::string());
 		commands.str(std::string());
+	}
+
+
+	void EditorConsole::ExeCommand(const std::string &cmd)
+	{
+		if (cmd == "help")
+		{
+			Log("Middle mouse to free look");			
+		}		
+	}
+
+	void EditorRender::UpdateAndDraw()
+	{
+		Assert(render_settings); // @REASON: Render Settings was null
+		ImGui::Begin("Render Settings");
+
+		if (ImGui::CollapsingHeader("Render Passes"))
+		{
+			ImGui::Checkbox("Shadow Pass", &render_settings->shadow_pass);
+			ImGui::Checkbox("Defferd Pass", &render_settings->defferd_pass);
+			ImGui::Checkbox("SSAO Pass", &render_settings->ssao);
+			ImGui::Checkbox("SSR Pass", &render_settings->ssr);
+		}
+		
+		if (ImGui::CollapsingHeader("Post Processing"))
+		{
+			ImGui::Checkbox("Bloom", &render_settings->ssr);
+			ImGui::Checkbox("FXAA", &render_settings->ssr);
+			ImGui::Checkbox("Vignette ", &render_settings->ssr);
+		}
+
+		if (ImGui::CollapsingHeader("Performance"))
+		{
+			std::string ss = "Time " + std::to_string(delta_time);
+			ImGui::PlotLines(ss.c_str(), fps_graph, 100, 0, "", 0, 120, ImVec2(0, 50));
+		}
+		
+		ImGui::End();
+		for (uint32 i = 0; i < 99; i++)
+		{
+			fps_graph[i] = fps_graph[i + 1];
+		}
+		fps_graph[99] = delta_time * 1000.f;
 	}
 
 }

@@ -57,6 +57,61 @@ namespace cm
 		}		
 	}
 
+	bool TextureImport::Load()
+	{
+		bool result = true;
+		for (int32 i = 0; i < texture_paths.size(); i++)
+		{
+			int32 width = 0;
+			int32 height = 0;
+			int32 nrChannels = 0;
+			
+			const std::string &path = texture_paths[i];
+
+			real32 *data = stbi_loadf(path.c_str(), &width, &height, &nrChannels, 0);
+
+			if (data)
+			{
+				TextureConfig texture_config;
+				texture_config.height = height;
+				texture_config.width = width;
+
+				if (nrChannels == 4)
+				{
+					texture_config.texture_format = GL_RGBA32F;
+					texture_config.pixel_format = GL_RGBA;
+				}
+				else if (nrChannels == 3)
+				{
+					texture_config.texture_format = GL_RGB32F;
+					texture_config.pixel_format = GL_RGB;
+				}
+				else
+				{
+					Assert(0); // @REASON: We have no support channel count
+				}
+
+				texture_configs.push_back(texture_config);
+
+				uint32 size = width * height * nrChannels;
+				
+				texture_data.push_back({});
+				texture_data.back().insert(texture_data.back().end(), &data[0], &data[size]);
+								
+				stbi_image_free(data);		
+				data = nullptr;
+			}
+			else
+			{
+				result = false;
+				LOG("Could not load: " << path);
+			}			
+		}
+		return result;
+	}
+
+
+
 	Mat4 ModeImport::ToMatrix4f(const aiMatrix4x4 *ai_mat)
 	{
 
@@ -566,5 +621,5 @@ namespace cm
 
 
 
-}
+	}
 

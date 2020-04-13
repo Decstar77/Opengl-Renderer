@@ -5,8 +5,10 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+
 #include "Core/EditableMesh.h"
 #include "Core/Animation.h"
+
 namespace cm
 {
 	class ModeImport
@@ -50,6 +52,18 @@ namespace cm
 		// @TODO: Multi-thread
 		// @TOOD: Multi-mesh
 		bool Load();		
+
+	};
+
+	class TextureImport
+	{
+	public:
+		std::vector<TextureConfig> texture_configs;
+		std::vector<std::vector<real32>> texture_data;
+		std::vector<std::string> texture_paths;
+
+	public:
+		bool Load();
 
 	};
 

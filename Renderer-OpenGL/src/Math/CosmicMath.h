@@ -158,47 +158,47 @@ namespace cm
 		return res;
 	}
 	
-	inline real RandomReal(real min, real max) // min to max - 1
+	inline real RandomReal(const real &min, const real &max) // min to max - 1
 	{
 		real c = max - min;
 		return  c == 0 ? min : min + static_cast <real> (rand()) / (static_cast <real> (RAND_MAX / c));		
 	}
 
-	inline uint32 RandomUInt(uint32 min, uint32 max) // min to max - 1
+	inline uint32 RandomUInt(const uint32 &min, const uint32 &max) // min to max - 1
 	{
 		uint32 c = max - min;
 		return c == 0 ? min : rand() % (max - min) + min;
 	}
 
-	inline real Fit(real value, real min, real max)
+	inline real Fit(const real &value, const real &min, const real &max)
 	{		
 		return (value - min) / (max - min);
 	}
 	
-	inline real Lerp(real a, real b, real t)
+	inline real Lerp(const real &a, const real &b, const real &t)
 	{
 		return a *(1 - t) + b * t;
 	}
 
-	//============Functions Declerations============//
+	//************************************
+	// Other Functions
+	//************************************
 
-	//============        Other       ============//
-
-	Polar_coord  Canonical(float r, float theta, float z);
+	Polar_coord Canonical(real32 r, real32 theta, real32 z);
 
 	uint32 GetShaderDataTypeComponentCount(ShaderDataType type);
 	
 	uint32 GetShaderDataTypeSize(ShaderDataType type);
 		
-	Mat4  Perspective(float fovy, float aspect, float near, float far);
+	Mat4  Perspective(const real32 &dfovy, const real32 &aspect, const real32 &fnear, const real32 &ffar);
 
-	Mat4 Orthographic(float left, float right, float top, float bottom, float _near, float _far);
+	Mat4 Orthographic(const real32 &left, const real32 &right, const real32 &top, const real32 &bottom, const real32 &_near, const real32 &_far);
 	   	 
-	Mat4 LookAt(Vec3 position, Vec3 target, Vec3 up);
-
-	//============        Vectors       ============//
-
-	//=========Orientation
+	Mat4 LookAt(const Vec3 &position, const Vec3 &target, const Vec3 &up);
+	
+	//************************************
+	// Quaterion Orientation Functions
+	//************************************
 
 	Quat EulerToQuat(const Vec3 &euler_angle);
 	
@@ -216,98 +216,108 @@ namespace cm
 
 	Vec3 Rotate(const Quat &r, const Vec3 &point);
 
-	Vec3 Rotate(const float &d_angle, const Vec3 &point, const Vec3 &axis);
+	Vec3 Rotate(const real32 &d_angle, const Vec3 &point, const Vec3 &axis);
 
-	//========Coordinate Spaces
+	//************************************
+	// Coordinate Spaces
+	//************************************
 
-	Vec4 GetNormalisedDeviceCoordinates(const float &window_width, const float &window_height, const float &mouse_x, const float &mouse_y);
+	Vec4 GetNormalisedDeviceCoordinates(const real32 &window_width, const real32 &window_height, const real32 &mouse_x, const real32 &mouse_y);
 
-	Vec4 ToViewCoords(Mat4 &projection_matrix, Vec4 &viewCoords);
+	Vec4 ToViewCoords(const Mat4 &projection_matrix, const Vec4 &viewCoords);
 
-	Vec3 ToWorldCoords(Mat4 &view_matrix, Vec4 &viewCoords);
+	Vec3 ToWorldCoords(const Mat4 &view_matrix, const Vec4 &viewCoords);
 
-	//========Vector2
+	//************************************
+	// Vector2 
+	//************************************
 
 	float Mag(const Vec2 &a);
 
 	Vec2 Normalize(const Vec2 &a);
 
-	//========Vector3
+	//************************************
+	// Vector3
+	//************************************
 
-	float  Mag(Vec3 a);
+	float  Mag(const Vec3 &a);
 	
-	float  Dot(Vec3 a, Vec3 b);
+	float  Dot(const Vec3 &a, const Vec3 &b);
 
 	float SqrdDistance(const Vec3 &a, const Vec3 &b);
 	
-	Vec3   Cross(Vec3 a, Vec3 b);
+	Vec3 Cross(const Vec3 &a, const Vec3 &b);
 	
-	Vec3   Normalize(Vec3 a);
+	Vec3 Normalize(const Vec3 &a);
 
-	Vec3  Vec4ToVec3(Vec4 &a);	
+	Vec3 Vec4ToVec3(const Vec4 &a);	
 
 	bool CompareVec(const Vec3 &a, const Vec3 &b, const real &epsilon = FLOATING_POINT_ERROR_PRESCION);
 
-	std::string  ToString(Vec3 a);
+	std::string ToString(const Vec3 &a);
 
-	//======Vector 4
+	//************************************
+	// Vector4
+	//************************************
 
-	float  Mag(Vec4 a);
+	float Mag(const Vec4 &a);
 	
-	float   Dot(Vec4 a, Vec4 b);
+	float Dot(const Vec4 &a, const Vec4 &b);
 	
-	Vec4   Normalize(Vec4 a);
+	Vec4 Normalize(const Vec4 &a);
 
-	Vec4  Vec3ToVec4(Vec3 &a, float w);
+	Vec4 Vec3ToVec4(const Vec3 &a, const real32  &w);
 
-	std::string  ToString(Vec4 a);
+	std::string ToString(const Vec4 &a);
 
-	//========Mat3
+	//************************************
+	// Matrix 3x3
+	//************************************
 	
-	float  Det(Mat3 a);
+	real32 Det(const Mat3 &a);
 
-	Mat3  Mat4ToMat3(Mat4 &a);
+	Mat3 Mat4ToMat3(const Mat4 &a);
 
-	//========Mat4
+	//************************************
+	// Matrix 4x4
+	//************************************
 
-	float Get(Mat4 a, int row, int col);
+	real32 Get(const Mat4 &a, const int32 &row, const int32 &col);
 	
-	Vec4  GetColumn(Mat4 a, uint8 col);
+	Vec4 GetColumn(const Mat4 &a, const uint8 &col);
 
-	std::string ToString(Mat4 a);
+	std::string ToString(const Mat4 &a);
 
-	bool  ChecOorthogonal(Mat4 a, float tolerance = 0.01);
+	bool CheckOrthogonal(const Mat4 &a, const real32 tolerance = 0.01);
 
-	Mat3  Adjoint(Mat4 a, int row, int col);
+	Mat3 Adjoint(const Mat4 &a, const int32 &row, const int32 &col);
 	
-	Mat4  Inverse(Mat4 a);
+	Mat4 Inverse(const Mat4 &a);
 
-	Mat4  Transpose(Mat4 a);
+	Mat4 Transpose(Mat4 a);
 
-	float  Det(Mat4 a);
+	real32 Det(const Mat4 &a);
 
-	Mat4  Mat3ToMat4(Mat3 &a, Vec4 &b);
+	Mat4 Mat3ToMat4(const Mat3 &a, const Vec4 &b);
 
-	Mat4  Translate(Mat4 a, Vec3 translation);
+	Mat4 Translate(Mat4 a, Vec3 translation);
 
-	Mat4  Translate(Mat4 a, float length, float d_angle, float z);
+	Mat4 Translate(Mat4 a, real32 length, real32 d_angle, real32 z);
 
-	Mat4  Translate(Mat4 a, Polar_coord p_coord);
+	Mat4 Translate(Mat4 a, Polar_coord p_coord);
 
-	Mat4  Rotate(Mat4 a, float dangle, Vec3 axis, bool should_normalize = true);
+	Mat4 Rotate(Mat4 a, real32 dangle, Vec3 axis, bool should_normalize = true);
 
-	Mat4  ScaleDirection(Mat4 a, float k, Vec3 unit_direction, bool should_normalize = true);
+	Mat4 ScaleDirection(Mat4 a, float k, Vec3 unit_direction, bool should_normalize = true);
 
-	Mat4  ScaleCardinal(Mat4 a, Vec3 direction);
+	Mat4 ScaleCardinal(Mat4 a, Vec3 direction);
 	
 	Mat4 CalculateTransformMatrix(const Vec3 &position, const Vec3 &scale, const Quat &rotation);
 	
 	void Print(const Mat4 &m);
 
 	void PrintPretty(const Mat4 &m);
-	//============Struct Definitions============//
-
-	//Vectors
+			
 	struct  Vec2
 	{
 		union
