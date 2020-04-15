@@ -5,9 +5,23 @@
 
 
 
+// @NOTE: Depricated will remove when I rewrite rendere
+// @NOTE: Depricated will remove when I rewrite rendere
+// @NOTE: Depricated will remove when I rewrite rendere
+// @NOTE: Depricated will remove when I rewrite rendere
+// @NOTE: Depricated will remove when I rewrite rendere
+// @NOTE: Depricated will remove when I rewrite rendere
+// @NOTE: Depricated will remove when I rewrite rendere
+// @NOTE: Depricated will remove when I rewrite rendere
+// @NOTE: Depricated will remove when I rewrite rendere
+// @NOTE: Depricated will remove when I rewrite rendere
+// @NOTE: Depricated will remove when I rewrite rendere
+// @NOTE: Depricated will remove when I rewrite rendere
+// @NOTE: Depricated will remove when I rewrite rendere
+// @NOTE: Depricated will remove when I rewrite rendere
 namespace cm
 {
-	class RenderCommands
+	class RenderCommands // @NOTE: Depricated will remove when I rewrite rendere
 	{
 	public:
 		static inline void EnableMulitSampling()
@@ -59,7 +73,7 @@ namespace cm
 		{
 			glDepthMask(GL_FALSE);
 		}
-		
+
 		static inline void DisbleStencilBuffer()
 		{
 			glDisable(GL_STENCIL_TEST);
@@ -82,7 +96,7 @@ namespace cm
 
 		static inline void EnableFaceCulling()
 		{
-			glEnable(GL_CULL_FACE);			
+			glEnable(GL_CULL_FACE);
 			glFrontFace(GL_CCW);
 		}
 
@@ -93,7 +107,7 @@ namespace cm
 
 		static inline void CullFrontFace()
 		{
-			glCullFace(GL_FRONT);			
+			glCullFace(GL_FRONT);
 		}
 
 		static inline void EnableWireframe()
@@ -131,7 +145,7 @@ namespace cm
 		{
 			glViewport(start_x, start_y, width, height);
 		}
-	
+
 
 	};
 }

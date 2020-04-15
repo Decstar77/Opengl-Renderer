@@ -2,11 +2,12 @@
 #include "Core.h"
 #include "glew.h"
 #include "BufferLayout.h"
-#include <unordered_map>
+#include "Math/CosmicMath.h"
+
 namespace cm
-{	
+{
 	//===============================================================//
-	/*		
+	/*
 		@TODO: Change CreateShader to take in shader pointer
 	*/
 	//===============================================================//
@@ -40,7 +41,7 @@ namespace cm
 		std::string renderer;
 		std::string version;
 		std::string shading_lang;
-			   
+
 		int32 work_grp_cnt[3];
 		int32 work_grp_size[3];
 		int32 work_grp_inv;
@@ -52,15 +53,6 @@ namespace cm
 		uint32 size_bytes = 0;
 		BufferLayout lbo;
 		BufferType type = BufferType::Uniform_buffer;
-	};
-
-	struct ShaderBuffer
-	{
-		int32 binding_location = -1;
-		uint32 object = 0;
-		uint32 size_bytes = 0;
-		BufferLayout lbo;
-		BufferType type = BufferType::Shader_storage;
 	};
 
 	struct VertexBuffer
@@ -77,23 +69,23 @@ namespace cm
 	{
 		uint32 object = 0;
 		uint32 index_count = 0;
-		uint32 size_bytes = 0 ;
+		uint32 size_bytes = 0;
 		VertexFlags flags = VertexFlags::READ_WRITE;
 		BufferType type = BufferType::Index_buffer;
 	};
-	
+
 	struct VertexArray
 	{
-		uint32 object = 0;		
+		uint32 object = 0;
 		std::vector<VertexBuffer> vertex_buffers;
 	};
 
 	struct TextureConfig
 	{
 		uint32 type = GL_TEXTURE_2D;
-		uint32 texture_format = GL_RGBA; // Or GL_RGBA32F for example // first
-		uint32 pixel_format = GL_RGBA; //second
-		uint32 data_type = GL_FLOAT; //GL_UNSIGNED_BYTE
+		uint32 texture_format = GL_RGBA;	// NOTE: Or GL_RGBA32F 
+		uint32 pixel_format = GL_RGBA;		// NOTE: Or GL_RG
+		uint32 data_type = GL_FLOAT;		// NOTE: Or GL_UNSIGNED_BYTE
 		uint32 min_filter = GL_LINEAR;
 		uint32 mag_filter = GL_LINEAR;
 		uint32 wrap_s_mode = GL_REPEAT;
@@ -107,9 +99,9 @@ namespace cm
 	struct CubeMapConfig
 	{
 		uint32 type = GL_TEXTURE_CUBE_MAP;
-		uint32 texture_format = GL_RGBA; // Or GL_RGBA32F for example // first
-		uint32 pixel_format = GL_RGBA;	//second
-		uint32 data_type = GL_FLOAT;    //GL_UNSIGNED_BYTE
+		uint32 texture_format = GL_RGBA;	// NOTE: Or GL_RGBA32F  
+		uint32 pixel_format = GL_RGBA;		// NOTE: Or GL_RG
+		uint32 data_type = GL_FLOAT;		// NOTE: Or GL_UNSIGNED_BYTE
 		uint32 min_filter = GL_LINEAR;
 		uint32 mag_filter = GL_LINEAR;
 		uint32 wrap_s_mode = GL_CLAMP_TO_EDGE;
@@ -121,6 +113,14 @@ namespace cm
 		std::string uniform_name = "";
 	};
 
+	struct ShaderConfig
+	{
+		ShaderType type;
+		std::string name;
+		std::string src_vert;	// NOTE: Gets freed and set to Linked when sucessfully created else emptry string
+		std::string scr_frag;	// NOTE: Gets freed and set to Linked when sucessfully created else emptry string
+		std::string src_geom;	// NOTE: Gets freed and set to Linked when sucessfully created else emptry string		
+	};
 
 	struct Texture
 	{
@@ -156,13 +156,13 @@ namespace cm
 
 		Texture depth_texture_attachment;
 	};
-		
+
 	struct Shader
 	{
 		uint32 shader_program;
+		std::unordered_map<std::string, uint32> uniform_cache;
 		ShaderType type;
 		std::string name;
-		std::unordered_map<std::string, uint32> uniform_cache;
 	};
 
 	struct GLMesh
@@ -171,22 +171,134 @@ namespace cm
 		IndexBuffer ibo;
 	};
 
-	struct StandardMeshes
-	{	
-		static GLMesh quad;
-		static GLMesh plane;
-		static GLMesh cube;
-		static GLMesh sphere;
-		static GLMesh cone;
-	};
-	
-	struct Batch 
+	struct Batch
 	{
 		VertexArray vao;
 		IndexBuffer ibo;
 		std::vector<Mat4> transforms;
 	};
+
+	//************************************
+	// Usefull classes for rendering
+	//************************************
+
+	// NOTE: We could make getters for these to be safe, but I think it's a bit convaluted to do so
+	class StandardMeshes
+	{
+	public:
+		static GLMesh quad;
+		static GLMesh plane;
+		static GLMesh cube;
+		static GLMesh sphere;
+		static GLMesh cone;
+
+		static void Initilize();
+	};
+
+	// NOTE: We could make getters for these to be safe, but I think it's a bit convaluted to do so
+	// TODO: Complete as needed
+	class OpenGlState
+	{
+	public:
+		static uint32 current_viewport_width;
+		static uint32 current_viewport_height;
+		static uint32 window_width;
+		static uint32 window_height;
+	};
 	
+	class CubeMapMatrices
+	{
+	public:
+		static Mat4 projection;
+		static Mat4 views[6];
+	};
+
+	class CubeMapGenerator
+	{
+	private:
+		Shader shader;
+		FrameBuffer frame;
+		bool created = false;
+
+	public:
+		void Create();
+		void Convert(const Texture &src, CubeMap *dst);
+		void Free();
+
+	public:
+		CubeMapGenerator();
+		~CubeMapGenerator();
+	};
+
+	class EquirectangularGenerator
+	{
+	private:
+		Shader shader;
+		FrameBuffer frame;
+		bool created = false;
+
+	public:
+		void Create();
+		void Convert(const CubeMap &src, Texture *dst);
+		void Free();
+
+	public:
+		EquirectangularGenerator();
+		~EquirectangularGenerator();
+	};
+
+	class IrradianceGenerator
+	{
+	private:
+		Shader shader;
+		FrameBuffer frame;
+		bool created = false;
+
+	public:
+		void Create();
+		void Convert(const CubeMap &src, CubeMap *dst);
+		void Free();
+
+	public:
+		IrradianceGenerator();
+		~IrradianceGenerator();
+	};
+
+	class PrefilterGenerator
+	{
+	private:
+		Shader shader;
+		FrameBuffer frame;
+		bool created = false;
+
+	public:
+		void Create();
+		void Convert(const CubeMap &src, CubeMap *dst);
+		void Free();
+
+	public:
+		PrefilterGenerator();
+		~PrefilterGenerator();
+	};
+
+	class LookUpTextureGenerator
+	{
+	private:
+		FrameBuffer frame;
+		bool created = false;
+
+	public:
+		void Create();
+		void Convert(Texture *dst);
+		void Free();
+		Shader shader;
+
+	public:
+		LookUpTextureGenerator();
+		~LookUpTextureGenerator();
+
+	};
+
 	//************************************
 	// Write Buffer Functions C++ Templated
 	//************************************
@@ -231,11 +343,11 @@ namespace cm
 
 		memcpy(ptr, new_data, size);
 
-		
+
 		glUnmapBuffer(type);
 		glBindBuffer(type, 0);
 	}
-	
+
 	template <typename Q>
 	void ReadBufferData(const Q &buffer, void *data, uint32 size_byte, uint32 offset_bytes)
 	{
@@ -268,7 +380,7 @@ namespace cm
 
 		void *ptr = glMapBuffer(type, GL_WRITE_ONLY);
 		ptr = static_cast<char*>(ptr) + offset_bytes;
-		
+
 		memcpy(ptr, data, size_bytes);
 
 		glUnmapBuffer(type);
@@ -312,21 +424,21 @@ namespace cm
 	//************************************
 
 	void BindVertexArray(const VertexArray &vao);
-	
+
 	void UnbindVertexArray();
-	
+
 	void FreeVertexArray(VertexArray *vao, bool clear_vbos);
-	
+
 	void CreateVertexArray(VertexArray *vao);
-	
+
 	BufferLayout GetTotalVertexBufferLayout(const VertexArray &vao);
-	
+
 	void VertexArrayAddBuffer(VertexArray *vao, VertexBuffer &vbo, BufferLayout &added_lbo);
-	
+
 	//************************************
 	// Texture Functions
 	//************************************
-	
+
 	void BindTexture(Texture *texture);
 
 	void BindTexture(const Texture &texture);
@@ -340,7 +452,7 @@ namespace cm
 	void TextureSetBorder(Texture *texture, float *border_colour);
 
 	void FreeTexture(Texture *texture);
-	
+
 	void CreateCubeMap(CubeMap *cube_map, const void **data);
 
 	void CreateCubeMapFrom6(CubeMap *cube_map, std::vector<Texture> textures);
@@ -348,34 +460,34 @@ namespace cm
 	//************************************
 	// Shader Functions
 	//************************************
-	
+
 	// @TODO: Prehaps we should store the source in the shader struct
 	// @TODO: ShaderUniforms should be const float *data
-	
+
 	Shader CreateShader(std::string vertex_source, std::string fragment_source);
-	
+
 	Shader CreateComputeShader(std::string source);
-	
+
 	// @TODO: Complete
 	//Shader CreateBatchShaderFromShader(std::string vertex_source, std::string fragment_source);
 
 
 	void FreeShader(Shader *shader);
-	
+
 	void BindShader(const Shader &shader);
-	
+
 	uint32 GetUniformLocation(Shader *shader, const std::string &uniform_name);
-	
+
 	void ShaderSetInt32(Shader *shader, const std::string &uniform_name, int x);
-	
+
 	void ShaderSetFloat(Shader *shader, const std::string &uniform_name, float x);
-	
+
 	void ShaderSetVec3(Shader *shader, const std::string &uniform_name, float x, float y, float z);
-	
+
 	void ShaderSetVec3(Shader *shader, const std::string &uniform_name, float* data);
-	
+
 	void ShaderSetMat4(Shader *shader, const std::string &uniform_name, float* data);
-	
+
 	void ShaderBindUniformBuffer(const Shader &shader, uint32 binding_point, const std::string &uniform_name);
 
 	// @TODO: Complete
@@ -388,23 +500,23 @@ namespace cm
 	//************************************
 	// FrameBuffer Functions
 	//************************************
-	
+
 	void BindFrameBuffer(const FrameBuffer &fbo);
-	
+
 	void UnbindFrameBuffer();
-	
+
 	void FreeFrameBuffer(FrameBuffer *fbo, bool attachments);
-	
+
 	void FreeRenderBuffer(RenderBuffer *rb);
 
 	void CreateFrameBuffer(FrameBuffer *fbo);
-		
+
 	void FrameBufferBindColourAttachtments(FrameBuffer *buffer);
-	
+
 	void FrameBufferAddDepthAttachments(FrameBuffer *buffer);
 
 	void FrameAddBufferRenderAttachtment(FrameBuffer *buffer);
-	
+
 	bool CheckFrameBuffer(const FrameBuffer &buffer); // Returns true if FrameBuffer is good 
 
 	//************************************
@@ -413,15 +525,15 @@ namespace cm
 
 	void CreateBatch(Batch *batch, const VertexBuffer &vbo_to_batch, const IndexBuffer &ibo_of_vbo);
 
-	void FreeBatch(Batch *batch); 
+	void FreeBatch(Batch *batch);
 
 	//************************************
 	// Render Functions
 	//************************************
 
-	void RenderBatch(const Shader &shader, const Batch &batch); 
+	void RenderBatch(const Shader &shader, const Batch &batch);
 
-	void RenderMesh(const Shader &shader, const GLMesh &mesh);		
+	void RenderMesh(const Shader &shader, const GLMesh &mesh);
 
 	//************************************
 	// Other Functions
@@ -431,7 +543,133 @@ namespace cm
 
 	void PrintOpenglStatistics(const OpenGLStatistics &stats);
 
-	
+	void InitializeOpenGl(uint32 window_width, uint32 window_height);
+
+	//************************************
+	// Inlined Opengl State functions
+	//************************************
+
+	static inline void EnableMulitSampling()
+	{
+		glEnable(GL_MULTISAMPLE);
+	}
+
+	static inline void Clear(Vec4 colour)
+	{
+		glClearColor(colour.x, colour.y, colour.z, colour.w);
+	}
+
+	static inline void EnableDepthBuffer()
+	{
+		glEnable(GL_DEPTH_TEST);
+	}
+
+	static inline void EnableCubeMapSeamless()
+	{
+		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+	}
+
+	static inline void DepthBufferFunction(uint32 func)
+	{
+		glDepthFunc(func);
+	}
+
+	static inline void Enable(uint32 cmd)
+	{
+		glEnable(cmd);
+	}
+
+	static inline void EnableStencilBuffer()
+	{
+		glEnable(GL_STENCIL_TEST);
+	}
+
+	static inline void DisableDepthBuffer()
+	{
+		glDisable(GL_DEPTH_TEST);
+	}
+
+	static inline void EnableDepthBufferWriting()
+	{
+		glDepthMask(GL_FALSE);
+	}
+
+	static inline void DisableDepthBufferWriting()
+	{
+		glDepthMask(GL_FALSE);
+	}
+
+	static inline void DisbleStencilBuffer()
+	{
+		glDisable(GL_STENCIL_TEST);
+	}
+
+	static inline void ClearBuffers()
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	}
+
+	static inline void ClearColourBuffer()
+	{
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
+
+	static inline void ClearDepthBuffer()
+	{
+		glClear(GL_DEPTH_BUFFER_BIT);
+	}
+
+	static inline void EnableFaceCulling()
+	{
+		glEnable(GL_CULL_FACE);
+		glFrontFace(GL_CCW);
+	}
+
+	static inline void CullBackFace()
+	{
+		glCullFace(GL_BACK);
+	}
+
+	static inline void CullFrontFace()
+	{
+		glCullFace(GL_FRONT);
+	}
+
+	static inline void EnableWireframe()
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+
+	static inline void DisableBlending()
+	{
+		glDisable(GL_BLEND);
+	}
+
+	static inline void DisableFaceCulling()
+	{
+		glDisable(GL_CULL_FACE);
+	}
+
+	static inline void DisableWireframe()
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+
+	static inline void EnableBlending()
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+
+	static inline void ChangeViewPort(uint32 width, uint32 height)
+	{
+		glViewport(0, 0, width, height);
+	}
+
+	static inline void ChangeViewPort(uint32 start_x, uint32 start_y, uint32 width, uint32 height)
+	{
+		glViewport(start_x, start_y, width, height);
+	}	
 }
 
 

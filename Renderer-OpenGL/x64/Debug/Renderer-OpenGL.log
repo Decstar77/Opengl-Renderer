@@ -8,13 +8,85 @@ f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(39): warning C4244: 'a
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(41): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(42): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(345): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(346): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(713): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(722): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(935): warning C4244: 'initializing': conversion from '_Rep' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(707): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(716): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(929): warning C4244: 'initializing': conversion from '_Rep' to 'float', possible loss of data
           with
           [
               _Rep=__int64
           ]
+  EditableMesh.cpp
+f:\renderer-opengl\renderer-opengl\src\core.h(27): warning C4005: 'LOGC': macro redefinition
+  f:\renderer-opengl\renderer-opengl\src\core.h(23): note: see previous definition of 'LOGC'
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(40): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(48): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(284): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
+          with
+          [
+              _Ty=real32
+          ]
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(285): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
+          with
+          [
+              _Ty=real32
+          ]
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(286): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
+          with
+          [
+              _Ty=real32
+          ]
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(287): warning C4244: 'argument': conversion from 'uint32' to 'const _Ty', possible loss of data
+          with
+          [
+              _Ty=real32
+          ]
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(297): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(305): warning C4267: '=': conversion from 'size_t' to 'uint32', possible loss of data
+  Renderer.cpp
+f:\renderer-opengl\renderer-opengl\src\core.h(27): warning C4005: 'LOGC': macro redefinition
+  f:\renderer-opengl\renderer-opengl\src\core.h(23): note: see previous definition of 'LOGC'
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(170): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(169): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(175): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(190): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(189): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  Sandbox.cpp
+f:\renderer-opengl\renderer-opengl\src\core.h(27): warning C4005: 'LOGC': macro redefinition
+  f:\renderer-opengl\renderer-opengl\src\core.h(23): note: see previous definition of 'LOGC'
+  UIRenderer.cpp
+f:\renderer-opengl\renderer-opengl\src\core.h(27): warning C4005: 'LOGC': macro redefinition
+  f:\renderer-opengl\renderer-opengl\src\core.h(23): note: see previous definition of 'LOGC'
+f:\renderer-opengl\renderer-opengl\src\core\uirenderer.cpp(131): warning C4312: 'reinterpret_cast': conversion from 'uint32' to 'void *' of greater size
+f:\renderer-opengl\renderer-opengl\src\core\uirenderer.cpp(178): warning C4312: 'reinterpret_cast': conversion from 'uint32' to 'void *' of greater size
+  World.cpp
+f:\renderer-opengl\renderer-opengl\src\core.h(27): warning C4005: 'LOGC': macro redefinition
+  f:\renderer-opengl\renderer-opengl\src\core.h(23): note: see previous definition of 'LOGC'
+  AssetLoader.cpp
+f:\renderer-opengl\renderer-opengl\src\core.h(27): warning C4005: 'LOGC': macro redefinition
+  f:\renderer-opengl\renderer-opengl\src\core.h(23): note: see previous definition of 'LOGC'
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(165): warning C4267: 'initializing': conversion from 'size_t' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(221): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(430): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(449): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(452): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(457): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(460): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(465): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(468): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(524): warning C4244: '=': conversion from 'double' to 'real32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\engine\assetloader.cpp(525): warning C4244: '=': conversion from 'double' to 'real32', possible loss of data
+  OpenGL.cpp
+f:\renderer-opengl\renderer-opengl\src\core.h(27): warning C4005: 'LOGC': macro redefinition
+  f:\renderer-opengl\renderer-opengl\src\core.h(23): note: see previous definition of 'LOGC'
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(153): warning C4018: '<': signed/unsigned mismatch
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(170): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(181): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(189): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(237): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(248): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(256): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(323): warning C4101: 'geometry': unreferenced local variable
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(1424): warning C4244: 'initializing': conversion from 'double' to 'uint32', possible loss of data
+f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(1425): warning C4244: 'initializing': conversion from 'double' to 'uint32', possible loss of data
+  Generating Code...
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

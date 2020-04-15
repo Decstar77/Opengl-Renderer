@@ -91,13 +91,6 @@ GLFWwindow* CreateRenderingWindow()
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	glewExperimental = GL_TRUE;
-	if (glewInit() != GLEW_OK)
-	{
-		Assert(0);
-	}
-	
-
 	//DESC: Callbacks
 	glfwSetCursorPosCallback(window, MousePositionCallBack);
 	glfwSetKeyCallback(window, KeyCodeCallBack);
@@ -162,6 +155,7 @@ void InitializeStandardMeshes()
 int main()
 {
 	window = CreateRenderingWindow();
+	InitializeOpenGl(WINDOW_WIDTH, WINDOW_HEIGHT);
 	InitializeDebug();
 	InitializeStandardMeshes();
 
@@ -342,10 +336,10 @@ int main()
 		sphere.transform.scale = Vec3(0.5);
 		sphere.transform.position = Vec3(-4 + i * 2, 4, 0);
 		
-		sphere.material.roughness = Clamp( (i / 6.f) + 0.02, 0, 1);
-		sphere.material.metalness = Clamp( (i / 6.f) + 0.02, 0, 1);
-		//sphere.material.metalness = 0.85f;
-		//sphere.material.roughness = 0.1f;
+	//	sphere.material.roughness = Clamp( (i / 6.f) + 0.02, 0, 1);
+	//	sphere.material.metalness = Clamp( (i / 6.f) + 0.02, 0, 1);
+		sphere.material.metalness = 0.85f;
+		sphere.material.roughness = 0.1f;
 
 		sphere.material.forward_shader = &forward_pbr_notext_shader;
 		sphere.material.shadow_shader = &forward_phong_notext_shader;
@@ -357,7 +351,7 @@ int main()
 
 	TextureImport texture_import;
 	texture_import.flip = true;
-	texture_import.texture_paths.push_back("res/textures/studio_small_03_2k.png");
+	texture_import.texture_paths.push_back("res/textures/studio_small_03_2k.hdr");
 	texture_import.Load(); // Milkyway_small
 	   
 	Texture hdri;
@@ -558,7 +552,7 @@ int main()
 
 
 
-
+	
 
 
 
@@ -901,10 +895,10 @@ int main()
 		if (toggel)
 		{
 			//DebugDrawTexture(&debug_mesh_shader, brdf_lookup_texture);
+			DebugDrawTexture(&debug_mesh_shader, map_to_eqi);
 		}
 		else
 		{
-			//DebugDrawTexture(&debug_mesh_shader, map_to_eqi);
 		}
 
 
