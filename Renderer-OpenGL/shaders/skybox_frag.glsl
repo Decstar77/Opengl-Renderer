@@ -38,8 +38,22 @@ void main()
 	colour = mix(colour_b, colour_a, t);
 	//colour = colour_a;
 
-	colour = texture(environmentMap, WorldPos).rgb;
+	vec3 n = WorldPos;
+	vec3 right = cross(up, n);
+	up         = cross(n, right);
 
+	mat3 tr = mat3(right, up, n);
+
+	float theta = 0;
+	float phi = 0;
+	vec3 tangentSample = vec3(sin(theta) * cos(phi),  sin(theta) * sin(phi), cos(theta));
+ 	//vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * n; 
+	vec3 sampleVec = tr * tangentSample;
+
+	colour = textureLod(environmentMap, n, 1.2).rgb;
+	colour = texture(environmentMap, n).rgb;
+
+	
 	FragColour = vec4(colour, 1);
 
 

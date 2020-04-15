@@ -131,7 +131,7 @@ namespace cm
 		{
 			glViewport(start_x, start_y, width, height);
 		}
-
+	
 
 	};
 }

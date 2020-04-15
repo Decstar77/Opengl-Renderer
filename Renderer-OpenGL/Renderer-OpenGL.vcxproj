@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\Bitmap.cpp" />
     <ClCompile Include="src\Core\Animation.cpp" />
     <ClCompile Include="src\Core\Camera.cpp" />
     <ClCompile Include="src\Core\Sandbox.cpp" />
@@ -36,6 +37,7 @@
     <ClCompile Include="vendor\IMGUI\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Bitmap.h" />
     <ClInclude Include="src\Core\Animation.h" />
     <ClInclude Include="src\Core\Camera.h" />
     <ClInclude Include="src\Core\Sandbox.h" />
@@ -110,10 +112,10 @@
     <None Include="shaders\test_anim_vert.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="res\IBL.txt" />
     <Text Include="shaders\debug_frag.glsl" />
     <Text Include="shaders\Notes.txt" />
     <Text Include="shaders\skybox_frag.glsl" />
-    <Text Include="src\IBL.txt" />
     <Text Include="src\ShadowCascadeFailure.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

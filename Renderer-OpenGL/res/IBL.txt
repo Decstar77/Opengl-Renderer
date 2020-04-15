@@ -453,6 +453,17 @@ int CreateSkyBox()
 		//brdf_texture->object = brdfLUTTexture;
 		return fbo;
 	}
+
+
+
+
+
+
+
+
+
+
+
 	//This is IBL
 	/*
 	uint32 frame_buffer_resolution = 1024;

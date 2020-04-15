@@ -117,14 +117,12 @@ namespace cm
 		}		
 	}
 
-	static void DebugDrawTexture(Shader *shader, const Texture &t, const GLMesh &quad_mesh) // TODO: Remove the mesh parama
+	static void DebugDrawTexture(Shader *shader, const Texture &t) // TODO: Remove the mesh parama
 	{
 		BindShader(*shader);
-		Transform transform;
-		transform.position = Vec3(0, 5, 0);
-		ShaderSetMat4(shader, "model", transform.CalcTransformMatrix().arr);
+		ShaderSetMat4(shader, "model", Mat4(1).arr);
 		ShaderBindTexture(*shader, t, 0, "mesh_texture");
-		RenderMesh(*shader, quad_mesh);
+		RenderMesh(*shader, StandardMeshes::quad);
 	}
 
 	static void DebugDrawLines(Shader *debug_shader)

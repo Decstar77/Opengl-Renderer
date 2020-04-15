@@ -117,6 +117,7 @@ namespace cm
 		uint32 wrap_r_mode = GL_CLAMP_TO_EDGE;
 		uint32 width = 0;
 		uint32 height = 0;
+		bool generate_mip_maps = false;
 		std::string uniform_name = "";
 	};
 

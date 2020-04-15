@@ -30,12 +30,14 @@ in VS_OUT
 } vs_in;
 
 uniform float material_roughness;
-
-
+uniform float material_metalness;
+uniform samplerCube irradiance_map;
+uniform samplerCube prefilter_map;
+uniform sampler2D   brdf_map;  
 
 #define pi 3.14159
 #define ue_surface_reflection_zero_ncidence 0.04
-#define light_count 1
+#define light_count 0
 float GGX(vec3 n, vec3 h, float a)
 {
 	float a2 = a * a;
@@ -75,8 +77,13 @@ vec3 FresnelSchlick(float cos_theta, vec3 f0)
     return f0 + (1.0 - f0) * pow(1.0 - cos_theta, 5.0);
 }
 
-
-
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    // @NOTE: As irrandiance map gets all directions, we can use half-way vector
+	//		: thus we hack it be adding the roughness param
+	//		: Read https://seblagarde.wordpress.com/2011/08/17/hello-world/
+	return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}  
 
 void main()
 {
@@ -88,17 +95,21 @@ void main()
 	vec3 world_pos 	= vs_in.world_position; 	
 	vec3 viewDir    = normalize(camera_world_position.xyz - world_pos); // wo
 	vec3 normal 	= normalize(vs_in.world_normal);
-	
+	vec3 refl 		= reflect(-viewDir, normal);
+
 	// @NOTE: Get material properties
-	float metallic = 0;
-	float roughness = material_roughness;
+	float metallic = material_metalness;
+	float roughness = material_roughness;	
 	vec3 albedo = vec3(0.23, 0.48, 0.34);
+	vec3 ao  = vec3(1);
 
 	// @NOTE: Calculate constants
 	float a = (roughness * roughness);
 	vec3 f0 = mix(vec3(ue_surface_reflection_zero_ncidence), albedo, metallic);	
 	float k = ((a + 1)*(a + 1))/8.0;
-
+ 	//float k = ( (a + 1) * (a +  1) ) / 2.0;
+	
+	
 	vec3 lo = vec3(0);
 	for (int i = 0; i < light_count; i++)
 	{
@@ -136,7 +147,6 @@ void main()
 
 		// @NOTE: Specular ratio
 		vec3 ks = f; // Whys is this fresnel ?
-		
 		// @NOTE: Diffuse ratio
 		vec3 kd  = (vec3(1) - ks) * (1 - metallic); 
 
@@ -144,6 +154,23 @@ void main()
 
 		lo += brdf * radiance * ndotwi;
 	}
+
+	// @NOTE: Irradaince map for ambeint
+#if 1
+	vec3 ks = FresnelSchlickRoughness(max(dot(viewDir, normal), 0.0), f0, roughness);
+	vec3 kd  = (vec3(1) - ks) * (1 - metallic); 
+	vec3 diff = texture(irradiance_map , normal).rgb * albedo;
+	
+	const float MAX_REFLECTION_LOD = 4.0;
+	vec3 pref = textureLod(prefilter_map, refl, roughness * MAX_REFLECTION_LOD).rgb;
+	vec3 brdf = texture(brdf_map, vec2(max(dot(normal, viewDir), 0.0), roughness)).rgb;
+	vec3 spec = pref * (ks * brdf.x + brdf.y);
+	
+	vec3 amb = (kd * diff + spec) * ao;
+	
+
+	lo = lo + amb;
+#endif
 
 	//float c = GeometrySmith(normal, viewDir, lightDir, k);
 	

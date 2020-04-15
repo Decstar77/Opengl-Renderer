@@ -8,31 +8,13 @@ f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(39): warning C4244: 'a
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(41): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(42): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(341): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(343): warning C4244: '=': conversion from 'double' to 'real', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(523): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(532): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(709): warning C4244: 'initializing': conversion from '_Rep' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(345): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(346): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(713): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(722): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+f:\renderer-opengl\renderer-opengl\main.cpp(935): warning C4244: 'initializing': conversion from '_Rep' to 'float', possible loss of data
           with
           [
               _Rep=__int64
           ]
-  Camera.cpp
-f:\renderer-opengl\renderer-opengl\src\core.h(27): warning C4005: 'LOGC': macro redefinition
-  f:\renderer-opengl\renderer-opengl\src\core.h(23): note: see previous definition of 'LOGC'
-  Renderer.cpp
-f:\renderer-opengl\renderer-opengl\src\core.h(27): warning C4005: 'LOGC': macro redefinition
-  f:\renderer-opengl\renderer-opengl\src\core.h(23): note: see previous definition of 'LOGC'
-f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(168): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(167): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(173): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(188): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\core\renderer.cpp(187): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-  Input.cpp
-f:\renderer-opengl\renderer-opengl\src\core.h(27): warning C4005: 'LOGC': macro redefinition
-  f:\renderer-opengl\renderer-opengl\src\core.h(23): note: see previous definition of 'LOGC'
-  Generating Code...
-LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
-LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
-glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'F:\Renderer-OpenGL\x64\Debug\vc120.pdb'; linking object as if no debug info
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

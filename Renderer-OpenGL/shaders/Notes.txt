@@ -4,7 +4,11 @@ SSAO: We currently have to textures eaching only having one channel GL_RED, wher
 	: blur ? The blur shader binds a texture and then looks all round.
 
 Notes: 
-	
+	UV Shpere:
+			 : This was confusing me. the inverse of atan2(y, x) is x = r*cos(theta), y = r*sin(theta) r > 0
+			 : IE: It's sphereical coords
+			 : //http://paulbourke.net/miscellaneous/cubemaps/
+			 : //https://math.stackexchange.com/questions/1395679/how-would-i-find-a-point-on-a-sphere-with-a-uv-coordinate/	
 	
 	
 RECAP:

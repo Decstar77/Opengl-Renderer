@@ -127,6 +127,8 @@ namespace cm
 
 			
 			ShaderSetFloat(&forward_shader, "material_roughness", mat.roughness);
+			ShaderSetFloat(&forward_shader, "material_metalness", mat.metalness);
+
 			ShaderSetMat4(&forward_shader, "model", transform_matrix.arr);
 
 			RenderMesh(forward_shader, a->GetMeshForRender());

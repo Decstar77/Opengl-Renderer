@@ -58,6 +58,7 @@ namespace cm
 	class TextureImport
 	{
 	public:
+		bool flip = false;
 		std::vector<TextureConfig> texture_configs;
 		std::vector<std::vector<real32>> texture_data;
 		std::vector<std::string> texture_paths;

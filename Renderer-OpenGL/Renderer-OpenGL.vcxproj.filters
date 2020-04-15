@@ -99,6 +99,9 @@
     <ClCompile Include="vendor\IMGUI\imgui_widgets.cpp">
       <Filter>vendor\Imgui</Filter>
     </ClCompile>
+    <ClCompile Include="src\Bitmap.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core.h">
@@ -187,6 +190,9 @@
     </ClInclude>
     <ClInclude Include="vendor\IMGUI\imstb_truetype.h">
       <Filter>vendor\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Bitmap.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -321,8 +327,8 @@
     <Text Include="shaders\debug_frag.glsl">
       <Filter>Shaders</Filter>
     </Text>
-    <Text Include="src\IBL.txt" />
     <Text Include="src\ShadowCascadeFailure.txt" />
     <Text Include="shaders\Notes.txt" />
+    <Text Include="res\IBL.txt" />
   </ItemGroup>
 </Project>

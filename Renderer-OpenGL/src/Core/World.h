@@ -83,11 +83,11 @@ namespace cm
 		std::vector<PointLight> point_lights;
 	};
 
-	class EquirectangularToCubemap
+	class CubeMapGenerator
 	{
 	private:
-		FrameBuffer eqi_frame;
-		Shader eqi_shader;
+
+		FrameBuffer frame;
 		bool created = false;
 
 		Mat4 projection = Perspective(90.0f, 1.0f, 0.1f, 10.0f);
@@ -105,8 +105,120 @@ namespace cm
 		void Create();
 		void Convert(const Texture &src, CubeMap *dst);
 		void Free();	
+		Shader shader;
 		
+
+	public:
+		CubeMapGenerator();
+		~CubeMapGenerator();
 	};
+
+	class EquirectangularGenerator
+	{
+	private:
+		FrameBuffer frame;
+		bool created = false;
+
+		Mat4 projection = Perspective(90.0f, 1.0f, 0.1f, 10.0f);
+		Mat4 views[6] =
+		{
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(1.0f,  0.0f,  0.0f), Vec3(0.0f, -1.0f,  0.0f)),
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(-1.0f,  0.0f,  0.0f),Vec3(0.0f, -1.0f,  0.0f)),
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  1.0f,  0.0f), Vec3(0.0f,  0.0f,  1.0f)),
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f,  0.0f), Vec3(0.0f,  0.0f, -1.0f)),
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f,  1.0f), Vec3(0.0f, -1.0f,  0.0f)),
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f, -1.0f), Vec3(0.0f, -1.0f,  0.0f))
+		};
+	public:
+		void Create();
+		void Convert(const CubeMap &src, Texture *dst);
+		void Free();
+		Shader shader;
+
+	public:
+		EquirectangularGenerator();
+		~EquirectangularGenerator();
+
+	};
+
+	class IrradianceGenerator
+	{
+	private:
+		FrameBuffer frame;
+		bool created = false;
+
+		Mat4 projection = Perspective(90.0f, 1.0f, 0.1f, 10.0f);
+		Mat4 views[6] =
+		{
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(1.0f,  0.0f,  0.0f), Vec3(0.0f, -1.0f,  0.0f)),
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(-1.0f,  0.0f,  0.0f),Vec3(0.0f, -1.0f,  0.0f)),
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  1.0f,  0.0f), Vec3(0.0f,  0.0f,  1.0f)),
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f,  0.0f), Vec3(0.0f,  0.0f, -1.0f)),
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f,  1.0f), Vec3(0.0f, -1.0f,  0.0f)),
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f, -1.0f), Vec3(0.0f, -1.0f,  0.0f))
+		};
+
+	public:
+		void Create();
+		void Convert(const CubeMap &src, CubeMap *dst);
+		void Free();
+		Shader shader;
+	
+	public:
+		IrradianceGenerator();
+		~IrradianceGenerator();
+
+
+
+	};
+
+	class PrefilterGenerator
+	{
+	private:
+		FrameBuffer frame;
+		bool created = false;
+
+		Mat4 projection = Perspective(90.0f, 1.0f, 0.1f, 10.0f);
+		Mat4 views[6] =
+		{
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(1.0f,  0.0f,  0.0f), Vec3(0.0f, -1.0f,  0.0f)),
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(-1.0f,  0.0f,  0.0f),Vec3(0.0f, -1.0f,  0.0f)),
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  1.0f,  0.0f), Vec3(0.0f,  0.0f,  1.0f)),
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f,  0.0f), Vec3(0.0f,  0.0f, -1.0f)),
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f,  1.0f), Vec3(0.0f, -1.0f,  0.0f)),
+		   LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f, -1.0f), Vec3(0.0f, -1.0f,  0.0f))
+		};
+
+	public:
+		void Create();
+		void Convert(const CubeMap &src, CubeMap *dst);
+		void Free();
+		Shader shader;
+	
+	public:
+		PrefilterGenerator();
+		~PrefilterGenerator();
+
+	};
+	
+	class LookUpTextureGenerator
+	{
+	private:
+		FrameBuffer frame;
+		bool created = false;
+
+	public:
+		void Create();
+		void Convert(Texture *dst);
+		void Free();
+		Shader shader;
+
+	public:
+		LookUpTextureGenerator();
+		~LookUpTextureGenerator();
+
+	};
+
 
 
 	void RenderWorld(Shader *shader, Shader *batch_shader, const World &world);

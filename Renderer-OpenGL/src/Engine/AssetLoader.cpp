@@ -67,7 +67,7 @@ namespace cm
 			int32 nrChannels = 0;
 			
 			const std::string &path = texture_paths[i];
-
+			stbi_set_flip_vertically_on_load(flip);
 			real32 *data = stbi_loadf(path.c_str(), &width, &height, &nrChannels, 0);
 
 			if (data)
@@ -97,7 +97,7 @@ namespace cm
 				
 				texture_data.push_back({});
 				texture_data.back().insert(texture_data.back().end(), &data[0], &data[size]);
-								
+				
 				stbi_image_free(data);		
 				data = nullptr;
 			}

@@ -16,7 +16,7 @@
 #include "src/Engine/AssetLoader.h"
 #include "src/Engine/Input.h"
 #include "src/Core/Sandbox.h"
-
+#include "Bitmap.h"
 using namespace cm;
 
 static const uint32 WINDOW_WIDTH = 1280;
@@ -156,6 +156,8 @@ void InitializeStandardMeshes()
 	quad.RecaluclateNormals();
 	StandardMeshes::quad = quad.CreateMesh(false);
 }
+
+
 
 int main()
 {
@@ -333,48 +335,236 @@ int main()
 	wall_right.transform.position = Vec3(10, 0, -10);
 	
 	Actor spheres[6];
-	for (int32 i = 0; i < 6; i++)
+	for (real32 i = 0; i < 6; i++)
 	{
 		Actor sphere;
 		sphere.mesh = StandardMeshes::sphere;
 		sphere.transform.scale = Vec3(0.5);
 		sphere.transform.position = Vec3(-4 + i * 2, 4, 0);
 		
-		sphere.material.roughness = (((real32)i) / 6.f) + 0.2;
-		
+		sphere.material.roughness = Clamp( (i / 6.f) + 0.02, 0, 1);
+		sphere.material.metalness = Clamp( (i / 6.f) + 0.02, 0, 1);
+		//sphere.material.metalness = 0.85f;
+		//sphere.material.roughness = 0.1f;
+
 		sphere.material.forward_shader = &forward_pbr_notext_shader;
 		sphere.material.shadow_shader = &forward_phong_notext_shader;
 		sphere.material.gbuffer_shader= &forward_phong_notext_shader;
 		sphere.material.instance_shader = &forward_phong_notext_shader;
 		
-		spheres[i] = sphere;
+		spheres[(uint32)i] = sphere;
 	}
 
-
 	TextureImport texture_import;
-	texture_import.texture_paths.push_back("res/textures/studio_small_03_2k.hdr");
-	texture_import.Load();
+	texture_import.flip = true;
+	texture_import.texture_paths.push_back("res/textures/studio_small_03_2k.png");
+	texture_import.Load(); // Milkyway_small
 	   
-
-
-
 	Texture hdri;
 	hdri.config = texture_import.texture_configs[0];
 	CreateTexture(&hdri, texture_import.texture_data[0].data());
 
-	CubeMap hdri_cube_map;
-	hdri_cube_map.config.texture_format = GL_RGB32F;
-	hdri_cube_map.config.pixel_format = GL_RGB;
-	hdri_cube_map.config.width = 512;
-	hdri_cube_map.config.height = 512;
-	CreateCubeMap(&hdri_cube_map, nullptr);
+	Texture brdf_lookup_texture;
+	brdf_lookup_texture.config.texture_format = GL_RG32F;
+	brdf_lookup_texture.config.pixel_format = GL_RG;
+	brdf_lookup_texture.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	brdf_lookup_texture.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	brdf_lookup_texture.config.min_filter = GL_LINEAR;
+	brdf_lookup_texture.config.mag_filter = GL_LINEAR;
+	brdf_lookup_texture.config.width = 512;
+	brdf_lookup_texture.config.height= 512;
+	CreateTexture(&brdf_lookup_texture, nullptr);
 
+	CubeMap enviroment_map;
+	enviroment_map.config.texture_format = GL_RGB32F;
+	enviroment_map.config.pixel_format = GL_RGB;
+	enviroment_map.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+	enviroment_map.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	enviroment_map.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	enviroment_map.config.width	 = 512;
+	enviroment_map.config.height = 512;
+	CreateCubeMap(&enviroment_map, nullptr);
 
-	EquirectangularToCubemap eqi_to_map;
+	CubeMap irradiance_map;
+	irradiance_map.config.texture_format = GL_RGB32F;
+	irradiance_map.config.pixel_format = GL_RGB;
+	irradiance_map.config.width = 32;
+	irradiance_map.config.height = 32;
+	CreateCubeMap(&irradiance_map, nullptr);
+
+	CubeMap prefilter_map;
+	prefilter_map.config.texture_format = GL_RGB32F;
+	prefilter_map.config.pixel_format = GL_RGB;
+	prefilter_map.config.width	= 128;
+	prefilter_map.config.height = 128;
+	prefilter_map.config.generate_mip_maps = true;
+	prefilter_map.config.min_filter = GL_LINEAR_MIPMAP_LINEAR;
+	prefilter_map.config.mag_filter = GL_LINEAR;
+	CreateCubeMap(&prefilter_map, nullptr);
+	
+	CubeMapGenerator eqi_to_map;
 	eqi_to_map.Create();
-	eqi_to_map.Convert(hdri, &hdri_cube_map);
-	eqi_to_map.Free();
+	eqi_to_map.Convert(hdri, &enviroment_map);
+	eqi_to_map.Free();	
+	
+	Texture map_to_eqi;
+	map_to_eqi.config = hdri.config;
+	CreateTexture(&map_to_eqi, nullptr);
 
+	EquirectangularGenerator cube_to_eqi;
+	cube_to_eqi.Create();
+	cube_to_eqi.Convert(enviroment_map, &map_to_eqi);
+	cube_to_eqi.Free();
+
+	IrradianceGenerator irradiance_calc;
+	irradiance_calc.Create();
+	irradiance_calc.Convert(enviroment_map, &irradiance_map);
+	irradiance_calc.Free();
+	
+	PrefilterGenerator gen_prefilter;
+	gen_prefilter.Create();
+	gen_prefilter.Convert(enviroment_map, &prefilter_map);
+	gen_prefilter.Free();
+
+	LookUpTextureGenerator brdf_lookup;
+	brdf_lookup.Create();	
+	brdf_lookup.Convert(&brdf_lookup_texture);
+	brdf_lookup.Free();
+
+
+
+	//enviroment_map = prefilter_map;
+	//enviroment_map = irradiance_map;
+
+#if 0
+	// pbr: setup cubemap to render to and attach to framebuffer
+	// ---------------------------------------------------------
+
+	Shader equirectangular_to_cubemap_shader = eqi_to_map.shader;
+	Shader irradiance_shader = irradiance_calc.shader;
+	uint32 hdrTexture = hdri.object;
+
+	uint32 frame_buffer_resolution = 1024;
+	uint32 irradiance_buffer_resolution = 32;
+	uint32 floating_point_accuracy = GL_RGB32F;
+	uint32 prefilter_resolution = 128 * 3;
+	glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+	unsigned int captureFBO;
+	unsigned int captureRBO;
+	glGenFramebuffers(1, &captureFBO);
+	glGenRenderbuffers(1, &captureRBO);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, frame_buffer_resolution, frame_buffer_resolution);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
+
+	unsigned int envCubemap;
+	glGenTextures(1, &envCubemap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, floating_point_accuracy, frame_buffer_resolution, frame_buffer_resolution, 0, GL_RGB, GL_FLOAT, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// pbr: set up projection and view matrices for capturing data onto the 6 cubemap face directions
+	// ----------------------------------------------------------------------------------------------
+	Mat4 captureProjection = Perspective(90.0f, 1.0f, 0.1f, 10.0f);
+	Mat4 captureViews[] =
+	{
+		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(1.0f,  0.0f,  0.0f), Vec3(0.0f, -1.0f,  0.0f)),
+		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(-1.0f,  0.0f,  0.0f),Vec3(0.0f, -1.0f,  0.0f)),
+		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  1.0f,  0.0f), Vec3(0.0f,  0.0f,  1.0f)),
+		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f,  0.0f), Vec3(0.0f,  0.0f, -1.0f)),
+		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f,  1.0f), Vec3(0.0f, -1.0f,  0.0f)),
+		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f, -1.0f), Vec3(0.0f, -1.0f,  0.0f))
+	};
+
+	// pbr: convert HDR equirectangular environment map to cubemap equivalent
+	// ----------------------------------------------------------------------
+	BindShader(equirectangular_to_cubemap_shader);
+	ShaderSetMat4(&equirectangular_to_cubemap_shader, "projection", captureProjection.arr);
+	ShaderSetInt32(&equirectangular_to_cubemap_shader, "equirectangularMap", 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, hdrTexture);
+
+	glViewport(0, 0, frame_buffer_resolution, frame_buffer_resolution); // don't forget to configure the viewport to the capture dimensions.
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		ShaderSetMat4(&equirectangular_to_cubemap_shader, "view", captureViews[i].arr);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		RenderMesh(equirectangular_to_cubemap_shader, StandardMeshes::cube);
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// then let OpenGL generate mipmaps from first mip face (combatting visible dots artifact)
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+
+
+	unsigned int irradianceMap;
+	glGenTextures(1, &irradianceMap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, floating_point_accuracy, irradiance_buffer_resolution, irradiance_buffer_resolution, 0, GL_RGB, GL_FLOAT, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, irradiance_buffer_resolution, irradiance_buffer_resolution);
+
+	// pbr: solve diffuse integral by convolution to create an irradiance (cube)map.
+	// -----------------------------------------------------------------------------
+	BindShader(irradiance_shader);
+	ShaderSetInt32(&irradiance_shader, "environmentMap", 0);
+	ShaderSetMat4(&irradiance_shader, "projection", captureProjection.arr);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+
+	glViewport(0, 0, irradiance_buffer_resolution, irradiance_buffer_resolution); // don't forget to configure the viewport to the capture dimensions.
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		ShaderSetMat4(&irradiance_shader, "view", captureViews[i].arr);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		RenderMesh(irradiance_shader, StandardMeshes::cube);
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	hdri_cube_map.object = irradianceMap;
+	
+
+#endif
+
+
+
+
+
+
+
+
+
+
+	
 
 	ModeImport model_import;
 	model_import.model_paths.push_back("res/models/man.dae");
@@ -434,7 +624,7 @@ int main()
 
 	renderer.standard_shaders.simple_blur = simple_blur_shader;
 
-	renderer.default_skybox = hdri_cube_map;
+	renderer.default_skybox = enviroment_map;
 
 	renderer.WINDOW_WIDTH = WINDOW_WIDTH;
 	renderer.WINDOW_HEIGHT = WINDOW_HEIGHT;
@@ -631,8 +821,34 @@ int main()
 			
 		}		
 #endif
-	
-		renderer.Render(main_world);
+
+
+		RenderCommands::ClearColourBuffer();
+		RenderCommands::ClearDepthBuffer();
+		RenderCommands::Clear(Colour(0, 1, 0, 1));
+
+		
+		BindFrameBuffer(renderer.frame_post_processing);
+
+		RenderCommands::ClearColourBuffer();
+		RenderCommands::ClearDepthBuffer();
+		
+		BindShader(forward_pbr_notext_shader);
+
+		ShaderBindCubeMap(&forward_pbr_notext_shader, irradiance_map, 0, "irradiance_map");
+		ShaderBindCubeMap(&forward_pbr_notext_shader, prefilter_map, 1, "prefilter_map");
+		ShaderBindTexture(forward_pbr_notext_shader, brdf_lookup_texture, 2, "brdf_map");
+		
+		renderer.ForwardPass(main_world);
+
+		renderer.DrawSkyBox();
+
+		UnbindFrameBuffer();
+		
+		renderer.PostProcessingPass(main_world);
+
+
+		//renderer.Render(main_world);
 	
 		RenderCommands::DisableDepthBuffer();
 		DebugDrawLines(&debug_shader);
@@ -682,12 +898,22 @@ int main()
 		// Post Debug Drawing
 		////////////////////
 
-		BindShader(debug_mesh_shader);
-		glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
-		ShaderBindTexture(debug_mesh_shader, hdri, 0, "mesh_texture");
-		ShaderSetMat4(&debug_mesh_shader, "model", Mat4(1).arr);
-		RenderMesh(debug_mesh_shader, StandardMeshes::quad);
-		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+		if (toggel)
+		{
+			//DebugDrawTexture(&debug_mesh_shader, brdf_lookup_texture);
+		}
+		else
+		{
+			//DebugDrawTexture(&debug_mesh_shader, map_to_eqi);
+		}
+
+
+		//BindShader(debug_mesh_shader);
+		//glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
+		//ShaderBindTexture(debug_mesh_shader, test_boii, 0, "mesh_texture");
+		//ShaderSetMat4(&debug_mesh_shader, "model", Mat4(1).arr);
+		//RenderMesh(debug_mesh_shader, StandardMeshes::quad);
+		//glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 		//// @TODO: Debug Draw Quad
 		//// @NOTE: Draw bloom buffer;

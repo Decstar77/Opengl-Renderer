@@ -469,6 +469,10 @@ namespace cm
 			}
 		}
 
+		if (cube_map->config.generate_mip_maps)
+		{
+			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+		}
 
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
