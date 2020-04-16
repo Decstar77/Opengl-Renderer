@@ -16,7 +16,7 @@
 #include "src/Engine/AssetLoader.h"
 #include "src/Engine/Input.h"
 #include "src/Core/Sandbox.h"
-#include "Bitmap.h"
+#include "src/Core/Serialization.h"
 using namespace cm;
 
 static const uint32 WINDOW_WIDTH = 1280;
@@ -109,32 +109,10 @@ void InitializeStandardMeshes()
 	//plane.FuseVertices();
 	StandardMeshes::plane = plane.CreateMesh(false);
 
-	EditableMesh cube;
-	// CCW
-	// Back
-	cube.AddTrianlge(Vec3(0, 0, 0), Vec3(0, 1, 0), Vec3(1, 0, 0));
-	cube.AddTrianlge(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
-	// Front
-	cube.AddTrianlge(Vec3(0, 0, 1),  Vec3(1, 0, 1), Vec3(0, 1, 1) );
-	cube.AddTrianlge(Vec3(0, 1, 1), Vec3(1, 0, 1), Vec3(1, 1, 1) );
-	// Right
-	cube.AddTrianlge(Vec3(1, 0, 0), Vec3(1, 1, 0), Vec3(1, 0, 1));
-	cube.AddTrianlge(Vec3(1, 0, 1), Vec3(1, 1, 0), Vec3(1, 1, 1));
-	// Left
-	cube.AddTrianlge(Vec3(0, 0, 0), Vec3(0, 0, 1), Vec3(0, 1, 0));
-	cube.AddTrianlge(Vec3(0, 0, 1), Vec3(0, 1, 1), Vec3(0, 1, 0));
-	// Top
-	cube.AddTrianlge(Vec3(0, 1, 0), Vec3(0, 1, 1), Vec3(1, 1, 0));
-	cube.AddTrianlge(Vec3(0, 1, 1), Vec3(1, 1, 1), Vec3(1, 1, 0));
-	// Bottom
-	cube.AddTrianlge(Vec3(0, 0, 0), Vec3(1, 0, 0), Vec3(0, 0, 1));
-	cube.AddTrianlge(Vec3(0, 0, 1), Vec3(1, 0, 0), Vec3(1, 0, 1));
-
-	cube.RecaluclateNormals();
-	//cube.FuseVertices();
-	StandardMeshes::cube = cube.CreateMesh(false);
 
 	
+	
+
 	EditableMesh quad; 
 	// CCW
 	quad.AddTrianlge(Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(-1, 1, 0));
@@ -251,53 +229,21 @@ int main()
 	Shader sanitycheck_shader = CreateShader(ReadFile("shaders/sanitycheck_vert.glsl"), ReadFile("shaders/sanitycheck_frag.glsl"));
 	sanitycheck_shader.name = "sanitycheck_shader ";
 
-
-	std::vector<Shader> shaders;
-	std::vector<Texture> textures;
-
-	std::vector<std::string> mesh_directories{  
-		//"models/sponza.obj",
-		"models/voxel_cube.obj",
-		//"models/smooth_cube.obj",
-		"models/plane.obj",
-		"models/sphere.obj",
-		"models/quad.obj",		
-		//"models/claud_bot.obj",
-	};
+	Shader ssr_shader = CreateShader(ReadFile("shaders/ssr_vert.glsl"), ReadFile("shaders/ssr_frag.glsl"));
+	ssr_shader.name = "ssr_shader ";
 
 
-	ModeImport cube_import;
-	cube_import.import_animations = false;
-	cube_import.model_paths.push_back("res/models/cube.obj");
-	// @HACK: Overriding this cause it has texture coords
-	cube_import.Load();
-	GLMesh impmesh = cube_import.resulting_meshes[0].CreateMesh(false);
-	StandardMeshes::cube = impmesh;
+	//ModeImport shpere_import;
+	//shpere_import.import_animations = false;
+	//shpere_import.model_paths.push_back("res/models/sphere.obj");
+	//shpere_import.Load();
+	//StandardMeshes::sphere = shpere_import.resulting_meshes[0].CreateMesh(false);
+	
 
-	ModeImport shpere_import;
-	shpere_import.import_animations = false;
-	shpere_import.model_paths.push_back("res/models/sphere.obj");
-	shpere_import.Load();
-	StandardMeshes::sphere = shpere_import.resulting_meshes[0].CreateMesh(false);
-
-	//DynaArray<uint8> image_data;
-	//Texture gun_diffuse_map;
-	//LoadTexture(&image_data, &gun_diffuse_map.config, "res/textures/FPS_CGC_LowPoly_Gun_BaseColor.png");
-	//CreateTexture(&gun_diffuse_map, image_data.data());
-	//image_data.clear();
-
-	//Texture gun_oc_r_m_map;
-	//LoadTexture(&image_data, &gun_oc_r_m_map.config, "res/textures/FPS_CGC_LowPoly_Gun_OcclusionRoughnessMetallic.png");
-	//CreateTexture(&gun_oc_r_m_map, image_data.data());
-	//image_data.clear();
-
-	//Texture gun_normal_map;
-	//LoadTexture(&image_data, &gun_normal_map.config, "res/textures/FPS_CGC_LowPoly_Gun_Normal.png");
-	//CreateTexture(&gun_normal_map, image_data.data());
-	//
-	//LoadTexture(&image_data, &gun_diffuse_map.config, "res/textures/FPS_CGC_LowPoly_Gun_BaseColor.png");
-
-
+	//MeshExport mesh_export;
+	//mesh_export.Create(StandardMeshes::sphere);
+	//mesh_export.Write("sphere.txt");
+	//mesh_export.Free();
 
 	//tut::Model tut_model;
 	//std::string path = "res/models/man.dae";
@@ -306,21 +252,24 @@ int main()
 	
 	Actor floor_tile;
 	floor_tile.mesh = StandardMeshes::plane;
-	floor_tile.transform.scale = Vec3(200);
+	floor_tile.transform.scale = Vec3(20);
 	floor_tile.transform.rotation = EulerToQuat(Vec3(90, 0, 0));
 	floor_tile.transform.position = Vec3(-10, 0, 10);
+	floor_tile.material.forward_shader = &forward_pbr_notext_shader;
 
 	Actor wall_front;
 	wall_front.mesh = StandardMeshes::plane;
 	wall_front.transform.scale = Vec3(20);
 	wall_front.transform.rotation = EulerToQuat(Vec3(0, 0, 0));
 	wall_front.transform.position = Vec3(-10, 0, -10);
+	
 
 	Actor wall_left;
 	wall_left.mesh = StandardMeshes::plane;
 	wall_left.transform.scale = Vec3(20);
 	wall_left.transform.rotation = EulerToQuat(Vec3(0, -90, 0));
 	wall_left.transform.position = Vec3(-10, 0, 10);
+	
 
 	Actor wall_right;
 	wall_right.mesh = StandardMeshes::plane;
@@ -328,6 +277,7 @@ int main()
 	wall_right.transform.rotation = EulerToQuat(Vec3(0, 90, 0));
 	wall_right.transform.position = Vec3(10, 0, -10);
 	
+
 	Actor spheres[6];
 	for (real32 i = 0; i < 6; i++)
 	{
@@ -336,10 +286,10 @@ int main()
 		sphere.transform.scale = Vec3(0.5);
 		sphere.transform.position = Vec3(-4 + i * 2, 4, 0);
 		
-	//	sphere.material.roughness = Clamp( (i / 6.f) + 0.02, 0, 1);
-	//	sphere.material.metalness = Clamp( (i / 6.f) + 0.02, 0, 1);
-		sphere.material.metalness = 0.85f;
-		sphere.material.roughness = 0.1f;
+		sphere.material.roughness = Clamp( (i / 6.f) + 0.02, 0, 1);
+		sphere.material.metalness = Clamp( (i / 6.f) + 0.02, 0, 1);
+		//sphere.material.metalness = 0.85f;
+		//sphere.material.roughness = 0.1f;
 
 		sphere.material.forward_shader = &forward_pbr_notext_shader;
 		sphere.material.shadow_shader = &forward_phong_notext_shader;
@@ -352,8 +302,8 @@ int main()
 	TextureImport texture_import;
 	texture_import.flip = true;
 	texture_import.texture_paths.push_back("res/textures/studio_small_03_2k.hdr");
-	texture_import.Load(); // Milkyway_small
-	   
+	texture_import.Load(); 
+
 	Texture hdri;
 	hdri.config = texture_import.texture_configs[0];
 	CreateTexture(&hdri, texture_import.texture_data[0].data());
@@ -375,6 +325,8 @@ int main()
 	enviroment_map.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
 	enviroment_map.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
 	enviroment_map.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	enviroment_map.config.min_filter = GL_LINEAR_MIPMAP_LINEAR;
+	enviroment_map.config.generate_mip_maps = true;
 	enviroment_map.config.width	 = 512;
 	enviroment_map.config.height = 512;
 	CreateCubeMap(&enviroment_map, nullptr);
@@ -382,6 +334,9 @@ int main()
 	CubeMap irradiance_map;
 	irradiance_map.config.texture_format = GL_RGB32F;
 	irradiance_map.config.pixel_format = GL_RGB;
+	irradiance_map.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+	irradiance_map.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	irradiance_map.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
 	irradiance_map.config.width = 32;
 	irradiance_map.config.height = 32;
 	CreateCubeMap(&irradiance_map, nullptr);
@@ -425,8 +380,7 @@ int main()
 	brdf_lookup.Convert(&brdf_lookup_texture);
 	brdf_lookup.Free();
 
-
-
+	texture_import.Free();
 	//enviroment_map = prefilter_map;
 	//enviroment_map = irradiance_map;
 
@@ -544,27 +498,46 @@ int main()
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	hdri_cube_map.object = irradianceMap;
-	
-
-#endif
-
-
 
 
 	
 
+#endif	
+ 
+	//TextureImport pbr_timport;
+	//pbr_timport.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_BaseColor.png");
+	//pbr_timport.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_OcclusionRoughnessMetallic.png");
+	//pbr_timport.Load();
+
+	//Texture pbr_gun_albedo;
+	//pbr_gun_albedo.config = pbr_timport.texture_configs[0];
+	//CreateTexture(&pbr_gun_albedo, pbr_timport.texture_data[0].data());
+
+	//Texture pbr_gun_orm;
+	//pbr_gun_orm.config = pbr_timport.texture_configs[1];
+	//CreateTexture(&pbr_gun_orm, pbr_timport.texture_data[1].data());
+
+	//pbr_timport.Free();
 
 
+	ModeImport pbr_model;
+	pbr_model.model_paths.push_back("res/models/claud_bot.obj");
+	pbr_model.Load();
 
+	Actor pbr_gun;
+	pbr_gun.material.forward_shader = &forward_pbr_notext_shader;
+	pbr_gun.mesh = pbr_model.resulting_meshes[0].CreateMesh(false);
+	pbr_gun.transform.rotation = EulerToQuat(Vec3(0, 90, 0));
+	pbr_gun.transform.position = Vec3(0, 1, 1);
+	pbr_gun.transform.scale = Vec3(1);
 
-	
+	pbr_model.Free();
+
 
 	ModeImport model_import;
 	model_import.model_paths.push_back("res/models/man.dae");
 	model_import.Load();
-
-
+	
 	AnimatedActor test_cube_guy;	
 	EditableMesh emesh = model_import.resulting_meshes[0];
 	test_cube_guy.mesh = emesh.CreateAnimMesh();
@@ -573,23 +546,49 @@ int main()
 	test_cube_guy.transform.rotation = EulerToQuat(Vec3(0, 0, 0));
 	test_cube_guy.transform.position = Vec3(0, 0, 0);
 
+	model_import.Free();
+
+
+
+	FrameBuffer ssr_frame;
+	Texture srr_ctexture;
+
+	srr_ctexture.config.texture_format = GL_RGBA16F;
+	srr_ctexture.config.pixel_format = GL_RGBA;
+	srr_ctexture.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	srr_ctexture.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	srr_ctexture.config.min_filter = GL_LINEAR;
+	srr_ctexture.config.mag_filter = GL_LINEAR;
+	srr_ctexture.config.width = WINDOW_WIDTH;
+	srr_ctexture.config.height = WINDOW_HEIGHT;
+
+	CreateFrameBuffer(&ssr_frame);
+	CreateTexture(&srr_ctexture, nullptr);
+
+	ssr_frame.colour0_texture_attachment = srr_ctexture;
+
+	FrameBufferBindColourAttachtments(&ssr_frame);
+
+	Assert(CheckFrameBuffer(ssr_frame));
+
+
 
 
 
 	World main_world;
 	//main_world.objects.push_back(&test_cube_guy);
-	//main_world.objects.push_back(&floor_tile);
+	main_world.objects.push_back(&floor_tile);
 	//main_world.objects.push_back(&wall_front);
 	//main_world.objects.push_back(&wall_left);
 	//main_world.objects.push_back(&wall_right);
 
-	main_world.objects.push_back(&spheres[0]);
-	main_world.objects.push_back(&spheres[1]);
-	main_world.objects.push_back(&spheres[2]);
-	main_world.objects.push_back(&spheres[3]);
-	main_world.objects.push_back(&spheres[4]);
-	main_world.objects.push_back(&spheres[5]);
-
+	//main_world.objects.push_back(&spheres[0]);
+	//main_world.objects.push_back(&spheres[1]);
+	//main_world.objects.push_back(&spheres[2]);
+	//main_world.objects.push_back(&spheres[3]);
+	//main_world.objects.push_back(&spheres[4]);
+	//main_world.objects.push_back(&spheres[5]);
+	main_world.objects.push_back(&pbr_gun);
 	
 	RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_WIDTH);
 	RenderCommands::EnableFaceCulling();
@@ -659,6 +658,8 @@ int main()
 	DirectionalLight sun_light;
 	sun_light.direction = Normalize(Vec3(2, -4, 1));
 	sun_light.light_colour = Vec3(.5);
+
+
 
 
 	float fh = 1;
@@ -820,8 +821,47 @@ int main()
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
 		RenderCommands::Clear(Colour(0, 1, 0, 1));
-
 		
+		BindFrameBuffer(renderer.frame_g_buffer);
+		BindShader(ssao_gbuffer_shader);
+
+		RenderCommands::ClearColourBuffer();
+		RenderCommands::ClearDepthBuffer();		
+
+		for (int32 i = 0; i < main_world.objects.size(); i++)
+		{
+			WorldObject *obj = main_world.objects[i];
+			Transform transform = obj->GetTransfrom();
+			Material mat = obj->GetMaterial();
+			Mat4 transform_matrix = obj->GetTransformMatrix();
+
+
+			ShaderSetMat4(&ssao_gbuffer_shader, "model", transform_matrix.arr);
+			RenderMesh(ssao_gbuffer_shader, obj->GetMeshForRender());
+		}
+
+		UnbindFrameBuffer();
+
+
+
+
+		BindFrameBuffer(ssr_frame);
+		BindShader(ssr_shader);
+
+		RenderCommands::ClearColourBuffer();
+		RenderCommands::ClearDepthBuffer();
+
+		ShaderBindTexture(ssr_shader, renderer.frame_g_buffer.colour0_texture_attachment, 0, "view_position_map");
+		ShaderBindTexture(ssr_shader, renderer.frame_g_buffer.colour1_texture_attachment, 1, "view_normal_map");
+		ShaderSetMat4(&ssr_shader, "proj", camera_controller.main_camera.projection_matrix.arr);
+
+		RenderMesh(ssr_shader, StandardMeshes::quad);
+
+		UnbindFrameBuffer();
+
+
+
+
 		BindFrameBuffer(renderer.frame_post_processing);
 
 		RenderCommands::ClearColourBuffer();
@@ -832,7 +872,9 @@ int main()
 		ShaderBindCubeMap(&forward_pbr_notext_shader, irradiance_map, 0, "irradiance_map");
 		ShaderBindCubeMap(&forward_pbr_notext_shader, prefilter_map, 1, "prefilter_map");
 		ShaderBindTexture(forward_pbr_notext_shader, brdf_lookup_texture, 2, "brdf_map");
-		
+		//ShaderBindTexture(forward_pbr_notext_shader, brdf_lookup_texture, 3, "colour_map");
+		//ShaderBindTexture(forward_pbr_notext_shader, brdf_lookup_texture, 4, "orm_map");
+
 		renderer.ForwardPass(main_world);
 
 		renderer.DrawSkyBox();
@@ -841,7 +883,7 @@ int main()
 		
 		renderer.PostProcessingPass(main_world);
 
-
+		LOG("END");
 		//renderer.Render(main_world);
 	
 		RenderCommands::DisableDepthBuffer();
@@ -895,7 +937,9 @@ int main()
 		if (toggel)
 		{
 			//DebugDrawTexture(&debug_mesh_shader, brdf_lookup_texture);
-			DebugDrawTexture(&debug_mesh_shader, map_to_eqi);
+			//DebugDrawTexture(&debug_mesh_shader, map_to_eqi);
+			//DebugDrawTexture(&debug_mesh_shader, renderer.frame_g_buffer.colour1_texture_attachment);
+			DebugDrawTexture(&debug_mesh_shader, ssr_frame.colour0_texture_attachment);
 		}
 		else
 		{
@@ -904,7 +948,7 @@ int main()
 
 		//BindShader(debug_mesh_shader);
 		//glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
-		//ShaderBindTexture(debug_mesh_shader, test_boii, 0, "mesh_texture");
+		//ShaderBindTexture(debug_mesh_shader, ssr_frame.colour0_texture_attachment, 0, "mesh_texture");
 		//ShaderSetMat4(&debug_mesh_shader, "model", Mat4(1).arr);
 		//RenderMesh(debug_mesh_shader, StandardMeshes::quad);
 		//glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);

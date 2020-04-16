@@ -52,6 +52,7 @@ namespace cm
 		// @TODO: Multi-thread
 		// @TOOD: Multi-mesh
 		bool Load();		
+		bool Free();
 
 	};
 
@@ -65,6 +66,7 @@ namespace cm
 
 	public:
 		bool Load();
+		bool Free();
 
 	};
 

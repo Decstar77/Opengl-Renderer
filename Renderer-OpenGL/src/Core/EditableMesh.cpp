@@ -13,7 +13,7 @@ namespace cm
 
 		std::vector<real> vert_data;
 		std::vector<uint32> index_data;
-		BufferLayout layout = {};
+		LayoutBuffer layout = {};
 		if (tangets)
 		{
 			layout = PNTTB_VBO_LAYOUT;
@@ -263,7 +263,7 @@ namespace cm
 
 	cm::GLMesh EditableMesh::CreateAnimMesh()
 	{
-		BufferLayout l = BufferLayout(std::vector<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float4, ShaderDataType::Float4 }));
+		LayoutBuffer l = LayoutBuffer(std::vector<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float4, ShaderDataType::Float4 }));
 
 		std::vector<float> data;
 		uint32 vert_size = static_cast<uint32>(vertices.size());

@@ -12,10 +12,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\Bitmap.cpp" />
     <ClCompile Include="src\Core\Animation.cpp" />
     <ClCompile Include="src\Core\Camera.cpp" />
     <ClCompile Include="src\Core\Sandbox.cpp" />
+    <ClCompile Include="src\Core\Serialization.cpp" />
     <ClCompile Include="src\Core\UIRenderer.cpp" />
     <ClCompile Include="src\Core\Renderer.cpp" />
     <ClCompile Include="src\Core\World.cpp" />
@@ -37,10 +37,10 @@
     <ClCompile Include="vendor\IMGUI\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Bitmap.h" />
     <ClInclude Include="src\Core\Animation.h" />
     <ClInclude Include="src\Core\Camera.h" />
     <ClInclude Include="src\Core\Sandbox.h" />
+    <ClInclude Include="src\Core\Serialization.h" />
     <ClInclude Include="src\Core\UIRenderer.h" />
     <ClInclude Include="src\Core\World.h" />
     <ClInclude Include="src\Engine\AssetLoader.h" />

@@ -481,7 +481,7 @@ namespace cm
 
 	}
 
-	void Informer::CreateUBO(const std::string &name, const BufferLayout &lbo, int32 binding_location)
+	void Informer::CreateUBO(const std::string &name, const LayoutBuffer &lbo, int32 binding_location)
 	{
 		UniformBuffer ubo;
 		ubo.lbo = lbo;

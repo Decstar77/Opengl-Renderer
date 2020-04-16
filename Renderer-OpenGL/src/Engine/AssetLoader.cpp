@@ -112,6 +112,14 @@ namespace cm
 
 
 
+	bool TextureImport::Free()
+	{
+		texture_configs.clear();
+		texture_data.clear();
+		texture_paths.clear();
+		return true;
+	}
+
 	Mat4 ModeImport::ToMatrix4f(const aiMatrix4x4 *ai_mat)
 	{
 
@@ -572,10 +580,15 @@ namespace cm
 
 		import.FreeScene();
 		return result;
+	}	   
+
+	bool ModeImport::Free()
+	{
+		resulting_meshes.clear();
+		resulting_animation_controllers.clear();
+		model_paths.clear();
+		return true;
 	}
-
-
-
 
 	//bool LoadModel(ModeImport *model_import)
 	//{

@@ -51,7 +51,7 @@ namespace cm
 	{
 		uint32 object = 0;
 		uint32 size_bytes = 0;
-		BufferLayout lbo;
+		LayoutBuffer lbo;
 		BufferType type = BufferType::Uniform_buffer;
 	};
 
@@ -60,7 +60,7 @@ namespace cm
 		uint32 object = 0;
 		uint32 size_bytes = 0;
 		uint32 index_count = 0;
-		BufferLayout lbo;
+		LayoutBuffer lbo;
 		VertexFlags flags = VertexFlags::READ_WRITE;
 		BufferType type = BufferType::Array_buffer;
 	};
@@ -216,11 +216,11 @@ namespace cm
 	class CubeMapGenerator
 	{
 	private:
-		Shader shader;
 		FrameBuffer frame;
 		bool created = false;
 
 	public:
+		Shader shader;
 		void Create();
 		void Convert(const Texture &src, CubeMap *dst);
 		void Free();
@@ -233,7 +233,6 @@ namespace cm
 	class EquirectangularGenerator
 	{
 	private:
-		Shader shader;
 		FrameBuffer frame;
 		bool created = false;
 
@@ -243,6 +242,7 @@ namespace cm
 		void Free();
 
 	public:
+		Shader shader;
 		EquirectangularGenerator();
 		~EquirectangularGenerator();
 	};
@@ -250,11 +250,11 @@ namespace cm
 	class IrradianceGenerator
 	{
 	private:
-		Shader shader;
 		FrameBuffer frame;
 		bool created = false;
 
 	public:
+		Shader shader;
 		void Create();
 		void Convert(const CubeMap &src, CubeMap *dst);
 		void Free();
@@ -267,11 +267,11 @@ namespace cm
 	class PrefilterGenerator
 	{
 	private:
-		Shader shader;
 		FrameBuffer frame;
 		bool created = false;
 
 	public:
+		Shader shader;
 		void Create();
 		void Convert(const CubeMap &src, CubeMap *dst);
 		void Free();
@@ -291,9 +291,9 @@ namespace cm
 		void Create();
 		void Convert(Texture *dst);
 		void Free();
-		Shader shader;
 
 	public:
+		Shader shader;
 		LookUpTextureGenerator();
 		~LookUpTextureGenerator();
 
@@ -349,12 +349,12 @@ namespace cm
 	}
 
 	template <typename Q>
-	void ReadBufferData(const Q &buffer, void *data, uint32 size_byte, uint32 offset_bytes)
+	void ReadBufferData(const Q &buffer, void *dst, uint32 size_byte, uint32 offset_bytes)
 	{
 		Assert(buffer.object != 0);
 		size_byte = size_byte == 0 ? (buffer.size_bytes - offset_bytes) : size_byte;
 		Assert(offset_bytes + size_byte <= buffer.size_bytes);
-		Assert(0); // @REASON: Untested
+
 		uint32 type = static_cast<uint32>(buffer.type);
 
 		glBindBuffer(type, buffer.object);
@@ -362,7 +362,7 @@ namespace cm
 		void *ptr = glMapBuffer(type, GL_READ_ONLY);
 		ptr = static_cast<char*>(ptr) + offset_bytes;
 
-		memcpy(data, ptr, size_byte);
+		memcpy(dst, ptr, size_byte);
 
 		glUnmapBuffer(type);
 		glBindBuffer(type, 0);
@@ -373,7 +373,7 @@ namespace cm
 	{
 		Assert(buffer->object != 0);
 		Assert(offset_bytes + size_bytes <= buffer->size_bytes);
-		Assert(0); // @REASON: Untested
+
 		uint32 type = static_cast<uint32>(buffer->type);
 
 		glBindBuffer(type, buffer->object);
@@ -431,9 +431,9 @@ namespace cm
 
 	void CreateVertexArray(VertexArray *vao);
 
-	BufferLayout GetTotalVertexBufferLayout(const VertexArray &vao);
+	LayoutBuffer GetTotalVertexBufferLayout(const VertexArray &vao);
 
-	void VertexArrayAddBuffer(VertexArray *vao, VertexBuffer &vbo, BufferLayout &added_lbo);
+	void VertexArrayAddBuffer(VertexArray *vao, VertexBuffer &vbo, LayoutBuffer &added_lbo);
 
 	//************************************
 	// Texture Functions
@@ -493,9 +493,9 @@ namespace cm
 	// @TODO: Complete
 	//void ShaderBindUniformBuffersFromSource(Shader &shader);
 
-	void ShaderBindTexture(Shader &shader, const Texture &texture, uint8 texture_slot, const std::string &uniform_name);
+	void ShaderBindTexture(Shader &shader, const Texture &texture, uint32 texture_slot, const std::string &uniform_name);
 
-	void ShaderBindCubeMap(Shader *shader, const CubeMap &cube_map, uint8 texture_slot, const std::string &uniform_name);
+	void ShaderBindCubeMap(Shader *shader, const CubeMap &cube_map, uint32 texture_slot, const std::string &uniform_name);
 
 	//************************************
 	// FrameBuffer Functions
@@ -544,6 +544,8 @@ namespace cm
 	void PrintOpenglStatistics(const OpenGLStatistics &stats);
 
 	void InitializeOpenGl(uint32 window_width, uint32 window_height);
+
+	void CreateGLMesh(GLMesh *mesh, LayoutBuffer lbo, void *vertex_data, uint32 vertex_size_bytes, void *index_data, uint32 index_size_bytes);
 
 	//************************************
 	// Inlined Opengl State functions

@@ -9,8 +9,23 @@ Notes:
 			 : IE: It's sphereical coords
 			 : //http://paulbourke.net/miscellaneous/cubemaps/
 			 : //https://math.stackexchange.com/questions/1395679/how-would-i-find-a-point-on-a-sphere-with-a-uv-coordinate/	
-	
-	
+
+
+DEMO:
+	SSR--
+	MIRROR---
+	UI--
+
+	FFXA <---
+	BLENDING <---
+	SHADOW 
+	SSAO
+	BLOOM
+	TONE MAPPING
+	ANIMATION
+	INSTANCE RENDERING
+	PBR
+
 RECAP:
 	projection matrix.
 	projection divide.
@@ -20,9 +35,10 @@ RECAP:
 	transforms
 
 DAY:
-	Write pbr notext shader
-	Read pbr things
-	
+	1hour{
+	finish opengl thing
+	chapter 2
+	}
 
 Performace:
 	We do all copies for WorldObject function

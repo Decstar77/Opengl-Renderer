@@ -2,10 +2,13 @@
 #include <cstdint>
 #include <string>
 #include <sstream>
+#include <fstream>
 #include <iostream>
 #include <vector>
 #include <unordered_map>
 #include <algorithm>
+
+// TODO: Make this a pch
 
 #ifdef _DEBUG
 #define Assert(Value) if (!(Value)) {*(int *)0 = 0;}
@@ -31,9 +34,9 @@
 	#define LOGC(str, ...)
 #endif
 
-#define PNT_VBO_LAYOUT BufferLayout(std::vector<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2 }))
-#define PNTTB_VBO_LAYOUT BufferLayout(std::vector<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float3, ShaderDataType::Float3 }))
-#define BUFFER_LAYOUT(...) BufferLayout(std::vector<ShaderDataType>({__VA_ARGS__}))
+#define PNT_VBO_LAYOUT LayoutBuffer(std::vector<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2 }))
+#define PNTTB_VBO_LAYOUT LayoutBuffer(std::vector<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float3, ShaderDataType::Float3 }))
+#define BUFFER_LAYOUT(...) LayoutBuffer(std::vector<ShaderDataType>({__VA_ARGS__}))
 
 #define IDENTITY_TEXTURE 0
 

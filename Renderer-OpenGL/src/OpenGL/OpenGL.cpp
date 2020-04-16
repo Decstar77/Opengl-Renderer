@@ -153,7 +153,7 @@ namespace cm
 		for (int32 i = 0; i < vbo_count; i++)
 		{
 			VertexBuffer current_vbo = vao->vertex_buffers[i];
-			BufferLayout lbo = current_vbo.lbo;
+			LayoutBuffer lbo = current_vbo.lbo;
 			BindVertexBuffer(current_vbo);
 			current_vbo.lbo.Reset();
 			uint32 stride = lbo.GetStride();
@@ -197,19 +197,19 @@ namespace cm
 		vao->object = buffer_id;
 	}
 
-	BufferLayout GetTotalVertexBufferLayout(const VertexArray &vao)
+	LayoutBuffer GetTotalVertexBufferLayout(const VertexArray &vao)
 	{
 		Assert(0);//Depricated
-		BufferLayout lbo;
+		LayoutBuffer lbo;
 		for (int32 i = 0; i < vao.vertex_buffers.size(); i++)
 		{
-			BufferLayout l = vao.vertex_buffers.at(i).lbo;
+			LayoutBuffer l = vao.vertex_buffers.at(i).lbo;
 			lbo.Add(l);
 		}
 		return lbo;
 	}
 
-	void VertexArrayAddBuffer(VertexArray *vao, VertexBuffer &vbo, BufferLayout &added_lbo)
+	void VertexArrayAddBuffer(VertexArray *vao, VertexBuffer &vbo, LayoutBuffer &added_lbo)
 	{
 		Assert(0); //Depricated
 		uint32 buffer_id = vao->object;
@@ -221,7 +221,7 @@ namespace cm
 		glBindVertexArray(buffer_id);
 		BindVertexBuffer(vbo);
 		uint32 stride = added_lbo.GetStride();
-		BufferLayout lbo = GetTotalVertexBufferLayout(*vao);
+		LayoutBuffer lbo = GetTotalVertexBufferLayout(*vao);
 		uint32 current_attrib = lbo.GetTotalAttributeCount();
 		for (uint32 i = 0; i < added_lbo.GetComponentCount(); i++)
 		{
@@ -575,9 +575,8 @@ namespace cm
 		glUniformBlockBinding(shader.shader_program, uniformBlockIndexRed, binding_point);
 	}
 
-	void ShaderBindTexture(Shader &shader, const Texture &texture, uint8 texture_slot, const std::string &uniform_name)
+	void ShaderBindTexture(Shader &shader, const Texture &texture, uint32 texture_slot, const std::string &uniform_name)
 	{
-		Assert(texture_slot < 4);
 		uint32 loc = -1;
 		std::string name = uniform_name;
 		if (uniform_name == "")
@@ -598,9 +597,8 @@ namespace cm
 		}		
 	}
 	
-	void ShaderBindCubeMap(Shader *shader, const CubeMap &cube_map, uint8 texture_slot, const std::string &uniform_name)
+	void ShaderBindCubeMap(Shader *shader, const CubeMap &cube_map, uint32 texture_slot, const std::string &uniform_name)
 	{
-		Assert(texture_slot < 4);
 		uint32 loc = -1;
 		std::string name = uniform_name;
 		if (uniform_name == "")
@@ -785,7 +783,7 @@ namespace cm
 		//TODO: This is slow because we read and write. Rather we just copy from one to the other
 		uint32 mat_count = (uint32)batch->transforms.size();
 		VertexBuffer mat_vbo;
-		mat_vbo.lbo = BufferLayout({ ShaderDataType::Mat4 });
+		mat_vbo.lbo = LayoutBuffer({ ShaderDataType::Mat4 });
 		mat_vbo.lbo.SetAttributeDivisor(1);
 		mat_vbo.size_bytes = mat_count * sizeof(Mat4);
 		mat_vbo.flags = VertexFlags::READ_WRITE;
@@ -904,6 +902,38 @@ namespace cm
 		printf("/*************OPENGL_STATS*************/ \n");
 	}
 
+	void CreateGLMesh(GLMesh *mesh, LayoutBuffer lbo, void *vertex_data, uint32 vertex_size_bytes, void *index_data, uint32 index_size_bytes)
+	{
+		Assert(mesh->ibo.object == 0);
+		Assert(mesh->vao.object == 0);
+		Assert(mesh->vao.vertex_buffers.size() == 0);
+
+		VertexBuffer vbo;
+		vbo.lbo = lbo;
+		vbo.size_bytes = vertex_size_bytes;
+		vbo.flags = VertexFlags::READ_WRITE; 
+
+		CreateVertexBuffer(&vbo);
+		WriteBufferData(&vbo, vertex_data, vertex_size_bytes, 0);
+
+		// @HACK: We just assume that its of size uint32 becasue we have no way to dertermine the actauly count.
+		//		: Could use templates to solve this. butt eeeehh.
+		IndexBuffer ibo;
+		ibo.index_count = index_size_bytes / sizeof(uint32); 
+		ibo.size_bytes = index_size_bytes;
+		ibo.flags = VertexFlags::READ_WRITE;
+		
+		CreateIndexBuffer(&ibo);
+		WriteBufferData(&ibo, index_data, index_size_bytes, 0);
+
+		VertexArray vao;
+		vao.vertex_buffers.push_back(vbo);
+		CreateVertexArray(&vao);
+		
+		mesh->vao = vao;
+		mesh->ibo = ibo;		
+	}
+
 	void InitializeOpenGl(uint32 window_width, uint32 window_height)
 	{
 		glewExperimental = GL_TRUE;
@@ -913,6 +943,43 @@ namespace cm
 		}
 		OpenGlState::window_width = window_width;
 		OpenGlState::window_height = window_height;
+
+		real32 cube_vertex_data[] =
+		{
+			1.000000, 1.000000, -1.000000, 0.000000, 1.000000, 0.000000, 0.625000, 0.500000, -1.000000,
+			1.000000, -1.000000, 0.000000, 1.000000, 0.000000, 0.875000, 0.500000, -1.000000, 1.000000,
+			1.000000, 0.000000, 1.000000, 0.000000, 0.875000, 0.250000, 1.000000, 1.000000, 1.000000, 0.000000,
+			1.000000, 0.000000, 0.625000, 0.250000, 1.000000, -1.000000, 1.000000, 0.000000, 0.000000,
+			1.000000, 0.375000, 0.250000, 1.000000, 1.000000, 1.000000, 0.000000, 0.000000, 1.000000,
+			0.625000, 0.250000, -1.000000, 1.000000, 1.000000, 0.000000, 0.000000, 1.000000, 0.625000,
+			0.000000, -1.000000, -1.000000, 1.000000, 0.000000, 0.000000, 1.000000, 0.375000, 0.000000,
+			-1.000000, -1.000000, 1.000000, -1.000000, 0.000000, 0.000000, 0.375000, 1.000000, -1.000000,
+			1.000000, 1.000000, -1.000000, 0.000000, 0.000000, 0.625000, 1.000000, -1.000000, 1.000000,
+			-1.000000, -1.000000, 0.000000, 0.000000, 0.625000, 0.750000, -1.000000, -1.000000, -1.000000,
+			-1.000000, 0.000000, 0.000000, 0.375000, 0.750000, -1.000000, -1.000000, -1.000000, 0.000000,
+			-1.000000, 0.000000, 0.125000, 0.500000, 1.000000, -1.000000, -1.000000, 0.000000, -1.000000,
+			0.000000, 0.375000, 0.500000, 1.000000, -1.000000, 1.000000, 0.000000, -1.000000, 0.000000,
+			0.375000, 0.250000, -1.000000, -1.000000, 1.000000, 0.000000, -1.000000, 0.000000, 0.125000,
+			0.250000, 1.000000, -1.000000, -1.000000, 1.000000, 0.000000, 0.000000, 0.375000, 0.500000,
+			1.000000, 1.000000, -1.000000, 1.000000, 0.000000, 0.000000, 0.625000, 0.500000, 1.000000,
+			1.000000, 1.000000, 1.000000, 0.000000, 0.000000, 0.625000, 0.250000, 1.000000, -1.000000,
+			1.000000, 1.000000, 0.000000, 0.000000, 0.375000, 0.250000, -1.000000, -1.000000, -1.000000,
+			0.000000, 0.000000, -1.000000, 0.375000, 0.750000, -1.000000, 1.000000, -1.000000, 0.000000,
+			0.000000, -1.000000, 0.625000, 0.750000, 1.000000, 1.000000, -1.000000, 0.000000, 0.000000,
+			-1.000000, 0.625000, 0.500000, 1.000000, -1.000000, -1.000000, 0.000000, 0.000000, -1.000000,
+			0.375000, 0.500000
+		};
+
+		uint32 cube_index_data[] =
+		{
+			0.000000, 1.000000, 2.000000, 0.000000, 2.000000, 3.000000, 4.000000, 5.000000, 6.000000, 4.000000,
+			6.000000, 7.000000, 8.000000, 9.000000, 10.000000, 8.000000, 10.000000, 11.000000, 12.000000, 13.000000,
+			14.000000, 12.000000, 14.000000, 15.000000, 16.000000, 17.000000, 18.000000, 16.000000, 18.000000,
+			19.000000, 20.000000, 21.000000, 22.000000, 20.000000, 22.000000, 23.000000,
+		};
+		
+		CreateGLMesh(&StandardMeshes::cube, PNT_VBO_LAYOUT, cube_vertex_data, 192 * sizeof(real32), cube_index_data, 36 * sizeof(uint32));
+
 	}
 
 	cm::Mat4 CubeMapMatrices::projection = Perspective(90.0f, 1.0f, 0.1f, 10.0f);
@@ -1029,7 +1096,7 @@ namespace cm
 	{
 		Assert(created);
 		FreeShader(&shader);
-		FreeFrameBuffer(&frame, true);
+		FreeFrameBuffer(&frame, false);
 		created = false;
 	}
 
@@ -1129,7 +1196,7 @@ namespace cm
 	{
 		Assert(created);
 		FreeShader(&shader);
-		FreeFrameBuffer(&frame, true);
+		FreeFrameBuffer(&frame, false);
 		created = false;
 	}
 
@@ -1199,7 +1266,8 @@ namespace cm
 					// tangent space to world
 					vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N; 
 
-					irradiance += texture(environmentMap, sampleVec).rgb * cos(theta) * sin(theta);
+					float c5 = pow(cos(theta), 2);
+					irradiance += textureLod(environmentMap, sampleVec, 0).rgb * c5 * sin(theta);
 					nrSamples++;
 				}
 			}
@@ -1251,7 +1319,7 @@ namespace cm
 	{
 		Assert(created);
 		FreeShader(&shader);
-		FreeFrameBuffer(&frame, true);
+		FreeFrameBuffer(&frame, false);
 		created = false;
 	}
 
@@ -1447,7 +1515,6 @@ namespace cm
 		ChangeViewPort(0, 0, 1280, 720);
 
 		// @NOTE: Make sure we dont try to free somthing that was part of the cube map
-		frame.colour0_texture_attachment.object = 0;
 
 		UnbindFrameBuffer();
 
@@ -1469,7 +1536,7 @@ namespace cm
 	{
 		Assert(created);
 		FreeShader(&shader);
-		FreeFrameBuffer(&frame, true);
+		FreeFrameBuffer(&frame, false);
 		created = false;
 	}
 
@@ -1636,14 +1703,13 @@ namespace cm
 
 		ChangeViewPort(0, 0, 1280, 720);
 
-		frame.colour0_texture_attachment.object = 0;
 	}
 
 	void LookUpTextureGenerator::Free()
 	{
 		Assert(created);
 		FreeShader(&shader);
-		FreeFrameBuffer(&frame, true);
+		FreeFrameBuffer(&frame, false);
 		created = false;
 	}
 }

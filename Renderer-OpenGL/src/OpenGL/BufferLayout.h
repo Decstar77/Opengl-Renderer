@@ -7,7 +7,7 @@
 namespace cm
 {
 	//Make this data orientated 
-	class BufferLayout
+	class LayoutBuffer
 	{
 		uint32 number_components;
 		uint32 stride;
@@ -18,14 +18,14 @@ namespace cm
 		uint32 attribute_divisor;
 
 	public:
-		BufferLayout();
-		BufferLayout(std::vector<ShaderDataType> layout);		
-		~BufferLayout();
+		LayoutBuffer();
+		LayoutBuffer(std::vector<ShaderDataType> layout);		
+		~LayoutBuffer();
 
 		void Reset();
 		void Next();
 		void SetAttributeDivisor(uint32 div);
-		uint32 Add(const BufferLayout &lbo);
+		uint32 Add(const LayoutBuffer &lbo);
 
 		ShaderDataType GetCurrentShaderType() const;
 		uint32 GetTotalAttributeCount() const;

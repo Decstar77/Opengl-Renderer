@@ -40,7 +40,7 @@ namespace cm
 		Informer();
 		~Informer();
 		
-		void CreateUBO(const std::string &name, const BufferLayout &lbo, int32 binding_location);
+		void CreateUBO(const std::string &name, const LayoutBuffer &lbo, int32 binding_location);
 		void LinkShader(const std::string &name, Shader shader);
 		void LinkShader(const std::string &name, RenderShaders render_shaders);
 		template<typename T>

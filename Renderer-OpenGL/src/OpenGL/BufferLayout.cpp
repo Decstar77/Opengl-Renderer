@@ -2,13 +2,13 @@
 
 namespace cm
 {
-	BufferLayout::BufferLayout() : current_offset(0),
+	LayoutBuffer::LayoutBuffer() : current_offset(0),
 		current_next(0), number_components(0), stride(0), attribute_divisor(0)
 	{
 
 	}
 
-	BufferLayout::BufferLayout(std::vector<ShaderDataType> layout) : layout(layout), current_offset(0),
+	LayoutBuffer::LayoutBuffer(std::vector<ShaderDataType> layout) : layout(layout), current_offset(0),
 		current_next(0), number_components((uint32)layout.size()), attribute_divisor(0)
 	{
 		stride = 0;
@@ -19,80 +19,80 @@ namespace cm
 		}
 	}
 
-	BufferLayout::~BufferLayout()
+	LayoutBuffer::~LayoutBuffer()
 	{
 
 	}
 
-	void BufferLayout::Next()
+	void LayoutBuffer::Next()
 	{
 		current_offset += GetShaderDataTypeSize(layout.at(current_next));
 		current_next++;
 		Assert(current_next <= layout.size());
 	}
 
-	void BufferLayout::SetAttributeDivisor(uint32 div)
+	void LayoutBuffer::SetAttributeDivisor(uint32 div)
 	{
 		attribute_divisor = div;
 	}
 
-	uint32 BufferLayout::Add(const BufferLayout &lbo)
+	uint32 LayoutBuffer::Add(const LayoutBuffer &lbo)
 	{
 		layout.insert(layout.end(), lbo.layout.begin(), lbo.layout.end());
 		return static_cast<uint32>(layout.size());
 	}
 
-	void BufferLayout::Reset()
+	void LayoutBuffer::Reset()
 	{
 		current_next = current_offset = 0;
 	}
 
-	uint32 BufferLayout::GetCurrentOffSet() const
+	uint32 LayoutBuffer::GetCurrentOffSet() const
 	{
 		return current_offset;
 	}
 
-	uint32 BufferLayout::GetCurrentSize() const
+	uint32 LayoutBuffer::GetCurrentSize() const
 	{
 		return GetShaderDataTypeSize(layout.at(current_next));
 	}
 
-	uint32 BufferLayout::GetCurrentComponentAttribCount() const
+	uint32 LayoutBuffer::GetCurrentComponentAttribCount() const
 	{
 		return GetShaderDataTypeComponentCount(layout.at(current_next));
 	}
 
-	uint32 BufferLayout::GetComponentCount() const
+	uint32 LayoutBuffer::GetComponentCount() const
 	{
 		return (uint32)layout.size();
 	}
 
-	uint32 BufferLayout::GetStride() const
+	uint32 LayoutBuffer::GetStride() const
 	{
 		return stride;
 	}
 
-	uint32 BufferLayout::GetTotalSize() const
+	uint32 LayoutBuffer::GetTotalSize() const
 	{
 		return stride;
 	}
 
-	uint32 BufferLayout::GetSizeOf(uint32 index) const
+	uint32 LayoutBuffer::GetSizeOf(uint32 index) const
 	{
 		return GetShaderDataTypeSize(layout.at(index));
 	}
 
-	uint32 BufferLayout::GetAttributeDivisor() const
+	uint32 LayoutBuffer::GetAttributeDivisor() const
 	{
 		return attribute_divisor;
 	}
 
-	ShaderDataType BufferLayout::GetCurrentShaderType() const
+	ShaderDataType LayoutBuffer::GetCurrentShaderType() const
 	{
 		return layout.at(current_next);
 	}
 
-	uint32 BufferLayout::GetTotalAttributeCount() const
+	uint32 LayoutBuffer::GetTotalAttributeCount() const
 	{
 		uint32 count = 0;
 		for (int32 i = 0; i < layout.size(); i++)

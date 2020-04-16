@@ -99,8 +99,8 @@
     <ClCompile Include="vendor\IMGUI\imgui_widgets.cpp">
       <Filter>vendor\Imgui</Filter>
     </ClCompile>
-    <ClCompile Include="src\Bitmap.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="src\Core\Serialization.cpp">
+      <Filter>src\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -191,8 +191,8 @@
     <ClInclude Include="vendor\IMGUI\imstb_truetype.h">
       <Filter>vendor\Imgui</Filter>
     </ClInclude>
-    <ClInclude Include="src\Bitmap.h">
-      <Filter>src</Filter>
+    <ClInclude Include="src\Core\Serialization.h">
+      <Filter>src\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

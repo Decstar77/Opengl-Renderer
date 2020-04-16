@@ -50,7 +50,7 @@ void main()
  	//vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * n; 
 	vec3 sampleVec = tr * tangentSample;
 
-	colour = textureLod(environmentMap, n, 1.2).rgb;
+	//colour = textureLod(environmentMap, n, 1.2).rgb;
 	colour = texture(environmentMap, n).rgb;
 
 	
