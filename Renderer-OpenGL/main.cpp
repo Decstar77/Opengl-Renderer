@@ -1,7 +1,6 @@
 #include <glew.h>
 #include <GLFW/glfw3.h>
 #include <chrono>
-
 #include "src/Core.h"
 #include "src/OpenGL/RenderCommands.h"
 #include "src/Math/CosmicPhysics.h"
@@ -18,6 +17,8 @@
 #include "src/Core/Sandbox.h"
 #include "src/Core/Serialization.h"
 using namespace cm;
+
+
 
 static const uint32 WINDOW_WIDTH = 1280;
 static const uint32 WINDOW_HEIGHT = 720;
@@ -234,17 +235,29 @@ int main()
 	// Load shaders
 	//************************************
 
-	Shader demo_bot_gbuffer_shader;
-	demo_bot_gbuffer_shader.config.src_vert = ReadFile("shaders/botdemo/g_buffer_vert.glsl");
-	demo_bot_gbuffer_shader.config.scr_frag = ReadFile("shaders/botdemo/g_buffer_frag.glsl");
-	demo_bot_gbuffer_shader.config.name = "demo_bot_gbuffer_shader";
-	CreateShader(&demo_bot_gbuffer_shader);
+	Shader worldspace_gbuffer_shader;
+	worldspace_gbuffer_shader.config.src_vert = ReadFile("shaders/demo_01/worldspace_gbuffer_vert.glsl");
+	worldspace_gbuffer_shader.config.scr_frag = ReadFile("shaders/demo_01/worldspace_gbuffer_frag.glsl");
+	worldspace_gbuffer_shader.name = "demo_bot_gbuffer_shader";
+	CreateShader(&worldspace_gbuffer_shader);
 
-	Shader demo_bot_gbuffer_anim_shader;
-	demo_bot_gbuffer_anim_shader.config.src_vert = ReadFile("shaders/botdemo/g_buffer_anim_vert.glsl");
-	demo_bot_gbuffer_anim_shader.config.scr_frag = ReadFile("shaders/botdemo/g_buffer_frag.glsl");
-	demo_bot_gbuffer_anim_shader.config.name = "demo_bot_gbuffer_anim_shader";
-	
+	Shader worldspace_gbuffer_anim_shader;
+	worldspace_gbuffer_anim_shader.config.src_vert = ReadFile("shaders/demo_01/worldspace_gbuffer_anim_vert.glsl");
+	worldspace_gbuffer_anim_shader.config.scr_frag = ReadFile("shaders/demo_01/worldspace_gbuffer_frag.glsl");
+	worldspace_gbuffer_anim_shader.name = "demo_bot_gbuffer_anim_shader";
+	CreateShader(&worldspace_gbuffer_anim_shader);
+
+	Shader demo_01_deffered_pbr_shader;
+	demo_01_deffered_pbr_shader.config.src_vert = ReadFile("shaders/demo_01/pbr_deffered_vert.glsl");
+	demo_01_deffered_pbr_shader.config.scr_frag = ReadFile("shaders/demo_01/pbr_deffered_frag.glsl");
+	demo_01_deffered_pbr_shader.name = "demo_01_deffered_pbr_shader";
+	CreateShader(&demo_01_deffered_pbr_shader);
+
+	Shader demo_01_postprocessing_shader;
+	demo_01_postprocessing_shader.config.src_vert = ReadFile("shaders/demo_01/postprocessing_vert.glsl");
+	demo_01_postprocessing_shader.config.scr_frag = ReadFile("shaders/demo_01/postprocessing_frag.glsl");
+	demo_01_postprocessing_shader.name = "demo_01_postprocessing_shader";
+	CreateShader(&demo_01_postprocessing_shader);
 
 	//************************************
 	// Load texture assets
@@ -296,11 +309,10 @@ int main()
 	// Initialize imported meshes 
 	//************************************
 
-	Actor floor_test;
-	//floor_test.mesh = StandardMeshes::cube;
+	Actor floor_test;	
 	floor_test.mesh = model_importer.resulting_meshes[0].CreateMesh(true);
 	floor_test.material.forward_shader = &forward_pbr_notext_shader;
-	floor_test.transform.scale = Vec3(0.05);
+	floor_test.transform.scale = Vec3(0.01);
 
 	//************************************
 	// Create the frame buffers
@@ -449,6 +461,7 @@ int main()
 
 
 	ModeImport model_import;
+	model_import.import_vertex_binorms_tangents = true;
 	model_import.model_paths.push_back("res/models/man.dae");
 	model_import.Load();
 	
@@ -540,6 +553,10 @@ int main()
 	informer.LinkShader("WorldMatrices", deferred_shader);	
 	informer.LinkShader("WorldMatrices", g_buffer_shader);
 
+	informer.LinkShader("WorldMatrices", worldspace_gbuffer_shader);
+	informer.LinkShader("LightingData", demo_01_deffered_pbr_shader);
+
+
 	informer.LinkShader("LightingData", deferred_shader);
 	informer.LinkShader("LightingData", forward_phong_notext_shader);
 	
@@ -554,9 +571,11 @@ int main()
 	console.Log("Version: " + opengl_stats.version);
 	console.Log("Shader lang: " + opengl_stats.shading_lang);
 
+	RenderSettings render_settings;
+
 	EditorRender editor_render_window;
 	editor_render_window.delta_time = 0;
-	editor_render_window.render_settings = &renderer.render_settings;
+	editor_render_window.render_settings = &render_settings;
 	
 
 	DirectionalLight sun_light;
@@ -564,6 +583,9 @@ int main()
 	sun_light.light_colour = Vec3(.5);
 
 
+	PointLight point_light;
+	point_light.light_colour = Vec3(23.47, 21.31, 20.79);
+	point_light.light_position = Vec3(0, 2, -1);
 
 
 	float fh = 1;
@@ -610,13 +632,13 @@ int main()
 			double x, y;
 			glfwGetCursorPos(window, &x, &y);					
 			fh += 0.4 * delta_time;
-
+			//point_light.light_position.x += 4 * delta_time;
 			toggel = true;
 		}
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
 		{
 			
-			
+			//point_light.light_position.x -= 4 * delta_time;
 
 			fh -= 0.4 * delta_time;
 			
@@ -669,13 +691,16 @@ int main()
 		// Update GPU Buffers
 		//************************************
 
+
 		std::vector<Mat4> camera_data = { camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix,
 										light_space_matrix };
 
 		std::vector<Vec4> lighting_data = {
-		Vec4(0,  1, 0, 0),  // Meta data for lighting, number of lights 
+		Vec4(1,  1, 0, 0),  // Meta data for lighting, number of lights 
 		Vec4(camera_controller.main_camera.transform.position, 0),
-		Vec4(sun_light.direction, 0), Vec4(sun_light.light_colour, 0)
+		Vec4(sun_light.direction, 0),
+		Vec4(point_light.light_position, 0), Vec4(1), Vec4(1), Vec4(1),
+		Vec4(point_light.light_colour, 0), Vec4(1), Vec4(1), Vec4(1)
 		};
 
 		informer.UpdateUBO("WorldMatrices", camera_data);
@@ -688,56 +713,26 @@ int main()
 		//************************************
 		// Render The Current Frame
 		//************************************
-		
-	
-		
-#if 0
-		BindShader(animation_test_shader);
-
-		std::vector<aiMatrix4x4> tut_tran;
-		
-		tut_model.boneTransform(0.2, tut_tran);
-		test_cube_guy.animation_controller.Play(0);
-		test_cube_guy.animation_controller.Update(delta_time);
-
-		if (false)
-		{
-			for (int32 i = 0; i < tut_tran.size(); i++)
-			{
-				std::stringstream ss;
-				ss << "gBones[" << (i) << "]";
-				//ShaderSetMat4(&animation_test_shader, ss.str(), ToMatrix4f(&tut_tran[i]).arr);
-			}
-		}
-		else
-		{
-			for (int32 i = 1; i < test_cube_guy.animation_controller.bones.size(); i++)
-			{
-				std::stringstream ss;
-				ss << "gBones[" << (i - 1) << "]";
-				ShaderSetMat4(&animation_test_shader, ss.str(), test_cube_guy.animation_controller.bones.at(i).current_transform.arr);
-			}
-			
-		}		
-#endif
-
 
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
 		RenderCommands::Clear(Colour(0, 1, 0, 1));
 		
 
+		//************************************
+		// Gbuffer pass for static objects
+		//************************************
+
 		BindFrameBuffer(demo_gbuffer);
-		BindShader(demo_bot_gbuffer_shader);
+		BindShader(worldspace_gbuffer_shader);
 
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();		
-
-		//ShaderSetMat4(&demo_bot_gbuffer_shader, "view_matrix", camera_controller.main_camera.view_matrix.arr);
 		
-		ShaderBindTexture(demo_bot_gbuffer_shader, demo_floor_colour_map, 0, "colour_map");
-		ShaderBindTexture(demo_bot_gbuffer_shader, demo_floor_normal_map, 1, "normal_map");
-		ShaderBindTexture(demo_bot_gbuffer_shader, demo_floor_orm_map, 2, "orme_map");
+
+		ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_colour_map, 0, "colour_map");
+		ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_normal_map, 1, "normal_map");
+		ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_orm_map, 2, "orme_map");
 
 		for (int32 i = 0; i < main_world.objects.size(); i++)
 		{
@@ -745,15 +740,90 @@ int main()
 			Transform transform = obj->GetTransfrom();
 			Material mat = obj->GetMaterial();
 			Mat4 transform_matrix = obj->GetTransformMatrix();
-		
 
-		
-			ShaderSetMat4(&demo_bot_gbuffer_shader, "model", transform_matrix.arr);
-			RenderMesh(demo_bot_gbuffer_shader, obj->GetMeshForRender());
+			ShaderSetMat4(&worldspace_gbuffer_shader, "model", transform_matrix.arr);
+			RenderMesh(worldspace_gbuffer_shader, obj->GetMeshForRender());
 		}
+
+		//************************************
+		// Gbuffer pass for animated objects
+		//************************************
+#if 1
+		BindShader(worldspace_gbuffer_anim_shader);
+
+		ShaderBindTexture(worldspace_gbuffer_anim_shader, demo_floor_colour_map, 0, "colour_map");
+		ShaderBindTexture(worldspace_gbuffer_anim_shader, demo_floor_normal_map, 1, "normal_map");
+		ShaderBindTexture(worldspace_gbuffer_anim_shader, demo_floor_orm_map, 2, "orme_map");
+
+		test_cube_guy.animation_controller.Play(0);
+		test_cube_guy.animation_controller.Update(delta_time);
+
+		for (int32 i = 1; i < test_cube_guy.animation_controller.bones.size(); i++)
+		{
+			std::stringstream ss;
+			ss << "gBones[" << (i - 1) << "]";
+			ShaderSetMat4(&worldspace_gbuffer_anim_shader, ss.str(), test_cube_guy.animation_controller.bones.at(i).current_transform.arr);
+		}
+		ShaderSetMat4(&worldspace_gbuffer_anim_shader, "model", test_cube_guy.transform.CalcTransformMatrix().arr);
+		
+		RenderMesh(worldspace_gbuffer_anim_shader, test_cube_guy.GetMeshForRender());
+				
+		UnbindFrameBuffer();
+#endif
+		//************************************
+		// Screen space ambient occulsion (SSAO)
+		//************************************
+
+		//************************************
+		// Deffered pass
+		//************************************
+
+		BindFrameBuffer(renderer.frame_post_processing);
+
+		RenderCommands::ClearColourBuffer();
+		RenderCommands::ClearDepthBuffer();
+
+		BindShader(demo_01_deffered_pbr_shader);
+
+		ShaderBindTexture(demo_01_deffered_pbr_shader, demo_gbuffer.colour0_texture_attachment, 0, "g_position");
+		ShaderBindTexture(demo_01_deffered_pbr_shader, demo_gbuffer.colour1_texture_attachment, 1, "g_normal");
+		ShaderBindTexture(demo_01_deffered_pbr_shader, demo_gbuffer.colour2_texture_attachment, 2, "g_colour");
+
+		RenderMesh(demo_01_deffered_pbr_shader, StandardMeshes::quad);
 
 		UnbindFrameBuffer();
 
+		//************************************
+		// Forward pass
+		//************************************
+
+		//************************************
+		// Post processing pass
+		//************************************
+
+		BindShader(demo_01_postprocessing_shader);
+
+		ShaderSetFloat(&demo_01_postprocessing_shader, "exposure", render_settings.post_processing_exposure);
+		ShaderSetInt32(&demo_01_postprocessing_shader, "tonemapping_method", static_cast<uint32>(render_settings.tonemapping));
+
+		ShaderSetFloat(&demo_01_postprocessing_shader, "vigentte_outer_radius", render_settings.vigentte_outer_raduis * render_settings.vigentte);
+		ShaderSetFloat(&demo_01_postprocessing_shader, "vigentte_inner_radius", render_settings.vigentte_inner_raduis * render_settings.vigentte);
+		ShaderSetFloat(&demo_01_postprocessing_shader, "vignette_intensity", render_settings.vigentte_intensity * render_settings.vigentte);
+
+		ShaderSetInt32(&demo_01_postprocessing_shader, "FXAA", render_settings.fxaa);
+		ShaderSetFloat(&demo_01_postprocessing_shader, "FXAA_SPAN_MAX", render_settings.fxaa_span_max);
+		ShaderSetFloat(&demo_01_postprocessing_shader, "FXAA_DIR_MIN", render_settings.fxaa_dir_min);
+		ShaderSetFloat(&demo_01_postprocessing_shader, "FXAA_DIR_REDUC", render_settings.fxaa_dir_reduc);
+		
+		ShaderBindTexture(demo_01_postprocessing_shader, renderer.frame_post_processing.colour0_texture_attachment, 0, "scene_texture");
+
+
+		RenderMesh(demo_01_postprocessing_shader, StandardMeshes::quad);
+
+
+		//************************************
+		// DBUGING pass
+		//************************************
 		BindFrameBuffer(renderer.frame_g_buffer);
 		BindShader(ssao_gbuffer_shader);
 
@@ -773,7 +843,7 @@ int main()
 		}
 
 		UnbindFrameBuffer();
-			   		 
+				
 		//BindFrameBuffer(ssr_frame);
 		//BindShader(ssr_shader);
 
@@ -787,28 +857,8 @@ int main()
 
 		//UnbindFrameBuffer();
 
-		BindFrameBuffer(renderer.frame_post_processing);
 
-		RenderCommands::ClearColourBuffer();
-		RenderCommands::ClearDepthBuffer();
-
-
-
-		BindShader(forward_pbr_notext_shader);
-
-		ShaderBindCubeMap(&forward_pbr_notext_shader, irradiance_map, 0, "irradiance_map");
-		ShaderBindCubeMap(&forward_pbr_notext_shader, prefilter_map, 1, "prefilter_map");
-		ShaderBindTexture(forward_pbr_notext_shader, brdf_lookup_texture, 2, "brdf_map");
-		ShaderBindTexture(forward_pbr_notext_shader, demo_floor_colour_map, 3, "colour_map");
-		ShaderBindTexture(forward_pbr_notext_shader, demo_floor_orm_map, 4, "orm_map");
-
-		renderer.ForwardPass(main_world);
-
-		renderer.DrawSkyBox();
-
-		UnbindFrameBuffer();
 		
-		renderer.PostProcessingPass(main_world);
 
 		//renderer.Render(main_world);
 	
@@ -847,8 +897,7 @@ int main()
 
 		editor_render_window.delta_time = delta_time;
 		editor_render_window.UpdateAndDraw();
-
-
+		
 			
 		ImGui::ShowDemoWindow();
 
@@ -864,13 +913,14 @@ int main()
 		{
 			//DebugDrawTexture(&debug_mesh_shader, brdf_lookup_texture);
 			//DebugDrawTexture(&debug_mesh_shader, map_to_eqi);
-			DebugDrawTexture(&debug_mesh_shader, demo_gbuffer.colour1_texture_attachment);
-			//DebugDrawTexture(&debug_mesh_shader, renderer.frame_g_buffer.colour0_texture_attachment);
+			//DebugDrawTexture(&debug_mesh_shader, demo_gbuffer.colour1_texture_attachment);
+		
 			//DebugDrawTexture(&debug_mesh_shader, demo_floor_normal_map);
 			//DebugDrawTexture(&debug_mesh_shader, ssr_frame.colour0_texture_attachment);
 		}
 		else
 		{
+			//DebugDrawTexture(&debug_mesh_shader, renderer.frame_g_buffer.colour1_texture_attachment);
 		}
 
 

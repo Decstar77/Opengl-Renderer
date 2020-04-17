@@ -155,7 +155,7 @@ namespace cm
 		return min_index;
 	}
 
-	void ModeImport::ProcessMeshCombine(aiMesh *mesh, const aiScene *scene, uint32 index)
+	void ModeImport::ProcessMeshCombine(const aiScene *scene, aiMesh *mesh, uint32 index)
 	{
 		// @NOTE: Get the meta data from the current mesh.
 		bool positions = mesh->HasPositions();
@@ -203,13 +203,13 @@ namespace cm
 			// Tangent and bitangents
 			if (tanget_bitangets && import_vertex_binorms_tangents)
 			{
-				vertex.tanget.x = mesh->mTangents[i].x;
-				vertex.tanget.y = mesh->mTangents[i].y;
-				vertex.tanget.z = mesh->mTangents[i].z;
+				vertex.tangent.x = mesh->mTangents[i].x;
+				vertex.tangent.y = mesh->mTangents[i].y;
+				vertex.tangent.z = mesh->mTangents[i].z;
 
-				vertex.bitanget.x = mesh->mBitangents[i].x;
-				vertex.bitanget.y = mesh->mBitangents[i].y;
-				vertex.bitanget.z = mesh->mBitangents[i].z;
+				vertex.bitangent.x = mesh->mBitangents[i].x;
+				vertex.bitangent.y = mesh->mBitangents[i].y;
+				vertex.bitangent.z = mesh->mBitangents[i].z;
 			}
 
 			// Vertex Colours
@@ -304,7 +304,7 @@ namespace cm
 		emesh->name = mesh->mName.C_Str();
 	}
 
-	void ModeImport::ProcessMesh(aiNode *node, const aiScene * scene, uint32 index)
+	void ModeImport::ProcessMesh(const aiScene * scene, aiNode *node, uint32 index)
 	{
 		for (uint32 i = 0; i < node->mNumMeshes; i++)
 		{
@@ -312,12 +312,12 @@ namespace cm
 
 			std::cout << "Mesh name " << mesh->mName.C_Str() << std::endl;
 			
-			ProcessMeshCombine(mesh, scene, index);
+			ProcessMeshCombine(scene, mesh, index);
 		}
 
 		for (uint32 i = 0; i < node->mNumChildren; i++)
 		{
-			ProcessMesh(node->mChildren[i], scene, index);
+			ProcessMesh(scene, node->mChildren[i], index);
 		}
 	}
 
@@ -581,7 +581,7 @@ namespace cm
 				{
 					ProcessAnimations(scene, &this->resulting_animation_controllers[i]);
 				}
-				ProcessMesh(scene->mRootNode, scene, i);
+				ProcessMesh(scene, scene->mRootNode, i);
 			}
 			else
 			{

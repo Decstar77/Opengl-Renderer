@@ -285,9 +285,42 @@ namespace cm
 		
 		if (ImGui::CollapsingHeader("Post Processing"))
 		{
-			ImGui::Checkbox("Bloom", &render_settings->ssr);
-			ImGui::Checkbox("FXAA", &render_settings->ssr);
-			ImGui::Checkbox("Vignette ", &render_settings->ssr);
+			
+			if (ImGui::TreeNode("Tone Mapping"))
+			{
+				ImGui::DragFloat("Exposure", &render_settings->post_processing_exposure, 0.1f);	
+				
+				render_settings->tonemapping = ImGui::RadioButton("RienHard", render_settings->tonemapping == RenderSettings::Reinhard) ? RenderSettings::Reinhard : render_settings->tonemapping;
+				render_settings->tonemapping = ImGui::RadioButton("Uncharted", render_settings->tonemapping == RenderSettings::Uncharted) ? RenderSettings::Uncharted : render_settings->tonemapping;
+				render_settings->tonemapping = ImGui::RadioButton("Filmic", render_settings->tonemapping == RenderSettings::Filmic) ? RenderSettings::Filmic : render_settings->tonemapping;				
+
+				ImGui::TreePop();
+			}
+
+
+			if (ImGui::TreeNode("Bloom"))
+			{
+				ImGui::Text("On the TODO :)");
+				ImGui::TreePop();
+			}
+						
+			if (ImGui::TreeNode("FXAA"))
+			{
+				ImGui::Checkbox("FXAA ", &render_settings->fxaa);				
+				ImGui::SliderFloat("Span max", &render_settings->fxaa_span_max, 0.0f, 40.0f);
+				ImGui::SliderFloat("Dir min", &render_settings->fxaa_dir_min, 0.0f, 0.5f);
+				ImGui::SliderFloat("Dir reduction", &render_settings->fxaa_dir_reduc, 0.0f, 1.f);
+				ImGui::TreePop();
+			}
+
+			if (ImGui::TreeNode("Vignette"))
+			{
+				ImGui::Checkbox("Vignette ", &render_settings->vigentte);
+				ImGui::SliderFloat("Outer raduis", &render_settings->vigentte_outer_raduis, 0.0f, 1.0f);
+				ImGui::SliderFloat("Inner raduis", &render_settings->vigentte_inner_raduis, 0.0f, 1.0f);
+				ImGui::SliderFloat("Intensity", &render_settings->vigentte_intensity, 0.0f, 1.0f);
+				ImGui::TreePop();
+			}			
 		}
 
 		if (ImGui::CollapsingHeader("Performance"))

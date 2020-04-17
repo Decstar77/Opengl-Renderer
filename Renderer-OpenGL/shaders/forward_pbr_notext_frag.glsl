@@ -10,7 +10,6 @@ layout (std140, binding = 1) uniform LightingData
 	vec4 camera_world_position;
 	
 	vec4 dir_light_direction;
-	vec4 camera_pos;     
 	
 	vec4 point_light_position[4];
 	vec4 point_light_color[4];

@@ -51,6 +51,28 @@ namespace cm
 	{
 		bool shadow_pass = true;
 		bool defferd_pass = true;
+		
+		// @NOTE: These vaules are important because they are cast to the shader
+		enum TonemapMethod
+		{
+			Reinhard = 0,
+			Uncharted = 1,
+			Filmic = 2
+		};
+
+		TonemapMethod tonemapping = TonemapMethod::Reinhard;
+
+		bool vigentte = true;
+		real32 vigentte_outer_raduis	= 0.65;
+		real32 vigentte_inner_raduis	= 0.4;
+		real32 vigentte_intensity		= 0.6;
+
+		bool fxaa = true;
+		real32 fxaa_span_max = 12.0f;
+		real32 fxaa_dir_min = 0.1;
+		real32 fxaa_dir_reduc = 1 / 8.0f;
+
+		real32 post_processing_exposure = 1.0;
 		bool bloom = true;
 		bool ssao = true;
 		bool ssr = true;

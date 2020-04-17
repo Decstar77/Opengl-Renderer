@@ -10,8 +10,8 @@ namespace cm
 	{
 		Vec3 position = Vec3(0);
 		Vec3 normal = Vec3(0);
-		Vec3 tanget = Vec3(0);
-		Vec3 bitanget = Vec3(0);
+		Vec3 tangent = Vec3(0);
+		Vec3 bitangent = Vec3(0);
 		Vec3 colour = Vec3(0);
 		Vec3 texture_coord = Vec3(0);
 		uint32 next = 0;		

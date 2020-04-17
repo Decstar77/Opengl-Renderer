@@ -1,18 +1,7 @@
 ﻿cl : Command line warning D9002: ignoring unknown option '/arch:SSE2'
-  main.cpp
+  UIRenderer.cpp
 f:\renderer-opengl\renderer-opengl\src\core.h(30): warning C4005: 'LOGC': macro redefinition
   f:\renderer-opengl\renderer-opengl\src\core.h(26): note: see previous definition of 'LOGC'
-f:\renderer-opengl\renderer-opengl\src\math\cosmicphysics.h(250): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\math\cosmicphysics.h(253): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(41): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\math\cosmicnoise.h(42): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(612): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(621): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\main.cpp(901): warning C4244: 'initializing': conversion from '_Rep' to 'float', possible loss of data
-          with
-          [
-              _Rep=__int64
-          ]
+f:\renderer-opengl\renderer-opengl\src\core\uirenderer.cpp(131): warning C4312: 'reinterpret_cast': conversion from 'uint32' to 'void *' of greater size
+f:\renderer-opengl\renderer-opengl\src\core\uirenderer.cpp(178): warning C4312: 'reinterpret_cast': conversion from 'uint32' to 'void *' of greater size
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

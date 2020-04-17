@@ -246,8 +246,8 @@ namespace cm
 			data->insert(data->end(), &vert.normal.arr[0], &vert.normal.arr[3 * sizeof(float) / sizeof(float)]);
 			data->push_back(vert.texture_coord.x);
 			data->push_back(vert.texture_coord.y);
-			data->insert(data->end(), &vert.tanget.arr[0], &vert.tanget.arr[3 * sizeof(float) / sizeof(float)]);
-			data->insert(data->end(), &vert.bitanget.arr[0], &vert.bitanget.arr[3 * sizeof(float) / sizeof(float)]);
+			data->insert(data->end(), &vert.tangent.arr[0], &vert.tangent.arr[3 * sizeof(float) / sizeof(float)]);
+			data->insert(data->end(), &vert.bitangent.arr[0], &vert.bitangent.arr[3 * sizeof(float) / sizeof(float)]);
 
 		}
 	}
@@ -263,8 +263,15 @@ namespace cm
 
 	cm::GLMesh EditableMesh::CreateAnimMesh()
 	{
-		LayoutBuffer l = LayoutBuffer(std::vector<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float4, ShaderDataType::Float4 }));
-
+		//LayoutBuffer l = LayoutBuffer(std::vector<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float4, ShaderDataType::Float4 }));
+		LayoutBuffer l = LayoutBuffer(std::vector<ShaderDataType>({ 
+			ShaderDataType::Float3, 
+			ShaderDataType::Float3, 
+			ShaderDataType::Float2, 
+			ShaderDataType::Float3,
+			ShaderDataType::Float3,
+			ShaderDataType::Float4, 
+			ShaderDataType::Float4 }));
 		std::vector<float> data;
 		uint32 vert_size = static_cast<uint32>(vertices.size());
 		for (uint32 i = 0; i < vert_size; i++)
@@ -281,6 +288,14 @@ namespace cm
 			data.push_back(vert.texture_coord.x);
 			data.push_back(vert.texture_coord.y);
 								
+			data.push_back(vert.tangent.x);
+			data.push_back(vert.tangent.y);
+			data.push_back(vert.tangent.z);
+
+			data.push_back(vert.bitangent.x);
+			data.push_back(vert.bitangent.y);
+			data.push_back(vert.bitangent.z);
+
 			data.push_back(vert.bone_index[0]);
 			data.push_back(vert.bone_index[1]);
 			data.push_back(vert.bone_index[2]);

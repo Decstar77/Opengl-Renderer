@@ -30,8 +30,8 @@ namespace cm
 		void ProcessAnimationChannels(aiAnimation *anim, Animation *animation);
 		void ProcessBones(const aiScene *scene, AnimationController *ac);
 		void ProcessAnimations(const aiScene *scene, AnimationController *ac);
-		void ProcessMeshCombine(aiMesh *mesh, const aiScene *scene, uint32 index);
-		void ProcessMesh(aiNode *node, const aiScene * scene, uint32 index);
+		void ProcessMeshCombine(const aiScene *scene, aiMesh *mesh, uint32 index);
+		void ProcessMesh(const aiScene * scene, aiNode *node,  uint32 index);
 
 	public:
 		// @TODO: Multi-thread
