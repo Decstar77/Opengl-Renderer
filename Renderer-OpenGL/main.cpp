@@ -128,8 +128,6 @@ void InitializeStandardMeshes()
 	StandardMeshes::quad = quad.CreateMesh(false);
 }
 
-
-
 int main()
 {
 	window = CreateRenderingWindow();
@@ -232,81 +230,132 @@ int main()
 	Shader ssr_shader = CreateShader(ReadFile("shaders/ssr_vert.glsl"), ReadFile("shaders/ssr_frag.glsl"));
 	ssr_shader.name = "ssr_shader ";
 
+	//************************************
+	// Load shaders
+	//************************************
 
-	//ModeImport shpere_import;
-	//shpere_import.import_animations = false;
-	//shpere_import.model_paths.push_back("res/models/sphere.obj");
-	//shpere_import.Load();
-	//StandardMeshes::sphere = shpere_import.resulting_meshes[0].CreateMesh(false);
+	Shader demo_bot_gbuffer_shader;
+	demo_bot_gbuffer_shader.config.src_vert = ReadFile("shaders/botdemo/g_buffer_vert.glsl");
+	demo_bot_gbuffer_shader.config.scr_frag = ReadFile("shaders/botdemo/g_buffer_frag.glsl");
+	demo_bot_gbuffer_shader.config.name = "demo_bot_gbuffer_shader";
+	CreateShader(&demo_bot_gbuffer_shader);
+
+	Shader demo_bot_gbuffer_anim_shader;
+	demo_bot_gbuffer_anim_shader.config.src_vert = ReadFile("shaders/botdemo/g_buffer_anim_vert.glsl");
+	demo_bot_gbuffer_anim_shader.config.scr_frag = ReadFile("shaders/botdemo/g_buffer_frag.glsl");
+	demo_bot_gbuffer_anim_shader.config.name = "demo_bot_gbuffer_anim_shader";
 	
 
-	//MeshExport mesh_export;
-	//mesh_export.Create(StandardMeshes::sphere);
-	//mesh_export.Write("sphere.txt");
-	//mesh_export.Free();
-
-	//tut::Model tut_model;
-	//std::string path = "res/models/man.dae";
-	//tut_model.loadModel(path);
-
+	//************************************
+	// Load texture assets
+	//************************************
 	
-	Actor floor_tile;
-	floor_tile.mesh = StandardMeshes::plane;
-	floor_tile.transform.scale = Vec3(20);
-	floor_tile.transform.rotation = EulerToQuat(Vec3(90, 0, 0));
-	floor_tile.transform.position = Vec3(-10, 0, 10);
-	floor_tile.material.forward_shader = &forward_pbr_notext_shader;
+	TextureImport texture_importer;
+	texture_importer.flip = false;
+	texture_importer.texture_paths.push_back("res/textures/studio_small_03_2k.hdr");
+	texture_importer.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor3/Floor_FloorStriped_BaseColor.png");
+	texture_importer.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor3/Floor_FloorStriped_Normal.png");
+	texture_importer.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor3/Floor_FloorStriped_OcclusionRoughnessMetallic.png");
 
-	Actor wall_front;
-	wall_front.mesh = StandardMeshes::plane;
-	wall_front.transform.scale = Vec3(20);
-	wall_front.transform.rotation = EulerToQuat(Vec3(0, 0, 0));
-	wall_front.transform.position = Vec3(-10, 0, -10);
+	//texture_importer.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_BaseColor.png");
+	//texture_importer.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_Normal.png");
+	//texture_importer.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_OcclusionRoughnessMetallic.png");	
+
+	texture_importer.Load();
+
+	//************************************
+	// Load mesh assets
+	//************************************
+
+	ModeImport model_importer;
+	model_importer.import_animations = true;
+	model_importer.import_vertex_binorms_tangents = true;
+	model_importer.model_paths.push_back("res/botdemo/FloorSet/Floor.fbx");
+	model_importer.Load();
+
+	//************************************
+	// Initialize imported textures
+	//************************************
 	
+	Texture demo_floor_colour_map;
+	demo_floor_colour_map.config = texture_importer.texture_configs[1];
+	demo_floor_colour_map.config.mipmaps = true;
+	CreateTexture(&demo_floor_colour_map, texture_importer.texture_data[1].data());
 
-	Actor wall_left;
-	wall_left.mesh = StandardMeshes::plane;
-	wall_left.transform.scale = Vec3(20);
-	wall_left.transform.rotation = EulerToQuat(Vec3(0, -90, 0));
-	wall_left.transform.position = Vec3(-10, 0, 10);
+	Texture demo_floor_normal_map;
+	demo_floor_normal_map.config = texture_importer.texture_configs[2];
+	demo_floor_normal_map.config.mipmaps = true;
+	CreateTexture(&demo_floor_normal_map, texture_importer.texture_data[2].data());
+
+	Texture demo_floor_orm_map;
+	demo_floor_orm_map.config = texture_importer.texture_configs[3];
+	demo_floor_orm_map.config.mipmaps = true;
+	CreateTexture(&demo_floor_orm_map, texture_importer.texture_data[3].data());
+
+	//************************************
+	// Initialize imported meshes 
+	//************************************
+
+	Actor floor_test;
+	//floor_test.mesh = StandardMeshes::cube;
+	floor_test.mesh = model_importer.resulting_meshes[0].CreateMesh(true);
+	floor_test.material.forward_shader = &forward_pbr_notext_shader;
+	floor_test.transform.scale = Vec3(0.05);
+
+	//************************************
+	// Create the frame buffers
+	//************************************
+
+	FrameBuffer demo_gbuffer;
+
+	demo_gbuffer.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
+	demo_gbuffer.colour0_texture_attachment.config.width = WINDOW_WIDTH;
+	demo_gbuffer.colour0_texture_attachment.config.data_type = GL_FLOAT;
+	demo_gbuffer.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
+	demo_gbuffer.colour0_texture_attachment.config.pixel_format = GL_RGBA;
+	demo_gbuffer.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	demo_gbuffer.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	demo_gbuffer.colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+
+	demo_gbuffer.colour1_texture_attachment.config.height = WINDOW_HEIGHT;
+	demo_gbuffer.colour1_texture_attachment.config.width = WINDOW_WIDTH;
+	demo_gbuffer.colour1_texture_attachment.config.data_type = GL_FLOAT;
+	demo_gbuffer.colour1_texture_attachment.config.texture_format = GL_RGBA16F;
+	demo_gbuffer.colour1_texture_attachment.config.pixel_format = GL_RGBA;
+	demo_gbuffer.colour1_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	demo_gbuffer.colour1_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	demo_gbuffer.colour1_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+
+	demo_gbuffer.colour2_texture_attachment.config.height = WINDOW_HEIGHT;
+	demo_gbuffer.colour2_texture_attachment.config.width = WINDOW_WIDTH;
+	demo_gbuffer.colour2_texture_attachment.config.data_type = GL_FLOAT;
+	demo_gbuffer.colour2_texture_attachment.config.texture_format = GL_RGBA16F;
+	demo_gbuffer.colour2_texture_attachment.config.pixel_format = GL_RGBA;
+	demo_gbuffer.colour2_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	demo_gbuffer.colour2_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	demo_gbuffer.colour2_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+
+	demo_gbuffer.render_attchment.width = WINDOW_WIDTH;
+	demo_gbuffer.render_attchment.height = WINDOW_HEIGHT;
+
+	CreateTexture(&demo_gbuffer.colour0_texture_attachment, nullptr);
+	CreateTexture(&demo_gbuffer.colour1_texture_attachment, nullptr);
+	CreateTexture(&demo_gbuffer.colour2_texture_attachment, nullptr);
+	CreateFrameBuffer(&demo_gbuffer);
+
+	FrameBufferBindColourAttachtments(&demo_gbuffer);
+	FrameAddBufferRenderAttachtment(&demo_gbuffer);
+	Assert(CheckFrameBuffer(demo_gbuffer));
+	UnbindFrameBuffer();
+
+
+	//************************************
+	// Initialize pbr IBL 
+	//************************************
 	
-
-	Actor wall_right;
-	wall_right.mesh = StandardMeshes::plane;
-	wall_right.transform.scale = Vec3(20);
-	wall_right.transform.rotation = EulerToQuat(Vec3(0, 90, 0));
-	wall_right.transform.position = Vec3(10, 0, -10);
-	
-
-	Actor spheres[6];
-	for (real32 i = 0; i < 6; i++)
-	{
-		Actor sphere;
-		sphere.mesh = StandardMeshes::sphere;
-		sphere.transform.scale = Vec3(0.5);
-		sphere.transform.position = Vec3(-4 + i * 2, 4, 0);
-		
-		sphere.material.roughness = Clamp( (i / 6.f) + 0.02, 0, 1);
-		sphere.material.metalness = Clamp( (i / 6.f) + 0.02, 0, 1);
-		//sphere.material.metalness = 0.85f;
-		//sphere.material.roughness = 0.1f;
-
-		sphere.material.forward_shader = &forward_pbr_notext_shader;
-		sphere.material.shadow_shader = &forward_phong_notext_shader;
-		sphere.material.gbuffer_shader= &forward_phong_notext_shader;
-		sphere.material.instance_shader = &forward_phong_notext_shader;
-		
-		spheres[(uint32)i] = sphere;
-	}
-
-	TextureImport texture_import;
-	texture_import.flip = true;
-	texture_import.texture_paths.push_back("res/textures/studio_small_03_2k.hdr");
-	texture_import.Load(); 
-
 	Texture hdri;
-	hdri.config = texture_import.texture_configs[0];
-	CreateTexture(&hdri, texture_import.texture_data[0].data());
+	hdri.config = texture_importer.texture_configs[0];
+	CreateTexture(&hdri, texture_importer.texture_data[0].data());
 
 	Texture brdf_lookup_texture;
 	brdf_lookup_texture.config.texture_format = GL_RG32F;
@@ -326,7 +375,7 @@ int main()
 	enviroment_map.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
 	enviroment_map.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
 	enviroment_map.config.min_filter = GL_LINEAR_MIPMAP_LINEAR;
-	enviroment_map.config.generate_mip_maps = true;
+	enviroment_map.config.mipmaps = true;
 	enviroment_map.config.width	 = 512;
 	enviroment_map.config.height = 512;
 	CreateCubeMap(&enviroment_map, nullptr);
@@ -346,7 +395,7 @@ int main()
 	prefilter_map.config.pixel_format = GL_RGB;
 	prefilter_map.config.width	= 128;
 	prefilter_map.config.height = 128;
-	prefilter_map.config.generate_mip_maps = true;
+	prefilter_map.config.mipmaps = true;
 	prefilter_map.config.min_filter = GL_LINEAR_MIPMAP_LINEAR;
 	prefilter_map.config.mag_filter = GL_LINEAR;
 	CreateCubeMap(&prefilter_map, nullptr);
@@ -380,153 +429,18 @@ int main()
 	brdf_lookup.Convert(&brdf_lookup_texture);
 	brdf_lookup.Free();
 
-	texture_import.Free();
-	//enviroment_map = prefilter_map;
-	//enviroment_map = irradiance_map;
-
-#if 0
-	// pbr: setup cubemap to render to and attach to framebuffer
-	// ---------------------------------------------------------
-
-	Shader equirectangular_to_cubemap_shader = eqi_to_map.shader;
-	Shader irradiance_shader = irradiance_calc.shader;
-	uint32 hdrTexture = hdri.object;
-
-	uint32 frame_buffer_resolution = 1024;
-	uint32 irradiance_buffer_resolution = 32;
-	uint32 floating_point_accuracy = GL_RGB32F;
-	uint32 prefilter_resolution = 128 * 3;
-	glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
-	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-
-	unsigned int captureFBO;
-	unsigned int captureRBO;
-	glGenFramebuffers(1, &captureFBO);
-	glGenRenderbuffers(1, &captureRBO);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, frame_buffer_resolution, frame_buffer_resolution);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
-
-	unsigned int envCubemap;
-	glGenTextures(1, &envCubemap);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, floating_point_accuracy, frame_buffer_resolution, frame_buffer_resolution, 0, GL_RGB, GL_FLOAT, nullptr);
-	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// pbr: set up projection and view matrices for capturing data onto the 6 cubemap face directions
-	// ----------------------------------------------------------------------------------------------
-	Mat4 captureProjection = Perspective(90.0f, 1.0f, 0.1f, 10.0f);
-	Mat4 captureViews[] =
-	{
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(1.0f,  0.0f,  0.0f), Vec3(0.0f, -1.0f,  0.0f)),
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(-1.0f,  0.0f,  0.0f),Vec3(0.0f, -1.0f,  0.0f)),
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  1.0f,  0.0f), Vec3(0.0f,  0.0f,  1.0f)),
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f,  0.0f), Vec3(0.0f,  0.0f, -1.0f)),
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f,  1.0f), Vec3(0.0f, -1.0f,  0.0f)),
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f, -1.0f), Vec3(0.0f, -1.0f,  0.0f))
-	};
-
-	// pbr: convert HDR equirectangular environment map to cubemap equivalent
-	// ----------------------------------------------------------------------
-	BindShader(equirectangular_to_cubemap_shader);
-	ShaderSetMat4(&equirectangular_to_cubemap_shader, "projection", captureProjection.arr);
-	ShaderSetInt32(&equirectangular_to_cubemap_shader, "equirectangularMap", 0);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, hdrTexture);
-
-	glViewport(0, 0, frame_buffer_resolution, frame_buffer_resolution); // don't forget to configure the viewport to the capture dimensions.
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		ShaderSetMat4(&equirectangular_to_cubemap_shader, "view", captureViews[i].arr);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		RenderMesh(equirectangular_to_cubemap_shader, StandardMeshes::cube);
-	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	// then let OpenGL generate mipmaps from first mip face (combatting visible dots artifact)
-	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-
-
-
-	unsigned int irradianceMap;
-	glGenTextures(1, &irradianceMap);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, floating_point_accuracy, irradiance_buffer_resolution, irradiance_buffer_resolution, 0, GL_RGB, GL_FLOAT, nullptr);
-	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, irradiance_buffer_resolution, irradiance_buffer_resolution);
-
-	// pbr: solve diffuse integral by convolution to create an irradiance (cube)map.
-	// -----------------------------------------------------------------------------
-	BindShader(irradiance_shader);
-	ShaderSetInt32(&irradiance_shader, "environmentMap", 0);
-	ShaderSetMat4(&irradiance_shader, "projection", captureProjection.arr);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-
-	glViewport(0, 0, irradiance_buffer_resolution, irradiance_buffer_resolution); // don't forget to configure the viewport to the capture dimensions.
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		ShaderSetMat4(&irradiance_shader, "view", captureViews[i].arr);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		RenderMesh(irradiance_shader, StandardMeshes::cube);
-	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
+	texture_importer.Free();
 
 	
 
-#endif	
- 
-	//TextureImport pbr_timport;
-	//pbr_timport.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_BaseColor.png");
-	//pbr_timport.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_OcclusionRoughnessMetallic.png");
-	//pbr_timport.Load();
-
-	//Texture pbr_gun_albedo;
-	//pbr_gun_albedo.config = pbr_timport.texture_configs[0];
-	//CreateTexture(&pbr_gun_albedo, pbr_timport.texture_data[0].data());
-
-	//Texture pbr_gun_orm;
-	//pbr_gun_orm.config = pbr_timport.texture_configs[1];
-	//CreateTexture(&pbr_gun_orm, pbr_timport.texture_data[1].data());
-
-	//pbr_timport.Free();
-
-
 	ModeImport pbr_model;
 	pbr_model.model_paths.push_back("res/models/claud_bot.obj");
+	pbr_model.import_vertex_binorms_tangents = true;
 	pbr_model.Load();
 
 	Actor pbr_gun;
 	pbr_gun.material.forward_shader = &forward_pbr_notext_shader;
-	pbr_gun.mesh = pbr_model.resulting_meshes[0].CreateMesh(false);
+	pbr_gun.mesh = pbr_model.resulting_meshes[0].CreateMesh(true);
 	pbr_gun.transform.rotation = EulerToQuat(Vec3(0, 90, 0));
 	pbr_gun.transform.position = Vec3(0, 1, 1);
 	pbr_gun.transform.scale = Vec3(1);
@@ -576,20 +490,10 @@ int main()
 
 
 	World main_world;
-	//main_world.objects.push_back(&test_cube_guy);
-	main_world.objects.push_back(&floor_tile);
-	//main_world.objects.push_back(&wall_front);
-	//main_world.objects.push_back(&wall_left);
-	//main_world.objects.push_back(&wall_right);
 
-	//main_world.objects.push_back(&spheres[0]);
-	//main_world.objects.push_back(&spheres[1]);
-	//main_world.objects.push_back(&spheres[2]);
-	//main_world.objects.push_back(&spheres[3]);
-	//main_world.objects.push_back(&spheres[4]);
-	//main_world.objects.push_back(&spheres[5]);
 	main_world.objects.push_back(&pbr_gun);
-	
+	main_world.objects.push_back(&floor_test);
+
 	RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_WIDTH);
 	RenderCommands::EnableFaceCulling();
 	RenderCommands::CullBackFace();
@@ -822,11 +726,39 @@ int main()
 		RenderCommands::ClearDepthBuffer();
 		RenderCommands::Clear(Colour(0, 1, 0, 1));
 		
+
+		BindFrameBuffer(demo_gbuffer);
+		BindShader(demo_bot_gbuffer_shader);
+
+		RenderCommands::ClearColourBuffer();
+		RenderCommands::ClearDepthBuffer();		
+
+		//ShaderSetMat4(&demo_bot_gbuffer_shader, "view_matrix", camera_controller.main_camera.view_matrix.arr);
+		
+		ShaderBindTexture(demo_bot_gbuffer_shader, demo_floor_colour_map, 0, "colour_map");
+		ShaderBindTexture(demo_bot_gbuffer_shader, demo_floor_normal_map, 1, "normal_map");
+		ShaderBindTexture(demo_bot_gbuffer_shader, demo_floor_orm_map, 2, "orme_map");
+
+		for (int32 i = 0; i < main_world.objects.size(); i++)
+		{
+			WorldObject *obj = main_world.objects[i];
+			Transform transform = obj->GetTransfrom();
+			Material mat = obj->GetMaterial();
+			Mat4 transform_matrix = obj->GetTransformMatrix();
+		
+
+		
+			ShaderSetMat4(&demo_bot_gbuffer_shader, "model", transform_matrix.arr);
+			RenderMesh(demo_bot_gbuffer_shader, obj->GetMeshForRender());
+		}
+
+		UnbindFrameBuffer();
+
 		BindFrameBuffer(renderer.frame_g_buffer);
 		BindShader(ssao_gbuffer_shader);
 
 		RenderCommands::ClearColourBuffer();
-		RenderCommands::ClearDepthBuffer();		
+		RenderCommands::ClearDepthBuffer();
 
 		for (int32 i = 0; i < main_world.objects.size(); i++)
 		{
@@ -841,39 +773,34 @@ int main()
 		}
 
 		UnbindFrameBuffer();
+			   		 
+		//BindFrameBuffer(ssr_frame);
+		//BindShader(ssr_shader);
 
+		//RenderCommands::ClearColourBuffer();
+		//RenderCommands::ClearDepthBuffer();
 
+		//ShaderBindTexture(ssr_shader, renderer.frame_g_buffer.colour0_texture_attachment, 0, "view_position_map");
+		//ShaderBindTexture(ssr_shader, renderer.frame_g_buffer.colour1_texture_attachment, 1, "view_normal_map");
 
+		//RenderMesh(ssr_shader, StandardMeshes::quad);
 
-		BindFrameBuffer(ssr_frame);
-		BindShader(ssr_shader);
-
-		RenderCommands::ClearColourBuffer();
-		RenderCommands::ClearDepthBuffer();
-
-		ShaderBindTexture(ssr_shader, renderer.frame_g_buffer.colour0_texture_attachment, 0, "view_position_map");
-		ShaderBindTexture(ssr_shader, renderer.frame_g_buffer.colour1_texture_attachment, 1, "view_normal_map");
-		ShaderSetMat4(&ssr_shader, "proj", camera_controller.main_camera.projection_matrix.arr);
-
-		RenderMesh(ssr_shader, StandardMeshes::quad);
-
-		UnbindFrameBuffer();
-
-
-
+		//UnbindFrameBuffer();
 
 		BindFrameBuffer(renderer.frame_post_processing);
 
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
-		
+
+
+
 		BindShader(forward_pbr_notext_shader);
 
 		ShaderBindCubeMap(&forward_pbr_notext_shader, irradiance_map, 0, "irradiance_map");
 		ShaderBindCubeMap(&forward_pbr_notext_shader, prefilter_map, 1, "prefilter_map");
 		ShaderBindTexture(forward_pbr_notext_shader, brdf_lookup_texture, 2, "brdf_map");
-		//ShaderBindTexture(forward_pbr_notext_shader, brdf_lookup_texture, 3, "colour_map");
-		//ShaderBindTexture(forward_pbr_notext_shader, brdf_lookup_texture, 4, "orm_map");
+		ShaderBindTexture(forward_pbr_notext_shader, demo_floor_colour_map, 3, "colour_map");
+		ShaderBindTexture(forward_pbr_notext_shader, demo_floor_orm_map, 4, "orm_map");
 
 		renderer.ForwardPass(main_world);
 
@@ -883,7 +810,6 @@ int main()
 		
 		renderer.PostProcessingPass(main_world);
 
-		LOG("END");
 		//renderer.Render(main_world);
 	
 		RenderCommands::DisableDepthBuffer();
@@ -938,8 +864,10 @@ int main()
 		{
 			//DebugDrawTexture(&debug_mesh_shader, brdf_lookup_texture);
 			//DebugDrawTexture(&debug_mesh_shader, map_to_eqi);
-			//DebugDrawTexture(&debug_mesh_shader, renderer.frame_g_buffer.colour1_texture_attachment);
-			DebugDrawTexture(&debug_mesh_shader, ssr_frame.colour0_texture_attachment);
+			DebugDrawTexture(&debug_mesh_shader, demo_gbuffer.colour1_texture_attachment);
+			//DebugDrawTexture(&debug_mesh_shader, renderer.frame_g_buffer.colour0_texture_attachment);
+			//DebugDrawTexture(&debug_mesh_shader, demo_floor_normal_map);
+			//DebugDrawTexture(&debug_mesh_shader, ssr_frame.colour0_texture_attachment);
 		}
 		else
 		{

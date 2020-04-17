@@ -78,7 +78,7 @@ in vec2 texture_coords;
 uniform sampler2D position_map;
 uniform sampler2D normal_map;
 uniform sampler2D colour_map;
-uniform sampler2D ssao_map;
+//uniform sampler2D ssao_map;
 
 Material material;
 DeferredData deferred_data;
@@ -157,7 +157,7 @@ vec3 PhongDirectionalLight(DirectionalLight light, vec3 normal, vec3 view_dir)
     float spec = pow(max(dot(view_dir, reflectDir), 0.0), material.shininess);
 
     // Combine results
-    vec3 ambient = light.ambient * material.diffuse * texture(ssao_map, texture_coords).r;
+    vec3 ambient = light.ambient * material.diffuse;// * texture(ssao_map, texture_coords).r;
     vec3 diffuse = light.diffuse * diff * material.diffuse;
     vec3 specular = light.specular * spec * material.specular;
 	
@@ -197,7 +197,7 @@ vec3 ColourPixel()
 		final_colour += PhongPointLight(light, normal, view_dir);
 	}
 
-	for (int i = 0; i < directional_light_count; i++)
+	for (int i = 0; i < 1; i++)
 	{
 		// @HACK: Hardcoded
 		DirectionalLight light;
@@ -239,7 +239,7 @@ void CreateGlobalState()
 	// @HACK: Hardcoded
 	material.shininess = 32.f;
 	material.diffuse = deferred_data.diffuse.rgb;
-	material.specular = vec3(deferred_data.diffuse.a);
+	material.specular = vec3(0.4);//vec3(deferred_data.diffuse.a);
 }
 
 void main()

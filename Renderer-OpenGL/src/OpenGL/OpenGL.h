@@ -93,6 +93,7 @@ namespace cm
 		uint32 wrap_r_mode = GL_REPEAT;
 		uint32 width = 0;
 		uint32 height = 0;
+		bool mipmaps = false;
 		std::string uniform_name = "";
 	};
 
@@ -109,7 +110,7 @@ namespace cm
 		uint32 wrap_r_mode = GL_CLAMP_TO_EDGE;
 		uint32 width = 0;
 		uint32 height = 0;
-		bool generate_mip_maps = false;
+		bool mipmaps = false;
 		std::string uniform_name = "";
 	};
 
@@ -161,6 +162,9 @@ namespace cm
 	{
 		uint32 shader_program;
 		std::unordered_map<std::string, uint32> uniform_cache;
+
+		ShaderConfig config;
+		// @TODO: Remove these
 		ShaderType type;
 		std::string name;
 	};
@@ -463,6 +467,8 @@ namespace cm
 
 	// @TODO: Prehaps we should store the source in the shader struct
 	// @TODO: ShaderUniforms should be const float *data
+	// @TODO: Make void, it's just here for function overloading
+	Shader CreateShader(Shader *shader);
 
 	Shader CreateShader(std::string vertex_source, std::string fragment_source);
 

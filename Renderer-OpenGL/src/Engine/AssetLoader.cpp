@@ -155,7 +155,7 @@ namespace cm
 		return min_index;
 	}
 
-	void ModeImport::ProcessMeshCombine(aiMesh *mesh, ModeImport *model_import, const aiScene *scene)
+	void ModeImport::ProcessMeshCombine(aiMesh *mesh, const aiScene *scene, uint32 index)
 	{
 		// @NOTE: Get the meta data from the current mesh.
 		bool positions = mesh->HasPositions();
@@ -168,8 +168,8 @@ namespace cm
 		
 		// @NOTE: This is the offest by which we combine this mesh to all the other meshes in emesh.
 		//		: Meaning, indices and vertex bone weights.
-		EditableMesh *emesh = &model_import->resulting_meshes.at(0);
-		AnimationController *ac = &model_import->resulting_animation_controllers.at(0);
+		EditableMesh *emesh = &resulting_meshes.at(index);
+		AnimationController *ac = &resulting_animation_controllers.at(index);
 		uint32 mesh_indices_offset = emesh->vertices.size();
 
 		// @NOTE: Construct the vertices with the available data
@@ -186,7 +186,7 @@ namespace cm
 			}
 
 			// Normals
-			if (normals && model_import->vertex_normals)
+			if (normals && import_vertex_normals)
 			{
 				vertex.normal.x = mesh->mNormals[i].x;
 				vertex.normal.y = mesh->mNormals[i].y;
@@ -194,14 +194,14 @@ namespace cm
 			}
 
 			// Texture coordinates			
-			if (texture_coords && model_import->vertex_texture_coords)
+			if (texture_coords && import_vertex_texture_coords)
 			{
 				vertex.texture_coord.x = mesh->mTextureCoords[0][i].x;
 				vertex.texture_coord.y = mesh->mTextureCoords[0][i].y;
 			}
 
 			// Tangent and bitangents
-			if (tanget_bitangets && model_import->vertex_binorms_tangents)
+			if (tanget_bitangets && import_vertex_binorms_tangents)
 			{
 				vertex.tanget.x = mesh->mTangents[i].x;
 				vertex.tanget.y = mesh->mTangents[i].y;
@@ -213,7 +213,7 @@ namespace cm
 			}
 
 			// Vertex Colours
-			if (colours && model_import->vertex_colours)
+			if (colours && import_vertex_colours)
 			{
 				Assert(0); // @TODO: Check before use
 				vertex.colour.x = mesh->mColors[0]->r;
@@ -224,7 +224,7 @@ namespace cm
 			emesh->vertices.push_back(vertex);
 		}
 
-		if (bones && model_import->import_animations)
+		if (bones && import_animations)
 		{
 			for (int i = 0; i < mesh->mNumBones; i++)
 			{
@@ -256,13 +256,13 @@ namespace cm
 					real32 vertex_weight = vertex_data.mWeight;
 					
 					// @TODO: Support more than 4 weights
-					Assert(model_import->vertex_weight_enforcement == false);
+					Assert(vertex_boneweight_enforcement == false);
 
-					real32 vertex_weight_cull = model_import->vertex_weight_cull;				
+					real32 vwc = vertex_weight_cull;				
 					// @NOTE: Finds the min vertex weight and store in index						
 					//		: If current weight is greater than the lowest weight 
 					//		: it is added else ignored
-					if (vertex_weight >= vertex_weight_cull)
+					if (vertex_weight >= vwc)
 					{					
 						int32 index = FindMinVertexWeight(emesh->vertices.at(vertex_index));
 						real32 min_vertex_weight = emesh->vertices.at(vertex_index).bone_weights[index];
@@ -271,10 +271,12 @@ namespace cm
 						{
 							emesh->vertices.at(vertex_index).bone_index[index] = bone_index;
 							emesh->vertices.at(vertex_index).bone_weights[index] = vertex_weight;
+#if 0
 							if (min_vertex_weight != 0)
 							{
 								LOG("Replaced weight: " << min_vertex_weight << " With: " << vertex_weight << " Delta " << vertex_weight - min_vertex_weight);
-							}							
+							}
+#endif
 						}
 					}				
 				}
@@ -302,7 +304,7 @@ namespace cm
 		emesh->name = mesh->mName.C_Str();
 	}
 
-	void ModeImport::ProcessMesh(aiNode *node, ModeImport *model_import, const aiScene * scene)
+	void ModeImport::ProcessMesh(aiNode *node, const aiScene * scene, uint32 index)
 	{
 		for (uint32 i = 0; i < node->mNumMeshes; i++)
 		{
@@ -310,12 +312,12 @@ namespace cm
 
 			std::cout << "Mesh name " << mesh->mName.C_Str() << std::endl;
 			
-			ProcessMeshCombine(mesh, model_import, scene);
+			ProcessMeshCombine(mesh, scene, index);
 		}
 
 		for (uint32 i = 0; i < node->mNumChildren; i++)
 		{
-			ProcessMesh(node->mChildren[i], model_import, scene);
+			ProcessMesh(node->mChildren[i], scene, index);
 		}
 	}
 
@@ -518,7 +520,7 @@ namespace cm
 	
 	void ModeImport::ProcessAnimations(const aiScene *scene, AnimationController *ac)
 	{
-		// @NTODO: Loop throught the all the animations, Processing bones should be independt on this.
+		// @TODO: Loop throught the all the animations, Processing bones should be independt on this.
 		Assert(scene->mNumAnimations <= 1);
 		if (!scene->HasAnimations())
 		{
@@ -552,33 +554,43 @@ namespace cm
 	}
 
 	bool ModeImport::Load()
-	{
-		Assimp::Importer import;
-		Assert(model_paths.size() == 1);
-		const aiScene *scene = import.ReadFile(this->model_paths[0], aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
-		bool result = scene || !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || scene->mRootNode;
+	{		
+		bool result = false;
+		uint32 import_mesh_count = model_paths.size();
+		resulting_meshes.resize(import_mesh_count);
+		resulting_animation_controllers.resize(import_mesh_count);
 
-
-		// @TODO: We do not support multi meshes
-		Assert(import_mesh_combine == true);
-
-		resulting_meshes.resize(1);
-		resulting_animation_controllers.resize(1);
-
-		if (result)
+		for (uint32 i = 0; i < import_mesh_count; i++)
 		{
-			if (import_animations)
+			Assimp::Importer import;
+
+			uint32 flags = aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices;
+			flags = import_vertex_binorms_tangents ? flags | aiProcess_CalcTangentSpace : flags;
+
+
+			const aiScene *scene = import.ReadFile(this->model_paths[0], flags);
+			result = scene || !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || scene->mRootNode;
+
+
+			Assert(import_mesh_combine == true);
+			Assert(multi_thread == false);
+
+			if (result)
 			{
-				ProcessAnimations(scene, &this->resulting_animation_controllers[0]);
+				if (import_animations)
+				{
+					ProcessAnimations(scene, &this->resulting_animation_controllers[i]);
+				}
+				ProcessMesh(scene->mRootNode, scene, i);
 			}
-			ProcessMesh(scene->mRootNode, this, scene);
-		}
-		else
-		{
-			ProcessError(import.GetErrorString());
+			else
+			{
+				ProcessError(import.GetErrorString());
+			}
+
+			import.FreeScene();
 		}
 
-		import.FreeScene();
 		return result;
 	}	   
 

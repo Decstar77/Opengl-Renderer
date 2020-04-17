@@ -30,18 +30,22 @@ namespace cm
 		void ProcessAnimationChannels(aiAnimation *anim, Animation *animation);
 		void ProcessBones(const aiScene *scene, AnimationController *ac);
 		void ProcessAnimations(const aiScene *scene, AnimationController *ac);
-		void ProcessMeshCombine(aiMesh *mesh, ModeImport *model_import, const aiScene *scene);
-		void ProcessMesh(aiNode *node, ModeImport *model_import, const aiScene * scene);
+		void ProcessMeshCombine(aiMesh *mesh, const aiScene *scene, uint32 index);
+		void ProcessMesh(aiNode *node, const aiScene * scene, uint32 index);
 
 	public:
-		bool import_animations = true;
+		// @TODO: Multi-thread
+		bool multi_thread = false;
+		// @TOOD: Multi-mesh
 		bool import_mesh_combine = true;
 
-		bool vertex_normals = true;
-		bool vertex_texture_coords = true;
-		bool vertex_colours = false;
-		bool vertex_binorms_tangents = false;
-		bool vertex_weight_enforcement = false;
+		bool import_animations = true;
+
+		bool import_vertex_normals = true;
+		bool import_vertex_texture_coords = true;
+		bool import_vertex_colours = false;
+		bool import_vertex_binorms_tangents = false;
+		bool vertex_boneweight_enforcement = false;
 		real32 vertex_weight_cull = 0.01f;		
 
 		std::vector<EditableMesh> resulting_meshes;
@@ -49,8 +53,6 @@ namespace cm
 		std::vector<std::string> model_paths;
 
 	public:
-		// @TODO: Multi-thread
-		// @TOOD: Multi-mesh
 		bool Load();		
 		bool Free();
 

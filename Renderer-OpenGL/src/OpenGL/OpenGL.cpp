@@ -344,12 +344,47 @@ namespace cm
 		glDeleteShader(fragment);
 
 		Shader shader;
-		shader.type = ShaderType::Compute;
+		shader.type = ShaderType::Rasterization;
 		shader.name = "No name";
 		shader.shader_program = shader_program;
 		return shader;
 	}
 
+
+	Shader CreateShader(Shader *shader)
+	{			   
+		Assert(shader->config.src_geom == ""); // REASON: We don't have geom support
+		const char* vertex_code = shader->config.src_vert.c_str();
+		const char * fShaderCode = shader->config.scr_frag.c_str();
+
+		uint32 vertex, fragment, geometry;
+		
+		vertex = glCreateShader(GL_VERTEX_SHADER);
+		glShaderSource(vertex, 1, &vertex_code, NULL);
+		glCompileShader(vertex);
+		
+		fragment = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(fragment, 1, &fShaderCode, NULL);
+		glCompileShader(fragment);
+
+		uint32 shader_program;
+		
+		shader_program = glCreateProgram();
+		glAttachShader(shader_program, vertex);
+		glAttachShader(shader_program, fragment);
+		
+
+		glLinkProgram(shader_program);
+
+		glDeleteShader(vertex);
+		glDeleteShader(fragment);
+
+		shader->type = ShaderType::Compute;
+		shader->name = "No name";
+		shader->shader_program = shader_program;
+
+		return {};
+	}
 
 	Shader CreateComputeShader(std::string source)
 	{
@@ -389,7 +424,11 @@ namespace cm
 		glTexImage2D(texture->config.type, 0, texture->config.texture_format, texture->config.width,
 			texture->config.height, 0, texture->config.pixel_format, texture->config.data_type,
 			data == nullptr ? NULL : data);
-
+		
+		if (texture->config.mipmaps)
+		{
+			glGenerateMipmap(GL_TEXTURE_2D);
+		}
 
 		glBindTexture(texture->config.type, 0);
 		texture->object = text;
@@ -477,7 +516,7 @@ namespace cm
 			}
 		}
 
-		if (cube_map->config.generate_mip_maps)
+		if (cube_map->config.mipmaps)
 		{
 			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 		}
@@ -1478,7 +1517,7 @@ namespace cm
 		Assert(created);
 		Assert(src.object != 0);
 		Assert(dst->object != 0);
-		Assert(dst->config.generate_mip_maps)
+		Assert(dst->config.mipmaps)
 
 			BindShader(shader);
 		BindFrameBuffer(frame);

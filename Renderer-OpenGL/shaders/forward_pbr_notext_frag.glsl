@@ -101,17 +101,15 @@ void main()
 	vec3 refl 		= reflect(-viewDir, normal);
 
 	// @NOTE: Get material properties
-#if 0
+#if 1
 	vec3 albedo = pow(texture(colour_map, vs_in.texture_coords.xy).rgb, vec3(1));	
 	float metallic = texture(orm_map, vs_in.texture_coords.xy).b;
 	float roughness =  texture(orm_map, vs_in.texture_coords.xy).g;
 	float ao =  texture(orm_map, vs_in.texture_coords.xy).r;
-#endif
-
-#if 1	
+#else
 	vec3 albedo = vec3(0.23, 0.48, 0.34);
-	float metallic = material_metalness;
-	float roughness = material_roughness;	
+	float metallic = 0;
+	float roughness = 1;	
 	vec3 ao  = vec3(1);
 #endif
 	// @NOTE: Calculate constants
