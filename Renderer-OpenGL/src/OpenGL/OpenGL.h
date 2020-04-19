@@ -119,7 +119,7 @@ namespace cm
 		ShaderType type;
 		std::string name;
 		std::string src_vert;	// NOTE: Gets freed and set to Linked when sucessfully created else emptry string
-		std::string scr_frag;	// NOTE: Gets freed and set to Linked when sucessfully created else emptry string
+		std::string src_frag;	// NOTE: Gets freed and set to Linked when sucessfully created else emptry string
 		std::string src_geom;	// NOTE: Gets freed and set to Linked when sucessfully created else emptry string		
 	};
 
@@ -186,9 +186,9 @@ namespace cm
 	// Usefull classes for rendering
 	//************************************
 
-	// NOTE: We could make getters for these to be safe, but I think it's a bit convaluted to do so
 	class StandardMeshes
 	{
+		// NOTE: We could make getters for these to be safe, but I think it's a bit convaluted to do so
 	public:
 		static GLMesh quad;
 		static GLMesh plane;
@@ -198,16 +198,73 @@ namespace cm
 
 		static void Initilize();
 	};
-
-	// NOTE: We could make getters for these to be safe, but I think it's a bit convaluted to do so
-	// TODO: Complete as needed
+	
 	class OpenGlState
 	{
+		// NOTE: We could make getters for these to be safe, but I think it's a bit convaluted to do so
+		// TODO: Complete as needed
 	public:
 		static uint32 current_viewport_width;
 		static uint32 current_viewport_height;
 		static uint32 window_width;
 		static uint32 window_height;
+	};
+	
+	class SimpleTextureBlur
+	{
+	private:
+		FrameBuffer frame;
+		bool created = false;
+
+	public:
+		Shader shader;
+		void Create();
+		void Blur(const Texture &src, const Texture *dst);
+		void Free();
+	};
+
+	class SampleTextureBlur
+	{
+	private: 
+		FrameBuffer frame;
+		bool created = false;
+
+	public:
+		Shader shader;
+
+		uint32 sampling_texture_count;
+		Texture *sampling_textures;
+
+
+		void Create(uint32 src_width, uint32 src_height, uint32 sampling_count);
+		void Blur(const Texture src, Texture *dst);
+		void Free();
+	};
+
+	class GaussianTextureBlur
+	{
+		// @TODO: Muliple itterations
+		// @TODO: Vaiable kernel_size;
+		// @TODO: We don't output the texture in dst
+	private:
+		bool created = false;
+		uint32 kernel_size = 0;
+		uint32 itteraions = 0;
+		real32 downsample_mul = 0;
+
+	public:
+		FrameBuffer vertical_frame;	
+		FrameBuffer horizontal_frame;
+		Shader vertical_shader;
+		Shader horizontal_shader;
+		void Create(uint32 src_width, uint32 src_height, uint32 kernel_size = 11, real32 downsample_mul = 1, uint32 iterrations = 1);
+		void Blur(const Texture &src, Texture *dst);
+		void Free();
+
+	public:
+		GaussianTextureBlur();
+		~GaussianTextureBlur();
+
 	};
 	
 	class CubeMapMatrices
@@ -301,6 +358,24 @@ namespace cm
 		LookUpTextureGenerator();
 		~LookUpTextureGenerator();
 
+	};
+
+	class LuminanceFilter
+	{
+	private:
+		bool created = false;
+		real32 threshold = 0;
+
+	public:
+		FrameBuffer frame;
+		Shader shader;
+		void Create(real32 threshold);
+		void Filter(const Texture &src, Texture *dst);
+		void Free();
+
+	public:
+		LuminanceFilter();
+		~LuminanceFilter();
 	};
 
 	//************************************
@@ -669,13 +744,17 @@ namespace cm
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
-	static inline void ChangeViewPort(uint32 width, uint32 height)
+	static inline void SetViewPort(uint32 width, uint32 height)
 	{
+		OpenGlState::current_viewport_width = width;
+		OpenGlState::current_viewport_height = height;
 		glViewport(0, 0, width, height);
 	}
 
-	static inline void ChangeViewPort(uint32 start_x, uint32 start_y, uint32 width, uint32 height)
+	static inline void SetViewPort(uint32 start_x, uint32 start_y, uint32 width, uint32 height)
 	{
+		OpenGlState::current_viewport_width = width;
+		OpenGlState::current_viewport_height = height;
 		glViewport(start_x, start_y, width, height);
 	}	
 }

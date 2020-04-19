@@ -237,39 +237,44 @@ int main()
 
 	Shader worldspace_gbuffer_shader;
 	worldspace_gbuffer_shader.config.src_vert = ReadFile("shaders/demo_01/worldspace_gbuffer_vert.glsl");
-	worldspace_gbuffer_shader.config.scr_frag = ReadFile("shaders/demo_01/worldspace_gbuffer_frag.glsl");
+	worldspace_gbuffer_shader.config.src_frag = ReadFile("shaders/demo_01/worldspace_gbuffer_frag.glsl");
 	worldspace_gbuffer_shader.name = "demo_bot_gbuffer_shader";
 	CreateShader(&worldspace_gbuffer_shader);
 
 	Shader worldspace_gbuffer_anim_shader;
 	worldspace_gbuffer_anim_shader.config.src_vert = ReadFile("shaders/demo_01/worldspace_gbuffer_anim_vert.glsl");
-	worldspace_gbuffer_anim_shader.config.scr_frag = ReadFile("shaders/demo_01/worldspace_gbuffer_frag.glsl");
+	worldspace_gbuffer_anim_shader.config.src_frag = ReadFile("shaders/demo_01/worldspace_gbuffer_frag.glsl");
 	worldspace_gbuffer_anim_shader.name = "demo_bot_gbuffer_anim_shader";
 	CreateShader(&worldspace_gbuffer_anim_shader);
 
+	Shader viewspace_gbuffer_shader;
+	viewspace_gbuffer_shader.config.src_vert = ReadFile("shaders/demo_01/viewspace_gbuffer_vert.glsl");
+	viewspace_gbuffer_shader.config.src_frag = ReadFile("shaders/demo_01/viewspace_gbuffer_frag.glsl");
+	viewspace_gbuffer_shader.name = "viewspace_gbuffer_shader";
+	CreateShader(&viewspace_gbuffer_shader);
+
 	Shader demo_01_deffered_pbr_shader;
 	demo_01_deffered_pbr_shader.config.src_vert = ReadFile("shaders/demo_01/pbr_deffered_vert.glsl");
-	demo_01_deffered_pbr_shader.config.scr_frag = ReadFile("shaders/demo_01/pbr_deffered_frag.glsl");
+	demo_01_deffered_pbr_shader.config.src_frag = ReadFile("shaders/demo_01/pbr_deffered_frag.glsl");
 	demo_01_deffered_pbr_shader.name = "demo_01_deffered_pbr_shader";
 	CreateShader(&demo_01_deffered_pbr_shader);
 
 	Shader demo_01_postprocessing_shader;
 	demo_01_postprocessing_shader.config.src_vert = ReadFile("shaders/demo_01/postprocessing_vert.glsl");
-	demo_01_postprocessing_shader.config.scr_frag = ReadFile("shaders/demo_01/postprocessing_frag.glsl");
+	demo_01_postprocessing_shader.config.src_frag = ReadFile("shaders/demo_01/postprocessing_frag.glsl");
 	demo_01_postprocessing_shader.name = "demo_01_postprocessing_shader";
 	CreateShader(&demo_01_postprocessing_shader);
 
 	//************************************
 	// Load texture assets
 	//************************************
-	
+	// @TODO: Free is FAR down the file
 	TextureImport texture_importer;
 	texture_importer.flip = false;
 	texture_importer.texture_paths.push_back("res/textures/studio_small_03_2k.hdr");
-	texture_importer.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor3/Floor_FloorStriped_BaseColor.png");
-	texture_importer.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor3/Floor_FloorStriped_Normal.png");
-	texture_importer.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor3/Floor_FloorStriped_OcclusionRoughnessMetallic.png");
-
+	texture_importer.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor2/Floor_BaseFloor_BaseColor.png");
+	texture_importer.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor2/Floor_BaseFloor_Normal.png");
+	texture_importer.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor2/Floor_BaseFloor_OcclusionRoughnessMetallic.png");
 	//texture_importer.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_BaseColor.png");
 	//texture_importer.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_Normal.png");
 	//texture_importer.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_OcclusionRoughnessMetallic.png");	
@@ -314,52 +319,145 @@ int main()
 	floor_test.material.forward_shader = &forward_pbr_notext_shader;
 	floor_test.transform.scale = Vec3(0.01);
 
+	Actor left_wall;
+	left_wall.mesh = floor_test.mesh;
+	left_wall.material.forward_shader = &forward_pbr_notext_shader;
+	left_wall.transform.scale = Vec3(0.01);
+	left_wall.transform.rotation = EulerToQuat(Vec3(0, 0, 90));
+	left_wall.transform.position = Vec3(-2, 2, 0);
+
+	Actor right_wall;
+	right_wall.mesh = floor_test.mesh;
+	right_wall.material.forward_shader = &forward_pbr_notext_shader;
+	right_wall.transform.scale = Vec3(0.01);
+	right_wall.transform.rotation = EulerToQuat(Vec3(0, 0, -90));
+	right_wall.transform.position = Vec3(2, 2, 0);
+
+	Actor back_wall;
+	back_wall.mesh = floor_test.mesh;
+	back_wall.material.forward_shader = &forward_pbr_notext_shader;
+	back_wall.transform.scale = Vec3(0.01);
+	back_wall.transform.rotation = EulerToQuat(Vec3(-90, 0, 0));
+	back_wall.transform.position = Vec3(0, 2, -2);
+
 	//************************************
 	// Create the frame buffers
 	//************************************
 
-	FrameBuffer demo_gbuffer;
+	FrameBuffer worldspace_gbuffer;
 
-	demo_gbuffer.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
-	demo_gbuffer.colour0_texture_attachment.config.width = WINDOW_WIDTH;
-	demo_gbuffer.colour0_texture_attachment.config.data_type = GL_FLOAT;
-	demo_gbuffer.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
-	demo_gbuffer.colour0_texture_attachment.config.pixel_format = GL_RGBA;
-	demo_gbuffer.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	demo_gbuffer.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	demo_gbuffer.colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+	worldspace_gbuffer.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
+	worldspace_gbuffer.colour0_texture_attachment.config.width = WINDOW_WIDTH;
+	worldspace_gbuffer.colour0_texture_attachment.config.data_type = GL_FLOAT;
+	worldspace_gbuffer.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
+	worldspace_gbuffer.colour0_texture_attachment.config.pixel_format = GL_RGBA;
+	worldspace_gbuffer.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	worldspace_gbuffer.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	worldspace_gbuffer.colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
 
-	demo_gbuffer.colour1_texture_attachment.config.height = WINDOW_HEIGHT;
-	demo_gbuffer.colour1_texture_attachment.config.width = WINDOW_WIDTH;
-	demo_gbuffer.colour1_texture_attachment.config.data_type = GL_FLOAT;
-	demo_gbuffer.colour1_texture_attachment.config.texture_format = GL_RGBA16F;
-	demo_gbuffer.colour1_texture_attachment.config.pixel_format = GL_RGBA;
-	demo_gbuffer.colour1_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	demo_gbuffer.colour1_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	demo_gbuffer.colour1_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+	worldspace_gbuffer.colour1_texture_attachment.config.height = WINDOW_HEIGHT;
+	worldspace_gbuffer.colour1_texture_attachment.config.width = WINDOW_WIDTH;
+	worldspace_gbuffer.colour1_texture_attachment.config.data_type = GL_FLOAT;
+	worldspace_gbuffer.colour1_texture_attachment.config.texture_format = GL_RGBA16F;
+	worldspace_gbuffer.colour1_texture_attachment.config.pixel_format = GL_RGBA;
+	worldspace_gbuffer.colour1_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	worldspace_gbuffer.colour1_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	worldspace_gbuffer.colour1_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
 
-	demo_gbuffer.colour2_texture_attachment.config.height = WINDOW_HEIGHT;
-	demo_gbuffer.colour2_texture_attachment.config.width = WINDOW_WIDTH;
-	demo_gbuffer.colour2_texture_attachment.config.data_type = GL_FLOAT;
-	demo_gbuffer.colour2_texture_attachment.config.texture_format = GL_RGBA16F;
-	demo_gbuffer.colour2_texture_attachment.config.pixel_format = GL_RGBA;
-	demo_gbuffer.colour2_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	demo_gbuffer.colour2_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	demo_gbuffer.colour2_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+	worldspace_gbuffer.colour2_texture_attachment.config.height = WINDOW_HEIGHT;
+	worldspace_gbuffer.colour2_texture_attachment.config.width = WINDOW_WIDTH;
+	worldspace_gbuffer.colour2_texture_attachment.config.data_type = GL_FLOAT;
+	worldspace_gbuffer.colour2_texture_attachment.config.texture_format = GL_RGBA16F;
+	worldspace_gbuffer.colour2_texture_attachment.config.pixel_format = GL_RGBA;
+	worldspace_gbuffer.colour2_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	worldspace_gbuffer.colour2_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	worldspace_gbuffer.colour2_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
 
-	demo_gbuffer.render_attchment.width = WINDOW_WIDTH;
-	demo_gbuffer.render_attchment.height = WINDOW_HEIGHT;
+	worldspace_gbuffer.render_attchment.width = WINDOW_WIDTH;
+	worldspace_gbuffer.render_attchment.height = WINDOW_HEIGHT;
 
-	CreateTexture(&demo_gbuffer.colour0_texture_attachment, nullptr);
-	CreateTexture(&demo_gbuffer.colour1_texture_attachment, nullptr);
-	CreateTexture(&demo_gbuffer.colour2_texture_attachment, nullptr);
-	CreateFrameBuffer(&demo_gbuffer);
+	CreateTexture(&worldspace_gbuffer.colour0_texture_attachment, nullptr);
+	CreateTexture(&worldspace_gbuffer.colour1_texture_attachment, nullptr);
+	CreateTexture(&worldspace_gbuffer.colour2_texture_attachment, nullptr);
+	CreateFrameBuffer(&worldspace_gbuffer);
 
-	FrameBufferBindColourAttachtments(&demo_gbuffer);
-	FrameAddBufferRenderAttachtment(&demo_gbuffer);
-	Assert(CheckFrameBuffer(demo_gbuffer));
+	BindFrameBuffer(worldspace_gbuffer);
+
+	FrameBufferBindColourAttachtments(&worldspace_gbuffer);
+	FrameAddBufferRenderAttachtment(&worldspace_gbuffer);
+
+	Assert(CheckFrameBuffer(worldspace_gbuffer));
 	UnbindFrameBuffer();
 
+
+	FrameBuffer viewspace_gbuffer;
+
+	viewspace_gbuffer.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
+	viewspace_gbuffer.colour0_texture_attachment.config.width = WINDOW_WIDTH;
+	viewspace_gbuffer.colour0_texture_attachment.config.data_type = GL_FLOAT;
+	viewspace_gbuffer.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
+	viewspace_gbuffer.colour0_texture_attachment.config.pixel_format = GL_RGBA;
+	viewspace_gbuffer.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	viewspace_gbuffer.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	viewspace_gbuffer.colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+
+	viewspace_gbuffer.colour1_texture_attachment.config.height = WINDOW_HEIGHT;
+	viewspace_gbuffer.colour1_texture_attachment.config.width = WINDOW_WIDTH;
+	viewspace_gbuffer.colour1_texture_attachment.config.data_type = GL_FLOAT;
+	viewspace_gbuffer.colour1_texture_attachment.config.texture_format = GL_RGBA16F;
+	viewspace_gbuffer.colour1_texture_attachment.config.pixel_format = GL_RGBA;
+	viewspace_gbuffer.colour1_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	viewspace_gbuffer.colour1_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	viewspace_gbuffer.colour1_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+
+	viewspace_gbuffer.colour2_texture_attachment.config.height = WINDOW_HEIGHT;
+	viewspace_gbuffer.colour2_texture_attachment.config.width = WINDOW_WIDTH;
+	viewspace_gbuffer.colour2_texture_attachment.config.data_type = GL_FLOAT;
+	viewspace_gbuffer.colour2_texture_attachment.config.texture_format = GL_RGBA16F;
+	viewspace_gbuffer.colour2_texture_attachment.config.pixel_format = GL_RGBA;
+	viewspace_gbuffer.colour2_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	viewspace_gbuffer.colour2_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	viewspace_gbuffer.colour2_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+
+	viewspace_gbuffer.render_attchment.width = WINDOW_WIDTH;
+	viewspace_gbuffer.render_attchment.height = WINDOW_HEIGHT;
+
+	CreateTexture(&viewspace_gbuffer.colour0_texture_attachment, nullptr);
+	CreateTexture(&viewspace_gbuffer.colour1_texture_attachment, nullptr);
+	CreateTexture(&viewspace_gbuffer.colour2_texture_attachment, nullptr);
+	CreateFrameBuffer(&viewspace_gbuffer);
+
+	BindFrameBuffer(viewspace_gbuffer);
+
+	FrameBufferBindColourAttachtments(&viewspace_gbuffer);
+	FrameAddBufferRenderAttachtment(&viewspace_gbuffer);
+
+	Assert(CheckFrameBuffer(viewspace_gbuffer));
+	UnbindFrameBuffer();
+
+	FrameBuffer post_processing;
+
+	post_processing.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
+	post_processing.colour0_texture_attachment.config.width = WINDOW_WIDTH;
+	post_processing.colour0_texture_attachment.config.data_type = GL_FLOAT;
+	post_processing.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
+	post_processing.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	post_processing.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	post_processing.colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+
+	post_processing.render_attchment.width = WINDOW_WIDTH;
+	post_processing.render_attchment.height = WINDOW_HEIGHT;
+
+	CreateTexture(&post_processing.colour0_texture_attachment, nullptr);
+	CreateFrameBuffer(&post_processing);
+
+	BindFrameBuffer(post_processing);
+
+	FrameBufferBindColourAttachtments(&post_processing);
+	FrameAddBufferRenderAttachtment(&post_processing);
+	
+	Assert(CheckFrameBuffer(post_processing));
+	UnbindFrameBuffer();
 
 	//************************************
 	// Initialize pbr IBL 
@@ -441,8 +539,6 @@ int main()
 	brdf_lookup.Convert(&brdf_lookup_texture);
 	brdf_lookup.Free();
 
-	texture_importer.Free();
-
 	
 
 	ModeImport pbr_model;
@@ -498,14 +594,35 @@ int main()
 
 	Assert(CheckFrameBuffer(ssr_frame));
 
+	
+	GaussianTextureBlur gblur;
+	gblur.Create(post_processing.colour0_texture_attachment.config.width, post_processing.colour0_texture_attachment.config.height, 11, 1.0/2.0);
+	
+	LuminanceFilter lumin_filter;
+	lumin_filter.Create(1);
 
+	Texture luminance_texture;
+	luminance_texture.config = post_processing.colour0_texture_attachment.config;
+	CreateTexture(&luminance_texture, nullptr);
 
+	//Shader testing_blur_shader;
+	//testing_blur_shader.config.src_vert = ReadFile("shaders/downsampling_vert.glsl");
+	//testing_blur_shader.config.src_frag = ReadFile("shaders/downsampling_frag.glsl");
+	//CreateShader(&testing_blur_shader);
+	//
+	//SampleTextureBlur blurer;
+	//blurer.shader = testing_blur_shader;
+	//blurer.Create(post_processing.colour0_texture_attachment.config.width, post_processing.colour0_texture_attachment.config.height, 5);
 
+	texture_importer.Free();
 
 	World main_world;
 
 	main_world.objects.push_back(&pbr_gun);
 	main_world.objects.push_back(&floor_test);
+	main_world.objects.push_back(&left_wall);
+	main_world.objects.push_back(&right_wall);
+	main_world.objects.push_back(&back_wall);
 
 	RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_WIDTH);
 	RenderCommands::EnableFaceCulling();
@@ -519,28 +636,7 @@ int main()
 	camera_controller.main_camera.target = Vec3(0);
 	camera_controller.main_camera.transform.position = Vec3(0, 4, 5);
 	camera_controller.main_camera.view_matrix = LookAt(camera_controller.main_camera.transform.position, camera_controller.main_camera.target, Vec3(0, 1, 0));
-	   
-	WorldRenderer renderer;
-	renderer.render_shaders.skybox_shader = cubemap_shader;
-	renderer.render_shaders.depth_test_shader = simple_shadow_map_shader;
-	renderer.render_shaders.g_buffer_shader = g_buffer_shader;
-	renderer.render_shaders.ssao_gbuffer_shader = ssao_gbuffer_shader;
-	renderer.render_shaders.ssao_shader = ssao_shader;
-	renderer.render_shaders.forward_render_shader = forward_pbr_notext_shader;
-	renderer.render_shaders.deferred_render_shader = deferred_shader;
-	renderer.render_shaders.post_processing_shader = post_processing_shader;
-	renderer.render_shaders.debug_shader = debug_shader;
-	renderer.render_shaders.debug_mesh_shader = debug_mesh_shader;
-
-	renderer.standard_shaders.simple_blur = simple_blur_shader;
-
-	renderer.default_skybox = enviroment_map;
-
-	renderer.WINDOW_WIDTH = WINDOW_WIDTH;
-	renderer.WINDOW_HEIGHT = WINDOW_HEIGHT;
-	renderer.camera = &camera_controller;
-	renderer.InitFrameBuffers();
-	renderer.InitIdentityTexture();
+	
 
 	Informer informer;
 	informer.CreateUBO("WorldMatrices", BUFFER_LAYOUT(ShaderDataType::Mat4, ShaderDataType::Mat4,  ShaderDataType::Mat4), 0);
@@ -691,7 +787,6 @@ int main()
 		// Update GPU Buffers
 		//************************************
 
-
 		std::vector<Mat4> camera_data = { camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix,
 										light_space_matrix };
 
@@ -720,10 +815,10 @@ int main()
 		
 
 		//************************************
-		// Gbuffer pass for static objects
+		// World gbuffer pass for static objects
 		//************************************
 
-		BindFrameBuffer(demo_gbuffer);
+		BindFrameBuffer(worldspace_gbuffer);
 		BindShader(worldspace_gbuffer_shader);
 
 		RenderCommands::ClearColourBuffer();
@@ -771,6 +866,37 @@ int main()
 		UnbindFrameBuffer();
 #endif
 		//************************************
+		// Viewspace gbuffer pass for static objects
+		//************************************
+
+		BindFrameBuffer(viewspace_gbuffer);
+		BindShader(viewspace_gbuffer_shader);	
+
+		RenderCommands::ClearColourBuffer();
+		RenderCommands::ClearDepthBuffer();
+
+		ShaderBindTexture(viewspace_gbuffer_shader, demo_floor_colour_map, 0, "colour_map");
+		//ShaderBindTexture(viewspace_gbuffer_shader, demo_floor_normal_map, 1, "normal_map");
+		ShaderBindTexture(viewspace_gbuffer_shader, demo_floor_orm_map, 2, "orme_map");
+
+		for (int32 i = 0; i < main_world.objects.size(); i++)
+		{
+			WorldObject *obj = main_world.objects[i];
+			Transform transform = obj->GetTransfrom();
+			Material mat = obj->GetMaterial();
+			Mat4 transform_matrix = obj->GetTransformMatrix();
+
+			ShaderSetMat4(&viewspace_gbuffer_shader, "model", transform_matrix.arr);
+			RenderMesh(viewspace_gbuffer_shader, obj->GetMeshForRender());
+		}
+
+		UnbindFrameBuffer();
+
+		//************************************
+		// Viewspace gbuffer pass for animated objects
+		//************************************
+		
+		//************************************
 		// Screen space ambient occulsion (SSAO)
 		//************************************
 
@@ -778,16 +904,16 @@ int main()
 		// Deffered pass
 		//************************************
 
-		BindFrameBuffer(renderer.frame_post_processing);
+		BindFrameBuffer(post_processing);
 
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
 
 		BindShader(demo_01_deffered_pbr_shader);
 
-		ShaderBindTexture(demo_01_deffered_pbr_shader, demo_gbuffer.colour0_texture_attachment, 0, "g_position");
-		ShaderBindTexture(demo_01_deffered_pbr_shader, demo_gbuffer.colour1_texture_attachment, 1, "g_normal");
-		ShaderBindTexture(demo_01_deffered_pbr_shader, demo_gbuffer.colour2_texture_attachment, 2, "g_colour");
+		ShaderBindTexture(demo_01_deffered_pbr_shader, worldspace_gbuffer.colour0_texture_attachment, 0, "g_position");
+		ShaderBindTexture(demo_01_deffered_pbr_shader, worldspace_gbuffer.colour1_texture_attachment, 1, "g_normal");
+		ShaderBindTexture(demo_01_deffered_pbr_shader, worldspace_gbuffer.colour2_texture_attachment, 2, "g_colour");
 
 		RenderMesh(demo_01_deffered_pbr_shader, StandardMeshes::quad);
 
@@ -796,7 +922,41 @@ int main()
 		//************************************
 		// Forward pass
 		//************************************
+#if 0
+		// @NOTE: Da THIN BOII WAY
+		// @NOTE: In this case we need a much more accutrate, good blur
+		//		: This way we don't have to do multi pass filtering
+		lumin_filter.Filter(post_processing.colour0_texture_attachment, &luminance_texture);
+		BindFrameBuffer(post_processing);
+		//DebugDrawTexture(&debug_mesh_shader, luminance_texture);
+		UnbindFrameBuffer();
 
+		gblur.Blur(luminance_texture, nullptr);
+		BindFrameBuffer(post_processing);
+		DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
+		UnbindFrameBuffer();
+
+#else
+#if 0
+		// @NOTE: In this case we wan't more aggressive blur.
+		//		: However the blur doesn't have to be good
+		//		: The stronger the blur the greater the chance for flickering
+		gblur.Blur(post_processing.colour0_texture_attachment, nullptr);
+		BindFrameBuffer(post_processing);
+		//DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
+		UnbindFrameBuffer();
+				
+		lumin_filter.Filter(gblur.vertical_frame.colour0_texture_attachment, &luminance_texture);
+		BindFrameBuffer(post_processing);
+		//DebugDrawTexture(&debug_mesh_shader, luminance_texture);
+		UnbindFrameBuffer();
+
+		gblur.Blur(luminance_texture, nullptr);
+		BindFrameBuffer(post_processing);
+		DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
+		UnbindFrameBuffer();
+#endif
+#endif
 		//************************************
 		// Post processing pass
 		//************************************
@@ -815,34 +975,34 @@ int main()
 		ShaderSetFloat(&demo_01_postprocessing_shader, "FXAA_DIR_MIN", render_settings.fxaa_dir_min);
 		ShaderSetFloat(&demo_01_postprocessing_shader, "FXAA_DIR_REDUC", render_settings.fxaa_dir_reduc);
 		
-		ShaderBindTexture(demo_01_postprocessing_shader, renderer.frame_post_processing.colour0_texture_attachment, 0, "scene_texture");
+		ShaderBindTexture(demo_01_postprocessing_shader, post_processing.colour0_texture_attachment, 0, "scene_texture");
 
 
 		RenderMesh(demo_01_postprocessing_shader, StandardMeshes::quad);
 
-
+		
 		//************************************
 		// DBUGING pass
-		//************************************
-		BindFrameBuffer(renderer.frame_g_buffer);
-		BindShader(ssao_gbuffer_shader);
+		////************************************
+		//BindFrameBuffer(renderer.frame_g_buffer);
+		//BindShader(ssao_gbuffer_shader);
 
-		RenderCommands::ClearColourBuffer();
-		RenderCommands::ClearDepthBuffer();
+		//RenderCommands::ClearColourBuffer();
+		//RenderCommands::ClearDepthBuffer();
 
-		for (int32 i = 0; i < main_world.objects.size(); i++)
-		{
-			WorldObject *obj = main_world.objects[i];
-			Transform transform = obj->GetTransfrom();
-			Material mat = obj->GetMaterial();
-			Mat4 transform_matrix = obj->GetTransformMatrix();
+		//for (int32 i = 0; i < main_world.objects.size(); i++)
+		//{
+		//	WorldObject *obj = main_world.objects[i];
+		//	Transform transform = obj->GetTransfrom();
+		//	Material mat = obj->GetMaterial();
+		//	Mat4 transform_matrix = obj->GetTransformMatrix();
 
 
-			ShaderSetMat4(&ssao_gbuffer_shader, "model", transform_matrix.arr);
-			RenderMesh(ssao_gbuffer_shader, obj->GetMeshForRender());
-		}
+		//	ShaderSetMat4(&ssao_gbuffer_shader, "model", transform_matrix.arr);
+		//	RenderMesh(ssao_gbuffer_shader, obj->GetMeshForRender());
+		//}
 
-		UnbindFrameBuffer();
+		//UnbindFrameBuffer();
 				
 		//BindFrameBuffer(ssr_frame);
 		//BindShader(ssr_shader);
@@ -914,12 +1074,19 @@ int main()
 			//DebugDrawTexture(&debug_mesh_shader, brdf_lookup_texture);
 			//DebugDrawTexture(&debug_mesh_shader, map_to_eqi);
 			//DebugDrawTexture(&debug_mesh_shader, demo_gbuffer.colour1_texture_attachment);
-		
+			//DebugDrawTexture(&debug_mesh_shader, viewspace_gbuffer.colour1_texture_attachment);
+			//DebugDrawTexture(&debug_mesh_shader, blurer.sampling_textures[0]);
+			//DebugDrawTexture(&debug_mesh_shader, testing_blur_down01);
 			//DebugDrawTexture(&debug_mesh_shader, demo_floor_normal_map);
 			//DebugDrawTexture(&debug_mesh_shader, ssr_frame.colour0_texture_attachment);
+			//DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
+
+			
+			//DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
 		}
 		else
 		{
+			
 			//DebugDrawTexture(&debug_mesh_shader, renderer.frame_g_buffer.colour1_texture_attachment);
 		}
 

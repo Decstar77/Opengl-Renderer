@@ -355,7 +355,7 @@ namespace cm
 	{			   
 		Assert(shader->config.src_geom == ""); // REASON: We don't have geom support
 		const char* vertex_code = shader->config.src_vert.c_str();
-		const char * fShaderCode = shader->config.scr_frag.c_str();
+		const char * fShaderCode = shader->config.src_frag.c_str();
 
 		uint32 vertex, fragment, geometry;
 		
@@ -380,7 +380,6 @@ namespace cm
 		glDeleteShader(fragment);
 
 		shader->type = ShaderType::Compute;
-		shader->name = "No name";
 		shader->shader_program = shader_program;
 
 		return {};
@@ -982,7 +981,8 @@ namespace cm
 		}
 		OpenGlState::window_width = window_width;
 		OpenGlState::window_height = window_height;
-
+		OpenGlState::current_viewport_width = window_width;
+		OpenGlState::current_viewport_height = window_height;
 		real32 cube_vertex_data[] =
 		{
 			1.000000, 1.000000, -1.000000, 0.000000, 1.000000, 0.000000, 0.625000, 0.500000, -1.000000,
@@ -1111,7 +1111,10 @@ namespace cm
 		ShaderSetMat4(&shader, "projection", CubeMapMatrices::projection.arr);
 		ShaderBindTexture(shader, src, 0, "equirectangularMap");
 
-		ChangeViewPort(0, 0, dst->config.width, dst->config.height);
+		uint32 old_width = OpenGlState::current_viewport_width;
+		uint32 old_height = OpenGlState::current_viewport_height;
+
+		SetViewPort(0, 0, dst->config.width, dst->config.height);
 
 		for (uint32 i = 0; i < 6; ++i)
 		{
@@ -1126,7 +1129,7 @@ namespace cm
 			RenderMesh(shader, cube);
 		}
 
-		ChangeViewPort(0, 0, 1280, 720);
+		SetViewPort(old_width, old_height);
 		
 		UnbindFrameBuffer();
 	}
@@ -1214,7 +1217,7 @@ namespace cm
 		BindFrameBuffer(frame);
 		BindShader(shader);
 
-		ChangeViewPort(0, 0, dst->config.width, dst->config.height);
+		SetViewPort(0, 0, dst->config.width, dst->config.height);
 		
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dst->object, 0);
 				
@@ -1226,7 +1229,7 @@ namespace cm
 		GLMesh screen_quad = StandardMeshes::quad;
 		RenderMesh(shader, screen_quad);
 
-		ChangeViewPort(0, 0, 1280, 720);
+		SetViewPort(0, 0, 1280, 720);
 
 		UnbindFrameBuffer();
 	}
@@ -1334,7 +1337,7 @@ namespace cm
 		ShaderSetMat4(&shader, "projection", CubeMapMatrices::projection.arr);
 		ShaderBindCubeMap(&shader, src, 0, "environmentMap");
 
-		ChangeViewPort(0, 0, dst->config.width, dst->config.height);
+		SetViewPort(0, 0, dst->config.width, dst->config.height);
 
 		for (uint32 i = 0; i < 6; ++i)
 		{
@@ -1349,7 +1352,7 @@ namespace cm
 			RenderMesh(shader, cube);
 		}
 				
-		ChangeViewPort(0, 0, 1280, 720);
+		SetViewPort(0, 0, 1280, 720);
 
 		UnbindFrameBuffer();
 	}
@@ -1532,7 +1535,7 @@ namespace cm
 			uint32 mip_height = dst->config.height * std::pow(0.5, mip);
 			real32 roughness = (real32)mip / (real32)(mip_levels - 1);
 
-			ChangeViewPort(0, 0, mip_width, mip_height);
+			SetViewPort(0, 0, mip_width, mip_height);
 			ShaderSetFloat(&shader, "roughness", roughness);
 			for (uint32 i = 0; i < 6; i++)
 			{
@@ -1551,7 +1554,7 @@ namespace cm
 			}
 		}
 
-		ChangeViewPort(0, 0, 1280, 720);
+		SetViewPort(0, 0, 1280, 720);
 
 		// @NOTE: Make sure we dont try to free somthing that was part of the cube map
 
@@ -1567,7 +1570,11 @@ namespace cm
 
 	LookUpTextureGenerator::~LookUpTextureGenerator()
 	{
-
+		if (created)
+		{
+			LOG("WARNING: Freeing LookUpTextureGenerator, please free yourself");
+			Free();
+		}
 	}
 
 
@@ -1736,11 +1743,11 @@ namespace cm
 		ClearColourBuffer();
 		ClearDepthBuffer();
 
-		ChangeViewPort(0, 0, dst->config.width, dst->config.height);
+		SetViewPort(0, 0, dst->config.width, dst->config.height);
 
 		RenderMesh(shader, StandardMeshes::quad);
 
-		ChangeViewPort(0, 0, 1280, 720);
+		SetViewPort(0, 0, 1280, 720);
 
 	}
 
@@ -1751,4 +1758,380 @@ namespace cm
 		FreeFrameBuffer(&frame, false);
 		created = false;
 	}
+
+	void SampleTextureBlur::Create(uint32 src_width, uint32 src_height, uint32 sampling_count)
+	{
+		Assert(0); // @REASON: THIS IS A WORK IN PROGRESS
+		sampling_textures = new Texture[sampling_count];
+		sampling_texture_count = sampling_count;
+		for (uint32 i = 0; i < sampling_texture_count; i++)
+		{
+			sampling_textures[i].config.texture_format = GL_RGBA16F;
+			sampling_textures[i].config.pixel_format = GL_RGBA;
+			sampling_textures[i].config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+			sampling_textures[i].config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+			sampling_textures[i].config.min_filter = GL_LINEAR;
+			sampling_textures[i].config.mag_filter = GL_LINEAR;
+			sampling_textures[i].config.width = src_width * std::pow(0.5, i);
+			sampling_textures[i].config.height= src_height * std::pow(0.5, i);
+			CreateTexture(&sampling_textures[i], nullptr);
+		}
+
+		CreateFrameBuffer(&frame);
+	}
+
+	void SampleTextureBlur::Blur(const Texture src, Texture *dst)
+	{
+		BindFrameBuffer(frame);
+		BindShader(shader);
+		DisableDepthBuffer();
+		// @TODO: Do asserts
+		// @NOTE: Store in the first down sampling texture
+		// @NOTE: There is a bug here where we do out box filter on an un-down sampled texture in this first pass
+
+#if 1
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sampling_textures[0].object, 0);
+		
+		SetViewPort(0, 0, sampling_textures[0].config.width, sampling_textures[0].config.height);
+		ClearColourBuffer();
+		ClearDepthBuffer();
+		ShaderSetInt32(&shader, "first", 1);
+		ShaderBindTexture(shader, src, 0, "colour_map");
+		RenderMesh(shader, StandardMeshes::quad);
+#else	
+		sampling_textures[0] = src;
+#endif
+		ShaderSetFloat(&shader, "delta", 1);
+		//ShaderSetInt32(&shader, "first", 0);
+		for (int32 i = 1; i < sampling_texture_count; i++)
+		{
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sampling_textures[i].object, 0);
+
+			SetViewPort(0, 0, sampling_textures[i].config.width, sampling_textures[i].config.height);
+			ClearColourBuffer();
+			ClearDepthBuffer();
+			ShaderBindTexture(shader, sampling_textures[i - 1], 0, "colour_map");
+			RenderMesh(shader, StandardMeshes::quad);
+		}
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_ONE, GL_ONE);
+		ShaderSetFloat(&shader, "delta", 0.5f);
+		for (int32 i = sampling_texture_count - 2; i >= 0; i--)
+		{
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sampling_textures[i].object, 0);
+
+			SetViewPort(0, 0, sampling_textures[i].config.width, sampling_textures[i].config.height);
+			// @NOTE: We don't clear the buffers, because of the blending
+
+			ShaderBindTexture(shader, sampling_textures[i + 1], 0, "colour_map");
+			RenderMesh(shader, StandardMeshes::quad);
+		}
+		glDisable(GL_BLEND);
+
+		SetViewPort(0, 0, OpenGlState::window_width, OpenGlState::window_height);
+		EnableDepthBuffer();
+		UnbindFrameBuffer();
+	
+	}
+
+	void SampleTextureBlur::Free()
+	{
+		delete sampling_textures;
+	}
+
+	GaussianTextureBlur::GaussianTextureBlur()
+	{
+
+	}
+
+	GaussianTextureBlur::~GaussianTextureBlur()
+	{
+		if (created)
+		{
+			LOG("WARNING: Freeing GaussianTextureBlur, please free yourself");
+			Free();
+		}
+	}
+
+	void GaussianTextureBlur::Create(uint32 src_width, uint32 src_height, uint32 kernel_size, real32 downsample_mul, uint32 iterrations)
+	{
+		Assert(!created);
+		Assert(kernel_size <= 20 && kernel_size >= 1); // @REASON: This the make in shader. Just making sure things do not get out of hand
+		Assert(downsample_mul >= 0.1); // @REASON: Just making sure things do not get out of hand
+		Assert(iterrations == 1); // @REASON: Still need to implement this. You'll need an array of textures check todos
+
+		std::string horizontal_vert_src = R"(
+			#version 330 core
+			layout (location = 0) in vec3 vpos;
+			layout (location = 1) in vec3 vnormal;
+			layout (location = 2) in vec2 vtext;
+
+			out vec2 texture_coords[20];			
+			
+			uniform float texel_size;
+
+			void main()
+			{
+				for (int i = -5; i <= 5; i++)
+				{
+					texture_coords[i + 5] = vtext + vec2(i * texel_size, 0);  
+				}					
+				gl_Position = vec4(vpos, 1.0);
+			}			
+		)";
+
+		std::string vertical_vert_src = R"(
+			#version 330 core
+			layout (location = 0) in vec3 vpos;
+			layout (location = 1) in vec3 vnormal;
+			layout (location = 2) in vec2 vtext;
+
+			out vec2 texture_coords[20];			
+			
+			uniform float texel_size;
+
+			void main()
+			{
+				for (int i = -5; i <= 5; i++)
+				{
+					texture_coords[i + 5] = vtext + vec2(0, i * texel_size);  
+				}					
+				gl_Position = vec4(vpos, 1.0);
+			}			
+		)";
+
+		std::string frag_src = R"(
+			#version 330 core
+			out vec4 g_colour;
+
+			#define pi 3.14159265359
+			in vec2 texture_coords[20];
+			
+			uniform sampler2D src_texture;
+
+			void main()
+			{		
+
+				vec4 out_colour = vec4(0.0);
+				out_colour += texture(src_texture, texture_coords[0]) * 0.0093;
+				out_colour += texture(src_texture, texture_coords[1]) * 0.028002;
+				out_colour += texture(src_texture, texture_coords[2]) * 0.065984;
+				out_colour += texture(src_texture, texture_coords[3]) * 0.121703;
+				out_colour += texture(src_texture, texture_coords[4]) * 0.175713;
+				out_colour += texture(src_texture, texture_coords[5]) * 0.198596;
+				out_colour += texture(src_texture, texture_coords[6]) * 0.175713;
+				out_colour += texture(src_texture, texture_coords[7]) * 0.121703;
+				out_colour += texture(src_texture, texture_coords[8]) * 0.065984;
+				out_colour += texture(src_texture, texture_coords[9]) * 0.028002;
+				out_colour += texture(src_texture, texture_coords[10]) * 0.0093;
+
+				g_colour = out_colour;
+			}		
+		)";
+
+		vertical_shader.config.src_vert = vertical_vert_src;
+		vertical_shader.config.src_frag = frag_src;
+		CreateShader(&vertical_shader);
+
+		horizontal_shader.config.src_vert = horizontal_vert_src;
+		horizontal_shader.config.src_frag = frag_src;
+		CreateShader(&horizontal_shader);
+		
+		horizontal_frame.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
+		horizontal_frame.colour0_texture_attachment.config.pixel_format = GL_RGBA;
+		horizontal_frame.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+		horizontal_frame.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+		horizontal_frame.colour0_texture_attachment.config.min_filter = GL_LINEAR;
+		horizontal_frame.colour0_texture_attachment.config.mag_filter = GL_LINEAR;
+		horizontal_frame.colour0_texture_attachment.config.width = static_cast<uint32>(src_width * downsample_mul);
+		horizontal_frame.colour0_texture_attachment.config.height = static_cast<uint32>(src_height * downsample_mul);
+
+
+		vertical_frame.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
+		vertical_frame.colour0_texture_attachment.config.pixel_format = GL_RGBA;
+		vertical_frame.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+		vertical_frame.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+		vertical_frame.colour0_texture_attachment.config.min_filter = GL_LINEAR;
+		vertical_frame.colour0_texture_attachment.config.mag_filter = GL_LINEAR;
+		vertical_frame.colour0_texture_attachment.config.width = static_cast<uint32>(src_width * downsample_mul);
+		vertical_frame.colour0_texture_attachment.config.height = static_cast<uint32>(src_height * downsample_mul);
+
+		CreateTexture(&horizontal_frame.colour0_texture_attachment, nullptr);
+		CreateTexture(&vertical_frame.colour0_texture_attachment, nullptr);
+
+		CreateFrameBuffer(&horizontal_frame);
+		CreateFrameBuffer(&vertical_frame);
+
+		FrameBufferBindColourAttachtments(&horizontal_frame);
+		FrameBufferBindColourAttachtments(&vertical_frame);
+
+		Assert(CheckFrameBuffer(horizontal_frame));
+		Assert(CheckFrameBuffer(vertical_frame));
+
+		created = true;
+		this->kernel_size = kernel_size;
+		this->downsample_mul = downsample_mul;
+		this->itteraions = iterrations;		
+	}
+
+	void GaussianTextureBlur::Blur(const Texture &src, Texture *dst)
+	{
+		Assert(created);
+		Assert(static_cast<uint32>(src.config.width * downsample_mul)  == horizontal_frame.colour0_texture_attachment.config.width);
+		Assert(static_cast<uint32>(src.config.height * downsample_mul) == horizontal_frame.colour0_texture_attachment.config.height);
+		Assert(src.object != 0);
+		//Assert(dst->object != 0);
+
+		uint32 old_width = OpenGlState::current_viewport_width;
+		uint32 old_height = OpenGlState::current_viewport_height;
+
+		BindFrameBuffer(horizontal_frame);
+		BindShader(horizontal_shader);
+
+		SetViewPort(horizontal_frame.colour0_texture_attachment.config.width, horizontal_frame.colour0_texture_attachment.config.height);
+
+		ClearColourBuffer();
+		ClearDepthBuffer();
+
+		ShaderSetFloat(&horizontal_shader, "texel_size", (1.0 / horizontal_frame.colour0_texture_attachment.config.width));
+		ShaderBindTexture(horizontal_shader, src, 0, "src_texture");
+		
+		RenderMesh(horizontal_shader, StandardMeshes::quad);
+
+		UnbindFrameBuffer();
+
+		BindFrameBuffer(vertical_frame);
+		BindShader(vertical_shader);
+
+		ClearColourBuffer();
+		ClearDepthBuffer();
+
+		ShaderSetFloat(&vertical_shader, "texel_size", (1.0 / vertical_frame.colour0_texture_attachment.config.height));
+		ShaderBindTexture(vertical_shader, horizontal_frame.colour0_texture_attachment, 0, "src_texture");
+
+		RenderMesh(vertical_shader, StandardMeshes::quad);
+		
+		SetViewPort(old_width, old_height);
+
+		UnbindFrameBuffer();
+	}
+
+	void GaussianTextureBlur::Free()
+	{
+		Assert(created);
+		FreeFrameBuffer(&vertical_frame, true);
+		FreeFrameBuffer(&horizontal_frame, true);
+		FreeShader(&vertical_shader);
+		FreeShader(&horizontal_shader);
+		created = false;
+	}
+
+	LuminanceFilter::LuminanceFilter()
+	{
+
+	}
+
+	LuminanceFilter::~LuminanceFilter()
+	{
+
+	}
+
+	void LuminanceFilter::Create(real32 threshold)
+	{
+		Assert(!created);
+
+		std::string vert_src = R"(
+			#version 330 core
+			layout (location = 0) in vec3 vpos;
+			layout (location = 1) in vec3 vnormal;
+			layout (location = 2) in vec2 vtext;
+
+			out vec2 texture_coords;
+
+			void main()
+			{
+				texture_coords = vtext;  
+				gl_Position = vec4(vpos, 1.0);
+			}			
+		)";
+
+		std::string frag_src = R"(
+			#version 330 core
+			out vec4 out_colour;
+
+			#define pi 3.14159265359
+			in vec2 texture_coords;
+			
+			uniform float t;
+			uniform sampler2D src_texture;
+
+
+			vec3 Prefilter (vec3 c) 
+			{			    
+				vec3 luma = vec3(0.2126, 0.7152, 0.0722);
+				float brightness =  dot(luma, c);
+				float contribution = max(0, brightness - t);
+			    contribution /= max(brightness, 0.00001);
+			    return c * contribution;
+
+				//vec3 luma = vec3(0.2126, 0.7152, 0.0722);
+				//float brightness =  dot(luma, c);
+				//return c * brightness  * t;
+			}
+
+			void main()
+			{		
+				vec3 colour = texture(src_texture, texture_coords).rgb;				
+				colour = Prefilter(colour);
+				out_colour = vec4(colour, 1);
+			}		
+		)";
+		
+		shader = CreateShader(vert_src, frag_src);
+
+		CreateFrameBuffer(&frame);
+
+		created = true;
+		this->threshold = threshold;
+	}
+
+	void LuminanceFilter::Filter(const Texture &src, Texture *dst)
+	{
+		Assert(created);
+		Assert(src.object != 0);
+		Assert(dst->object != 0);
+		//Assert(src.config.width == dst->config.width);
+		//Assert(src.config.height == dst->config.height);
+
+		uint32 old_width = OpenGlState::current_viewport_width;
+		uint32 old_height = OpenGlState::current_viewport_height;
+
+		BindFrameBuffer(frame);
+		BindShader(shader);
+			
+		SetViewPort(dst->config.width, dst->config.height);
+		
+		ShaderSetFloat(&shader, "t", threshold);
+		ShaderBindTexture(shader, src, 0, "src_texture");
+		
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dst->object, 0);
+	
+		// @NOTE: Must come after glFramebufferTexture2D
+		ClearColourBuffer(); 
+
+		RenderMesh(shader, StandardMeshes::quad);
+
+		SetViewPort(old_width, old_height);
+
+		UnbindFrameBuffer();
+	}
+
+	void LuminanceFilter::Free()
+	{
+
+	}
+
+
+
 }
