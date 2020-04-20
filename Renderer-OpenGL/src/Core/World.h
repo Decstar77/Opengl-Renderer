@@ -51,7 +51,14 @@ namespace cm
 	{
 		bool shadow_pass = true;
 		bool defferd_pass = true;
-		
+		bool ssr = true;
+
+		bool ssao = false;
+		int32 ssao_kernel_size = 32;
+		real32 ssao_radius = 1.5;
+		real32 ssao_bias = 0.025;
+		real32 ssao_strength = 1.2;
+
 		enum TonemapMethod
 		{
 			// @NOTE: These vaules are important because they are cast to the shader
@@ -86,8 +93,6 @@ namespace cm
 		real32 vigentte_intensity = 0.6;
 
 		real32 post_processing_exposure = 1.0;
-		bool ssao = true;
-		bool ssr = true;
 	};
 	   
 

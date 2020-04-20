@@ -162,7 +162,8 @@ namespace cm
 	
 		std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // random floats between 0.0 - 1.0
 		std::default_random_engine generator;
-		std::vector<Vec3> ssaoKernel;
+		
+		std::vector<Vec3> kernel_samples;
 		for (unsigned int i = 0; i < 32; ++i)
 		{
 			Vec3 sample(
@@ -170,16 +171,48 @@ namespace cm
 				randomFloats(generator) * 2.0 - 1.0,
 				randomFloats(generator)
 			);
+
+			if (i == 3)
+			{
+				LOG(ToString(sample));
+			}
 			sample = Normalize(sample);
 			sample = sample * randomFloats(generator);
 			float scale = (float)i / 64.0;
-			//ssaoKernel.push_back(sample);
+			//kernel_samples.push_back(sample);
 
 			scale = Lerp(0.1f, 1.0f, scale * scale);
 			sample = sample * scale;
-			ssaoKernel.push_back(sample);
+			kernel_samples.push_back(sample);
 		}
-				
+
+		//Vec3 kernel_samples[32];
+		//static Texture ssao_noise_texture;
+		//
+		//for (int32 i = 0; i < 32; i++)
+		//{
+		//	Vec3 sample = Vec3(
+		//		RandomBillateral(),
+		//		RandomBillateral(),
+		//		RandomUnillateral()
+		//	);
+
+
+		//	if (i == 3)
+		//	{
+		//		LOG(ToString(sample));
+		//	}
+		//	sample = Normalize(sample);
+		//	sample = sample * RandomUnillateral();
+		//
+		//	real32 scale = (real32)i / 64.0;
+		//	scale = Lerp(0.1f, 1.0f, scale * scale);
+		//	sample = sample * scale;
+		//
+		//	kernel_samples[i] = sample;
+		//}
+
+
 		if (!init)
 		{
 			std::vector<Vec3> ssaoNoise;
@@ -211,7 +244,7 @@ namespace cm
 
 		ShaderSetMat4(&render_shaders.ssao_shader, "projection", camera->main_camera.projection_matrix.arr);
 		for (unsigned int i = 0; i < 32; ++i)
-			ShaderSetVec3(&render_shaders.ssao_shader, "samples[" + std::to_string(i) + "]", ssaoKernel[i].arr);
+			ShaderSetVec3(&render_shaders.ssao_shader, "samples[" + std::to_string(i) + "]", kernel_samples[i].arr);
 		ShaderBindTexture(render_shaders.ssao_shader, frame_g_buffer.colour0_texture_attachment, 0, "g_position");
 		ShaderBindTexture(render_shaders.ssao_shader, frame_g_buffer.colour1_texture_attachment, 1, "g_normal");
 		ShaderBindTexture(render_shaders.ssao_shader, noise_texture, 2, "noise_texture");

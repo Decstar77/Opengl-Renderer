@@ -1,7 +1,5 @@
 #include "OpenGL.h"
 
-
-
 namespace cm
 {
 	cm::GLMesh StandardMeshes::quad;
@@ -13,7 +11,7 @@ namespace cm
 	cm::GLMesh StandardMeshes::sphere;
 
 	cm::GLMesh StandardMeshes::cone;
-	
+
 	uint32 OpenGlState::current_viewport_width;
 
 	uint32 OpenGlState::current_viewport_height;
@@ -21,6 +19,98 @@ namespace cm
 	uint32 OpenGlState::window_width;
 
 	uint32 OpenGlState::window_height;
+
+	cm::Texture StandardTextures::zero_texture;
+
+	cm::Texture StandardTextures::one_texture;
+
+	bool StandardTextures::created = false;
+
+	bool StandardMeshes::created = false;
+
+	void StandardTextures::Initilize()
+	{
+		Assert(!created)
+
+		zero_texture.config.texture_format = GL_RGBA32F;
+		zero_texture.config.pixel_format = GL_RGBA;
+		zero_texture.config.wrap_t_mode = GL_REPEAT;
+		zero_texture.config.wrap_s_mode = GL_REPEAT;
+		zero_texture.config.min_filter = GL_LINEAR;
+		zero_texture.config.mag_filter = GL_LINEAR;
+		zero_texture.config.width = 2;
+		zero_texture.config.height = 2;
+		real32 zero_data[] = 
+		{	0.0, 0.0, 0.0, 0.0,
+			0.0, 0.0, 0.0, 0.0,
+			0.0, 0.0, 0.0, 0.0,
+			0.0, 0.0, 0.0, 0.0 
+		};
+		
+		CreateTexture(&zero_texture, zero_data);
+
+		one_texture.config.texture_format = GL_RGBA32F;
+		one_texture.config.pixel_format = GL_RGBA;
+		one_texture.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+		one_texture.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+		one_texture.config.min_filter = GL_LINEAR;
+		one_texture.config.mag_filter = GL_LINEAR;
+		one_texture.config.width = 2;
+		one_texture.config.height = 2;
+		real32 one_data[] = { 
+			1.0, 1.0, 1.0, 1.0,
+			1.0, 1.0, 1.0, 1.0,
+			1.0, 1.0, 1.0, 1.0,
+			1.0, 1.0, 1.0, 1.0 
+		};
+		
+		CreateTexture(&one_texture, (void*)&one_data[0]);
+
+		created = true;
+	}
+
+	void StandardMeshes::Initilize()
+	{
+		Assert(!created);
+
+		real32 cube_vertex_data[] =
+		{
+			1.000000, 1.000000, -1.000000, 0.000000, 1.000000, 0.000000, 0.625000, 0.500000, -1.000000,
+			1.000000, -1.000000, 0.000000, 1.000000, 0.000000, 0.875000, 0.500000, -1.000000, 1.000000,
+			1.000000, 0.000000, 1.000000, 0.000000, 0.875000, 0.250000, 1.000000, 1.000000, 1.000000, 0.000000,
+			1.000000, 0.000000, 0.625000, 0.250000, 1.000000, -1.000000, 1.000000, 0.000000, 0.000000,
+			1.000000, 0.375000, 0.250000, 1.000000, 1.000000, 1.000000, 0.000000, 0.000000, 1.000000,
+			0.625000, 0.250000, -1.000000, 1.000000, 1.000000, 0.000000, 0.000000, 1.000000, 0.625000,
+			0.000000, -1.000000, -1.000000, 1.000000, 0.000000, 0.000000, 1.000000, 0.375000, 0.000000,
+			-1.000000, -1.000000, 1.000000, -1.000000, 0.000000, 0.000000, 0.375000, 1.000000, -1.000000,
+			1.000000, 1.000000, -1.000000, 0.000000, 0.000000, 0.625000, 1.000000, -1.000000, 1.000000,
+			-1.000000, -1.000000, 0.000000, 0.000000, 0.625000, 0.750000, -1.000000, -1.000000, -1.000000,
+			-1.000000, 0.000000, 0.000000, 0.375000, 0.750000, -1.000000, -1.000000, -1.000000, 0.000000,
+			-1.000000, 0.000000, 0.125000, 0.500000, 1.000000, -1.000000, -1.000000, 0.000000, -1.000000,
+			0.000000, 0.375000, 0.500000, 1.000000, -1.000000, 1.000000, 0.000000, -1.000000, 0.000000,
+			0.375000, 0.250000, -1.000000, -1.000000, 1.000000, 0.000000, -1.000000, 0.000000, 0.125000,
+			0.250000, 1.000000, -1.000000, -1.000000, 1.000000, 0.000000, 0.000000, 0.375000, 0.500000,
+			1.000000, 1.000000, -1.000000, 1.000000, 0.000000, 0.000000, 0.625000, 0.500000, 1.000000,
+			1.000000, 1.000000, 1.000000, 0.000000, 0.000000, 0.625000, 0.250000, 1.000000, -1.000000,
+			1.000000, 1.000000, 0.000000, 0.000000, 0.375000, 0.250000, -1.000000, -1.000000, -1.000000,
+			0.000000, 0.000000, -1.000000, 0.375000, 0.750000, -1.000000, 1.000000, -1.000000, 0.000000,
+			0.000000, -1.000000, 0.625000, 0.750000, 1.000000, 1.000000, -1.000000, 0.000000, 0.000000,
+			-1.000000, 0.625000, 0.500000, 1.000000, -1.000000, -1.000000, 0.000000, 0.000000, -1.000000,
+			0.375000, 0.500000
+		};
+		uint32 cube_index_data[] =
+		{
+			0.000000, 1.000000, 2.000000, 0.000000, 2.000000, 3.000000, 4.000000, 5.000000, 6.000000, 4.000000,
+			6.000000, 7.000000, 8.000000, 9.000000, 10.000000, 8.000000, 10.000000, 11.000000, 12.000000, 13.000000,
+			14.000000, 12.000000, 14.000000, 15.000000, 16.000000, 17.000000, 18.000000, 16.000000, 18.000000,
+			19.000000, 20.000000, 21.000000, 22.000000, 20.000000, 22.000000, 23.000000,
+		};
+
+
+
+		CreateGLMesh(&cube, PNT_VBO_LAYOUT, cube_vertex_data, 192 * sizeof(real32), cube_index_data, 36 * sizeof(uint32));
+		created = true;
+	}
 
 	void CreateVertexBuffer(VertexBuffer *vbo)
 	{
@@ -976,51 +1066,17 @@ namespace cm
 	}
 
 	void InitializeOpenGl(uint32 window_width, uint32 window_height)
-	{
+	{		
 		glewExperimental = GL_TRUE;
-		if (glewInit() != GLEW_OK)
-		{
-			Assert(0);
-		}
+		Assert(glewInit() == GLEW_OK);
+
+		StandardMeshes::Initilize();
+		StandardTextures::Initilize();
+
 		OpenGlState::window_width = window_width;
 		OpenGlState::window_height = window_height;
 		OpenGlState::current_viewport_width = window_width;
 		OpenGlState::current_viewport_height = window_height;
-		real32 cube_vertex_data[] =
-		{
-			1.000000, 1.000000, -1.000000, 0.000000, 1.000000, 0.000000, 0.625000, 0.500000, -1.000000,
-			1.000000, -1.000000, 0.000000, 1.000000, 0.000000, 0.875000, 0.500000, -1.000000, 1.000000,
-			1.000000, 0.000000, 1.000000, 0.000000, 0.875000, 0.250000, 1.000000, 1.000000, 1.000000, 0.000000,
-			1.000000, 0.000000, 0.625000, 0.250000, 1.000000, -1.000000, 1.000000, 0.000000, 0.000000,
-			1.000000, 0.375000, 0.250000, 1.000000, 1.000000, 1.000000, 0.000000, 0.000000, 1.000000,
-			0.625000, 0.250000, -1.000000, 1.000000, 1.000000, 0.000000, 0.000000, 1.000000, 0.625000,
-			0.000000, -1.000000, -1.000000, 1.000000, 0.000000, 0.000000, 1.000000, 0.375000, 0.000000,
-			-1.000000, -1.000000, 1.000000, -1.000000, 0.000000, 0.000000, 0.375000, 1.000000, -1.000000,
-			1.000000, 1.000000, -1.000000, 0.000000, 0.000000, 0.625000, 1.000000, -1.000000, 1.000000,
-			-1.000000, -1.000000, 0.000000, 0.000000, 0.625000, 0.750000, -1.000000, -1.000000, -1.000000,
-			-1.000000, 0.000000, 0.000000, 0.375000, 0.750000, -1.000000, -1.000000, -1.000000, 0.000000,
-			-1.000000, 0.000000, 0.125000, 0.500000, 1.000000, -1.000000, -1.000000, 0.000000, -1.000000,
-			0.000000, 0.375000, 0.500000, 1.000000, -1.000000, 1.000000, 0.000000, -1.000000, 0.000000,
-			0.375000, 0.250000, -1.000000, -1.000000, 1.000000, 0.000000, -1.000000, 0.000000, 0.125000,
-			0.250000, 1.000000, -1.000000, -1.000000, 1.000000, 0.000000, 0.000000, 0.375000, 0.500000,
-			1.000000, 1.000000, -1.000000, 1.000000, 0.000000, 0.000000, 0.625000, 0.500000, 1.000000,
-			1.000000, 1.000000, 1.000000, 0.000000, 0.000000, 0.625000, 0.250000, 1.000000, -1.000000,
-			1.000000, 1.000000, 0.000000, 0.000000, 0.375000, 0.250000, -1.000000, -1.000000, -1.000000,
-			0.000000, 0.000000, -1.000000, 0.375000, 0.750000, -1.000000, 1.000000, -1.000000, 0.000000,
-			0.000000, -1.000000, 0.625000, 0.750000, 1.000000, 1.000000, -1.000000, 0.000000, 0.000000,
-			-1.000000, 0.625000, 0.500000, 1.000000, -1.000000, -1.000000, 0.000000, 0.000000, -1.000000,
-			0.375000, 0.500000
-		};
-
-		uint32 cube_index_data[] =
-		{
-			0.000000, 1.000000, 2.000000, 0.000000, 2.000000, 3.000000, 4.000000, 5.000000, 6.000000, 4.000000,
-			6.000000, 7.000000, 8.000000, 9.000000, 10.000000, 8.000000, 10.000000, 11.000000, 12.000000, 13.000000,
-			14.000000, 12.000000, 14.000000, 15.000000, 16.000000, 17.000000, 18.000000, 16.000000, 18.000000,
-			19.000000, 20.000000, 21.000000, 22.000000, 20.000000, 22.000000, 23.000000,
-		};
-		
-		CreateGLMesh(&StandardMeshes::cube, PNT_VBO_LAYOUT, cube_vertex_data, 192 * sizeof(real32), cube_index_data, 36 * sizeof(uint32));
 
 	}
 
@@ -1842,7 +1898,137 @@ namespace cm
 	{
 		delete sampling_textures;
 	}
+	
+	SimpleTextureBlur::SimpleTextureBlur()
+	{
 
+	}
+
+	SimpleTextureBlur::~SimpleTextureBlur()
+	{
+		if (created)
+		{
+			LOG("WARNING: Freeing SimpleTextureBlur, please free yourself");
+			Free();
+		}
+	}
+
+	void SimpleTextureBlur::Create(uint32 src_width, uint32 src_height, uint32 kernel_size)
+	{
+		Assert(!created);
+		Assert(kernel_size <= 1000); // @REASON: Making sure things don't get out of hand.
+		std::string vert_src = R"(
+			#version 330 core
+			layout (location = 0) in vec3 vpos;
+			layout (location = 1) in vec3 vnormal;
+			layout (location = 2) in vec2 vtext;
+
+			out vec2 texture_coords;
+
+			void main()
+			{
+				texture_coords = vtext;
+				gl_Position = vec4(vpos, 1.0);
+			}			
+		)";
+
+		std::string frag_src = R"(
+			#version 330 core
+			out vec4 out_colour;
+
+			in vec2 texture_coords;
+
+			uniform int kernel_size;
+			uniform sampler2D src_texture;
+
+			void main()
+			{		
+				vec2 texel_size = 1.0 / vec2(textureSize(src_texture, 0));
+
+				vec3 colour = vec3(0.0);
+				for (int x = -kernel_size; x < kernel_size; x++) 
+				{
+					for (int y = -kernel_size; y < kernel_size; y++) 
+					{												
+						vec2 offset = vec2(float(x), float(y)) * texel_size;
+						colour += texture(src_texture, texture_coords + offset).rgb;
+					}
+				}
+
+				// @NOTE: Is this--> c / ((kernel_size + kernel_size) * (kernel_size + kernel_size));  
+				colour = colour / (4 * kernel_size * kernel_size );  
+				out_colour = vec4(colour, 1);
+			}		
+		)";
+
+		shader.config.src_vert = vert_src;
+		shader.config.src_frag = frag_src;
+		CreateShader(&shader);
+		
+		CreateFrameBuffer(&frame);
+		BindFrameBuffer(frame);
+		frame.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
+		frame.colour0_texture_attachment.config.pixel_format = GL_RGBA;
+		frame.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+		frame.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+		frame.colour0_texture_attachment.config.min_filter = GL_LINEAR;
+		frame.colour0_texture_attachment.config.mag_filter = GL_LINEAR;
+		frame.colour0_texture_attachment.config.width = src_width;
+		frame.colour0_texture_attachment.config.height = src_height;
+
+		CreateTexture(&frame.colour0_texture_attachment, nullptr);
+		
+		FrameBufferBindColourAttachtments(&frame);
+
+		Assert(CheckFrameBuffer(frame));
+
+		UnbindFrameBuffer();
+
+		created = true;
+		this->kernel_size = kernel_size;
+	}
+
+	void SimpleTextureBlur::Blur(const Texture &src, Texture *dst)
+	{
+		Assert(created);
+		Assert(src.object != 0);
+		Assert(dst->object != 0);
+		Assert(src.config.width == frame.colour0_texture_attachment.config.width);
+		Assert(src.config.height == frame.colour0_texture_attachment.config.height);
+		Assert(dst->config.width == frame.colour0_texture_attachment.config.width);
+		Assert(dst->config.height == frame.colour0_texture_attachment.config.height);
+		
+		uint32 old_width = OpenGlState::current_viewport_width;
+		uint32 old_height = OpenGlState::current_viewport_height;
+
+		BindFrameBuffer(frame);
+		BindShader(shader);
+				
+		SetViewPort(src.config.width, src.config.height);
+
+		ClearColourBuffer();
+
+		int32 k = static_cast<int32>(kernel_size);
+		ShaderSetInt32(&shader, "kernel_size", k);
+		ShaderBindTexture(shader, src, 0, "src_texture");
+
+		RenderMesh(shader, StandardMeshes::quad);
+
+		SetViewPort(old_width, old_height);
+
+		UnbindFrameBuffer();
+
+		CopyTexture(&frame.colour0_texture_attachment, dst);
+	}
+
+	void SimpleTextureBlur::Free()
+	{
+		Assert(created);
+		FreeFrameBuffer(&frame, true);
+		FreeShader(&shader);
+		created = false;
+	}
+	
 	GaussianTextureBlur::GaussianTextureBlur()
 	{
 
@@ -2065,6 +2251,8 @@ namespace cm
 
 		SetViewPort(dst->config.width, dst->config.height);
 
+		// @NOTE: We have have upsample the lowest blur to the dst
+		//		: resolution that's why we can't just call CopyTexture
 		BindShader(upsample_shader);
 		BindFrameBuffer(horizontal_frames[0]);
 		
@@ -2242,5 +2430,83 @@ namespace cm
 	}
 
 
+
+	HemisphereKernel::HemisphereKernel()
+	{
+
+	}
+
+	HemisphereKernel::~HemisphereKernel()
+	{
+		if (created)
+		{
+			LOG("WARNING: Freeing GaussianTextureBlur, please free yourself");
+			Free();
+		}
+	}
+
+	void HemisphereKernel::Create(uint32 kernel_size, uint32 noise_texture_size)
+	{
+		Assert(!created);
+		Assert(kernel_size != 0);
+		Assert(noise_texture_size != 0);
+
+		kernel_samples = new Vec3[kernel_size];
+		this->kernel_size = kernel_size;
+		// @NOTE: Gen samples
+		for (int32 i = 0; i < kernel_size; i++)
+		{
+			Vec3 sample = Vec3(
+				RandomBillateral(),
+				RandomBillateral(),
+				RandomUnillateral()
+			);
+			sample = Normalize(sample);
+			sample = sample * RandomUnillateral();
+
+			real32 scale = (real32)i / 64.0;
+			scale = Lerp(0.1f, 1.0f, scale * scale);
+			sample = sample * scale;
+
+			kernel_samples[i] = sample;
+		}
+
+		// @NOTE: Gen noise texture
+		Vec3 *noise = new Vec3[noise_texture_size * noise_texture_size];
+		for (int32 i = 0; i < noise_texture_size * noise_texture_size; i++)
+		{
+			Vec3 n(
+				RandomBillateral(),
+				RandomBillateral(),
+				0.0f);
+			noise[i] = n;
+		}
+		noise_texture.config.height = noise_texture_size;
+		noise_texture.config.width = noise_texture_size;
+		noise_texture.config.data_type = GL_FLOAT;
+		noise_texture.config.texture_format = GL_RGBA16F;
+		noise_texture.config.min_filter = GL_NEAREST;
+		noise_texture.config.mag_filter = GL_NEAREST;
+		noise_texture.config.wrap_s_mode = GL_REPEAT;
+		noise_texture.config.wrap_t_mode = GL_REPEAT;
+		noise_texture.config.wrap_r_mode = GL_REPEAT;
+
+		CreateTexture(&noise_texture, noise);
+		delete[] noise;
+
+		created = true;
+	}
+
+	void HemisphereKernel::Free()
+	{
+		Assert(created);
+		FreeTexture(&noise_texture);
+		delete[] kernel_samples;
+		created = false;
+	}
+
+
+
+	
 
 }

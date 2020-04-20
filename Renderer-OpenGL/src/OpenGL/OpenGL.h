@@ -183,210 +183,6 @@ namespace cm
 	};
 
 	//************************************
-	// Usefull classes for rendering
-	//************************************
-
-	class StandardMeshes
-	{
-		// NOTE: We could make getters for these to be safe, but I think it's a bit convaluted to do so
-	public:
-		static GLMesh quad;
-		static GLMesh plane;
-		static GLMesh cube;
-		static GLMesh sphere;
-		static GLMesh cone;
-
-		static void Initilize();
-	};
-	
-	class OpenGlState
-	{
-		// NOTE: We could make getters for these to be safe, but I think it's a bit convaluted to do so
-		// TODO: Complete as needed
-	public:
-		static uint32 current_viewport_width;
-		static uint32 current_viewport_height;
-		static uint32 window_width;
-		static uint32 window_height;
-	};
-	
-	class SimpleTextureBlur
-	{
-	private:
-		FrameBuffer frame;
-		bool created = false;
-
-	public:
-		Shader shader;
-		void Create();
-		void Blur(const Texture &src, const Texture *dst);
-		void Free();
-	};
-
-	class SampleTextureBlur
-	{
-	private: 
-		FrameBuffer frame;
-		bool created = false;
-
-	public:
-		Shader shader;
-
-		uint32 sampling_texture_count;
-		Texture *sampling_textures;
-
-
-		void Create(uint32 src_width, uint32 src_height, uint32 sampling_count);
-		void Blur(const Texture src, Texture *dst);
-		void Free();
-	};
-
-	class GaussianTextureBlur
-	{
-		// @TODO: Vaiable kernel_size;
-	private:
-		// @NOTE: Array sizes is the number of itterations
-		// @NOTE: We have have upsample the lowest blur to the dst
-		//		: resolution that's why we can't call CopyTexture
-		bool created = false;
-		uint32 kernel_size = 0;
-		uint32 iterations = 0;
-		real32 downsample_mul = 0;
-						
-		FrameBuffer *vertical_frames;
-		FrameBuffer *horizontal_frames;
-		
-		Shader vertical_shader;
-		Shader horizontal_shader;
-		Shader upsample_shader;
-
-	public:
-		void Create(uint32 src_width, uint32 src_height, uint32 kernel_size = 11, real32 downsample_mul = 1, uint32 iterrations = 1);
-		void Blur(const Texture &src, Texture *dst);
-		void Free();
-
-		int32 SetKernelSize();
-		int32 GetKernelSize();
-		int32 GetMaxKernelSize();
-
-	public:
-		GaussianTextureBlur();
-		~GaussianTextureBlur();
-
-	};
-	
-	class CubeMapMatrices
-	{
-	public:
-		static Mat4 projection;
-		static Mat4 views[6];
-	};
-
-	class CubeMapGenerator
-	{
-	private:
-		FrameBuffer frame;
-		bool created = false;
-
-	public:
-		Shader shader;
-		void Create();
-		void Convert(const Texture &src, CubeMap *dst);
-		void Free();
-
-	public:
-		CubeMapGenerator();
-		~CubeMapGenerator();
-	};
-
-	class EquirectangularGenerator
-	{
-	private:
-		FrameBuffer frame;
-		bool created = false;
-
-	public:
-		void Create();
-		void Convert(const CubeMap &src, Texture *dst);
-		void Free();
-
-	public:
-		Shader shader;
-		EquirectangularGenerator();
-		~EquirectangularGenerator();
-	};
-
-	class IrradianceGenerator
-	{
-	private:
-		FrameBuffer frame;
-		bool created = false;
-
-	public:
-		Shader shader;
-		void Create();
-		void Convert(const CubeMap &src, CubeMap *dst);
-		void Free();
-
-	public:
-		IrradianceGenerator();
-		~IrradianceGenerator();
-	};
-
-	class PrefilterGenerator
-	{
-	private:
-		FrameBuffer frame;
-		bool created = false;
-
-	public:
-		Shader shader;
-		void Create();
-		void Convert(const CubeMap &src, CubeMap *dst);
-		void Free();
-
-	public:
-		PrefilterGenerator();
-		~PrefilterGenerator();
-	};
-
-	class LookUpTextureGenerator
-	{
-	private:
-		FrameBuffer frame;
-		bool created = false;
-
-	public:
-		void Create();
-		void Convert(Texture *dst);
-		void Free();
-
-	public:
-		Shader shader;
-		LookUpTextureGenerator();
-		~LookUpTextureGenerator();
-
-	};
-
-	class LuminanceFilter
-	{
-	private:
-		bool created = false;
-		Shader shader;
-		FrameBuffer frame;
-
-	public:
-		real32 threshold = 0;
-		void Create(uint32 src_width, uint32 src_height, real32 threshold);
-		void Filter(const Texture &src, Texture *dst);
-		void Free();		
-
-	public:
-		LuminanceFilter();
-		~LuminanceFilter();
-	};
-
-	//************************************
 	// Write Buffer Functions C++ Templated
 	//************************************
 
@@ -636,6 +432,265 @@ namespace cm
 
 	void CreateGLMesh(GLMesh *mesh, LayoutBuffer lbo, void *vertex_data, uint32 vertex_size_bytes, void *index_data, uint32 index_size_bytes);
 
+	
+	//************************************
+	// Usefull classes for rendering
+	//************************************
+	/*
+	@NOTES:
+		I've taken a OOP approach in this section for exploritory purposes.
+		Ie, its see the advantages and disadvantages
+	*/
+
+	class StandardMeshes
+	{
+	private:
+		static bool created;
+
+	public:
+		static GLMesh quad;
+		static GLMesh plane;
+		static GLMesh cube;
+		static GLMesh sphere;
+		static GLMesh cone;
+
+		static void Initilize();
+	};
+
+	class StandardTextures
+	{
+	private:
+		static Texture zero_texture;
+		static Texture one_texture;
+		static bool created;
+
+	public:
+		static inline const Texture GetZeroTexture() { Assert(created); return zero_texture; }
+		static inline const Texture GetOneTexture() { Assert(created); return one_texture; }
+		static void Initilize();
+	};
+
+	class OpenGlState
+	{
+		// NOTE: We could make getters for these to be safe, but I think it's a bit convaluted to do so
+		// TODO: Complete as needed
+	public:
+		static uint32 current_viewport_width;
+		static uint32 current_viewport_height;
+		static uint32 window_width;
+		static uint32 window_height;
+	};
+	class SampleTextureBlur
+	{
+	private:
+		FrameBuffer frame;
+		bool created = false;
+
+	public:
+		Shader shader;
+
+		uint32 sampling_texture_count;
+		Texture *sampling_textures;
+
+
+		void Create(uint32 src_width, uint32 src_height, uint32 sampling_count);
+		void Blur(const Texture src, Texture *dst);
+		void Free();
+	};
+
+	class SimpleTextureBlur
+	{
+		// @NOTE: A fast blur for small kernel sizes
+		//		: Not as good as guassian blur but cheaper
+		//		: Get expensive for larger kernel sizes O(n^2)
+
+	private:
+		FrameBuffer frame;
+		Shader shader;
+		bool created = false;
+
+	public:
+		uint32 kernel_size;
+
+		void Create(uint32 src_width, uint32 src_height, uint32 kernel_size);
+		void Blur(const Texture &src, Texture *dst);
+		void Free();
+
+
+	public:
+		SimpleTextureBlur();
+		~SimpleTextureBlur();
+
+	};
+
+	class GaussianTextureBlur
+	{
+		// @NOTE: A good blur but more expensive than simple blur
+		//		: If a very good large blur is needed then this is best
+
+		// @TODO: Vaiable kernel_size;
+	private:
+		bool created = false;
+		uint32 kernel_size = 0;
+		uint32 iterations = 0;
+		real32 downsample_mul = 0;
+
+		FrameBuffer *vertical_frames;
+		FrameBuffer *horizontal_frames;
+
+		Shader vertical_shader;
+		Shader horizontal_shader;
+		Shader upsample_shader;
+
+	public:
+		void Create(uint32 src_width, uint32 src_height, uint32 kernel_size = 11, real32 downsample_mul = 1, uint32 iterrations = 1);
+		void Blur(const Texture &src, Texture *dst);
+		void Free();
+
+		int32 SetKernelSize();
+		int32 GetKernelSize();
+		int32 GetMaxKernelSize();
+
+	public:
+		GaussianTextureBlur();
+		~GaussianTextureBlur();
+
+	};
+
+	class CubeMapMatrices
+	{
+	public:
+		static Mat4 projection;
+		static Mat4 views[6];
+	};
+
+	class CubeMapGenerator
+	{
+	private:
+		Shader shader;
+		FrameBuffer frame;
+		bool created = false;
+
+	public:
+		void Create();
+		void Convert(const Texture &src, CubeMap *dst);
+		void Free();
+
+	public:
+		CubeMapGenerator();
+		~CubeMapGenerator();
+	};
+
+	class EquirectangularGenerator
+	{
+	private:
+		Shader shader;
+		FrameBuffer frame;
+		bool created = false;
+
+	public:
+		void Create();
+		void Convert(const CubeMap &src, Texture *dst);
+		void Free();
+
+	public:
+		EquirectangularGenerator();
+		~EquirectangularGenerator();
+	};
+
+	class IrradianceGenerator
+	{
+	private:
+		Shader shader;
+		FrameBuffer frame;
+		bool created = false;
+
+	public:
+		void Create();
+		void Convert(const CubeMap &src, CubeMap *dst);
+		void Free();
+
+	public:
+		IrradianceGenerator();
+		~IrradianceGenerator();
+	};
+
+	class PrefilterGenerator
+	{
+	private:
+		Shader shader;
+		FrameBuffer frame;
+		bool created = false;
+
+	public:
+		void Create();
+		void Convert(const CubeMap &src, CubeMap *dst);
+		void Free();
+
+	public:
+		PrefilterGenerator();
+		~PrefilterGenerator();
+	};
+
+	class LookUpTextureGenerator
+	{
+	private:
+		Shader shader;
+		FrameBuffer frame;
+		bool created = false;
+
+	public:
+		void Create();
+		void Convert(Texture *dst);
+		void Free();
+
+	public:
+		LookUpTextureGenerator();
+		~LookUpTextureGenerator();
+
+	};
+
+	class LuminanceFilter
+	{
+	private:
+		Shader shader;
+		FrameBuffer frame;
+		bool created = false;
+
+	public:
+		real32 threshold = 0;
+		void Create(uint32 src_width, uint32 src_height, real32 threshold);
+		void Filter(const Texture &src, Texture *dst);
+		void Free();
+
+	public:
+		LuminanceFilter();
+		~LuminanceFilter();
+	};
+
+	class HemisphereKernel
+	{
+	private:
+		bool created = false;
+
+	public:
+		void Create(uint32 kernel_size, uint32 noise_texture_size);
+		void Free();
+
+		Texture noise_texture;
+		uint32 kernel_size;
+		Vec3 *kernel_samples;
+
+
+	public:
+		HemisphereKernel();
+		~HemisphereKernel();
+
+	};
+
+
+
+
 	//************************************
 	// Inlined Opengl State functions
 	//************************************
@@ -765,6 +820,19 @@ namespace cm
 		OpenGlState::current_viewport_height = height;
 		glViewport(start_x, start_y, width, height);
 	}	
+	   	  
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 

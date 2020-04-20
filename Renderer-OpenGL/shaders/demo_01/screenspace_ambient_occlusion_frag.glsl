@@ -13,6 +13,7 @@ uniform sampler2D noise_texture;
 int kernel_size= 32;
 float radius = 1.5;
 float bias = 0.025;
+float strength = 1.2;
 
 const vec2 noise_scale = vec2(1280.0/4.0, 720.0/4.0); 
 
@@ -40,10 +41,10 @@ void main()
 
         float falloff = smoothstep(0.0, 1.0, radius / abs(view_position.z - texture_depth));
 
-        occ += (texture_depth >= view_sample.z + bias ? 1.0 : 0.0) * falloff;
+        occ += (texture_depth >= view_sample.z + bias ? 1.0 : 0.0) * (falloff * strength);
     }
 
-    occ = 1 - (occ / kernel_size);
+    occ = 1 - (occ / (kernel_size));
 
     out_colour = vec4(occ);
 }

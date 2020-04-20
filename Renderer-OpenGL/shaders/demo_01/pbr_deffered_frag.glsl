@@ -32,6 +32,7 @@ in vec2 texture_coords;
 uniform sampler2D g_position;
 uniform sampler2D g_normal;
 uniform sampler2D g_colour;
+uniform sampler2D g_ssao;
 
 // @NOTE: Defines
 
@@ -60,6 +61,7 @@ void main()
     float ao = texture(g_position, texture_coords).a;
     float roughness = texture(g_normal, texture_coords).a;
     float metallic = texture(g_colour, texture_coords).a;
+	float ssao = texture(g_ssao, texture_coords).r;
 
     vec3 light_pos = point_light_position[0].xyz;
     vec3 light_colour = point_light_colour[0].rgb;
@@ -113,7 +115,7 @@ void main()
 
 		lo += brdf * radiance * ndotwi;
     }
-    vec3 ambient = vec3(0.03) * albedo * ao;
+    vec3 ambient = vec3(0.03) * albedo * ao * ssao;
     colour = ambient + lo;
 
 

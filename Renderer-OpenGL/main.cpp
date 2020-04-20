@@ -623,18 +623,29 @@ int main()
 
 	Assert(CheckFrameBuffer(ssr_frame));
 
-	uint32 bloom_width = post_processing.colour0_texture_attachment.config.width;
-	uint32 bloom_height = post_processing.colour0_texture_attachment.config.height;
+	uint32 drawing_width = post_processing.colour0_texture_attachment.config.width;
+	uint32 drawing_height = post_processing.colour0_texture_attachment.config.height;
 
 	GaussianTextureBlur gblur;
-	gblur.Create(bloom_width, bloom_height, 11, 1.0/2.0, 1);
+	gblur.Create(drawing_width, drawing_height, 11, 1.0/2.0, 1);
 	
 	LuminanceFilter lumin_filter;
-	lumin_filter.Create(bloom_width, bloom_height, 1);
+	lumin_filter.Create(drawing_width, drawing_height, 1);
 
-	Texture bloom_texture;
-	bloom_texture.config = post_processing.colour0_texture_attachment.config;
-	CreateTexture(&bloom_texture, nullptr);
+	HemisphereKernel hemisphere_kernel;
+	hemisphere_kernel.Create(32, 4);
+
+	SimpleTextureBlur sblur;
+	sblur.Create(drawing_width, drawing_height, 2);
+
+
+	Texture ssao_map;
+	ssao_map.config = post_processing.colour0_texture_attachment.config;
+	CreateTexture(&ssao_map, nullptr);
+
+	Texture bloom_map;
+	bloom_map.config = post_processing.colour0_texture_attachment.config;
+	CreateTexture(&bloom_map, nullptr);
 
 	//Shader testing_blur_shader;
 	//testing_blur_shader.config.src_vert = ReadFile("shaders/downsampling_vert.glsl");
@@ -727,8 +738,7 @@ int main()
 	float fh = 1;
 	DebugAddPersistentPoint(Vec3(0.0));
 	float z = 0.5;
-	
-	
+
 	float run_time = 1;
 	bool toggel = false;
 	while (!glfwWindowShouldClose(window))
@@ -939,72 +949,28 @@ int main()
 		//************************************
 		// Screen space ambient occulsion (SSAO)
 		//************************************
-#if 0
-		Vec3 kernel_samples[32];
-		static Texture ssao_noise_texture;
-
-		for (int32 i = 0; i < 32; i++)
-		{
-			Vec3 sample = Vec3(
-				RandomBillateral(),
-				RandomBillateral(),
-				RandomUnillateral()
-			);
-			sample = Normalize(sample);
-			sample = sample * RandomUnillateral();
-
-			real32 scale = (real32)i / 64.0;			
-			scale = Lerp(0.1f, 1.0f, scale * scale);
-			sample = sample * scale;
-			
-			kernel_samples[i] = sample;
-		}
-
-		if (ssao_noise_texture.object == 0)
-		{
-			Vec3 ssao_noise[16];
-			for (unsigned int i = 0; i < 16; i++)
-			{
-				Vec3 noise(
-					RandomBillateral(),
-					RandomBillateral(),
-					0.0f);
-			}
-			ssao_noise_texture.config.height = 4;
-			ssao_noise_texture.config.width = 4;
-			ssao_noise_texture.config.data_type = GL_FLOAT;
-			ssao_noise_texture.config.texture_format = GL_RGBA16F;
-			ssao_noise_texture.config.min_filter = GL_NEAREST;
-			ssao_noise_texture.config.mag_filter = GL_NEAREST;
-			ssao_noise_texture.config.wrap_s_mode = GL_REPEAT;
-			ssao_noise_texture.config.wrap_t_mode = GL_REPEAT;
-			ssao_noise_texture.config.wrap_r_mode = GL_REPEAT;
-
-			CreateTexture(&ssao_noise_texture, ssao_noise);
-		}
-
+		
 		BindFrameBuffer(ssao_buffer);
 		BindShader(ssao_shader);
 
 		ClearColourBuffer();
 
-		ShaderBindTexture(ssao_shader, viewspace_gbuffer.colour0_texture_attachment, 0, "gPosition");
-		ShaderBindTexture(ssao_shader, viewspace_gbuffer.colour1_texture_attachment, 1, "gNormal");
-		ShaderBindTexture(ssao_shader, ssao_noise_texture, 2, "texNoise");
+		ShaderBindTexture(ssao_shader, viewspace_gbuffer.colour0_texture_attachment, 0, "g_position");
+		ShaderBindTexture(ssao_shader, viewspace_gbuffer.colour1_texture_attachment, 1, "g_normal");
+		ShaderBindTexture(ssao_shader, hemisphere_kernel.noise_texture, 2, "noise_texture");
 		ShaderSetMat4(&ssao_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
-
-		for (int32 i = 0; i < 32; i++)
-		{
-			ShaderSetVec3(&ssao_shader, "samples[" + std::to_string(i) + "]", kernel_samples[i].arr);
-		}
-
+		// @NOTE: We only really have to do this once
+		for (int32 i = 0; i < hemisphere_kernel.kernel_size; i++) {	ShaderSetVec3(&ssao_shader, "samples[" + std::to_string(i) + "]", hemisphere_kernel.kernel_samples[i].arr);	}
+		
 		RenderMesh(ssao_shader, StandardMeshes::quad);
 
 		UnbindFrameBuffer();
-#endif
-		test_renderer.SSAOPass(main_world);
+		
+		sblur.Blur(ssao_buffer.colour0_texture_attachment, &ssao_map);
+		
+		
 
-
+		
 		//************************************
 		// Deffered pass
 		//************************************
@@ -1019,7 +985,7 @@ int main()
 		ShaderBindTexture(demo_01_deffered_pbr_shader, worldspace_gbuffer.colour0_texture_attachment, 0, "g_position");
 		ShaderBindTexture(demo_01_deffered_pbr_shader, worldspace_gbuffer.colour1_texture_attachment, 1, "g_normal");
 		ShaderBindTexture(demo_01_deffered_pbr_shader, worldspace_gbuffer.colour2_texture_attachment, 2, "g_colour");
-
+		ShaderBindTexture(demo_01_deffered_pbr_shader, render_settings.ssao ? ssao_map : StandardTextures::GetOneTexture(), 3, "g_ssao");
 		RenderMesh(demo_01_deffered_pbr_shader, StandardMeshes::quad);
 
 		UnbindFrameBuffer();
@@ -1033,21 +999,24 @@ int main()
 		// Post processing pass
 		//************************************
 
-		if (render_settings.bloom_dependance == RenderSettings::BloomBlurDependance::Independent)
+		if (render_settings.bloom)
 		{
-			// @NOTE: In this case we need a much more accutrate, good blur
-			//		: This way we don't have to do multi pass filtering
-			lumin_filter.Filter(post_processing.colour0_texture_attachment, &bloom_texture);
-			gblur.Blur(bloom_texture, &bloom_texture);
-		}
-		else if (render_settings.bloom_dependance == RenderSettings::BloomBlurDependance::Dependent)
-		{
-			// @NOTE: In this case we wan't more aggressive blur.
-			//		: However the blur doesn't have to be good
-			//		: The stronger the blur the greater the chance for flickering
-			gblur.Blur(post_processing.colour0_texture_attachment, &bloom_texture);
-			lumin_filter.Filter(bloom_texture, &bloom_texture);
-			gblur.Blur(bloom_texture, &bloom_texture);
+			if (render_settings.bloom_dependance == RenderSettings::BloomBlurDependance::Independent)
+			{
+				// @NOTE: In this case we need a much more accutrate, good blur
+				//		: This way we don't have to do multi pass filtering
+				lumin_filter.Filter(post_processing.colour0_texture_attachment, &bloom_map);
+				gblur.Blur(bloom_map, &bloom_map);
+			}
+			else if (render_settings.bloom_dependance == RenderSettings::BloomBlurDependance::Dependent)
+			{
+				// @NOTE: In this case we wan't more aggressive blur.
+				//		: However the blur doesn't have to be good
+				//		: The stronger the blur the greater the chance for flickering
+				gblur.Blur(post_processing.colour0_texture_attachment, &bloom_map);
+				lumin_filter.Filter(bloom_map, &bloom_map);
+				gblur.Blur(bloom_map, &bloom_map);
+			}
 		}
 
 		//************************************
@@ -1057,7 +1026,7 @@ int main()
 		BindShader(demo_01_postprocessing_shader);
 
 		ShaderBindTexture(demo_01_postprocessing_shader, post_processing.colour0_texture_attachment, 0, "scene_texture");
-		ShaderBindTexture(demo_01_postprocessing_shader, bloom_texture, 1, "bloom_texture");
+		ShaderBindTexture(demo_01_postprocessing_shader, bloom_map, 1, "bloom_texture");
 
 		ShaderSetInt32(&demo_01_postprocessing_shader, "FXAA", render_settings.fxaa);
 		ShaderSetFloat(&demo_01_postprocessing_shader, "FXAA_SPAN_MAX", render_settings.fxaa_span_max);
@@ -1175,9 +1144,9 @@ int main()
 			//DebugDrawTexture(&debug_mesh_shader, ssr_frame.colour0_texture_attachment);
 			//DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
 			
-			DebugDrawTexture(&debug_mesh_shader, test_renderer.frame_ssao_blured.colour0_texture_attachment);
+			//DebugDrawTexture(&debug_mesh_shader, test_renderer.frame_ssao_blured.colour0_texture_attachment);
 			//DebugDrawTexture(&debug_mesh_shader, viewspace_gbuffer.colour0_texture_attachment);
-			//DebugDrawTexture(&debug_mesh_shader, ssao_buffer.colour0_texture_attachment);
+			//DebugDrawTexture(&debug_mesh_shader, ssao_buffer.colour0_texture_attachment); 
 			//DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
 		}
 		else
