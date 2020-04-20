@@ -4,8 +4,16 @@ out vec4 out_colour;
 in vec2 texture_coords;
 
 uniform sampler2D scene_texture;
-//uniform sampler2D bloom_texture;
+uniform sampler2D bloom_texture;
 
+
+
+uniform int FXAA;
+uniform float FXAA_SPAN_MAX;
+uniform float FXAA_DIR_MIN;
+uniform float FXAA_DIR_REDUC;
+
+uniform int bloom;
 
 uniform float exposure;
 uniform int tonemapping_method;
@@ -14,10 +22,6 @@ uniform float vigentte_outer_radius;
 uniform float vigentte_inner_radius;
 uniform float vignette_intensity;
 
-uniform int FXAA;
-uniform float FXAA_SPAN_MAX;
-uniform float FXAA_DIR_MIN;
-uniform float FXAA_DIR_REDUC;
 
 
 
@@ -49,9 +53,6 @@ vec3 FilmicToneMap(vec3 x)
 void main()
 {
     vec3 colour = texture(scene_texture, texture_coords).rgb;
-    
-	//vec3 bloom_color = texture(bloom_texture, texture_coords).rgb;
-	//hdr_colour += bloom_color;
     
     //************************************
     // Scene Constants
@@ -106,6 +107,16 @@ void main()
         
         colour = fxaa;
     }    
+
+    //************************************
+    // Bloom addtion
+    //************************************
+
+    if (bloom == 1)
+    {
+        vec3 bloom_color = texture(bloom_texture, texture_coords).rgb;
+    	colour = colour + bloom_color;    
+    }
     
     //************************************
     // Tone mapping

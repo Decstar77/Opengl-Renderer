@@ -12,7 +12,7 @@ in VS_OUT {
 
 void main()
 {
-	vec3 col = texture(mesh_texture, fs_in.TexCoords).rgb;
+	vec3 col = texture(mesh_texture, fs_in.TexCoords).rrr;
 	FragColour = vec4(vec3(col), 1.0);
     
 	

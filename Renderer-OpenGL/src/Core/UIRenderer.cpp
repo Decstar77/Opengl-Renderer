@@ -272,7 +272,7 @@ namespace cm
 
 	void EditorRender::UpdateAndDraw()
 	{
-		Assert(render_settings); // @REASON: Render Settings was null
+		Assert(render_settings); 
 		ImGui::Begin("Render Settings");
 
 		if (ImGui::CollapsingHeader("Render Passes"))
@@ -300,7 +300,18 @@ namespace cm
 
 			if (ImGui::TreeNode("Bloom"))
 			{
-				ImGui::Text("On the TODO :)");
+				ImGui::Checkbox("Bloom ", &render_settings->bloom);
+
+				ImGui::Text(" Filter and Blur dependance");
+				int32 current = render_settings->bloom_dependance;
+				if (ImGui::Combo(" ", &current, "Dependent\0Independent\0\0"))
+				{
+					render_settings->bloom_dependance = (RenderSettings::BloomBlurDependance)current;
+				}
+				ImGui::SliderFloat("Threshold", &render_settings->bloom_threshold, 0.0, 10.0);
+				ImGui::SliderInt("Kernel Size", &render_settings->bloom_kernel_size, 1, 20);
+				ImGui::SliderFloat("DS Multiplier", &render_settings->bloom_downsample_mul, 0.25, 1.0);
+				ImGui::SliderInt("Iterations", &render_settings->bloom_blur_iterations, 1, 4);
 				ImGui::TreePop();
 			}
 						

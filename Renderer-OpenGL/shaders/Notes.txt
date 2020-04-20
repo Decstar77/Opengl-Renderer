@@ -12,21 +12,22 @@ Notes:
 
 
 DEMO:
-	SSR--
-	MIRROR---
-	UI--
+	SSR <---
+	MIRROR <---
+	UI <---
 
-	FFXA <---
+	FFXA (DONE)
 	BLENDING <---
-	SHADOW 
+	SHADOW <---
 	SSAO
-	BLOOM
-	TONE MAPPING
-	ANIMATION
 	INSTANCE RENDERING
-	PBR
+	BLOOM (DONE)
+	TONE MAPPING (DONE)
+	ANIMATION (DONE)
+	PBR (DONE)
 
 RECAP:
+	Gram-Schmidt process (SSAO)
 	projection matrix.
 	projection divide.
 	view matrix.

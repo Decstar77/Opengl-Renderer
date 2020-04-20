@@ -173,7 +173,7 @@ namespace cm
 			sample = Normalize(sample);
 			sample = sample * randomFloats(generator);
 			float scale = (float)i / 64.0;
-			ssaoKernel.push_back(sample);
+			//ssaoKernel.push_back(sample);
 
 			scale = Lerp(0.1f, 1.0f, scale * scale);
 			sample = sample * scale;
@@ -212,9 +212,9 @@ namespace cm
 		ShaderSetMat4(&render_shaders.ssao_shader, "projection", camera->main_camera.projection_matrix.arr);
 		for (unsigned int i = 0; i < 32; ++i)
 			ShaderSetVec3(&render_shaders.ssao_shader, "samples[" + std::to_string(i) + "]", ssaoKernel[i].arr);
-		ShaderBindTexture(render_shaders.ssao_shader, frame_g_buffer.colour0_texture_attachment, 0, "gPosition");
-		ShaderBindTexture(render_shaders.ssao_shader, frame_g_buffer.colour1_texture_attachment, 1, "gNormal");
-		ShaderBindTexture(render_shaders.ssao_shader, noise_texture, 2, "texNoise");
+		ShaderBindTexture(render_shaders.ssao_shader, frame_g_buffer.colour0_texture_attachment, 0, "g_position");
+		ShaderBindTexture(render_shaders.ssao_shader, frame_g_buffer.colour1_texture_attachment, 1, "g_normal");
+		ShaderBindTexture(render_shaders.ssao_shader, noise_texture, 2, "noise_texture");
 
 		RenderMesh(render_shaders.ssao_shader, StandardMeshes::quad);
 

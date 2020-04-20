@@ -191,8 +191,7 @@ int main()
 	Shader ssao_gbuffer_shader = CreateShader(ReadFile("shaders/ssao_gbuffer_vert.glsl"), ReadFile("shaders/ssao_gbuffer_frag.glsl"));
 	ssao_gbuffer_shader.name = "ssao_gbuffer_shader";
 
-	Shader ssao_shader = CreateShader(ReadFile("shaders/ssao_vert.glsl"), ReadFile("shaders/ssao_frag.glsl"));
-	ssao_shader.name = "ssao_vert";
+
 
 	Shader simple_blur_shader = CreateShader(ReadFile("shaders/simple_blur_vert.glsl"), ReadFile("shaders/simple_blur_frag.glsl"));
 	simple_blur_shader.name = "simple_blur";
@@ -252,6 +251,14 @@ int main()
 	viewspace_gbuffer_shader.config.src_frag = ReadFile("shaders/demo_01/viewspace_gbuffer_frag.glsl");
 	viewspace_gbuffer_shader.name = "viewspace_gbuffer_shader";
 	CreateShader(&viewspace_gbuffer_shader);
+
+	Shader ssao_shader;
+	ssao_shader.config.src_vert = ReadFile("shaders/demo_01/screenspace_ambient_occlusion_vert.glsl");
+	ssao_shader.config.src_frag = ReadFile("shaders/demo_01/screenspace_ambient_occlusion_frag.glsl");
+	//ssao_shader.config.src_vert = ReadFile("shaders/ssao_vert.glsl");
+	//ssao_shader.config.src_frag = ReadFile("shaders/ssao_frag.glsl");
+	ssao_shader.name = "screenspace_ambient_occlusion";
+	CreateShader(&ssao_shader);
 
 	Shader demo_01_deffered_pbr_shader;
 	demo_01_deffered_pbr_shader.config.src_vert = ReadFile("shaders/demo_01/pbr_deffered_vert.glsl");
@@ -435,12 +442,34 @@ int main()
 	Assert(CheckFrameBuffer(viewspace_gbuffer));
 	UnbindFrameBuffer();
 
+	FrameBuffer ssao_buffer;
+	
+	ssao_buffer.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
+	ssao_buffer.colour0_texture_attachment.config.width = WINDOW_WIDTH;
+	ssao_buffer.colour0_texture_attachment.config.data_type = GL_FLOAT;
+	ssao_buffer.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
+	ssao_buffer.colour1_texture_attachment.config.pixel_format = GL_RGBA;
+	ssao_buffer.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	ssao_buffer.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	ssao_buffer.colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+
+	CreateTexture(&ssao_buffer.colour0_texture_attachment, nullptr);
+	CreateFrameBuffer(&ssao_buffer);
+	
+	BindFrameBuffer(ssao_buffer);
+
+	FrameBufferBindColourAttachtments(&ssao_buffer);
+
+	Assert(CheckFrameBuffer(ssao_buffer));
+	UnbindFrameBuffer();
+
 	FrameBuffer post_processing;
 
 	post_processing.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
 	post_processing.colour0_texture_attachment.config.width = WINDOW_WIDTH;
 	post_processing.colour0_texture_attachment.config.data_type = GL_FLOAT;
 	post_processing.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
+	post_processing.colour1_texture_attachment.config.pixel_format = GL_RGBA;
 	post_processing.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
 	post_processing.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
 	post_processing.colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
@@ -594,16 +623,18 @@ int main()
 
 	Assert(CheckFrameBuffer(ssr_frame));
 
-	
+	uint32 bloom_width = post_processing.colour0_texture_attachment.config.width;
+	uint32 bloom_height = post_processing.colour0_texture_attachment.config.height;
+
 	GaussianTextureBlur gblur;
-	gblur.Create(post_processing.colour0_texture_attachment.config.width, post_processing.colour0_texture_attachment.config.height, 11, 1.0/2.0);
+	gblur.Create(bloom_width, bloom_height, 11, 1.0/2.0, 1);
 	
 	LuminanceFilter lumin_filter;
-	lumin_filter.Create(1);
+	lumin_filter.Create(bloom_width, bloom_height, 1);
 
-	Texture luminance_texture;
-	luminance_texture.config = post_processing.colour0_texture_attachment.config;
-	CreateTexture(&luminance_texture, nullptr);
+	Texture bloom_texture;
+	bloom_texture.config = post_processing.colour0_texture_attachment.config;
+	CreateTexture(&bloom_texture, nullptr);
 
 	//Shader testing_blur_shader;
 	//testing_blur_shader.config.src_vert = ReadFile("shaders/downsampling_vert.glsl");
@@ -672,6 +703,15 @@ int main()
 	EditorRender editor_render_window;
 	editor_render_window.delta_time = 0;
 	editor_render_window.render_settings = &render_settings;
+	
+	WorldRenderer test_renderer;
+	test_renderer.WINDOW_HEIGHT = WINDOW_HEIGHT;
+	test_renderer.WINDOW_WIDTH = WINDOW_WIDTH;
+	test_renderer.camera = &camera_controller;
+	test_renderer.InitFrameBuffers();
+	test_renderer.render_shaders.ssao_gbuffer_shader = viewspace_gbuffer_shader;
+	test_renderer.render_shaders.ssao_shader = ssao_shader;
+	test_renderer.standard_shaders.simple_blur = simple_blur_shader;
 	
 
 	DirectionalLight sun_light;
@@ -843,7 +883,7 @@ int main()
 		//************************************
 		// Gbuffer pass for animated objects
 		//************************************
-#if 1
+#if 0
 		BindShader(worldspace_gbuffer_anim_shader);
 
 		ShaderBindTexture(worldspace_gbuffer_anim_shader, demo_floor_colour_map, 0, "colour_map");
@@ -899,6 +939,71 @@ int main()
 		//************************************
 		// Screen space ambient occulsion (SSAO)
 		//************************************
+#if 0
+		Vec3 kernel_samples[32];
+		static Texture ssao_noise_texture;
+
+		for (int32 i = 0; i < 32; i++)
+		{
+			Vec3 sample = Vec3(
+				RandomBillateral(),
+				RandomBillateral(),
+				RandomUnillateral()
+			);
+			sample = Normalize(sample);
+			sample = sample * RandomUnillateral();
+
+			real32 scale = (real32)i / 64.0;			
+			scale = Lerp(0.1f, 1.0f, scale * scale);
+			sample = sample * scale;
+			
+			kernel_samples[i] = sample;
+		}
+
+		if (ssao_noise_texture.object == 0)
+		{
+			Vec3 ssao_noise[16];
+			for (unsigned int i = 0; i < 16; i++)
+			{
+				Vec3 noise(
+					RandomBillateral(),
+					RandomBillateral(),
+					0.0f);
+			}
+			ssao_noise_texture.config.height = 4;
+			ssao_noise_texture.config.width = 4;
+			ssao_noise_texture.config.data_type = GL_FLOAT;
+			ssao_noise_texture.config.texture_format = GL_RGBA16F;
+			ssao_noise_texture.config.min_filter = GL_NEAREST;
+			ssao_noise_texture.config.mag_filter = GL_NEAREST;
+			ssao_noise_texture.config.wrap_s_mode = GL_REPEAT;
+			ssao_noise_texture.config.wrap_t_mode = GL_REPEAT;
+			ssao_noise_texture.config.wrap_r_mode = GL_REPEAT;
+
+			CreateTexture(&ssao_noise_texture, ssao_noise);
+		}
+
+		BindFrameBuffer(ssao_buffer);
+		BindShader(ssao_shader);
+
+		ClearColourBuffer();
+
+		ShaderBindTexture(ssao_shader, viewspace_gbuffer.colour0_texture_attachment, 0, "gPosition");
+		ShaderBindTexture(ssao_shader, viewspace_gbuffer.colour1_texture_attachment, 1, "gNormal");
+		ShaderBindTexture(ssao_shader, ssao_noise_texture, 2, "texNoise");
+		ShaderSetMat4(&ssao_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
+
+		for (int32 i = 0; i < 32; i++)
+		{
+			ShaderSetVec3(&ssao_shader, "samples[" + std::to_string(i) + "]", kernel_samples[i].arr);
+		}
+
+		RenderMesh(ssao_shader, StandardMeshes::quad);
+
+		UnbindFrameBuffer();
+#endif
+		test_renderer.SSAOPass(main_world);
+
 
 		//************************************
 		// Deffered pass
@@ -922,62 +1027,52 @@ int main()
 		//************************************
 		// Forward pass
 		//************************************
-#if 0
-		// @NOTE: Da THIN BOII WAY
-		// @NOTE: In this case we need a much more accutrate, good blur
-		//		: This way we don't have to do multi pass filtering
-		lumin_filter.Filter(post_processing.colour0_texture_attachment, &luminance_texture);
-		BindFrameBuffer(post_processing);
-		//DebugDrawTexture(&debug_mesh_shader, luminance_texture);
-		UnbindFrameBuffer();
 
-		gblur.Blur(luminance_texture, nullptr);
-		BindFrameBuffer(post_processing);
-		DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
-		UnbindFrameBuffer();
 
-#else
-#if 0
-		// @NOTE: In this case we wan't more aggressive blur.
-		//		: However the blur doesn't have to be good
-		//		: The stronger the blur the greater the chance for flickering
-		gblur.Blur(post_processing.colour0_texture_attachment, nullptr);
-		BindFrameBuffer(post_processing);
-		//DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
-		UnbindFrameBuffer();
-				
-		lumin_filter.Filter(gblur.vertical_frame.colour0_texture_attachment, &luminance_texture);
-		BindFrameBuffer(post_processing);
-		//DebugDrawTexture(&debug_mesh_shader, luminance_texture);
-		UnbindFrameBuffer();
-
-		gblur.Blur(luminance_texture, nullptr);
-		BindFrameBuffer(post_processing);
-		DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
-		UnbindFrameBuffer();
-#endif
-#endif
 		//************************************
 		// Post processing pass
 		//************************************
 
+		if (render_settings.bloom_dependance == RenderSettings::BloomBlurDependance::Independent)
+		{
+			// @NOTE: In this case we need a much more accutrate, good blur
+			//		: This way we don't have to do multi pass filtering
+			lumin_filter.Filter(post_processing.colour0_texture_attachment, &bloom_texture);
+			gblur.Blur(bloom_texture, &bloom_texture);
+		}
+		else if (render_settings.bloom_dependance == RenderSettings::BloomBlurDependance::Dependent)
+		{
+			// @NOTE: In this case we wan't more aggressive blur.
+			//		: However the blur doesn't have to be good
+			//		: The stronger the blur the greater the chance for flickering
+			gblur.Blur(post_processing.colour0_texture_attachment, &bloom_texture);
+			lumin_filter.Filter(bloom_texture, &bloom_texture);
+			gblur.Blur(bloom_texture, &bloom_texture);
+		}
+
+		//************************************
+		// Final render pass
+		//************************************
+
 		BindShader(demo_01_postprocessing_shader);
 
-		ShaderSetFloat(&demo_01_postprocessing_shader, "exposure", render_settings.post_processing_exposure);
-		ShaderSetInt32(&demo_01_postprocessing_shader, "tonemapping_method", static_cast<uint32>(render_settings.tonemapping));
-
-		ShaderSetFloat(&demo_01_postprocessing_shader, "vigentte_outer_radius", render_settings.vigentte_outer_raduis * render_settings.vigentte);
-		ShaderSetFloat(&demo_01_postprocessing_shader, "vigentte_inner_radius", render_settings.vigentte_inner_raduis * render_settings.vigentte);
-		ShaderSetFloat(&demo_01_postprocessing_shader, "vignette_intensity", render_settings.vigentte_intensity * render_settings.vigentte);
+		ShaderBindTexture(demo_01_postprocessing_shader, post_processing.colour0_texture_attachment, 0, "scene_texture");
+		ShaderBindTexture(demo_01_postprocessing_shader, bloom_texture, 1, "bloom_texture");
 
 		ShaderSetInt32(&demo_01_postprocessing_shader, "FXAA", render_settings.fxaa);
 		ShaderSetFloat(&demo_01_postprocessing_shader, "FXAA_SPAN_MAX", render_settings.fxaa_span_max);
 		ShaderSetFloat(&demo_01_postprocessing_shader, "FXAA_DIR_MIN", render_settings.fxaa_dir_min);
 		ShaderSetFloat(&demo_01_postprocessing_shader, "FXAA_DIR_REDUC", render_settings.fxaa_dir_reduc);
 		
-		ShaderBindTexture(demo_01_postprocessing_shader, post_processing.colour0_texture_attachment, 0, "scene_texture");
+		ShaderSetInt32(&demo_01_postprocessing_shader, "bloom", render_settings.bloom);
 
+		ShaderSetFloat(&demo_01_postprocessing_shader, "vigentte_outer_radius", render_settings.vigentte_outer_raduis * render_settings.vigentte);
+		ShaderSetFloat(&demo_01_postprocessing_shader, "vigentte_inner_radius", render_settings.vigentte_inner_raduis * render_settings.vigentte);
+		ShaderSetFloat(&demo_01_postprocessing_shader, "vignette_intensity", render_settings.vigentte_intensity * render_settings.vigentte);
 
+		ShaderSetFloat(&demo_01_postprocessing_shader, "exposure", render_settings.post_processing_exposure);
+		ShaderSetInt32(&demo_01_postprocessing_shader, "tonemapping_method", static_cast<uint32>(render_settings.tonemapping));
+			   
 		RenderMesh(demo_01_postprocessing_shader, StandardMeshes::quad);
 
 		
@@ -1037,9 +1132,9 @@ int main()
 		
 		ImGuiViewport* viewport = ImGui::GetMainViewport();
 		ImVec2 pos = viewport->GetWorkPos();
-		pos.x += 1280 - 300;
+		pos.x += WINDOW_WIDTH - 350;
 		ImGui::SetNextWindowPos(pos);
-		ImGui::SetNextWindowSize(ImVec2(300,720));
+		ImGui::SetNextWindowSize(ImVec2(350,720));
 		ImGui::SetNextWindowViewport(viewport->ID);
 		
 		bool p_open;
@@ -1074,14 +1169,15 @@ int main()
 			//DebugDrawTexture(&debug_mesh_shader, brdf_lookup_texture);
 			//DebugDrawTexture(&debug_mesh_shader, map_to_eqi);
 			//DebugDrawTexture(&debug_mesh_shader, demo_gbuffer.colour1_texture_attachment);
-			//DebugDrawTexture(&debug_mesh_shader, viewspace_gbuffer.colour1_texture_attachment);
 			//DebugDrawTexture(&debug_mesh_shader, blurer.sampling_textures[0]);
 			//DebugDrawTexture(&debug_mesh_shader, testing_blur_down01);
 			//DebugDrawTexture(&debug_mesh_shader, demo_floor_normal_map);
 			//DebugDrawTexture(&debug_mesh_shader, ssr_frame.colour0_texture_attachment);
 			//DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
-
 			
+			DebugDrawTexture(&debug_mesh_shader, test_renderer.frame_ssao_blured.colour0_texture_attachment);
+			//DebugDrawTexture(&debug_mesh_shader, viewspace_gbuffer.colour0_texture_attachment);
+			//DebugDrawTexture(&debug_mesh_shader, ssao_buffer.colour0_texture_attachment);
 			//DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
 		}
 		else

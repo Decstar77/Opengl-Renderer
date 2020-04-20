@@ -243,23 +243,31 @@ namespace cm
 
 	class GaussianTextureBlur
 	{
-		// @TODO: Muliple itterations
 		// @TODO: Vaiable kernel_size;
-		// @TODO: We don't output the texture in dst
 	private:
+		// @NOTE: Array sizes is the number of itterations
+		// @NOTE: We have have upsample the lowest blur to the dst
+		//		: resolution that's why we can't call CopyTexture
 		bool created = false;
 		uint32 kernel_size = 0;
-		uint32 itteraions = 0;
+		uint32 iterations = 0;
 		real32 downsample_mul = 0;
-
-	public:
-		FrameBuffer vertical_frame;	
-		FrameBuffer horizontal_frame;
+						
+		FrameBuffer *vertical_frames;
+		FrameBuffer *horizontal_frames;
+		
 		Shader vertical_shader;
 		Shader horizontal_shader;
+		Shader upsample_shader;
+
+	public:
 		void Create(uint32 src_width, uint32 src_height, uint32 kernel_size = 11, real32 downsample_mul = 1, uint32 iterrations = 1);
 		void Blur(const Texture &src, Texture *dst);
 		void Free();
+
+		int32 SetKernelSize();
+		int32 GetKernelSize();
+		int32 GetMaxKernelSize();
 
 	public:
 		GaussianTextureBlur();
@@ -364,14 +372,14 @@ namespace cm
 	{
 	private:
 		bool created = false;
-		real32 threshold = 0;
+		Shader shader;
+		FrameBuffer frame;
 
 	public:
-		FrameBuffer frame;
-		Shader shader;
-		void Create(real32 threshold);
+		real32 threshold = 0;
+		void Create(uint32 src_width, uint32 src_height, real32 threshold);
 		void Filter(const Texture &src, Texture *dst);
-		void Free();
+		void Free();		
 
 	public:
 		LuminanceFilter();

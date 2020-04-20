@@ -52,28 +52,40 @@ namespace cm
 		bool shadow_pass = true;
 		bool defferd_pass = true;
 		
-		// @NOTE: These vaules are important because they are cast to the shader
 		enum TonemapMethod
 		{
+			// @NOTE: These vaules are important because they are cast to the shader
 			Reinhard = 0,
 			Uncharted = 1,
 			Filmic = 2
 		};
 
+		enum  BloomBlurDependance
+		{
+			Dependent = 0,
+			Independent = 1
+		};
+
 		TonemapMethod tonemapping = TonemapMethod::Reinhard;
 
-		bool vigentte = true;
-		real32 vigentte_outer_raduis	= 0.65;
-		real32 vigentte_inner_raduis	= 0.4;
-		real32 vigentte_intensity		= 0.6;
-
-		bool fxaa = true;
+		bool fxaa = false;
 		real32 fxaa_span_max = 12.0f;
-		real32 fxaa_dir_min = 0.1;
+		real32 fxaa_dir_min = 0.1f;
 		real32 fxaa_dir_reduc = 1 / 8.0f;
+		
+		bool bloom = true;
+		BloomBlurDependance bloom_dependance = BloomBlurDependance::Independent;
+		real32 bloom_threshold = 1.0f;
+		real32 bloom_downsample_mul = 0.5f;
+		int32 bloom_kernel_size = 11;
+		int32 bloom_blur_iterations = 1;
+
+		bool vigentte = false;
+		real32 vigentte_outer_raduis = 0.65;
+		real32 vigentte_inner_raduis = 0.4;
+		real32 vigentte_intensity = 0.6;
 
 		real32 post_processing_exposure = 1.0;
-		bool bloom = true;
 		bool ssao = true;
 		bool ssr = true;
 	};
@@ -93,11 +105,20 @@ namespace cm
 		virtual const GLMesh GetMeshForRender() const = 0;	
 	};
 
-	struct World 
+	class World 
 	{
+	private:
+		std::vector<WorldObject*> animated_objects;
+		std::vector<WorldObject*> static_objects;
+
+	public:
 		RenderSettings render_settings;
 		std::vector<WorldObject*> objects;
 		
+
+		void RegisterWorldObject(PointLight *point_light);
+		void RegisterWorldObject(WorldObject *object);
+		void DeregisterWorldObject(WorldObject *object);
 
 		//Lighting
 		DirectionalLight dir;
