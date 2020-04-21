@@ -8,6 +8,8 @@ uniform sampler2D view_normal_map;
 
 uniform mat4 proj;
 
+uniform vec3 cam_pos;
+
 vec4 RayMarch(vec3 dir, vec3 hit, float depth);
 
 void main()
@@ -16,43 +18,15 @@ void main()
     vec3 vn =  texture(view_normal_map, texture_coords).rgb;
     vn = normalize(vn);
     
-    vec3 albedo = vec3(0.23, 0.48, 0.34);
+    // @NOTE: We get the vec to the world pos from the cam pos becuase
+    //      : that is what the reflect function expects
+    vec3 to_pos = vp - vec3(0,0,0); // Cam is always the center of his own world QQ
+    to_pos = normalize(to_pos);
+    vec3 n = vn;
+    
+    vec3 r = normalize(reflect(to_pos, n));
 
-    //vec4 p = proj * vec4(vp, 1);
-    //p /= p.w;    
 
-
-    vec3 r = normalize( reflect(normalize(vp), vn) );
-
-    vec3 hit = vp;
-    vec3 dir = r;
-
-    vec4 ray = RayMarch(dir, hit, 0);
-
-    vec3 colour = vec3(ray.xyz);
-
-    FragColor = vec4(colour, 1);
+    FragColor = vec4(r  , 1);
 }
 
-vec4 RayMarch(vec3 dir, vec3 hit, float depth)
-{
-    dir *= 0.1; // Step size
-
-    float d = 0;
-    int max_steps = 30;
-    for (int i = 0; i < max_steps; i++)
-    {
-        hit += dir; // New position in view space
-
-        // Now we look up this new position
-        vec4 pj = proj * vec4(hit, 1);
-        pj /= pj.w;        
-        pj = pj * 0.5 + 0.5;
-
-        d = texture(view_position_map, pj.xy).z;
-
-    }
-
-
-    return vec4(d);
-}

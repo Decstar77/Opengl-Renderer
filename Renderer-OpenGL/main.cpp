@@ -861,7 +861,7 @@ int main()
 
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
-		RenderCommands::Clear(Colour(0, 1, 0, 1));
+		RenderCommands::Clear(Vec4(0, 0, 0, 1));
 		
 
 		//************************************
@@ -950,26 +950,44 @@ int main()
 		// Screen space ambient occulsion (SSAO)
 		//************************************
 		
-		BindFrameBuffer(ssao_buffer);
-		BindShader(ssao_shader);
+		if (render_settings.ssao)
+		{
+			BindFrameBuffer(ssao_buffer);
+			BindShader(ssao_shader);
 
-		ClearColourBuffer();
+			ClearColourBuffer();
 
-		ShaderBindTexture(ssao_shader, viewspace_gbuffer.colour0_texture_attachment, 0, "g_position");
-		ShaderBindTexture(ssao_shader, viewspace_gbuffer.colour1_texture_attachment, 1, "g_normal");
-		ShaderBindTexture(ssao_shader, hemisphere_kernel.noise_texture, 2, "noise_texture");
-		ShaderSetMat4(&ssao_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
-		// @NOTE: We only really have to do this once
-		for (int32 i = 0; i < hemisphere_kernel.kernel_size; i++) {	ShaderSetVec3(&ssao_shader, "samples[" + std::to_string(i) + "]", hemisphere_kernel.kernel_samples[i].arr);	}
-		
-		RenderMesh(ssao_shader, StandardMeshes::quad);
+			ShaderBindTexture(ssao_shader, viewspace_gbuffer.colour0_texture_attachment, 0, "g_position");
+			ShaderBindTexture(ssao_shader, viewspace_gbuffer.colour1_texture_attachment, 1, "g_normal");
+			ShaderBindTexture(ssao_shader, hemisphere_kernel.noise_texture, 2, "noise_texture");			
+			
+			if (render_settings.ssao_changed)
+			{
+				// @NOTE: Remove !
+				ShaderSetMat4(&ssao_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
+				
+				ShaderSetFloat(&ssao_shader, "strength", render_settings.ssao_strength);
+				ShaderSetFloat(&ssao_shader, "radius", render_settings.ssao_radius);
+				ShaderSetFloat(&ssao_shader, "bias", render_settings.ssao_bias);
+				
+				hemisphere_kernel.SetKernelSize(render_settings.ssao_kernel_size);
+				
+				for (int32 i = 0; i < hemisphere_kernel.GetKernelSize(); i++)
+				{
+					ShaderSetVec3(&ssao_shader, "samples[" + std::to_string(i) + "]", hemisphere_kernel.GetKernelSample(i).arr);
+				}
 
-		UnbindFrameBuffer();
-		
-		sblur.Blur(ssao_buffer.colour0_texture_attachment, &ssao_map);
-		
-		
+				ShaderSetInt32(&ssao_shader, "kernel_size", hemisphere_kernel.GetKernelSize());
 
+				render_settings.ssao_changed = false;
+			}
+
+			RenderMesh(ssao_shader, StandardMeshes::quad);
+
+			UnbindFrameBuffer();
+
+			sblur.Blur(ssao_buffer.colour0_texture_attachment, &ssao_map);
+		}
 		
 		//************************************
 		// Deffered pass
@@ -993,7 +1011,7 @@ int main()
 		//************************************
 		// Forward pass
 		//************************************
-
+		
 
 		//************************************
 		// Post processing pass
@@ -1068,18 +1086,18 @@ int main()
 
 		//UnbindFrameBuffer();
 				
-		//BindFrameBuffer(ssr_frame);
-		//BindShader(ssr_shader);
+		BindFrameBuffer(ssr_frame);
+		BindShader(ssr_shader);
 
-		//RenderCommands::ClearColourBuffer();
-		//RenderCommands::ClearDepthBuffer();
+		RenderCommands::ClearColourBuffer();
+		RenderCommands::ClearDepthBuffer();
 
-		//ShaderBindTexture(ssr_shader, renderer.frame_g_buffer.colour0_texture_attachment, 0, "view_position_map");
-		//ShaderBindTexture(ssr_shader, renderer.frame_g_buffer.colour1_texture_attachment, 1, "view_normal_map");
+		ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour0_texture_attachment, 0, "view_position_map");
+		ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour1_texture_attachment, 1, "view_normal_map");
+		ShaderSetVec3(&ssr_shader, "cam_pos", camera_controller.main_camera.transform.position.arr);
+		RenderMesh(ssr_shader, StandardMeshes::quad);
 
-		//RenderMesh(ssr_shader, StandardMeshes::quad);
-
-		//UnbindFrameBuffer();
+		UnbindFrameBuffer();
 
 
 		
@@ -1141,27 +1159,27 @@ int main()
 			//DebugDrawTexture(&debug_mesh_shader, blurer.sampling_textures[0]);
 			//DebugDrawTexture(&debug_mesh_shader, testing_blur_down01);
 			//DebugDrawTexture(&debug_mesh_shader, demo_floor_normal_map);
-			//DebugDrawTexture(&debug_mesh_shader, ssr_frame.colour0_texture_attachment);
+		
 			//DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
 			
 			//DebugDrawTexture(&debug_mesh_shader, test_renderer.frame_ssao_blured.colour0_texture_attachment);
-			//DebugDrawTexture(&debug_mesh_shader, viewspace_gbuffer.colour0_texture_attachment);
 			//DebugDrawTexture(&debug_mesh_shader, ssao_buffer.colour0_texture_attachment); 
 			//DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
 		}
 		else
 		{
-			
+			DebugDrawTexture(&debug_mesh_shader, ssr_frame.colour0_texture_attachment);
 			//DebugDrawTexture(&debug_mesh_shader, renderer.frame_g_buffer.colour1_texture_attachment);
 		}
 
 
 		//BindShader(debug_mesh_shader);
-		//glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
+		glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
+		DebugDrawTexture(&debug_mesh_shader, viewspace_gbuffer.colour1_texture_attachment);
 		//ShaderBindTexture(debug_mesh_shader, ssr_frame.colour0_texture_attachment, 0, "mesh_texture");
 		//ShaderSetMat4(&debug_mesh_shader, "model", Mat4(1).arr);
 		//RenderMesh(debug_mesh_shader, StandardMeshes::quad);
-		//glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 		//// @TODO: Debug Draw Quad
 		//// @NOTE: Draw bloom buffer;

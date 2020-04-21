@@ -26,6 +26,7 @@ DEMO:
 	ANIMATION (DONE)
 	PBR (DONE)
 
+	
 RECAP:
 	Gram-Schmidt process (SSAO)
 	projection matrix.
@@ -52,7 +53,8 @@ TODO:
 		Rewrite EdiableMesh class.
 		Figure out how to write to gpu animation data nicely
 		Platform window needs abstraction
-	
+		Finish bloom editor properties
+
 	MED PRIO:
 		RenderWorld function needs to go.
 				

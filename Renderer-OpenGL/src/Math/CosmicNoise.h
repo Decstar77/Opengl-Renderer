@@ -36,10 +36,10 @@ namespace cm
 			Vec3(-1, 1, 0),
 			Vec3(1, -1, 0),
 			Vec3(-1, -1, 0),
-			Vec3(sqrt(2), 0, 0),
-			Vec3(0, sqrt(2), 0),
-			Vec3(-sqrt(2), 0, 0),
-			Vec3(0, -sqrt(2), 0)
+			Vec3(Sqrt(2), 0, 0),
+			Vec3(0, Sqrt(2), 0),
+			Vec3(-Sqrt(2), 0, 0),
+			Vec3(0, -Sqrt(2), 0)
 		};
 		
 		std::vector<Vec3> cases3D =

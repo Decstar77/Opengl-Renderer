@@ -3,17 +3,17 @@ layout (location = 0) out vec4 out_colour;
 
 in vec2 texture_coords;
 
-uniform vec3 samples[32];
+uniform vec3 samples[64];
 uniform mat4 projection;
 
 uniform sampler2D g_position;
 uniform sampler2D g_normal;
 uniform sampler2D noise_texture;
 
-int kernel_size= 32;
-float radius = 1.5;
-float bias = 0.025;
-float strength = 1.2;
+uniform int kernel_size;
+uniform float radius;
+uniform float bias;
+uniform float strength;
 
 const vec2 noise_scale = vec2(1280.0/4.0, 720.0/4.0); 
 

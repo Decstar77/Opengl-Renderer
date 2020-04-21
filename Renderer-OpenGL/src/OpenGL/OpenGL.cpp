@@ -100,16 +100,167 @@ namespace cm
 		};
 		uint32 cube_index_data[] =
 		{
-			0.000000, 1.000000, 2.000000, 0.000000, 2.000000, 3.000000, 4.000000, 5.000000, 6.000000, 4.000000,
-			6.000000, 7.000000, 8.000000, 9.000000, 10.000000, 8.000000, 10.000000, 11.000000, 12.000000, 13.000000,
-			14.000000, 12.000000, 14.000000, 15.000000, 16.000000, 17.000000, 18.000000, 16.000000, 18.000000,
-			19.000000, 20.000000, 21.000000, 22.000000, 20.000000, 22.000000, 23.000000,
+			0, 1, 2, 0, 2, 3, 4, 5, 6, 4,
+			6, 7, 8, 9, 10, 8, 10, 11, 12, 13,
+			14, 12, 14, 15, 16, 17, 18, 16, 18,
+			19, 20, 21, 22, 20, 22, 23,
 		};
 
 
 
 		CreateGLMesh(&cube, PNT_VBO_LAYOUT, cube_vertex_data, 192 * sizeof(real32), cube_index_data, 36 * sizeof(uint32));
 		created = true;
+	}
+
+	uint32 GetShaderDataTypeSize(ShaderDataType type)
+	{
+		switch (type)
+		{
+		case ShaderDataType::Float:    return 4;
+		case ShaderDataType::Float2:   return 4 * 2;
+		case ShaderDataType::Float3:   return 4 * 3;
+		case ShaderDataType::Float4:   return 4 * 4;
+		case ShaderDataType::Mat3:     return 4 * 3 * 3;
+		case ShaderDataType::Mat4:     return 4 * 4 * 4;
+		case ShaderDataType::Int:      return 4;
+		case ShaderDataType::Int2:     return 4 * 2;
+		case ShaderDataType::Int3:     return 4 * 3;
+		case ShaderDataType::Int4:     return 4 * 4;
+		case ShaderDataType::Bool:     return 1;
+		}
+		Assert(0);
+		return 0;
+	}
+
+	uint32 GetShaderDataTypeComponentCount(ShaderDataType type)
+	{
+		switch (type)
+		{
+		case ShaderDataType::Float:    return 1;
+		case ShaderDataType::Float2:   return 1 * 2;
+		case ShaderDataType::Float3:   return 1 * 3;
+		case ShaderDataType::Float4:   return 1 * 4;
+		case ShaderDataType::Mat3:     return 1 * 3 * 3;
+		case ShaderDataType::Mat4:     return 1 * 4 * 4;
+		case ShaderDataType::Int:      return 1;
+		case ShaderDataType::Int2:     return 1 * 2;
+		case ShaderDataType::Int3:     return 1 * 3;
+		case ShaderDataType::Int4:     return 1 * 4;
+		case ShaderDataType::Bool:     return 1;
+		}
+		Assert(0);
+		return 0;
+	}
+
+	LayoutBuffer::LayoutBuffer() : current_offset(0),
+		current_next(0), number_components(0), stride(0), attribute_divisor(0)
+	{
+
+	}
+
+	LayoutBuffer::LayoutBuffer(std::vector<ShaderDataType> layout) : layout(layout), current_offset(0),
+		current_next(0), number_components((uint32)layout.size()), attribute_divisor(0)
+	{
+		stride = 0;
+
+		for (int i = 0; i < layout.size(); i++)
+		{
+			stride += GetShaderDataTypeSize(layout.at(i));
+		}
+	}
+
+	LayoutBuffer::~LayoutBuffer()
+	{
+
+	}
+
+	void LayoutBuffer::Next()
+	{
+		current_offset += GetShaderDataTypeSize(layout.at(current_next));
+		current_next++;
+		Assert(current_next <= layout.size());
+	}
+
+	void LayoutBuffer::SetAttributeDivisor(uint32 div)
+	{
+		attribute_divisor = div;
+	}
+
+	uint32 LayoutBuffer::Add(const LayoutBuffer &lbo)
+	{
+		layout.insert(layout.end(), lbo.layout.begin(), lbo.layout.end());
+		return static_cast<uint32>(layout.size());
+	}
+
+	void LayoutBuffer::Reset()
+	{
+		current_next = current_offset = 0;
+	}
+
+	uint32 LayoutBuffer::GetCurrentOffSet() const
+	{
+		return current_offset;
+	}
+
+	uint32 LayoutBuffer::GetCurrentSize() const
+	{
+		return GetShaderDataTypeSize(layout.at(current_next));
+	}
+
+	uint32 LayoutBuffer::GetCurrentComponentAttribCount() const
+	{
+		return GetShaderDataTypeComponentCount(layout.at(current_next));
+	}
+
+	uint32 LayoutBuffer::GetComponentCount() const
+	{
+		return (uint32)layout.size();
+	}
+
+	uint32 LayoutBuffer::GetStride() const
+	{
+		return stride;
+	}
+
+	uint32 LayoutBuffer::GetTotalSize() const
+	{
+		return stride;
+	}
+
+	uint32 LayoutBuffer::GetSizeOf(uint32 index) const
+	{
+		return GetShaderDataTypeSize(layout.at(index));
+	}
+
+	uint32 LayoutBuffer::GetAttributeDivisor() const
+	{
+		return attribute_divisor;
+	}
+
+	ShaderDataType LayoutBuffer::GetCurrentShaderType() const
+	{
+		return layout.at(current_next);
+	}
+
+	uint32 LayoutBuffer::GetTotalAttributeCount() const
+	{
+		uint32 count = 0;
+		for (int32 i = 0; i < layout.size(); i++)
+		{
+			if (layout.at(i) == ShaderDataType::Mat4)
+			{
+				count += 4;
+			}
+			else if (layout.at(i) == ShaderDataType::Mat3)
+			{
+				count += 3;
+			}
+			else
+			{
+				count += 1;
+			}
+		}
+		return count;
 	}
 
 	void CreateVertexBuffer(VertexBuffer *vbo)
@@ -285,74 +436,6 @@ namespace cm
 		}
 		glBindVertexArray(0);
 		vao->object = buffer_id;
-	}
-
-	LayoutBuffer GetTotalVertexBufferLayout(const VertexArray &vao)
-	{
-		Assert(0);//Depricated
-		LayoutBuffer lbo;
-		for (int32 i = 0; i < vao.vertex_buffers.size(); i++)
-		{
-			LayoutBuffer l = vao.vertex_buffers.at(i).lbo;
-			lbo.Add(l);
-		}
-		return lbo;
-	}
-
-	void VertexArrayAddBuffer(VertexArray *vao, VertexBuffer &vbo, LayoutBuffer &added_lbo)
-	{
-		Assert(0); //Depricated
-		uint32 buffer_id = vao->object;
-		if (buffer_id == 0)
-		{
-			glGenVertexArrays(1, &buffer_id);
-		}
-
-		glBindVertexArray(buffer_id);
-		BindVertexBuffer(vbo);
-		uint32 stride = added_lbo.GetStride();
-		LayoutBuffer lbo = GetTotalVertexBufferLayout(*vao);
-		uint32 current_attrib = lbo.GetTotalAttributeCount();
-		for (uint32 i = 0; i < added_lbo.GetComponentCount(); i++)
-		{
-			uint32 offset = added_lbo.GetCurrentOffSet();
-			uint32 compCount = added_lbo.GetCurrentComponentAttribCount();
-
-			if (added_lbo.GetCurrentShaderType() == ShaderDataType::Mat4)
-			{
-				uint32 smol_offset = offset;
-				for (int32 ii = 0; ii < 4; ii++)
-				{
-					glEnableVertexAttribArray(current_attrib);
-					glVertexAttribPointer(current_attrib, 4, GL_FLOAT, GL_FALSE, stride, (void*)(smol_offset));
-					glVertexAttribDivisor(current_attrib, added_lbo.GetAttributeDivisor());
-					current_attrib++;
-					smol_offset += sizeof(Vec4);
-				}
-			}
-			else if (added_lbo.GetCurrentShaderType() == ShaderDataType::Mat3)
-			{
-				for (int32 ii = 0; ii < 3; ii++)
-				{
-					glEnableVertexAttribArray(current_attrib);
-					glVertexAttribPointer(current_attrib, 3, GL_FLOAT, GL_FALSE, stride, (void*)(offset));
-					glVertexAttribDivisor(current_attrib, added_lbo.GetAttributeDivisor());
-					current_attrib++;
-				}
-			}
-			else
-			{
-				glEnableVertexAttribArray(current_attrib);
-				glVertexAttribPointer(current_attrib, compCount, GL_FLOAT, GL_FALSE, stride, (void*)(offset));
-				glVertexAttribDivisor(current_attrib, added_lbo.GetAttributeDivisor());
-				current_attrib++;
-			}
-			added_lbo.Next();
-		}
-		glBindVertexArray(0);
-		UnbindVertexBuffer();
-
-		vao->vertex_buffers.push_back(vbo);
 	}
 
 	void FreeVertexArray(VertexArray *vao, bool clear_vbos)
@@ -568,8 +651,7 @@ namespace cm
 		{
 			glDeleteTextures(1, &texture->object);
 			texture->object = 0;
-		}
-		
+		}		
 	}
 
 	void CreateCubeMap(CubeMap *cube_map, const void **data)
@@ -1091,6 +1173,8 @@ namespace cm
 		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f,  1.0f), Vec3(0.0f, -1.0f,  0.0f)),
 		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f, -1.0f), Vec3(0.0f, -1.0f,  0.0f))
 	};
+
+
 
 	CubeMapGenerator::CubeMapGenerator()
 	{
@@ -2443,6 +2527,37 @@ namespace cm
 			LOG("WARNING: Freeing GaussianTextureBlur, please free yourself");
 			Free();
 		}
+	}
+
+	void HemisphereKernel::SetKernelSize(uint32 kernel_size)
+	{
+		Assert(created);
+		Assert(kernel_size != 0);
+
+		if (this->kernel_size > kernel_size)
+		{
+		}
+			delete[] kernel_samples;
+			kernel_samples = new Vec3[kernel_size];
+		this->kernel_size = kernel_size;
+
+		
+		for (int32 i = 0; i < kernel_size; i++)
+		{
+			Vec3 sample = Vec3(
+				RandomBillateral(),
+				RandomBillateral(),
+				RandomUnillateral()
+			);
+			sample = Normalize(sample);
+			sample = sample * RandomUnillateral();
+
+			real32 scale = (real32)i / 64.0;
+			scale = Lerp(0.1f, 1.0f, scale * scale);
+			sample = sample * scale;
+
+			kernel_samples[i] = sample;
+		}		
 	}
 
 	void HemisphereKernel::Create(uint32 kernel_size, uint32 noise_texture_size)

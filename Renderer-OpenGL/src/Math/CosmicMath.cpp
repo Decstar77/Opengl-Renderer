@@ -2,47 +2,43 @@
 #include "CosmicMath.h"
 namespace cm
 {	   	 
-	//============Vector2 Functions============//
-
-	float Mag(const Vec2 &a)
+	real32 Mag(const Vec2 &a)
 	{
 		return sqrt(a.x*a.x + a.y*a.y);
 	}
 
 	Vec2 Normalize(const Vec2 &a)
 	{
-		float magA = Mag(a);
+		real32 magA = Mag(a);
 		return a / magA;
 	}
 
-	//============Vector3 Functions============//
-
-	float Dot(const Vec3 &a, const Vec3 &b)
+	real32 Dot(const Vec3 &a, const Vec3 &b)
 	{
 		return a.x * b.x + a.y * b.y + a.z * b.z;
 	}
 
-	float SqrdDistance(const Vec3 &a, const Vec3 &b)
+	real32 SqrdDistance(const Vec3 &a, const Vec3 &b)
 	{
 		return (a.x - b.x)*(a.x - b.x) + (a.y - b.y)*(a.y - b.y) + (a.z - b.z)*(a.z - b.z);
 	}
 
-	float Mag(const Vec3 &a)
+	real32 Mag(const Vec3 &a)
 	{
 		return sqrt(a.x*a.x + a.y * a.y + a.z * a.z);
 	}
 
 	Vec3 Cross(const Vec3 &a, const Vec3 &b)
 	{
-		float x = a.y * b.z - b.y * a.z;
-		float y = a.z * b.x - b.z * a.x;
-		float z = a.x * b.y - b.x * a.y;
+		real32 x = a.y * b.z - b.y * a.z;
+		real32 y = a.z * b.x - b.z * a.x;
+		real32 z = a.x * b.y - b.x * a.y;
 		return Vec3(x, y, z);
 	}
 
 	Vec3 Normalize(const Vec3 &a)
 	{
-		float magA = Mag(a);
+		real32 magA = Mag(a);
 		//Assert(magA != 0);
 		__m128 div = _mm_div_ps(a.data, _mm_set1_ps(magA));
 		return Vec3(div);
@@ -52,7 +48,6 @@ namespace cm
 	{
 		return Vec3(a.x, a.y, a.z);
 	}
-
 
 	bool CompareVec(const Vec3 &a, const Vec3 &b, const real &epsilon /*= FLOATING_POINT_ERROR_PRESCION*/)
 	{		
@@ -69,21 +64,19 @@ namespace cm
 		return ss.str();
 	}
 
-	//============Vector4 Functions============//
-
-	float Dot(const Vec4 &a, const Vec4 &b)
+	real32 Dot(const Vec4 &a, const Vec4 &b)
 	{
 		return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
 	}
 
-	float Mag(const Vec4 &a)
+	real32 Mag(const Vec4 &a)
 	{
 		return sqrt(a.x*a.x + a.y * a.y + a.z * a.z + a.w *a.w);
 	}
 
 	Vec4 Normalize(const Vec4 &a)
 	{
-		float magA = Mag(a);
+		real32 magA = Mag(a);
 		if (magA != 1)
 		{
 			__m128 div = _mm_div_ps(a.data, _mm_set1_ps(magA));
@@ -105,17 +98,11 @@ namespace cm
 
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////
-
-	//============Mat3 Functions==============//
-
 	real32 Det(const Mat3 &a)
 	{
-		float f = a.arr[0] * (a.arr[4] * a.arr[8] - a.arr[7] * a.arr[5]);
-		float b = a.arr[1] * (a.arr[3] * a.arr[8] - a.arr[6] * a.arr[5]);
-		float c = a.arr[2] * (a.arr[3] * a.arr[7] - a.arr[6] * a.arr[4]);
+		real32 f = a.arr[0] * (a.arr[4] * a.arr[8] - a.arr[7] * a.arr[5]);
+		real32 b = a.arr[1] * (a.arr[3] * a.arr[8] - a.arr[6] * a.arr[5]);
+		real32 c = a.arr[2] * (a.arr[3] * a.arr[7] - a.arr[6] * a.arr[4]);
 		return f - b + c;
 	}
 
@@ -199,24 +186,24 @@ namespace cm
 		return result;
 	}
 
-	float Det(const Mat4 &a)
+	real32 Det(const Mat4 &a)
 	{
-		float f = a.arr[0] * (
+		real32 f = a.arr[0] * (
 			a.arr[5] * (a.arr[10] * a.arr[15] - a.arr[11] * a.arr[14]) +
 			a.arr[6] * (a.arr[11] * a.arr[13] - a.arr[9] * a.arr[15]) +
 			a.arr[7] * (a.arr[9] * a.arr[14] - a.arr[10] * a.arr[13]));
 
-		float b = a.arr[1] * (
+		real32 b = a.arr[1] * (
 			a.arr[4] * (a.arr[10] * a.arr[15] - a.arr[11] * a.arr[14]) +
 			a.arr[6] * (a.arr[11] * a.arr[12] - a.arr[8] * a.arr[15]) +
 			a.arr[7] * (a.arr[8] * a.arr[14] - a.arr[10] * a.arr[12]));
 
-		float c = a.arr[2] * (
+		real32 c = a.arr[2] * (
 			a.arr[4] * (a.arr[9] * a.arr[15] - a.arr[11] * a.arr[13]) +
 			a.arr[5] * (a.arr[11] * a.arr[12] - a.arr[8] * a.arr[15]) +
 			a.arr[7] * (a.arr[8] * a.arr[13] - a.arr[9] * a.arr[12]));
 
-		float d = a.arr[3] * (
+		real32 d = a.arr[3] * (
 			a.arr[4] * (a.arr[9] * a.arr[14] - a.arr[10] * a.arr[13]) +
 			a.arr[5] * (a.arr[10] * a.arr[12] - a.arr[8] * a.arr[14]) +
 			a.arr[6] * (a.arr[8] * a.arr[13] - a.arr[9] * a.arr[12]));
@@ -267,13 +254,13 @@ namespace cm
 				if ((row + col) % 2)
 				{
 					ad = Adjoint(a, row, col);
-					float i = -Det(ad);
+					real32 i = -Det(ad);
 					result.arr[index++] = i;
 				}
 				else
 				{
 					ad = Adjoint(a, row, col);
-					float i = Det(ad);
+					real32 i = Det(ad);
 					result.arr[index++] = i;
 				}
 			}
@@ -281,7 +268,7 @@ namespace cm
 
 		result = Transpose(result);
 
-		float determinant = Det(a);
+		real32 determinant = Det(a);
 
 		return result / determinant;
 
@@ -312,9 +299,9 @@ namespace cm
 		{
 			axis = Normalize(axis);
 		}
-		float theata = DegToRad(d_angle);
-		float cos_theata = cosf(theata);
-		float sin_theata = sinf(theata);
+		real32 theata = DegToRad(d_angle);
+		real32 cos_theata = cosf(theata);
+		real32 sin_theata = sinf(theata);
 
 		Vec4 iPrime(0, 0, 0, 0);
 		iPrime.x = Round(axis.x *axis.x * (1 - cos_theata) + cos_theata);
@@ -341,7 +328,7 @@ namespace cm
 		return result * a;
 	}
 
-	Mat4 ScaleDirection(Mat4 a, float k, Vec3 unit_direction, bool should_normalize)
+	Mat4 ScaleDirection(Mat4 a, real32 k, Vec3 unit_direction, bool should_normalize)
 	{
 		if (should_normalize && Mag(unit_direction) != 1)
 		{
@@ -403,7 +390,6 @@ namespace cm
 
 	Mat4 LookAt(const Vec3 &position, const Vec3 &target, const Vec3 &up)
 	{
-
 		Vec3 camera_reverse_direction = Normalize((target - position));
 
 		Vec3 basis_right = Normalize(Cross(camera_reverse_direction, up));
@@ -411,14 +397,13 @@ namespace cm
 
 		Vec3 basis_forward = Normalize(Cross(basis_up, basis_right));
 
-		//THIS IS CODE IS ACTUALLY COLUNM MAJOR
-		//We just yeet it by transposing it at the end. Also care for order of multiplication order
+		// @NOTE: THIS IS CODE IS ACTUALLY COLUNM MAJOR
+		//		: We just yeet it by transposing it at the end. Also care for order of multiplication order
 		Mat4 rotation(1);
 
 		rotation.row0 = Vec4(basis_right, 0);
 		rotation.row1 = Vec4(basis_up, 0);
 		rotation.row2 = Vec4(camera_reverse_direction * -1, 0);
-		//rotation.row2 = vec4(camera_reverse_direction, 0);
 		Mat4 translation(1);
 
 		translation.row0 = Vec4(1, 0, 0, -position.x);
@@ -428,7 +413,7 @@ namespace cm
 		return Transpose(rotation * translation);
 	}
 
-	Mat4 operator /(Mat4 a, float b)
+	Mat4 operator /(Mat4 a, real32 b)
 	{
 		a.row0 = a.row0 / b;
 		a.row1 = a.row1 / b;
@@ -440,19 +425,19 @@ namespace cm
 	Mat4 operator *(const Mat4 &a, const Mat4 &b)
 	{
 		Mat4 result(1);
-		//Steps through the rows
+		// @NOTE: Steps through the rows
 		for (int i = 0; i < 4; i++)
 		{
-			//Steps through the columns
+			// @NOTE: Steps through the columns
 			for (int y = 0; y < 4; y++)
 			{
-				//Gets the column vector of the right hand side
+				// @NOTE: Gets the column vector of the right hand side
 				Vec4 col(0, 0, 0, 0);
 				for (int x = 0; x < 4; x++)
 				{
 					col.arr[x] = Get(b, x, y);
 				}
-				//Adds to result
+				// @NOTE: Adds to result
 				result.arr[4 * i + y] = Dot(col, a.data[i]);
 			}
 		}
@@ -479,10 +464,6 @@ namespace cm
 		}
 		return result;
 	}
-
-	/////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////
 
 	Quat EulerToQuat(const Vec3 &euler_angle)
 	{
@@ -518,18 +499,17 @@ namespace cm
 
 	Mat4 QuatToMat4(const Quat &q)
 	{
-		// @Verified
 		Mat4 mat(1);
 
-		float qxx = (q.x * q.x);
-		float qyy = (q.y * q.y);
-		float qzz = (q.z * q.z);
-		float qxz = (q.x * q.z);
-		float qxy = (q.x * q.y);
-		float qyz = (q.y * q.z);
-		float qwx = (q.w * q.x);
-		float qwy = (q.w * q.y);
-		float qwz = (q.w * q.z);
+		real32 qxx = (q.x * q.x);
+		real32 qyy = (q.y * q.y);
+		real32 qzz = (q.z * q.z);
+		real32 qxz = (q.x * q.z);
+		real32 qxy = (q.x * q.y);
+		real32 qyz = (q.y * q.z);
+		real32 qwx = (q.w * q.x);
+		real32 qwy = (q.w * q.y);
+		real32 qwz = (q.w * q.z);
 
 		mat.row0.x = 1 - (2) * (qyy + qzz);
 		mat.row0.y = (2) * (qxy + qwz);
@@ -547,11 +527,10 @@ namespace cm
 
 	Vec3 Rotate(const real32 &d_angle, const Vec3 &point, const Vec3 &axis)
 	{
-		//@Speed, normalizing to be safe
 		Vec3 ax = Normalize(axis);
 
-		float sh = sin(DegToRad(d_angle / 2));
-		float ch = cos(DegToRad(d_angle / 2));
+		real32 sh = sin(DegToRad(d_angle / 2));
+		real32 ch = cos(DegToRad(d_angle / 2));
 
 		Quat r(ax.x * sh,
 			ax.y * sh,
@@ -568,7 +547,7 @@ namespace cm
 	Vec3 Rotate(const Quat &r, const Vec3 &point)
 	{
 		//@Help: https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
-		//@Speed, normalizing to be safe		
+
 		Quat rc = Conjugate(Normalize(r));
 		Quat pp = Quat(point, 0);
 		Quat res = (r * pp) * rc;
@@ -580,14 +559,14 @@ namespace cm
 		return Quat(-a.x, -a.y, -a.z, a.w);
 	}
 
-	float Mag(const Quat & a)
+	real32 Mag(const Quat & a)
 	{
 		return sqrt(a.x* a.x + a.y * a.y + a.z * a.z + a.w * a.w);
 	}
 
 	Quat Normalize(const Quat & a)
 	{
-		float m = Mag(a);
+		real32 m = Mag(a);
 		return Quat(a.x / m, a.y / m, a.z / m, a.w / m);
 	}
 
@@ -598,14 +577,10 @@ namespace cm
 		return ss.str();
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////
-
 	Vec4 GetNormalisedDeviceCoordinates(const real32 &window_width, const real32 &window_height, const real32 &mouse_x,
 		const real32 &mouse_y)
 	{
-		//This is actualy clip space when the vec4 with -1 and 1
+		// @NOTE: This is actualy clip space when the vec4 with -1 and 1
 		return Vec4(2 * mouse_x / window_width - 1, -(2 * mouse_y / window_height - 1), -1, 1);
 	}
 
@@ -621,12 +596,7 @@ namespace cm
 		Vec4 worldSpace = viewCoords * invView;
 		return Vec3(worldSpace.x, worldSpace.y, worldSpace.z);
 	}
-		
-	/////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////
-		   
-	//============Other Functions============//
+
 	Polar_coord Canonical(real32 r, real32 theta, real32 z)
 	{
 		theta = DegToRad(theta);
@@ -639,57 +609,15 @@ namespace cm
 			if (r < 0.f)
 			{
 				r = -(r);
-				theta += static_cast<float>(PI);
+				theta += static_cast<real32>(PI);
 			}
 			if (fabs(theta) > PI)
 			{
-				theta += static_cast<float>(PI);
-				theta -= static_cast<float>(floor(theta / 2 * PI) * 2 * PI);
-				theta -= static_cast<float>(PI);
+				theta += static_cast<real32>(PI);
+				theta -= static_cast<real32>(floor(theta / 2 * PI) * 2 * PI);
+				theta -= static_cast<real32>(PI);
 			}
 		}
 		return { r, theta, z };
 	}
-
-	uint32 GetShaderDataTypeSize(ShaderDataType type)
-	{
-		switch (type)
-		{
-		case ShaderDataType::Float:    return 4;
-		case ShaderDataType::Float2:   return 4 * 2;
-		case ShaderDataType::Float3:   return 4 * 3;
-		case ShaderDataType::Float4:   return 4 * 4;
-		case ShaderDataType::Mat3:     return 4 * 3 * 3;
-		case ShaderDataType::Mat4:     return 4 * 4 * 4;
-		case ShaderDataType::Int:      return 4;
-		case ShaderDataType::Int2:     return 4 * 2;
-		case ShaderDataType::Int3:     return 4 * 3;
-		case ShaderDataType::Int4:     return 4 * 4;
-		case ShaderDataType::Bool:     return 1;
-		}
-		Assert(0);
-		return 0;
-	}
-
-	uint32 GetShaderDataTypeComponentCount(ShaderDataType type)
-	{
-		switch (type)
-		{
-		case ShaderDataType::Float:    return 1;
-		case ShaderDataType::Float2:   return 1 * 2;
-		case ShaderDataType::Float3:   return 1 * 3;
-		case ShaderDataType::Float4:   return 1 * 4;
-		case ShaderDataType::Mat3:     return 1 * 3 * 3;
-		case ShaderDataType::Mat4:     return 1 * 4 * 4;
-		case ShaderDataType::Int:      return 1;
-		case ShaderDataType::Int2:     return 1 * 2;
-		case ShaderDataType::Int3:     return 1 * 3;
-		case ShaderDataType::Int4:     return 1 * 4;
-		case ShaderDataType::Bool:     return 1;
-		}
-		Assert(0);
-		return 0;
-	}
-
-
 }

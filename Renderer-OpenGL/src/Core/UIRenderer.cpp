@@ -278,9 +278,17 @@ namespace cm
 		if (ImGui::CollapsingHeader("Render Passes"))
 		{
 			ImGui::Checkbox("Shadow Pass", &render_settings->shadow_pass);
-			ImGui::Checkbox("Defferd Pass", &render_settings->defferd_pass);
-			ImGui::Checkbox("SSAO Pass", &render_settings->ssao);
 			ImGui::Checkbox("SSR Pass", &render_settings->ssr);
+
+			if (ImGui::TreeNode("SSAO Pass"))
+			{
+				render_settings->ssao_changed = render_settings->ssao_changed | ImGui::Checkbox("SSAO Pass", &render_settings->ssao);
+				render_settings->ssao_changed = render_settings->ssao_changed | ImGui::SliderFloat("Radius", &render_settings->ssao_radius, 0.1, 5.0);
+				render_settings->ssao_changed = render_settings->ssao_changed | ImGui::SliderFloat("Strength", &render_settings->ssao_strength, 0.1, 5.0);
+				render_settings->ssao_changed = render_settings->ssao_changed | ImGui::SliderFloat("Bias", &render_settings->ssao_bias, 0.1, 0.001);
+				render_settings->ssao_changed = render_settings->ssao_changed | ImGui::SliderInt("Kernel Size", &render_settings->ssao_kernel_size, 1, 64);
+				ImGui::TreePop();
+			}
 		}
 		
 		if (ImGui::CollapsingHeader("Post Processing"))

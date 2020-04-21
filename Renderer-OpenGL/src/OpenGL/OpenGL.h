@@ -8,9 +8,20 @@ namespace cm
 {
 	//===============================================================//
 	/*
-		@TODO: Change CreateShader to take in shader pointer
+		I've taken a OOP approach in this section for exploritory purposes.
+		Ie, its see the advantages and disadvantages
 	*/
 	//===============================================================//
+
+	//************************************
+	// Enums 
+	//************************************
+
+	enum class ShaderDataType
+	{
+		None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, Bool
+	};
+
 	enum class VertexFlags : uint32
 	{
 		READ = GL_MAP_READ_BIT,
@@ -33,6 +44,42 @@ namespace cm
 	{
 		Rasterization = 1,
 		Compute = 2
+	};
+	   
+	//************************************
+	// Opengl structures
+	//************************************
+
+	class LayoutBuffer
+	{
+		uint32 number_components;
+		uint32 stride;
+
+		std::vector<ShaderDataType> layout;
+		uint32 current_offset;
+		uint32 current_next;
+		uint32 attribute_divisor;
+
+	public:
+		LayoutBuffer();
+		LayoutBuffer(std::vector<ShaderDataType> layout);
+		~LayoutBuffer();
+
+		void Reset();
+		void Next();
+		void SetAttributeDivisor(uint32 div);
+		uint32 Add(const LayoutBuffer &lbo);
+
+		ShaderDataType GetCurrentShaderType() const;
+		uint32 GetTotalAttributeCount() const;
+		uint32 GetCurrentOffSet() const;
+		uint32 GetCurrentSize() const;
+		uint32 GetCurrentComponentAttribCount() const;
+		uint32 GetComponentCount() const;
+		uint32 GetStride() const;
+		uint32 GetTotalSize() const;
+		uint32 GetSizeOf(uint32 index) const;
+		uint32 GetAttributeDivisor() const;
 	};
 
 	struct OpenGLStatistics
@@ -314,10 +361,6 @@ namespace cm
 
 	void CreateVertexArray(VertexArray *vao);
 
-	LayoutBuffer GetTotalVertexBufferLayout(const VertexArray &vao);
-
-	void VertexArrayAddBuffer(VertexArray *vao, VertexBuffer &vbo, LayoutBuffer &added_lbo);
-
 	//************************************
 	// Texture Functions
 	//************************************
@@ -424,6 +467,10 @@ namespace cm
 	// Other Functions
 	//************************************
 
+	uint32 GetShaderDataTypeComponentCount(ShaderDataType type);
+
+	uint32 GetShaderDataTypeSize(ShaderDataType type);
+
 	void GetOpenglStatistics(OpenGLStatistics *stats);
 
 	void PrintOpenglStatistics(const OpenGLStatistics &stats);
@@ -431,16 +478,10 @@ namespace cm
 	void InitializeOpenGl(uint32 window_width, uint32 window_height);
 
 	void CreateGLMesh(GLMesh *mesh, LayoutBuffer lbo, void *vertex_data, uint32 vertex_size_bytes, void *index_data, uint32 index_size_bytes);
-
 	
 	//************************************
 	// Usefull classes for rendering
 	//************************************
-	/*
-	@NOTES:
-		I've taken a OOP approach in this section for exploritory purposes.
-		Ie, its see the advantages and disadvantages
-	*/
 
 	class StandardMeshes
 	{
@@ -672,25 +713,25 @@ namespace cm
 	{
 	private:
 		bool created = false;
+		uint32 kernel_size;
+		Vec3 *kernel_samples;
 
 	public:
 		void Create(uint32 kernel_size, uint32 noise_texture_size);
 		void Free();
 
 		Texture noise_texture;
-		uint32 kernel_size;
-		Vec3 *kernel_samples;
 
 
 	public:
 		HemisphereKernel();
 		~HemisphereKernel();
 
+		inline uint32 GetKernelSize() const { return kernel_size; }
+		inline Vec3 GetKernelSample(uint32 index) const { Assert(index >= 0 && index < kernel_size); return kernel_samples[index]; }
+		void SetKernelSize(uint32 kernel_size); 
 	};
-
-
-
-
+	   	 
 	//************************************
 	// Inlined Opengl State functions
 	//************************************

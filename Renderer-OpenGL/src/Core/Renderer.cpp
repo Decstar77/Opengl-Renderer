@@ -15,7 +15,7 @@ namespace cm
 	{
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
-		RenderCommands::Clear(Colour(0, 1, 0, 1));
+		RenderCommands::Clear(Vec4(0, 1, 0, 1));
 
 		float near_plane = 1.f, far_plane = 10.f;
 		float rect = 8;

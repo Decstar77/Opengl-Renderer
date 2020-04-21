@@ -53,8 +53,10 @@ namespace cm
 		bool defferd_pass = true;
 		bool ssr = true;
 
+
 		bool ssao = false;
-		int32 ssao_kernel_size = 32;
+		bool ssao_changed = false;
+		int32 ssao_kernel_size = 32; 
 		real32 ssao_radius = 1.5;
 		real32 ssao_bias = 0.025;
 		real32 ssao_strength = 1.2;
