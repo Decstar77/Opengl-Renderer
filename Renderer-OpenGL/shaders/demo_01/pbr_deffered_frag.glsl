@@ -58,10 +58,10 @@ void main()
 
     // @NOTE: Get material details, now artist make albedo in sRGB so we corrects it
     vec3 albedo = pow (texture(g_colour, texture_coords).rgb, vec3(2.2));
-    float ao = texture(g_position, texture_coords).a;
-    float roughness = texture(g_normal, texture_coords).a;
-    float metallic = texture(g_colour, texture_coords).a;
-	float ssao = texture(g_ssao, texture_coords).r;
+    float ao = clamp(texture(g_position, texture_coords).a, 0.01, 1.0);
+    float roughness = clamp(texture(g_normal, texture_coords).a, 0.01, 1.0);
+    float metallic = clamp(texture(g_colour, texture_coords).a, 0.01, 1.0);
+	float ssao = clamp(texture(g_ssao, texture_coords).r, 0.0, 1.0);
 
     vec3 light_pos = point_light_position[0].xyz;
     vec3 light_colour = point_light_colour[0].rgb;
@@ -142,7 +142,7 @@ float DistGGX(vec3 n, vec3 h, float a)
 	float demon = ( hdot2 * (a2 - 1.0) + 1.0);
 	demon = pi * demon * demon;
 
-	float res = a2 / demon;
+	float res = a2 / (demon + 0.001);
 
 	return res;
 }

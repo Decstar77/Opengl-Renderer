@@ -37,7 +37,7 @@ namespace cm
 
 		VertexBuffer vbo;
 		vbo.lbo = layout;
-		vbo.size_bytes = vert_data.size() * sizeof(real);
+		vbo.size_bytes = static_cast<uint32>(vert_data.size() * sizeof(real));
 		vbo.flags = VertexFlags::READ_WRITE; // Optional;
 
 		CreateVertexBuffer(&vbo);
@@ -45,7 +45,7 @@ namespace cm
 
 		IndexBuffer ibo;
 		ibo.index_count = (uint32)index_data.size();
-		ibo.size_bytes = index_data.size() * sizeof(uint32);
+		ibo.size_bytes = static_cast<uint32>( index_data.size() * sizeof(uint32));
 		ibo.flags = VertexFlags::READ_WRITE;
 		
 		CreateIndexBuffer(&ibo);
@@ -272,7 +272,7 @@ namespace cm
 			ShaderDataType::Float3,
 			ShaderDataType::Float4, 
 			ShaderDataType::Float4 }));
-		std::vector<float> data;
+		std::vector<real32> data;
 		uint32 vert_size = static_cast<uint32>(vertices.size());
 		for (uint32 i = 0; i < vert_size; i++)
 		{
@@ -296,10 +296,10 @@ namespace cm
 			data.push_back(vert.bitangent.y);
 			data.push_back(vert.bitangent.z);
 
-			data.push_back(vert.bone_index[0]);
-			data.push_back(vert.bone_index[1]);
-			data.push_back(vert.bone_index[2]);
-			data.push_back(vert.bone_index[3]);
+			data.push_back(static_cast<real32>(vert.bone_index[0]));
+			data.push_back(static_cast<real32>(vert.bone_index[1]));
+			data.push_back(static_cast<real32>(vert.bone_index[2]));
+			data.push_back(static_cast<real32>(vert.bone_index[3]));
 
 			data.push_back(vert.bone_weights[0]);
 			data.push_back(vert.bone_weights[1]);
@@ -309,7 +309,7 @@ namespace cm
 
 		VertexBuffer vbo;
 		vbo.lbo = l;
-		vbo.size_bytes = data.size() * sizeof(real);
+		vbo.size_bytes = static_cast<uint32>(data.size() * sizeof(real));
 		vbo.flags = VertexFlags::READ_WRITE; // Optional;
 
 		CreateVertexBuffer(&vbo);
@@ -317,7 +317,7 @@ namespace cm
 
 		IndexBuffer ibo;
 		ibo.index_count = (uint32)indices.size();
-		ibo.size_bytes = indices.size() * sizeof(uint32);
+		ibo.size_bytes = static_cast<uint32>(indices.size() * sizeof(uint32));
 		ibo.flags = VertexFlags::READ_WRITE;
 
 		CreateIndexBuffer(&ibo);

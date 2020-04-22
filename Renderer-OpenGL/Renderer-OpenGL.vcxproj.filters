@@ -33,12 +33,6 @@
     <ClCompile Include="main.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\OpenGL\BufferLayout.cpp">
-      <Filter>src\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Math\CosmicPhysics.cpp">
-      <Filter>src\Math</Filter>
-    </ClCompile>
     <ClCompile Include="src\Core\Camera.cpp">
       <Filter>src\Core</Filter>
     </ClCompile>
@@ -107,23 +101,14 @@
     <ClInclude Include="src\Core.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Math\CosmicColliders.h">
-      <Filter>src\Math</Filter>
-    </ClInclude>
     <ClInclude Include="src\Math\CosmicMath.h">
       <Filter>src\Math</Filter>
     </ClInclude>
     <ClInclude Include="src\OpenGL\RenderCommands.h">
       <Filter>src\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="src\OpenGL\BufferLayout.h">
-      <Filter>src\OpenGL</Filter>
-    </ClInclude>
     <ClInclude Include="src\OpenGL\OpenGL.h">
       <Filter>src\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Math\CosmicPhysics.h">
-      <Filter>src\Math</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Camera.h">
       <Filter>src\Core</Filter>

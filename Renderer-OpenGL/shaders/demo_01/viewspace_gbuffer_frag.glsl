@@ -17,12 +17,15 @@ uniform sampler2D colour_map;
 uniform sampler2D normal_map;
 uniform sampler2D orme_map;
 
+uniform vec3 colour_set;
+uniform vec3 orm_set;
+uniform bool normal_set;
 
 void main()
 {    
-    vec3 orm = texture(orme_map, vs_in.texture_coords).rgb;
+    vec3 orm = texture(orme_map, vs_in.texture_coords).rgb * orm_set;
     vec3 n = 2.0 * texture(normal_map, vs_in.texture_coords).rgb - 1.0;
-    vec3 c = texture(colour_map, vs_in.texture_coords).rgb;
+    vec3 c = texture(colour_map, vs_in.texture_coords).rgb * colour_set;
 
     g_position.xyz = vs_in.view_position.xyz;
     g_position.a = orm.r;
@@ -30,7 +33,7 @@ void main()
     //vec4 vn =  vec4(vs_in.tbn_matrix * n, 1);    
     //g_normal.rgb = normalize(vn.rgb);    
 
-    g_normal.xyz = normalize(vs_in.view_normal);
+    g_normal.xyz = normalize( normal_set ? n : vs_in.view_normal );
     g_normal.a = orm.g;    
 
     g_albedoSpec.rgb = c;

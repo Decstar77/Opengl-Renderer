@@ -121,7 +121,7 @@ namespace cm
 			{
 				file << std::endl;
 			}
-			real32 ind = index_data[i];
+			real32 ind = static_cast<real32>(index_data[i]);
 			std::string sind = std::to_string(ind);
 			file << sind << ", ";
 		}

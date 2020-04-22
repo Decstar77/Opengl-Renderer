@@ -98,6 +98,7 @@ namespace cm
 			-1.000000, 0.625000, 0.500000, 1.000000, -1.000000, -1.000000, 0.000000, 0.000000, -1.000000,
 			0.375000, 0.500000
 		};
+		
 		uint32 cube_index_data[] =
 		{
 			0, 1, 2, 0, 2, 3, 4, 5, 6, 4,
@@ -391,7 +392,7 @@ namespace cm
 		uint32 vbo_count = (uint32)vao->vertex_buffers.size();
 
 		uint32 attrib_counter = 0;
-		for (int32 i = 0; i < vbo_count; i++)
+		for (uint32 i = 0; i < vbo_count; i++)
 		{
 			VertexBuffer current_vbo = vao->vertex_buffers[i];
 			LayoutBuffer lbo = current_vbo.lbo;
@@ -400,15 +401,15 @@ namespace cm
 			uint32 stride = lbo.GetStride();
 			for (uint32 i = 0; i < lbo.GetComponentCount(); i++)
 			{
-				uint32 offset = lbo.GetCurrentOffSet();
+				uint64 offset = lbo.GetCurrentOffSet();
 				uint32 compCount = lbo.GetCurrentComponentAttribCount();
 				if (lbo.GetCurrentShaderType() == ShaderDataType::Mat4)
 				{
-					uint32 smol_offset = offset;
+					uint64 smol_offset = offset;
 					for (int32 ii = 0; ii < 4; ii++)
 					{
 						glEnableVertexAttribArray(attrib_counter);
-						glVertexAttribPointer(attrib_counter, 4, GL_FLOAT, GL_FALSE, stride, (void*)(smol_offset));
+						glVertexAttribPointer(attrib_counter, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(smol_offset));
 						glVertexAttribDivisor(attrib_counter, lbo.GetAttributeDivisor());
 						attrib_counter++;
 						smol_offset += sizeof(Vec4);
@@ -419,7 +420,7 @@ namespace cm
 					for (int32 ii = 0; ii < 3; ii++)
 					{
 						glEnableVertexAttribArray(attrib_counter);
-						glVertexAttribPointer(attrib_counter, 3, GL_FLOAT, GL_FALSE, stride, (void*)(offset));
+						glVertexAttribPointer(attrib_counter, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offset));
 						glVertexAttribDivisor(attrib_counter, lbo.GetAttributeDivisor());
 						attrib_counter++;
 					}
@@ -427,7 +428,7 @@ namespace cm
 				else
 				{
 					glEnableVertexAttribArray(attrib_counter);
-					glVertexAttribPointer(attrib_counter, compCount, GL_FLOAT, GL_FALSE, stride, (void*)(offset));
+					glVertexAttribPointer(attrib_counter, compCount, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offset));
 					glVertexAttribDivisor(attrib_counter, lbo.GetAttributeDivisor());
 					attrib_counter++;
 				}
@@ -493,7 +494,8 @@ namespace cm
 		const char * fShaderCode = fragment_code_str.c_str();
 
 		// 2. compile shaders
-		uint32 vertex, fragment, geometry;
+		uint32 vertex;
+		uint32 fragment;
 		// vertex shader
 		vertex = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vertex, 1, &vertex_code, NULL);
@@ -530,7 +532,7 @@ namespace cm
 		const char* vertex_code = shader->config.src_vert.c_str();
 		const char * fShaderCode = shader->config.src_frag.c_str();
 
-		uint32 vertex, fragment, geometry;
+		uint32 vertex, fragment;
 		
 		vertex = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vertex, 1, &vertex_code, NULL);
@@ -1674,8 +1676,8 @@ namespace cm
 		const uint32 mip_levels = 5;
 		for (uint32 mip = 0; mip < mip_levels; ++mip)
 		{
-			uint32 mip_width = dst->config.width * std::pow(0.5, mip);
-			uint32 mip_height = dst->config.height * std::pow(0.5, mip);
+			uint32 mip_width = dst->config.width *	 static_cast<uint32>(std::pow(0.5, mip));
+			uint32 mip_height = dst->config.height * static_cast<uint32>(std::pow(0.5, mip));
 			real32 roughness = (real32)mip / (real32)(mip_levels - 1);
 
 			SetViewPort(0, 0, mip_width, mip_height);
@@ -1915,8 +1917,8 @@ namespace cm
 			sampling_textures[i].config.wrap_s_mode = GL_CLAMP_TO_EDGE;
 			sampling_textures[i].config.min_filter = GL_LINEAR;
 			sampling_textures[i].config.mag_filter = GL_LINEAR;
-			sampling_textures[i].config.width = src_width * std::pow(0.5, i);
-			sampling_textures[i].config.height= src_height * std::pow(0.5, i);
+			sampling_textures[i].config.width = src_width *  static_cast<uint32>(std::pow(0.5, i));
+			sampling_textures[i].config.height= src_height * static_cast<uint32>(std::pow(0.5, i));
 			CreateTexture(&sampling_textures[i], nullptr);
 		}
 
@@ -1946,7 +1948,7 @@ namespace cm
 #endif
 		ShaderSetFloat(&shader, "delta", 1);
 		//ShaderSetInt32(&shader, "first", 0);
-		for (int32 i = 1; i < sampling_texture_count; i++)
+		for (int32 i = 1; i < static_cast<int32>(sampling_texture_count); i++)
 		{
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sampling_textures[i].object, 0);
 
@@ -2310,7 +2312,7 @@ namespace cm
 
 			ClearColourBuffer();
 
-			ShaderSetFloat(&horizontal_shader, "texel_size", (1.0 / horizontal_frames[i].colour0_texture_attachment.config.width));
+			ShaderSetFloat(&horizontal_shader, "texel_size", static_cast<real32>((1.0 / horizontal_frames[i].colour0_texture_attachment.config.width)));
 			ShaderBindTexture(horizontal_shader, current, 0, "src_texture");
 
 			RenderMesh(horizontal_shader, StandardMeshes::quad);
@@ -2323,7 +2325,7 @@ namespace cm
 
 			ClearColourBuffer();
 
-			ShaderSetFloat(&vertical_shader, "texel_size", (1.0 / vertical_frames[i].colour0_texture_attachment.config.height));
+			ShaderSetFloat(&vertical_shader, "texel_size", static_cast<real32>((1.0 / vertical_frames[i].colour0_texture_attachment.config.height)));
 			ShaderBindTexture(vertical_shader, horizontal_frames[i].colour0_texture_attachment, 0, "src_texture");
 
 			RenderMesh(vertical_shader, StandardMeshes::quad);
@@ -2542,7 +2544,7 @@ namespace cm
 		this->kernel_size = kernel_size;
 
 		
-		for (int32 i = 0; i < kernel_size; i++)
+		for (uint32 i = 0; i < kernel_size; i++)
 		{
 			Vec3 sample = Vec3(
 				RandomBillateral(),
@@ -2552,7 +2554,7 @@ namespace cm
 			sample = Normalize(sample);
 			sample = sample * RandomUnillateral();
 
-			real32 scale = (real32)i / 64.0;
+			real32 scale = (real32)i / 64.0f;
 			scale = Lerp(0.1f, 1.0f, scale * scale);
 			sample = sample * scale;
 
@@ -2569,7 +2571,7 @@ namespace cm
 		kernel_samples = new Vec3[kernel_size];
 		this->kernel_size = kernel_size;
 		// @NOTE: Gen samples
-		for (int32 i = 0; i < kernel_size; i++)
+		for (uint32 i = 0; i < kernel_size; i++)
 		{
 			Vec3 sample = Vec3(
 				RandomBillateral(),
@@ -2579,7 +2581,7 @@ namespace cm
 			sample = Normalize(sample);
 			sample = sample * RandomUnillateral();
 
-			real32 scale = (real32)i / 64.0;
+			real32 scale = (real32)i / 64.0f;
 			scale = Lerp(0.1f, 1.0f, scale * scale);
 			sample = sample * scale;
 
@@ -2588,7 +2590,7 @@ namespace cm
 
 		// @NOTE: Gen noise texture
 		Vec3 *noise = new Vec3[noise_texture_size * noise_texture_size];
-		for (int32 i = 0; i < noise_texture_size * noise_texture_size; i++)
+		for (uint32 i = 0; i < noise_texture_size * noise_texture_size; i++)
 		{
 			Vec3 n(
 				RandomBillateral(),

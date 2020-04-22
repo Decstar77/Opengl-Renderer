@@ -84,7 +84,7 @@ namespace cm
 
 			if (scene->mAnimations[0]->mTicksPerSecond != 0.0)
 			{
-				ticks_per_second = scene->mAnimations[0]->mTicksPerSecond;
+				ticks_per_second = (float)scene->mAnimations[0]->mTicksPerSecond;
 			}
 			else
 			{
@@ -475,11 +475,11 @@ namespace cm
 		{
 			aiMatrix4x4 identity_matrix; // = mat4(1.0f);
 
-			double time_in_ticks = time_in_sec * ticks_per_second;
-			float animation_time = fmod(time_in_ticks, scene->mAnimations[0]->mDuration); //������� �� ����� (������� �� ������)
+			double time_in_ticks = (float)time_in_sec * ticks_per_second;
+			float animation_time = (float)fmod(time_in_ticks, scene->mAnimations[0]->mDuration); //������� �� ����� (������� �� ������)
 			// animation_time - ���� ������� ������ � ���� ������ �� ������ �������� (�� ������� �������� ����� � �������� )
 			
-			readNodeHierarchy(time_in_sec, scene->mRootNode, identity_matrix);
+			readNodeHierarchy((float)time_in_sec, scene->mRootNode, identity_matrix);
 
 			transforms.resize(m_num_bones);
 

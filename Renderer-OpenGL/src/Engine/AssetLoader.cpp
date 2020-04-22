@@ -170,7 +170,7 @@ namespace cm
 		//		: Meaning, indices and vertex bone weights.
 		EditableMesh *emesh = &resulting_meshes.at(index);
 		AnimationController *ac = &resulting_animation_controllers.at(index);
-		uint32 mesh_indices_offset = emesh->vertices.size();
+		uint32 mesh_indices_offset = SafeTruncateUint64(emesh->vertices.size());
 
 		// @NOTE: Construct the vertices with the available data
 		for (uint32 i = 0; i < mesh->mNumVertices; i++)
@@ -226,7 +226,7 @@ namespace cm
 
 		if (bones && import_animations)
 		{
-			for (int i = 0; i < mesh->mNumBones; i++)
+			for (uint32 i = 0; i < mesh->mNumBones; i++)
 			{
 				aiBone *b = mesh->mBones[i];
 				std::string cur_bone_name = b->mName.C_Str();
@@ -437,7 +437,7 @@ namespace cm
 
 	void ModeImport::ProcessAnimationChannels(aiAnimation *anim, Animation *animation)
 	{
-		for (int i = 0; i < anim->mNumChannels; i++)
+		for (uint32 i = 0; i < anim->mNumChannels; i++)
 		{
 			aiNodeAnim *ai = anim->mChannels[i];
 			AnimationFrames frame;
@@ -456,26 +456,26 @@ namespace cm
 			animation->frames[i].sclkeys.resize(ai->mNumScalingKeys);
 			animation->frames[i].scltime.resize(ai->mNumScalingKeys);
 
-			for (int j = 0; j < ai->mNumPositionKeys; j++)
+			for (uint32 j = 0; j < ai->mNumPositionKeys; j++)
 			{
 				Vec3 pos = Vec3(ai->mPositionKeys[j].mValue.x, ai->mPositionKeys[j].mValue.y, ai->mPositionKeys[j].mValue.z);
-				float time = ai->mPositionKeys[j].mTime;
+				real32 time = SafeTruncateDouble(ai->mPositionKeys[j].mTime);
 				animation->frames[i].poskeys[j] = pos;
 				animation->frames[i].postime[j] = time;
 			}
 
-			for (int j = 0; j < ai->mNumRotationKeys; j++)
+			for (uint32 j = 0; j < ai->mNumRotationKeys; j++)
 			{
 				Quat rot = Quat(ai->mRotationKeys[j].mValue.x, ai->mRotationKeys[j].mValue.y, ai->mRotationKeys[j].mValue.z, ai->mRotationKeys[j].mValue.w);
-				float time = ai->mRotationKeys[j].mTime;
+				real32 time = SafeTruncateDouble(ai->mRotationKeys[j].mTime);
 				animation->frames[i].rotkeys[j] = rot;
 				animation->frames[i].rottime[j] = time;
 			}
 
-			for (int j = 0; j < ai->mNumScalingKeys; j++)
+			for (uint32 j = 0; j < ai->mNumScalingKeys; j++)
 			{
 				Vec3 pos = Vec3(ai->mScalingKeys[j].mValue.x, ai->mScalingKeys[j].mValue.y, ai->mScalingKeys[j].mValue.z);
-				float time = ai->mScalingKeys[j].mTime;
+				real32 time = SafeTruncateDouble(ai->mScalingKeys[j].mTime);
 				animation->frames[i].sclkeys[j] = pos;
 				animation->frames[i].scltime[j] = time;
 			}						
@@ -531,8 +531,8 @@ namespace cm
 
 		// @NOTE: Create new animation
 		Animation animation;
-		animation.duration = anim->mDuration;
-		animation.ticks_per_second = anim->mTicksPerSecond;
+		animation.duration = SafeTruncateDouble(anim->mDuration);
+		animation.ticks_per_second = SafeTruncateDouble(anim->mTicksPerSecond);
 		ProcessAnimationChannels(anim, &animation);
 		
 		// @NOTE: Get scene transform
@@ -556,7 +556,7 @@ namespace cm
 	bool ModeImport::Load()
 	{		
 		bool result = false;
-		uint32 import_mesh_count = model_paths.size();
+		uint32 import_mesh_count = SafeTruncateUint64(model_paths.size());
 		resulting_meshes.resize(import_mesh_count);
 		resulting_animation_controllers.resize(import_mesh_count);
 
@@ -568,7 +568,7 @@ namespace cm
 			flags = import_vertex_binorms_tangents ? flags | aiProcess_CalcTangentSpace : flags;
 
 
-			const aiScene *scene = import.ReadFile(this->model_paths[0], flags);
+			const aiScene *scene = import.ReadFile(this->model_paths[i], flags);
 			result = scene || !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || scene->mRootNode;
 
 

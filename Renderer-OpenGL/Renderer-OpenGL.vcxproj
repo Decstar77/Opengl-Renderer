@@ -23,9 +23,7 @@
     <ClCompile Include="src\Engine\Input.cpp" />
     <ClCompile Include="src\Math\CosmicMath.cpp" />
     <ClCompile Include="src\Math\CosmicNoise.cpp" />
-    <ClCompile Include="src\Math\CosmicPhysics.cpp" />
     <ClCompile Include="src\Core\EditableMesh.cpp" />
-    <ClCompile Include="src\OpenGL\BufferLayout.cpp" />
     <ClCompile Include="src\OpenGL\OpenGL.cpp" />
     <ClCompile Include="src\Tutorials.cpp" />
     <ClCompile Include="src\Utility.cpp" />
@@ -48,12 +46,9 @@
     <ClInclude Include="src\Core\Renderer.h" />
     <ClInclude Include="src\Debug.h" />
     <ClInclude Include="src\Engine\Input.h" />
-    <ClInclude Include="src\Math\CosmicColliders.h" />
     <ClInclude Include="src\Math\CosmicMath.h" />
     <ClInclude Include="src\Math\CosmicNoise.h" />
-    <ClInclude Include="src\Math\CosmicPhysics.h" />
     <ClInclude Include="src\Core\EditableMesh.h" />
-    <ClInclude Include="src\OpenGL\BufferLayout.h" />
     <ClInclude Include="src\OpenGL\RenderCommands.h" />
     <ClInclude Include="src\OpenGL\OpenGL.h" />
     <ClInclude Include="src\Tutorials.h" />
@@ -159,13 +154,15 @@
       <ConformanceMode>true</ConformanceMode>
       <PreprocessorDefinitions>GLEW_STATIC;IMGUI_IMPL_OPENGL_LOADER_GLEW;_ENABLE_EXTENDED_ALIGNED_STORAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <AdditionalIncludeDirectories>F:\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;F:\Libraries\ASSIMP\include;F:\Libraries\glm-0.9.9.6\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\lib-vc2017;F:\Libraries\GLEW\lib\Release\x64;F:\Libraries\ASSIMP\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;assimp64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -178,15 +175,17 @@
       <ConformanceMode>true</ConformanceMode>
       <PreprocessorDefinitions>GLEW_STATIC;IMGUI_IMPL_OPENGL_LOADER_GLEW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <AdditionalIncludeDirectories>F:\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;F:\Libraries\ASSIMP\include;F:\Libraries\glm-0.9.9.6\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\lib-vc2017;F:\Libraries\GLEW\lib\Release\x64;F:\Libraries\ASSIMP\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;assimp64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

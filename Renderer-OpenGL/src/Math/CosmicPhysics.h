@@ -247,10 +247,10 @@ namespace cm
 				return;
 			}
 			// Find the contact with the largest closing velocity;
-			for (int32 p = 0; p < iterations; p++)
+			for (uint32 p = 0; p < iterations; p++)
 			{
 				real max = REAL_MAX;
-				unsigned maxIndex = contacts.size();
+				unsigned maxIndex = (unsigned) contacts.size();
 				for (int32 i = 0; i < contacts.size(); i++)
 				{
 					real sepVel = contacts[i].CalculateClosingVelocity();

@@ -86,7 +86,7 @@ namespace cm
 		case GL_DEBUG_SEVERITY_NOTIFICATION: std::cout << "Severity: notification"; break;
 		} std::cout << std::endl;
 		std::cout << std::endl;
-		Assert(0);
+			Assert(0);
 	}
 
 

@@ -52,6 +52,24 @@ void MousePositionCallBack(GLFWwindow *widow, double xpos, double ypos)
 	Input::SetMousePosition(current_mouse.x, current_mouse.y);
 }
 
+Vec3 GetArcBallPoint(Vec2 mouse_coords)
+{
+	Vec4 ndc = GetNormalisedDeviceCoordinates(WINDOW_WIDTH, WINDOW_HEIGHT, mouse_coords.x, mouse_coords.y);
+
+	Vec3 p = Vec3(ndc.x, ndc.y, 0);
+
+	real32 ops = p.x * p.x + p.y * p.y;
+	if (ops <= 1 * 1)
+	{
+		p.z = sqrt(1 * 1 - ops);
+	}
+	else
+	{
+		p = Normalize(p);
+	}
+	return p;
+}
+
 void KeyCodeCallBack(GLFWwindow *window, int32 key, int32 scancode, int32 action, int32 mod)
 {
 	if (action == GLFW_PRESS)
@@ -230,6 +248,9 @@ int main()
 	Shader ssr_shader = CreateShader(ReadFile("shaders/ssr_vert.glsl"), ReadFile("shaders/ssr_frag.glsl"));
 	ssr_shader.name = "ssr_shader ";
 
+
+
+
 	//************************************
 	// Load shaders
 	//************************************
@@ -296,7 +317,10 @@ int main()
 	model_importer.import_animations = true;
 	model_importer.import_vertex_binorms_tangents = true;
 	model_importer.model_paths.push_back("res/botdemo/FloorSet/Floor.fbx");
+	model_importer.model_paths.push_back("res/models/sphere.obj");
 	model_importer.Load();
+
+	StandardMeshes::sphere = model_importer.resulting_meshes[1].CreateMesh(true);
 
 	//************************************
 	// Initialize imported textures
@@ -324,14 +348,24 @@ int main()
 	Actor floor_test;	
 	floor_test.mesh = model_importer.resulting_meshes[0].CreateMesh(true);
 	floor_test.material.forward_shader = &forward_pbr_notext_shader;
-	floor_test.transform.scale = Vec3(0.01);
+	floor_test.transform.scale = Vec3(0.05);
+	floor_test.material.diffuse = Vec3(0.86);
+	floor_test.material.metalness = 0.6;
+	floor_test.material.roughness = 0;
+
+
 
 	Actor left_wall;
-	left_wall.mesh = floor_test.mesh;
+	left_wall.mesh = StandardMeshes::sphere;
 	left_wall.material.forward_shader = &forward_pbr_notext_shader;
-	left_wall.transform.scale = Vec3(0.01);
+	left_wall.transform.scale = Vec3(1);
 	left_wall.transform.rotation = EulerToQuat(Vec3(0, 0, 90));
 	left_wall.transform.position = Vec3(-2, 2, 0);
+	left_wall.material.diffuse = Vec3(0.2);
+	left_wall.material.metalness = 0.2;
+	left_wall.material.roughness = 1;
+
+
 
 	Actor right_wall;
 	right_wall.mesh = floor_test.mesh;
@@ -339,6 +373,11 @@ int main()
 	right_wall.transform.scale = Vec3(0.01);
 	right_wall.transform.rotation = EulerToQuat(Vec3(0, 0, -90));
 	right_wall.transform.position = Vec3(2, 2, 0);
+	right_wall.material.diffuse = Vec3(0.2);
+	right_wall.material.metalness = 0.2;
+	right_wall.material.roughness = 1;
+
+
 
 	Actor back_wall;
 	back_wall.mesh = floor_test.mesh;
@@ -346,6 +385,10 @@ int main()
 	back_wall.transform.scale = Vec3(0.01);
 	back_wall.transform.rotation = EulerToQuat(Vec3(-90, 0, 0));
 	back_wall.transform.position = Vec3(0, 2, -2);
+	back_wall.material.diffuse = Vec3(0.2);
+	back_wall.material.metalness = 0.2;
+	back_wall.material.roughness = 1;
+
 
 	//************************************
 	// Create the frame buffers
@@ -603,22 +646,19 @@ int main()
 
 
 	FrameBuffer ssr_frame;
-	Texture srr_ctexture;
 
-	srr_ctexture.config.texture_format = GL_RGBA16F;
-	srr_ctexture.config.pixel_format = GL_RGBA;
-	srr_ctexture.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	srr_ctexture.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	srr_ctexture.config.min_filter = GL_LINEAR;
-	srr_ctexture.config.mag_filter = GL_LINEAR;
-	srr_ctexture.config.width = WINDOW_WIDTH;
-	srr_ctexture.config.height = WINDOW_HEIGHT;
+	ssr_frame.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
+	ssr_frame.colour0_texture_attachment.config.pixel_format = GL_RGBA;
+	ssr_frame.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	ssr_frame.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	ssr_frame.colour0_texture_attachment.config.min_filter = GL_LINEAR;
+	ssr_frame.colour0_texture_attachment.config.mag_filter = GL_LINEAR;
+	ssr_frame.colour0_texture_attachment.config.width = WINDOW_WIDTH;
+	ssr_frame.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
 
 	CreateFrameBuffer(&ssr_frame);
-	CreateTexture(&srr_ctexture, nullptr);
-
-	ssr_frame.colour0_texture_attachment = srr_ctexture;
-
+	CreateTexture(&ssr_frame.colour0_texture_attachment, nullptr);
+	
 	FrameBufferBindColourAttachtments(&ssr_frame);
 
 	Assert(CheckFrameBuffer(ssr_frame));
@@ -714,22 +754,11 @@ int main()
 	EditorRender editor_render_window;
 	editor_render_window.delta_time = 0;
 	editor_render_window.render_settings = &render_settings;
-	
-	WorldRenderer test_renderer;
-	test_renderer.WINDOW_HEIGHT = WINDOW_HEIGHT;
-	test_renderer.WINDOW_WIDTH = WINDOW_WIDTH;
-	test_renderer.camera = &camera_controller;
-	test_renderer.InitFrameBuffers();
-	test_renderer.render_shaders.ssao_gbuffer_shader = viewspace_gbuffer_shader;
-	test_renderer.render_shaders.ssao_shader = ssao_shader;
-	test_renderer.standard_shaders.simple_blur = simple_blur_shader;
-	
-
+		
 	DirectionalLight sun_light;
 	sun_light.direction = Normalize(Vec3(2, -4, 1));
 	sun_light.light_colour = Vec3(.5);
-
-
+	
 	PointLight point_light;
 	point_light.light_colour = Vec3(23.47, 21.31, 20.79);
 	point_light.light_position = Vec3(0, 2, -1);
@@ -777,19 +806,29 @@ int main()
 		{
 			double x, y;
 			glfwGetCursorPos(window, &x, &y);					
-			fh += 0.4 * delta_time;
+			fh += 0.4f * delta_time;
 			//point_light.light_position.x += 4 * delta_time;
-			toggel = true;
+
+
+			Vec2 curr = Input::GetMousePosition();
+			Vec2 last = Input::GetMouseLastPosition();
+
+
+			Vec3 p1 = GetArcBallPoint(curr);
+			Vec3 p2 = GetArcBallPoint(last);
+
+			//console.Log(ToString(ndc));
+		
 		}
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
 		{
 			
 			//point_light.light_position.x -= 4 * delta_time;
-
-			fh -= 0.4 * delta_time;
+			toggel = true;
+			fh -= 0.4f * delta_time;
 			
 		}
-		else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
+		else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
 		{
 			
 			toggel = false;
@@ -861,7 +900,7 @@ int main()
 
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
-		RenderCommands::Clear(Vec4(0, 0, 0, 1));
+		RenderCommands::Clear(Vec4(0, 1, 0, 1));
 		
 
 		//************************************
@@ -873,11 +912,11 @@ int main()
 
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();		
-		
 
 		ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_colour_map, 0, "colour_map");
 		ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_normal_map, 1, "normal_map");
 		ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_orm_map, 2, "orme_map");
+		ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", Vec3(1).arr); ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 1); ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1).arr);
 
 		for (int32 i = 0; i < main_world.objects.size(); i++)
 		{
@@ -885,6 +924,38 @@ int main()
 			Transform transform = obj->GetTransfrom();
 			Material mat = obj->GetMaterial();
 			Mat4 transform_matrix = obj->GetTransformMatrix();
+					   
+			//if (mat.diffuse_texture != nullptr)
+			//{
+			//	ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_colour_map, 0, "colour_map");
+			//	ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", Vec3(1).arr);
+			//}
+			//else
+			//{
+			//	ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 0, "colour_map");
+			//	ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", mat.diffuse.arr);
+			//}
+
+			//if (mat.normal_texture != nullptr)
+			//{
+			//	ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_normal_map, 1, "normal_map");
+			//	ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 1);
+			//}
+			//else
+			//{
+			//	ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 0);
+			//}
+
+			//if (mat.occlusion_roughness_metallic != nullptr)
+			//{
+			//	ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_orm_map, 2, "orme_map");
+			//	ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1).arr);
+			//}
+			//else
+			//{
+			//	ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 2, "orme_map");
+			//	ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1, mat.roughness, mat.metalness).arr);
+			//}
 
 			ShaderSetMat4(&worldspace_gbuffer_shader, "model", transform_matrix.arr);
 			RenderMesh(worldspace_gbuffer_shader, obj->GetMeshForRender());
@@ -924,17 +995,46 @@ int main()
 
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
-
-		ShaderBindTexture(viewspace_gbuffer_shader, demo_floor_colour_map, 0, "colour_map");
-		//ShaderBindTexture(viewspace_gbuffer_shader, demo_floor_normal_map, 1, "normal_map");
-		ShaderBindTexture(viewspace_gbuffer_shader, demo_floor_orm_map, 2, "orme_map");
-
+			   
 		for (int32 i = 0; i < main_world.objects.size(); i++)
 		{
 			WorldObject *obj = main_world.objects[i];
 			Transform transform = obj->GetTransfrom();
 			Material mat = obj->GetMaterial();
 			Mat4 transform_matrix = obj->GetTransformMatrix();
+
+			if (mat.diffuse_texture != nullptr)
+			{
+				ShaderBindTexture(viewspace_gbuffer_shader, demo_floor_colour_map, 0, "colour_map");
+				ShaderSetVec3(&viewspace_gbuffer_shader, "colour_set", Vec3(1).arr);
+			}
+			else
+			{
+				ShaderBindTexture(viewspace_gbuffer_shader, StandardTextures::GetOneTexture(), 0, "colour_map");
+				ShaderSetVec3(&viewspace_gbuffer_shader, "colour_set", mat.diffuse.arr);
+			}
+
+			if (mat.normal_texture != nullptr)
+			{
+				ShaderBindTexture(viewspace_gbuffer_shader, demo_floor_normal_map, 1, "normal_map");
+				ShaderSetInt32(&viewspace_gbuffer_shader, "normal_set", 1);
+			}
+			else
+			{
+				ShaderSetInt32(&viewspace_gbuffer_shader, "normal_set", 0);
+			}
+			
+			if (mat.occlusion_roughness_metallic != nullptr)
+			{
+				ShaderBindTexture(viewspace_gbuffer_shader, demo_floor_orm_map, 2, "orme_map");
+				ShaderSetVec3(&viewspace_gbuffer_shader, "orm_set", Vec3(1).arr);
+			}
+			else
+			{
+				ShaderBindTexture(viewspace_gbuffer_shader, StandardTextures::GetOneTexture(), 2, "orme_map");
+				ShaderSetVec3(&viewspace_gbuffer_shader, "orm_set", Vec3(1, mat.roughness, mat.metalness).arr);			
+			}
+
 
 			ShaderSetMat4(&viewspace_gbuffer_shader, "model", transform_matrix.arr);
 			RenderMesh(viewspace_gbuffer_shader, obj->GetMeshForRender());
@@ -946,6 +1046,27 @@ int main()
 		// Viewspace gbuffer pass for animated objects
 		//************************************
 		
+		//************************************
+		// Screen space reflections (SSR)
+		//************************************
+
+		// @NOTE: Not working currently, in development, ie still learning cause I suck
+#if 0
+		BindFrameBuffer(ssr_frame);
+		BindShader(ssr_shader);
+
+		RenderCommands::ClearColourBuffer();
+		RenderCommands::ClearDepthBuffer();
+
+		ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour0_texture_attachment, 0, "view_position_map");
+		ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour1_texture_attachment, 1, "view_normal_map");
+		ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour2_texture_attachment, 2, "view_colour_map");
+		ShaderSetMat4(&ssr_shader, "proj", camera_controller.main_camera.projection_matrix.arr);
+		RenderMesh(ssr_shader, StandardMeshes::quad);
+
+		UnbindFrameBuffer();
+#endif
+
 		//************************************
 		// Screen space ambient occulsion (SSAO)
 		//************************************
@@ -963,7 +1084,7 @@ int main()
 			
 			if (render_settings.ssao_changed)
 			{
-				// @NOTE: Remove !
+				// @TODO: Remove !
 				ShaderSetMat4(&ssao_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
 				
 				ShaderSetFloat(&ssao_shader, "strength", render_settings.ssao_strength);
@@ -972,7 +1093,7 @@ int main()
 				
 				hemisphere_kernel.SetKernelSize(render_settings.ssao_kernel_size);
 				
-				for (int32 i = 0; i < hemisphere_kernel.GetKernelSize(); i++)
+				for (uint32 i = 0; i < hemisphere_kernel.GetKernelSize(); i++)
 				{
 					ShaderSetVec3(&ssao_shader, "samples[" + std::to_string(i) + "]", hemisphere_kernel.GetKernelSample(i).arr);
 				}
@@ -1086,18 +1207,7 @@ int main()
 
 		//UnbindFrameBuffer();
 				
-		BindFrameBuffer(ssr_frame);
-		BindShader(ssr_shader);
 
-		RenderCommands::ClearColourBuffer();
-		RenderCommands::ClearDepthBuffer();
-
-		ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour0_texture_attachment, 0, "view_position_map");
-		ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour1_texture_attachment, 1, "view_normal_map");
-		ShaderSetVec3(&ssr_shader, "cam_pos", camera_controller.main_camera.transform.position.arr);
-		RenderMesh(ssr_shader, StandardMeshes::quad);
-
-		UnbindFrameBuffer();
 
 
 		
@@ -1158,9 +1268,9 @@ int main()
 			//DebugDrawTexture(&debug_mesh_shader, demo_gbuffer.colour1_texture_attachment);
 			//DebugDrawTexture(&debug_mesh_shader, blurer.sampling_textures[0]);
 			//DebugDrawTexture(&debug_mesh_shader, testing_blur_down01);
-			//DebugDrawTexture(&debug_mesh_shader, demo_floor_normal_map);
+			//DebugDrawTexture(&debug_mesh_shader, worldspace_gbuffer.colour2_texture_attachment);
 		
-			//DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
+			DebugDrawTexture(&debug_mesh_shader, bloom_map);
 			
 			//DebugDrawTexture(&debug_mesh_shader, test_renderer.frame_ssao_blured.colour0_texture_attachment);
 			//DebugDrawTexture(&debug_mesh_shader, ssao_buffer.colour0_texture_attachment); 
@@ -1168,7 +1278,7 @@ int main()
 		}
 		else
 		{
-			DebugDrawTexture(&debug_mesh_shader, ssr_frame.colour0_texture_attachment);
+			//DebugDrawTexture(&debug_mesh_shader, ssr_frame.colour0_texture_attachment);
 			//DebugDrawTexture(&debug_mesh_shader, renderer.frame_g_buffer.colour1_texture_attachment);
 		}
 
@@ -1198,7 +1308,7 @@ int main()
 
 		std::chrono::time_point<std::chrono::steady_clock> endTime = std::chrono::steady_clock::now();
 		std::chrono::microseconds elapsedTime(std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime));
-		float time = elapsedTime.count();
+		float time = static_cast<float> (elapsedTime.count());
 		delta_time = time * 0.001f * 0.001f;
 		run_time += delta_time;
 

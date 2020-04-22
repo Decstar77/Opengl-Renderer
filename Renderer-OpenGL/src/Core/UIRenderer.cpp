@@ -128,7 +128,7 @@ namespace cm
 	bool UIRenderer::CreateButtonImage(uint32 id, int32 width, int32 height, const Vec4 &bg_col, const Vec4 &tn_col)
 	{
 
-		return ImGui::ImageButton(reinterpret_cast<void*>(id), ImVec2(static_cast<float>(width), static_cast<float>(height)), ImVec2(0, 0), ImVec2(1, 1), 1,
+		return ImGui::ImageButton(reinterpret_cast<void*>((uint64)id), ImVec2(static_cast<float>(width), static_cast<float>(height)), ImVec2(0, 0), ImVec2(1, 1), 1,
 			ImVec4(bg_col.x, bg_col.y, bg_col.z, bg_col.w), ImVec4(tn_col.x, tn_col.y, tn_col.z, tn_col.w));
 	}
 
@@ -175,7 +175,7 @@ namespace cm
 
 	void UIRenderer::CreateImage(uint32 id, int32 width, int32 height)
 	{
-		ImGui::Image(reinterpret_cast<void*>(id), ImVec2(static_cast<float>(width), static_cast<float>(height)));
+		ImGui::Image(reinterpret_cast<void*>((uint64)id), ImVec2(static_cast<float>(width), static_cast<float>(height)));
 	}
 
 	void UIRenderer::CreateVec3Slider(const std::string &label, Vec3* var)

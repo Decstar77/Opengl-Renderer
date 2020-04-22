@@ -1,23 +1,2 @@
-﻿cl : Command line warning D9002: ignoring unknown option '/arch:SSE2'
-  OpenGL.cpp
-f:\renderer-opengl\renderer-opengl\src\core.h(30): warning C4005: 'LOGC': macro redefinition
-  f:\renderer-opengl\renderer-opengl\src\core.h(26): note: see previous definition of 'LOGC'
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(394): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(411): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(422): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(430): warning C4312: 'type cast': conversion from 'uint32' to 'void *' of greater size
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(496): warning C4101: 'geometry': unreferenced local variable
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(533): warning C4101: 'geometry': unreferenced local variable
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(1677): warning C4244: 'initializing': conversion from 'double' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(1678): warning C4244: 'initializing': conversion from 'double' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(1918): warning C4244: '=': conversion from 'double' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(1919): warning C4244: '=': conversion from 'double' to 'uint32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(1949): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(2313): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(2326): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(2545): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(2555): warning C4244: 'initializing': conversion from 'double' to 'real32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(2572): warning C4018: '<': signed/unsigned mismatch
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(2582): warning C4244: 'initializing': conversion from 'double' to 'real32', possible loss of data
-f:\renderer-opengl\renderer-opengl\src\opengl\opengl.cpp(2591): warning C4018: '<': signed/unsigned mismatch
+﻿  main.cpp
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

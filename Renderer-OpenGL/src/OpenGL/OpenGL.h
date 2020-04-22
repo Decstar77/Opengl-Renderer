@@ -1,7 +1,6 @@
 #pragma once
 #include "Core.h"
 #include "glew.h"
-#include "BufferLayout.h"
 #include "Math/CosmicMath.h"
 
 namespace cm

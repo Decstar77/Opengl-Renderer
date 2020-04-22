@@ -21,10 +21,6 @@
 					printf(" Line: %d ", __LINE__); \
 					std::cout << __VA_ARGS__ << '\n';
 
-#define LOGC(str)	printf(__FUNCTION__); \
-					printf(" Line: %d ", __LINE__); \
-					printf(str); printf(" \n");
-
 #define LOGC(str, ...) printf(__FUNCTION__); \
 					  printf(" Line: %d ", __LINE__); \
 					  printf(str, __VA_ARGS__); printf(" \n");

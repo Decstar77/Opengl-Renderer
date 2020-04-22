@@ -437,7 +437,7 @@ namespace cm
 			return CalculateTransformMatrix(position, scale, rotation);
 		}
 	};
-
+	
 	//************************************
 	// Inline math functions
 	//************************************

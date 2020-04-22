@@ -30,6 +30,7 @@ namespace cm
 		int32_t dataOffset;
 	};
 
+
 	// @NOTE: Trying not to std::vector
 	// NOTE: This is more the editable mesh but for textures. Maybe we have something like Creators.h ??? Editables.h ?
 	class BitmapExport
