@@ -2186,7 +2186,6 @@ namespace cm
 
 			void main()
 			{		
-
 				vec4 out_colour = vec4(0.0);
 				out_colour += texture(src_texture, texture_coords[0]) * 0.0093;
 				out_colour += texture(src_texture, texture_coords[1]) * 0.028002;
@@ -2228,7 +2227,8 @@ namespace cm
 			
 			void main()
 			{		
-				vec3 colour = texture(src_texture, texture_coords).rgb;
+				// @NOTE: Make sure we don't get a nan value by clamping it to zero
+				vec3 colour = max(vec3(0.0), texture(src_texture, texture_coords).rgb);
 				out_colour = vec4(colour, 1);
 			}		
 		)";
@@ -2254,6 +2254,7 @@ namespace cm
 			horizontal_frames[i].colour0_texture_attachment.config.pixel_format = GL_RGBA;
 			horizontal_frames[i].colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
 			horizontal_frames[i].colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+			horizontal_frames[i].colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
 			horizontal_frames[i].colour0_texture_attachment.config.min_filter = GL_LINEAR;
 			horizontal_frames[i].colour0_texture_attachment.config.mag_filter = GL_LINEAR;
 			horizontal_frames[i].colour0_texture_attachment.config.width = static_cast<uint32>(src_width * downsample_mul);
@@ -2263,6 +2264,7 @@ namespace cm
 			vertical_frames[i].colour0_texture_attachment.config.pixel_format = GL_RGBA;
 			vertical_frames[i].colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
 			vertical_frames[i].colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+			vertical_frames[i].colour0_texture_attachment.config.wrap_r_mode= GL_CLAMP_TO_EDGE;
 			vertical_frames[i].colour0_texture_attachment.config.min_filter = GL_LINEAR;
 			vertical_frames[i].colour0_texture_attachment.config.mag_filter = GL_LINEAR;
 			vertical_frames[i].colour0_texture_attachment.config.width = static_cast<uint32>(src_width * downsample_mul);
@@ -2336,7 +2338,7 @@ namespace cm
 		}
 
 		SetViewPort(dst->config.width, dst->config.height);
-
+		
 		// @NOTE: We have have upsample the lowest blur to the dst
 		//		: resolution that's why we can't just call CopyTexture
 		BindShader(upsample_shader);
