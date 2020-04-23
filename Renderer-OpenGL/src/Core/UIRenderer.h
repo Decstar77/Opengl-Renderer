@@ -72,6 +72,7 @@ namespace cm
 	{
 	public:
 		void Log(const std::string &msg);
+		void Log(const bool msg);
 		void UpdateAndDraw();
 		void Clear();
 		void ExeCommand(const std::string &cmd);

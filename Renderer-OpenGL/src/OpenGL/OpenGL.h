@@ -9,6 +9,8 @@ namespace cm
 	/*
 		I've taken a OOP approach in this section for exploritory purposes.
 		Ie, its see the advantages and disadvantages
+		@NOTE: The depthstencil sturct is acutally an opengl render buffer
+			 : just named it so because for clarity
 	*/
 	//===============================================================//
 
@@ -181,7 +183,7 @@ namespace cm
 		CubeMapConfig config;
 	};
 
-	struct RenderBuffer
+	struct DepthStencilBuffer
 	{
 		uint32 object = 0;
 		uint32 width = 0;
@@ -195,7 +197,7 @@ namespace cm
 		BufferType type = BufferType::Frame_buffer;
 		uint32 object = 0;
 
-		RenderBuffer render_attchment;
+		DepthStencilBuffer depthstencil_attchment;
 
 		Texture colour0_texture_attachment;
 		Texture colour1_texture_attachment;
@@ -403,6 +405,8 @@ namespace cm
 
 	void BindShader(const Shader &shader);
 
+	void UnbindShader();
+
 	uint32 GetUniformLocation(Shader *shader, const std::string &uniform_name);
 
 	void ShaderSetInt32(Shader *shader, const std::string &uniform_name, int x);
@@ -434,15 +438,17 @@ namespace cm
 
 	void FreeFrameBuffer(FrameBuffer *fbo, bool attachments);
 
-	void FreeRenderBuffer(RenderBuffer *rb);
+	void CreateDepthStencilBuffer(DepthStencilBuffer *rb);
+
+	void FreeDepthStencilBuffer(DepthStencilBuffer *rb);
 
 	void CreateFrameBuffer(FrameBuffer *fbo);
 
 	void FrameBufferBindColourAttachtments(FrameBuffer *buffer);
 
-	void FrameBufferAddDepthAttachments(FrameBuffer *buffer);
+	void FrameBufferBindDepthAttachment(FrameBuffer *buffer);
 
-	void FrameAddBufferRenderAttachtment(FrameBuffer *buffer);
+	void FrameBufferBindRenderAttachtment(FrameBuffer *buffer);
 
 	bool CheckFrameBuffer(const FrameBuffer &buffer); // Returns true if FrameBuffer is good 
 
@@ -568,9 +574,10 @@ namespace cm
 		// @NOTE: A good blur but more expensive than simple blur
 		//		: If a very good large blur is needed then this is best
 
-		// @TODO: Vaiable kernel_size;
+		// @TODO: Vaiable kernel_size by calcing the values ourselfs
 	private:
 		bool created = false;
+		uint32 max_kernel_size = 20;
 		uint32 kernel_size = 0;
 		uint32 iterations = 0;
 		real32 downsample_mul = 0;
@@ -587,7 +594,7 @@ namespace cm
 		void Blur(const Texture &src, Texture *dst);
 		void Free();
 
-		int32 SetKernelSize();
+		void SetKernelSize(uint32 ksize);
 		int32 GetKernelSize();
 		int32 GetMaxKernelSize();
 
@@ -696,12 +703,13 @@ namespace cm
 		Shader shader;
 		FrameBuffer frame;
 		bool created = false;
+		real32 threshold = 0;
 
 	public:
-		real32 threshold = 0;
 		void Create(uint32 src_width, uint32 src_height, real32 threshold);
 		void Filter(const Texture &src, Texture *dst);
 		void Free();
+		inline void SetThreshold(real32 t) { threshold = t; }
 
 	public:
 		LuminanceFilter();
@@ -740,7 +748,7 @@ namespace cm
 		glEnable(GL_MULTISAMPLE);
 	}
 
-	static inline void Clear(Vec4 colour)
+	static inline void SetClearColour(Vec4 colour)
 	{
 		glClearColor(colour.x, colour.y, colour.z, colour.w);
 	}
@@ -770,6 +778,38 @@ namespace cm
 		glEnable(GL_STENCIL_TEST);
 	}
 
+	static inline void StencilOperationKKR()
+	{
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	}
+
+	static inline void StencilZeroMask()
+	{
+		glStencilMask(0x00);
+	}
+
+	static inline void StencilWriteZero()
+	{
+		Assert(0); // @REASON: Incomplete
+	}
+
+	static inline void StencilWriteOnes()
+	{
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilMask(0xFF);
+	}
+
+	static inline void StencilDiscardOnOne()
+	{
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilMask(0x00);
+	}
+
+	static inline void StencilDiscardOnZero()
+	{
+		Assert(0); // @REASON: Incomplete
+	}
+
 	static inline void DisableDepthBuffer()
 	{
 		glDisable(GL_DEPTH_TEST);
@@ -779,7 +819,7 @@ namespace cm
 	{
 		glDepthMask(GL_FALSE);
 	}
-
+	
 	static inline void DisableDepthBufferWriting()
 	{
 		glDepthMask(GL_FALSE);
@@ -790,7 +830,7 @@ namespace cm
 		glDisable(GL_STENCIL_TEST);
 	}
 
-	static inline void ClearBuffers()
+	static inline void ClearAllBuffers()
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}

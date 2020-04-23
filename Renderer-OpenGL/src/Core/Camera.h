@@ -1,8 +1,8 @@
 #pragma once
 #include "Core.h"
 #include "Math/CosmicMath.h"
+#include "Math/CosmicGeometry.h"
 #include "Engine/Input.h"
-
 
 namespace cm
 {
@@ -21,14 +21,17 @@ namespace cm
 	{
 	public:
 		Camera main_camera;
+	
 	public:
-		CameraController();
-		CameraController(Camera cam);
-		~CameraController();
 		void CameraRotate(real delta_pitch, real delta_yaw);
 		void CameraMovement(real delta_time);
 		void UpdateCamera(float delta_time);
 		Ray RayFromCamera(const Vec2 &mouse_position, const Vec2 &window_dimenions);
+	
+	public:
+		CameraController();
+		CameraController(Camera cam);
+		~CameraController();
 
 
 	};

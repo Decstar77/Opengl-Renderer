@@ -279,11 +279,6 @@ namespace cm
 		Vec3 right = Vec3(1, 0, 0);
 	};
 
-	struct Ray
-	{
-		Vec3 origin;
-		Vec3 direction;
-	};
 
 	//************************************
 	// Quaterion functions
@@ -489,6 +484,13 @@ namespace cm
 	inline real32 Sqrt(const real32 &val)
 	{
 		return sqrtf(val);
+	}
+
+	inline void Swap(real32 *a1, real32 *a2)
+	{
+		real32 temp = *a1;
+		*a1 = *a2;
+		*a2 = temp;
 	}
 
 	inline float FloatChop(float val, float decimal_count)

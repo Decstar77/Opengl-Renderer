@@ -75,25 +75,24 @@ namespace cm
 			Independent = 1
 		};
 
-		TonemapMethod tonemapping = TonemapMethod::Reinhard;
+		
 
 		bool fxaa = false;
 		real32 fxaa_span_max = 12.0f;
 		real32 fxaa_dir_min = 0.1f;
 		real32 fxaa_dir_reduc = 1 / 8.0f;
 		
-		bool bloom = true;
+		bool bloom = false;
 		BloomBlurDependance bloom_dependance = BloomBlurDependance::Independent;
 		real32 bloom_threshold = 1.0f;
-		real32 bloom_downsample_mul = 0.5f;
 		int32 bloom_kernel_size = 11;
-		int32 bloom_blur_iterations = 1;
 
 		bool vigentte = false;
 		real32 vigentte_outer_raduis = 0.65;
 		real32 vigentte_inner_raduis = 0.4;
 		real32 vigentte_intensity = 0.6;
 
+		TonemapMethod tonemapping = TonemapMethod::Reinhard;
 		real32 post_processing_exposure = 1.0;
 	};
 	   

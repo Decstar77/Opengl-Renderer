@@ -21,6 +21,7 @@
     <ClCompile Include="src\Core\World.cpp" />
     <ClCompile Include="src\Engine\AssetLoader.cpp" />
     <ClCompile Include="src\Engine\Input.cpp" />
+    <ClCompile Include="src\Math\CosmicGeometry.cpp" />
     <ClCompile Include="src\Math\CosmicMath.cpp" />
     <ClCompile Include="src\Math\CosmicNoise.cpp" />
     <ClCompile Include="src\Core\EditableMesh.cpp" />
@@ -46,6 +47,7 @@
     <ClInclude Include="src\Core\Renderer.h" />
     <ClInclude Include="src\Debug.h" />
     <ClInclude Include="src\Engine\Input.h" />
+    <ClInclude Include="src\Math\CosmicGeometry.h" />
     <ClInclude Include="src\Math\CosmicMath.h" />
     <ClInclude Include="src\Math\CosmicNoise.h" />
     <ClInclude Include="src\Core\EditableMesh.h" />

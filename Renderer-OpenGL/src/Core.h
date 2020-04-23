@@ -44,9 +44,10 @@
 #define	REAK32_MAX FLT_MAX
 #define FLOATING_POINT_ERROR_PRESCION 0.0001f
 
-
 #define MOUSE_KEY_AMOUNT 32
 #define KEY_CODE_AMOUNT 1024
+
+#define EDITOR_WINDOW 1
 
 typedef uint8_t		uint8;
 typedef uint16_t	uint16;

@@ -65,7 +65,7 @@ namespace cm
 	{
 		ImGui::Render();
 		ImGuiIO& io = ImGui::GetIO();
-
+		
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		io.DisplaySize = ImVec2(1280, 720);
@@ -204,6 +204,12 @@ namespace cm
 	{
 		current << msg << '\n';
 	}
+
+	void EditorConsole::Log(const bool msg)
+	{
+		current << msg << '\n';
+	}
+
 	static void  Strtrim(char* str) { char* str_end = str + strlen(str); while (str_end > str && str_end[-1] == ' ') str_end--; *str_end = 0; }
 	void EditorConsole::UpdateAndDraw()
 	{
@@ -235,6 +241,9 @@ namespace cm
 		{
 			ImGui::LogFinish();
 		}
+
+		ImGui::SetScrollHereY(1.0f);
+
 		ImGui::PopStyleVar();
 		ImGui::EndChild();
 
@@ -277,9 +286,16 @@ namespace cm
 
 		if (ImGui::CollapsingHeader("Render Passes"))
 		{
-			ImGui::Checkbox("Shadow Pass", &render_settings->shadow_pass);
-			ImGui::Checkbox("SSR Pass", &render_settings->ssr);
-
+			if (ImGui::TreeNode("Shadow Pass"))
+			{
+				ImGui::Text("On the todo: When I'm smart enough");
+				ImGui::TreePop();
+			}
+			if (ImGui::TreeNode("SSR Pass"))
+			{
+				ImGui::Text("On the todo: When I'm smart enough");
+				ImGui::TreePop();
+			}
 			if (ImGui::TreeNode("SSAO Pass"))
 			{
 				render_settings->ssao_changed = render_settings->ssao_changed | ImGui::Checkbox("SSAO Pass", &render_settings->ssao);
@@ -318,8 +334,6 @@ namespace cm
 				}
 				ImGui::SliderFloat("Threshold", &render_settings->bloom_threshold, 0.0, 10.0);
 				ImGui::SliderInt("Kernel Size", &render_settings->bloom_kernel_size, 1, 20);
-				ImGui::SliderFloat("DS Multiplier", &render_settings->bloom_downsample_mul, 0.25, 1.0);
-				ImGui::SliderInt("Iterations", &render_settings->bloom_blur_iterations, 1, 4);
 				ImGui::TreePop();
 			}
 						

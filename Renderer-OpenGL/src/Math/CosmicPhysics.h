@@ -1,60 +1,12 @@
 #pragma once
 #include "Core.h"
 #include "CosmicMath.h"
+#include "CosmicGeometry.h"
 #include "Utility.h"
 #include <list>
 namespace cm
 {	
-	//NOTE: Code is meant to be slow but understandable as this is a first attempt
-	class Aabb
-	{
-	public:
-		Vec3 min = Vec3(FLT_MIN);
-		Vec3 max = Vec3(FLT_MAX);
-		Vec3 center = Vec3(0);
-		Vec3 raduis = Vec3(0);
 
-		bool CheckCollision(const Ray &r)
-		{
-			float tmin = (min.x - r.origin.x) / r.direction.x;
-			float tmax = (max.x - r.origin.x) / r.direction.x;
-
-			if (tmin > tmax) { ::std::swap(tmin, tmax); }
-
-			float tymin = (min.y - r.origin.y) / r.direction.y;
-			float tymax = (max.y - r.origin.y) / r.direction.y;
-
-			if (tymin > tymax) { ::std::swap(tymin, tymax); }
-
-			if ((tmin > tymax) || (tymin > tmax)) { return (false); }
-
-			float a = 2;
-			float b = 23;
-
-			if (tymin > tmin) { tmin = tymin; }
-
-			if (tymax < tmax) { tmax = tymax; }
-
-			float tzmin = (min.z - r.origin.z) / r.direction.z;
-			float tzmax = (max.z - r.origin.z) / r.direction.z;
-
-			if (tzmin > tzmax) { ::std::swap(tzmin, tzmax); }
-
-			if ((tmin > tzmax) || (tzmin > tmax)) { return (false); }
-
-			if (tzmin > tmin) { tmin = tzmin; }
-
-			if (tzmax < tmax) { tmax = tzmax; }
-
-			float txmin = (min.x - r.origin.x) / r.direction.x;
-			float txmax = (max.x - r.origin.x) / r.direction.x;
-
-			if (txmin > txmax) { ::std::swap(txmin, txmax); }
-
-
-			return (true);
-		}
-	};
 	   
 
 	

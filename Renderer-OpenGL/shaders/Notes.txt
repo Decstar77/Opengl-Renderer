@@ -3,14 +3,17 @@ SSAO: We currently have to textures eaching only having one channel GL_RED, wher
 	: We could just have one texture with mulitple components GL_RG, for example. Not sure if this is better. --DEAD. Won't work because then how do you
 	: blur ? The blur shader binds a texture and then looks all round.
 
+BLOOM:
+	There are other options not show on the edit. They are for the guassien blur. The downsample mulitplier and the number of itterations.
+
+
 Notes: 
 	UV Shpere:
 			 : This was confusing me. the inverse of atan2(y, x) is x = r*cos(theta), y = r*sin(theta) r > 0
 			 : IE: It's sphereical coords
 			 : //http://paulbourke.net/miscellaneous/cubemaps/
 			 : //https://math.stackexchange.com/questions/1395679/how-would-i-find-a-point-on-a-sphere-with-a-uv-coordinate/	
-
-
+	
 DEMO:
 	SSR <---
 	MIRROR <---

@@ -423,18 +423,19 @@ int main()
 	worldspace_gbuffer.colour2_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
 	worldspace_gbuffer.colour2_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
 
-	worldspace_gbuffer.render_attchment.width = WINDOW_WIDTH;
-	worldspace_gbuffer.render_attchment.height = WINDOW_HEIGHT;
+	worldspace_gbuffer.depthstencil_attchment.width = WINDOW_WIDTH;
+	worldspace_gbuffer.depthstencil_attchment.height = WINDOW_HEIGHT;
 
 	CreateTexture(&worldspace_gbuffer.colour0_texture_attachment, nullptr);
 	CreateTexture(&worldspace_gbuffer.colour1_texture_attachment, nullptr);
 	CreateTexture(&worldspace_gbuffer.colour2_texture_attachment, nullptr);
+	CreateDepthStencilBuffer(&worldspace_gbuffer.depthstencil_attchment);
 	CreateFrameBuffer(&worldspace_gbuffer);
 
 	BindFrameBuffer(worldspace_gbuffer);
 
 	FrameBufferBindColourAttachtments(&worldspace_gbuffer);
-	FrameAddBufferRenderAttachtment(&worldspace_gbuffer);
+	FrameBufferBindRenderAttachtment(&worldspace_gbuffer);
 
 	Assert(CheckFrameBuffer(worldspace_gbuffer));
 	UnbindFrameBuffer();
@@ -469,18 +470,19 @@ int main()
 	viewspace_gbuffer.colour2_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
 	viewspace_gbuffer.colour2_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
 
-	viewspace_gbuffer.render_attchment.width = WINDOW_WIDTH;
-	viewspace_gbuffer.render_attchment.height = WINDOW_HEIGHT;
+	viewspace_gbuffer.depthstencil_attchment.width = WINDOW_WIDTH;
+	viewspace_gbuffer.depthstencil_attchment.height = WINDOW_HEIGHT;
 
 	CreateTexture(&viewspace_gbuffer.colour0_texture_attachment, nullptr);
 	CreateTexture(&viewspace_gbuffer.colour1_texture_attachment, nullptr);
 	CreateTexture(&viewspace_gbuffer.colour2_texture_attachment, nullptr);
+	CreateDepthStencilBuffer(&viewspace_gbuffer.depthstencil_attchment);
 	CreateFrameBuffer(&viewspace_gbuffer);
 
 	BindFrameBuffer(viewspace_gbuffer);
 
 	FrameBufferBindColourAttachtments(&viewspace_gbuffer);
-	FrameAddBufferRenderAttachtment(&viewspace_gbuffer);
+	FrameBufferBindRenderAttachtment(&viewspace_gbuffer);
 
 	Assert(CheckFrameBuffer(viewspace_gbuffer));
 	UnbindFrameBuffer();
@@ -506,31 +508,32 @@ int main()
 	Assert(CheckFrameBuffer(ssao_buffer));
 	UnbindFrameBuffer();
 
-	FrameBuffer post_processing;
+	FrameBuffer post_processing_buffer;
 
-	post_processing.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
-	post_processing.colour0_texture_attachment.config.width = WINDOW_WIDTH;
-	post_processing.colour0_texture_attachment.config.data_type = GL_FLOAT;
-	post_processing.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
-	post_processing.colour1_texture_attachment.config.pixel_format = GL_RGBA;
-	post_processing.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	post_processing.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	post_processing.colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+	post_processing_buffer.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
+	post_processing_buffer.colour0_texture_attachment.config.width = WINDOW_WIDTH;
+	post_processing_buffer.colour0_texture_attachment.config.data_type = GL_FLOAT;
+	post_processing_buffer.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
+	post_processing_buffer.colour1_texture_attachment.config.pixel_format = GL_RGBA;
+	post_processing_buffer.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	post_processing_buffer.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	post_processing_buffer.colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
 
-	post_processing.render_attchment.width = WINDOW_WIDTH;
-	post_processing.render_attchment.height = WINDOW_HEIGHT;
+	post_processing_buffer.depthstencil_attchment.width = WINDOW_WIDTH;
+	post_processing_buffer.depthstencil_attchment.height = WINDOW_HEIGHT;
 
-	CreateTexture(&post_processing.colour0_texture_attachment, nullptr);
-	CreateFrameBuffer(&post_processing);
+	CreateTexture(&post_processing_buffer.colour0_texture_attachment, nullptr);
+	CreateDepthStencilBuffer(&post_processing_buffer.depthstencil_attchment);
+	CreateFrameBuffer(&post_processing_buffer);
 
-	BindFrameBuffer(post_processing);
+	BindFrameBuffer(post_processing_buffer);
 
-	FrameBufferBindColourAttachtments(&post_processing);
-	FrameAddBufferRenderAttachtment(&post_processing);
+	FrameBufferBindColourAttachtments(&post_processing_buffer);
+	FrameBufferBindRenderAttachtment(&post_processing_buffer);
 	
-	Assert(CheckFrameBuffer(post_processing));
+	Assert(CheckFrameBuffer(post_processing_buffer));
 	UnbindFrameBuffer();
-
+	
 	//************************************
 	// Initialize pbr IBL 
 	//************************************
@@ -663,8 +666,8 @@ int main()
 
 	Assert(CheckFrameBuffer(ssr_frame));
 
-	uint32 drawing_width = post_processing.colour0_texture_attachment.config.width;
-	uint32 drawing_height = post_processing.colour0_texture_attachment.config.height;
+	uint32 drawing_width = post_processing_buffer.colour0_texture_attachment.config.width;
+	uint32 drawing_height = post_processing_buffer.colour0_texture_attachment.config.height;
 
 	GaussianTextureBlur gblur;
 	gblur.Create(drawing_width, drawing_height, 11, 1.0/2.0, 1);
@@ -680,11 +683,11 @@ int main()
 
 
 	Texture ssao_map;
-	ssao_map.config = post_processing.colour0_texture_attachment.config;
+	ssao_map.config = post_processing_buffer.colour0_texture_attachment.config;
 	CreateTexture(&ssao_map, nullptr);
 
 	Texture bloom_map;
-	bloom_map.config = post_processing.colour0_texture_attachment.config;
+	bloom_map.config = post_processing_buffer.colour0_texture_attachment.config;
 	CreateTexture(&bloom_map, nullptr);
 
 	//Shader testing_blur_shader;
@@ -706,13 +709,19 @@ int main()
 	main_world.objects.push_back(&right_wall);
 	main_world.objects.push_back(&back_wall);
 
-	RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_WIDTH);
-	RenderCommands::EnableFaceCulling();
-	RenderCommands::CullBackFace();
-	RenderCommands::EnableDepthBuffer();
-	RenderCommands::EnableCubeMapSeamless();
-	RenderCommands::DepthBufferFunction(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
-	RenderCommands::ChangeViewPort(WINDOW_WIDTH, WINDOW_HEIGHT);
+	SetViewPort(WINDOW_WIDTH, WINDOW_WIDTH);
+	EnableFaceCulling();
+	CullBackFace();
+	EnableDepthBuffer();
+	EnableCubeMapSeamless();
+	DepthBufferFunction(GL_LEQUAL);
+	
+#if EDITOR_WINDOW
+	EnableStencilBuffer();
+	StencilDiscardOnOne();
+	StencilOperationKKR();
+#endif
+	SetViewPort(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	camera_controller.main_camera.projection_matrix = Perspective(40, ((float)WINDOW_WIDTH) / WINDOW_HEIGHT, 0.1f, 250.0f);
 	camera_controller.main_camera.target = Vec3(0);
@@ -765,30 +774,96 @@ int main()
 
 
 	float fh = 1;
-	DebugAddPersistentPoint(Vec3(0.0));
+	//DebugAddPersistentPoint(Vec3(0.0));
 	float z = 0.5;
+
+	Aabb test_aabb;
+	test_aabb.SetFromCenterRaduis(Vec3(0, 4, 0), Vec3(1));
+
+	DebugAddPersistentAABBCenterRaduis(test_aabb.center, test_aabb.raduis);
 
 	float run_time = 1;
 	bool toggel = false;
+
+	bool mouse_input_for_editor_window = false;
+
 	while (!glfwWindowShouldClose(window))
 	{
 		//************************************
 		// Process Windows Events
 		//************************************
+
 		std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
 		glfwPollEvents();
 		
 
 		//************************************
-		// Process Custom Events
-		//************************************
-		
+		// Draw and update the editor 
+		//************************************			
+#if EDITOR_WINDOW
+		// @NOTE: Unbind any shader that was set.
+		UnbindShader();
+		// @NOTE: Set the clear colour to black for stencil errors
+		SetClearColour(Vec4(0, 0, 0, 1));
 
+		// @NOTE: Configure the stencil buffer to write 1's where the editor draws
+		StencilWriteOnes();
+		
+		// @NOTE: Clear all the buffers
+		ClearAllBuffers();
+
+		// @NOTE: Render the current editor frame
+		ui_renderer.BeginFrame();
+
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+		ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImVec2 pos = viewport->GetWorkPos();
+		pos.x += WINDOW_WIDTH - 350;
+		ImGui::SetNextWindowPos(pos);
+		ImGui::SetNextWindowSize(ImVec2(350, 720));
+		ImGui::SetNextWindowViewport(viewport->ID);
+
+		bool p_open;
+		ImGui::Begin("DockSpace Demo", &p_open, window_flags);
+
+		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+		ImGui::DockSpace(dockspace_id);
+
+		ImGui::End();
+
+		console.UpdateAndDraw();
+
+		editor_render_window.delta_time = delta_time;
+		editor_render_window.UpdateAndDraw();
+
+
+		ui_renderer.EndFrame();
+
+		// @NOTE: Get any input that was for one of the editor windows	
+		mouse_input_for_editor_window = *ImGui::GetIO().MouseDownOwned;
+	
+		// @NOTE: Disable writing to the stencil buffer
+		StencilZeroMask();
+
+		// @NOTE: Reset the clear colour to a noticable
+		SetClearColour(Vec4(0, 1, 0, 1));
+#else 
+		// @NOTE: Clear all the buffers
+		ClearAllBuffers();
+#endif
+
+		//************************************
+		// Process Custom Events
+		//************************************		
+		
 		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_F5))
 		{
 			FreeShader(&cubemap_shader);
 			cubemap_shader = CreateShader(ReadFile("shaders/skybox_vert.glsl"), ReadFile("shaders/skybox_frag.glsl"));
-			
+
 			FreeShader(&forward_pbr_notext_shader);
 			forward_pbr_notext_shader = CreateShader(ReadFile("shaders/forward_pbr_notext_vert.glsl"), ReadFile("shaders/forward_pbr_notext_frag.glsl"));
 
@@ -801,36 +876,45 @@ int main()
 			post_processing_shader = CreateShader(ReadFile("shaders/post_processing_vert.glsl"), ReadFile("shaders/post_processing_frag.glsl"));
 			post_processing_shader.name = "post_processing_shader";
 		}
-		
-		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
-		{
-			double x, y;
-			glfwGetCursorPos(window, &x, &y);					
-			fh += 0.4f * delta_time;
-			//point_light.light_position.x += 4 * delta_time;
+		if (!(mouse_input_for_editor_window)) {
+			if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
+			{
+				double x, y;
+				glfwGetCursorPos(window, &x, &y);
+				fh += 0.4f * delta_time;
+				//point_light.light_position.x += 4 * delta_time;
 
 
-			Vec2 curr = Input::GetMousePosition();
-			Vec2 last = Input::GetMouseLastPosition();
+				Vec2 curr = Input::GetMousePosition();
+				Vec2 last = Input::GetMouseLastPosition();
 
 
-			Vec3 p1 = GetArcBallPoint(curr);
-			Vec3 p2 = GetArcBallPoint(last);
+				Vec3 p1 = GetArcBallPoint(curr);
+				Vec3 p2 = GetArcBallPoint(last);
 
-			//console.Log(ToString(ndc));
-		
+
+				Ray cam_ray = camera_controller.RayFromCamera(curr, Vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
+
+				bool hit = test_aabb.CheckCollision(cam_ray);
+				console.Log(hit);
+			}
+			else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
+			{
+
+
+			}
 		}
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
 		{
-			
+
 			//point_light.light_position.x -= 4 * delta_time;
 			toggel = true;
 			fh -= 0.4f * delta_time;
-			
+
 		}
 		else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
 		{
-			
+
 			toggel = false;
 		}
 
@@ -839,10 +923,10 @@ int main()
 			glfwSetWindowShouldClose(window, 1);
 		}
 
-		
+
 
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE))
-		{			
+		{
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			camera_controller.UpdateCamera(delta_time);
 			move_camera = true;
@@ -850,37 +934,18 @@ int main()
 		else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE))
 		{
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			move_camera = false;			
+			move_camera = false;
 		}
-		
-
-		
-		static Vec3 distance_to_dir = Vec3(-2.0f, 4.0f, -1.0f) - camera_controller.main_camera.transform.position;
-		static Vec3 distance_to_ori = Vec3(0) - Vec3(-2.0f, 4.0f, -1.0f);
-		static Vec3 target = -1 * Vec3(-2.0f, 4.0f, -1.0f);
-		Vec3 e_pos = camera_controller.main_camera.transform.position + distance_to_dir;
-		Vec3 o_pos = e_pos + distance_to_ori;
-		float near_plane = 1.0f, far_plane = 10.f;
-		float rect = 10;
-		Vec3 cpos = camera_controller.main_camera.transform.position;
-		Mat4 lightProjection = Orthographic(-rect, rect, rect, -rect, near_plane, far_plane);
-		//Mat4 light_view = LookAt(cpos, cpos + Normalize(target), Vec3(0, 1, 0));
-		Mat4 light_view = LookAt(Vec3(-2.0f, 4.0f, -1.0f), Vec3(0), Vec3(0, 1, 0));
-		Mat4 light_space_matrix = light_view * lightProjection;
-
-
-		/////////////////////////////////////////////////
-		//light_space_matrix = light_view * shadow_projections[0];
 
 		//************************************
 		// Update GPU Buffers
 		//************************************
 
 		std::vector<Mat4> camera_data = { camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix,
-										light_space_matrix };
+										Mat4(1)};
 
 		std::vector<Vec4> lighting_data = {
-		Vec4(1,  1, 0, 0),  // Meta data for lighting, number of lights 
+		Vec4(1,  1, 0, 0), 
 		Vec4(camera_controller.main_camera.transform.position, 0),
 		Vec4(sun_light.direction, 0),
 		Vec4(point_light.light_position, 0), Vec4(1), Vec4(1), Vec4(1),
@@ -898,11 +963,6 @@ int main()
 		// Render The Current Frame
 		//************************************
 
-		RenderCommands::ClearColourBuffer();
-		RenderCommands::ClearDepthBuffer();
-		RenderCommands::Clear(Vec4(0, 1, 0, 1));
-		
-
 		//************************************
 		// World gbuffer pass for static objects
 		//************************************
@@ -912,12 +972,7 @@ int main()
 
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();		
-
-		ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_colour_map, 0, "colour_map");
-		ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_normal_map, 1, "normal_map");
-		ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_orm_map, 2, "orme_map");
-		ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", Vec3(1).arr); ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 1); ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1).arr);
-
+		
 		for (int32 i = 0; i < main_world.objects.size(); i++)
 		{
 			WorldObject *obj = main_world.objects[i];
@@ -925,37 +980,37 @@ int main()
 			Material mat = obj->GetMaterial();
 			Mat4 transform_matrix = obj->GetTransformMatrix();
 					   
-			//if (mat.diffuse_texture != nullptr)
-			//{
-			//	ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_colour_map, 0, "colour_map");
-			//	ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", Vec3(1).arr);
-			//}
-			//else
-			//{
-			//	ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 0, "colour_map");
-			//	ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", mat.diffuse.arr);
-			//}
+			if (mat.diffuse_texture != nullptr)
+			{
+				ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_colour_map, 0, "colour_map");
+				ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", Vec3(1).arr);
+			}
+			else
+			{
+				ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 0, "colour_map");
+				ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", mat.diffuse.arr);
+			}
 
-			//if (mat.normal_texture != nullptr)
-			//{
-			//	ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_normal_map, 1, "normal_map");
-			//	ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 1);
-			//}
-			//else
-			//{
-			//	ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 0);
-			//}
+			if (mat.normal_texture != nullptr)
+			{
+				ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_normal_map, 1, "normal_map");
+				ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 1);
+			}
+			else
+			{
+				ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 0);
+			}
 
-			//if (mat.occlusion_roughness_metallic != nullptr)
-			//{
-			//	ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_orm_map, 2, "orme_map");
-			//	ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1).arr);
-			//}
-			//else
-			//{
-			//	ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 2, "orme_map");
-			//	ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1, mat.roughness, mat.metalness).arr);
-			//}
+			if (mat.occlusion_roughness_metallic != nullptr)
+			{
+				ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_orm_map, 2, "orme_map");
+				ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1).arr);
+			}
+			else
+			{
+				ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 2, "orme_map");
+				ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1, mat.roughness, mat.metalness).arr);
+			}
 
 			ShaderSetMat4(&worldspace_gbuffer_shader, "model", transform_matrix.arr);
 			RenderMesh(worldspace_gbuffer_shader, obj->GetMeshForRender());
@@ -1114,7 +1169,7 @@ int main()
 		// Deffered pass
 		//************************************
 
-		BindFrameBuffer(post_processing);
+		BindFrameBuffer(post_processing_buffer);
 
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
@@ -1140,11 +1195,13 @@ int main()
 
 		if (render_settings.bloom)
 		{
+			lumin_filter.SetThreshold(render_settings.bloom_threshold);
+			gblur.SetKernelSize(render_settings.bloom_kernel_size);
 			if (render_settings.bloom_dependance == RenderSettings::BloomBlurDependance::Independent)
 			{
 				// @NOTE: In this case we need a much more accutrate, good blur
-				//		: This way we don't have to do multi pass filtering
-				lumin_filter.Filter(post_processing.colour0_texture_attachment, &bloom_map);
+				//		: This way we don't have to do multi pass filtering				
+				lumin_filter.Filter(post_processing_buffer.colour0_texture_attachment, &bloom_map);
 				gblur.Blur(bloom_map, &bloom_map);
 			}
 			else if (render_settings.bloom_dependance == RenderSettings::BloomBlurDependance::Dependent)
@@ -1152,7 +1209,7 @@ int main()
 				// @NOTE: In this case we wan't more aggressive blur.
 				//		: However the blur doesn't have to be good
 				//		: The stronger the blur the greater the chance for flickering
-				gblur.Blur(post_processing.colour0_texture_attachment, &bloom_map);
+				gblur.Blur(post_processing_buffer.colour0_texture_attachment, &bloom_map);
 				lumin_filter.Filter(bloom_map, &bloom_map);
 				gblur.Blur(bloom_map, &bloom_map);
 			}
@@ -1162,9 +1219,14 @@ int main()
 		// Final render pass
 		//************************************
 
+		// @NOTE: Setup stencil buffer such that we discard any pixels that were drawn by the editor
+#if EDITOR_WINDOW
+		StencilDiscardOnOne();
+		DisableDepthBuffer();
+#endif
 		BindShader(demo_01_postprocessing_shader);
 
-		ShaderBindTexture(demo_01_postprocessing_shader, post_processing.colour0_texture_attachment, 0, "scene_texture");
+		ShaderBindTexture(demo_01_postprocessing_shader, post_processing_buffer.colour0_texture_attachment, 0, "scene_texture");
 		ShaderBindTexture(demo_01_postprocessing_shader, bloom_map, 1, "bloom_texture");
 
 		ShaderSetInt32(&demo_01_postprocessing_shader, "FXAA", render_settings.fxaa);
@@ -1182,80 +1244,15 @@ int main()
 		ShaderSetInt32(&demo_01_postprocessing_shader, "tonemapping_method", static_cast<uint32>(render_settings.tonemapping));
 			   
 		RenderMesh(demo_01_postprocessing_shader, StandardMeshes::quad);
-
-		
+			   		 
 		//************************************
 		// DBUGING pass
-		////************************************
-		//BindFrameBuffer(renderer.frame_g_buffer);
-		//BindShader(ssao_gbuffer_shader);
-
-		//RenderCommands::ClearColourBuffer();
-		//RenderCommands::ClearDepthBuffer();
-
-		//for (int32 i = 0; i < main_world.objects.size(); i++)
-		//{
-		//	WorldObject *obj = main_world.objects[i];
-		//	Transform transform = obj->GetTransfrom();
-		//	Material mat = obj->GetMaterial();
-		//	Mat4 transform_matrix = obj->GetTransformMatrix();
-
-
-		//	ShaderSetMat4(&ssao_gbuffer_shader, "model", transform_matrix.arr);
-		//	RenderMesh(ssao_gbuffer_shader, obj->GetMeshForRender());
-		//}
-
-		//UnbindFrameBuffer();
-				
-
-
-
-		
-
-		//renderer.Render(main_world);
+		//************************************	
 	
-		RenderCommands::DisableDepthBuffer();
+		DisableDepthBuffer();
 		DebugDrawLines(&debug_shader);
-		RenderCommands::EnableDepthBuffer();
+		EnableDepthBuffer();
 
-
-#if 1
-		ui_renderer.BeginFrame();
-
-		
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-		
-		ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImVec2 pos = viewport->GetWorkPos();
-		pos.x += WINDOW_WIDTH - 350;
-		ImGui::SetNextWindowPos(pos);
-		ImGui::SetNextWindowSize(ImVec2(350,720));
-		ImGui::SetNextWindowViewport(viewport->ID);
-		
-		bool p_open;
-		ImGui::Begin("DockSpace Demo", &p_open, window_flags);
-		
-		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-		ImGui::DockSpace(dockspace_id);
-		
-		ImGui::End();
-
-		
-		
-
-		console.UpdateAndDraw();
-
-		editor_render_window.delta_time = delta_time;
-		editor_render_window.UpdateAndDraw();
-		
-			
-		ImGui::ShowDemoWindow();
-
-
-		ui_renderer.EndFrame();
-#endif
 		
 		////////////////////
 		// Post Debug Drawing
@@ -1278,7 +1275,6 @@ int main()
 		}
 		else
 		{
-			//DebugDrawTexture(&debug_mesh_shader, ssr_frame.colour0_texture_attachment);
 			//DebugDrawTexture(&debug_mesh_shader, renderer.frame_g_buffer.colour1_texture_attachment);
 		}
 

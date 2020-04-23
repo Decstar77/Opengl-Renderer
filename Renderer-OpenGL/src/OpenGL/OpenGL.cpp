@@ -735,6 +735,11 @@ namespace cm
 		glUseProgram(shader.shader_program);
 	}
 
+	void UnbindShader()
+	{
+		glUseProgram(0);
+	}
+
 	uint32 GetUniformLocation(Shader *shader, const std::string &uniform_name)
 	{
 		if (shader->uniform_cache.find(uniform_name) != shader->uniform_cache.end())
@@ -867,13 +872,31 @@ namespace cm
 				texture = &fbo->depth_texture_attachment;
 				FreeTexture(texture);
 
-				RenderBuffer *render_buffer = &fbo->render_attchment;
-				FreeRenderBuffer(render_buffer);
+				DepthStencilBuffer *render_buffer = &fbo->depthstencil_attchment;
+				FreeDepthStencilBuffer(render_buffer);
 			}			
 		}
 	}
 
-	void FreeRenderBuffer(RenderBuffer *rb)
+	void CreateDepthStencilBuffer(DepthStencilBuffer *rb)
+	{
+		Assert(rb->object == 0);
+		Assert(rb->width != 0);
+		Assert(rb->height != 0);
+
+		uint32 rbo;
+		glGenRenderbuffers(1, &rbo);
+		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+
+		glRenderbufferStorage(GL_RENDERBUFFER, rb->render_buffer_format,
+			rb->width, rb->height);
+
+		rb->object = rbo;
+
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	}
+
+	void FreeDepthStencilBuffer(DepthStencilBuffer *rb)
 	{
 		if (rb->object != 0)
 		{
@@ -935,7 +958,7 @@ namespace cm
 	}
 
 
-	void FrameBufferAddDepthAttachments(FrameBuffer *buffer)
+	void FrameBufferBindDepthAttachment(FrameBuffer *buffer)
 	{
 		Assert(buffer->object != 0);
 		Assert(buffer->depth_texture_attachment.object != 0);
@@ -949,26 +972,18 @@ namespace cm
 		UnbindFrameBuffer();
 	}
 
-	void FrameAddBufferRenderAttachtment(FrameBuffer *buffer)
+	void FrameBufferBindRenderAttachtment(FrameBuffer *buffer)
 	{
 		Assert(buffer->object != 0);
-		Assert(buffer->render_attchment.object == 0);
-		Assert(buffer->render_attchment.width != 0);
-		Assert(buffer->render_attchment.height!= 0);
+		Assert(buffer->depthstencil_attchment.object != 0);
+		Assert(buffer->depthstencil_attchment.width != 0);
+		Assert(buffer->depthstencil_attchment.height!= 0);
 		
-		uint32 rbo;
 		BindFrameBuffer(*buffer);
-		
-		glGenRenderbuffers(1, &rbo);
-		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-				
-		glRenderbufferStorage(GL_RENDERBUFFER, buffer->render_attchment.render_buffer_format, 
-			buffer->render_attchment.width, buffer->render_attchment.height);
 
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, buffer->render_attchment.render_buffer_attachment_type,
-			GL_RENDERBUFFER, rbo);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, buffer->depthstencil_attchment.render_buffer_attachment_type,
+			GL_RENDERBUFFER, buffer->depthstencil_attchment.object);
 		
-		buffer->render_attchment.object = rbo;
 		UnbindFrameBuffer();
 	}
 
@@ -2228,6 +2243,7 @@ namespace cm
 			void main()
 			{		
 				// @NOTE: Make sure we don't get a nan value by clamping it to zero
+				// @TODO: Use isnan() instead
 				vec3 colour = max(vec3(0.0), texture(src_texture, texture_coords).rgb);
 				out_colour = vec4(colour, 1);
 			}		
@@ -2374,6 +2390,23 @@ namespace cm
 		delete[] horizontal_frames;
 
 		created = false;
+	}
+
+	void GaussianTextureBlur::SetKernelSize(uint32 ksize)
+	{
+		Assert(ksize == 11); // @REASON: It's on the todo check class for desc.
+		Assert(ksize >= 1 && ksize <= max_kernel_size);
+		kernel_size = ksize;	
+	}
+
+	int32 GaussianTextureBlur::GetKernelSize()
+	{
+		return kernel_size;
+	}
+
+	int32 GaussianTextureBlur::GetMaxKernelSize()
+	{
+		return max_kernel_size;
 	}
 
 	LuminanceFilter::LuminanceFilter()

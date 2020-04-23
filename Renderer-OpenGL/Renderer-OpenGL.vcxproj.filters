@@ -96,6 +96,9 @@
     <ClCompile Include="src\Core\Serialization.cpp">
       <Filter>src\Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\Math\CosmicGeometry.cpp">
+      <Filter>src\Math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core.h">
@@ -178,6 +181,9 @@
     </ClInclude>
     <ClInclude Include="src\Core\Serialization.h">
       <Filter>src\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\CosmicGeometry.h">
+      <Filter>src\Math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
