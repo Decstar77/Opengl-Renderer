@@ -177,14 +177,14 @@ namespace cm
 		AddIrresoluteLine(v8, v4);
 	}
 
-	void Debug::AddPersistentAABBCenterRaduis(const Vec3 &center, const Vec3 &radius)
+	void Debug::AddPersistentAABBCenterRaduis(const Vec3 &center, const Vec3 &extents)
 	{
-		AddPersistentAABBMinMax(center - radius, center + radius);
+		AddPersistentAABBMinMax(center - extents, center + extents);
 	}
 
-	void Debug::AddIrresoluteAABBCenterRaduis(const Vec3 &center, const Vec3 &radius)
+	void Debug::AddIrresoluteAABBCenterRaduis(const Vec3 &center, const Vec3 &extents)
 	{
-		AddIrresoluteAABBMinMax(center - radius, center + radius);
+		AddIrresoluteAABBMinMax(center - extents, center + extents);
 	}
 
 	void Debug::AddPersistentPlane(const Vec3 &origin, const Vec3 &normal)
@@ -207,6 +207,69 @@ namespace cm
 	void Debug::AddIrresolutePoint(const Vec3 &center)
 	{
 		AddIrresoluteAABBCenterRaduis(center, Vec3(0.05f));
+	}
+
+	void Debug::AddPersistentOBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis)
+	{
+		Vec3 v0 = (origin + extents) * basis.mat;
+		Vec3 v1 = (origin - extents) * basis.mat;
+
+		Vec3 v2 = (origin + Vec3(-extents.x,  extents.y, extents.z)) * basis.mat;
+		Vec3 v3 = (origin + Vec3(extents.x, -extents.y, extents.z)) * basis.mat;
+		Vec3 v4 = (origin + Vec3(extents.x, extents.y, -extents.z)) * basis.mat;
+
+		Vec3 v5 = (origin + Vec3(-extents.x, -extents.y, extents.z)) * basis.mat;
+		Vec3 v6 = (origin + Vec3(extents.x, -extents.y, -extents.z)) * basis.mat;
+		Vec3 v7 = (origin + Vec3(-extents.x, extents.y, -extents.z)) * basis.mat;
+
+				
+		AddPersistentLine(v0, v2);
+		AddPersistentLine(v0, v4);
+		AddPersistentLine(v0, v3);
+
+		AddPersistentLine(v1, v5);
+		AddPersistentLine(v1, v7);
+		AddPersistentLine(v1, v6);
+
+		AddPersistentLine(v3, v6);
+		AddPersistentLine(v3, v5);
+
+		AddPersistentLine(v2, v5);
+		AddPersistentLine(v2, v7);
+
+		AddPersistentLine(v4, v7);
+		AddPersistentLine(v4, v6);
+	}
+
+	void Debug::AddIrresoluteOBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis)
+	{
+		Vec3 v0 = (origin + extents) * basis.mat;
+		Vec3 v1 = (origin - extents) * basis.mat;
+
+		Vec3 v2 = (origin + Vec3(-extents.x, extents.y, extents.z)) * basis.mat;
+		Vec3 v3 = (origin + Vec3(extents.x, -extents.y, extents.z)) * basis.mat;
+		Vec3 v4 = (origin + Vec3(extents.x, extents.y, -extents.z)) * basis.mat;
+
+		Vec3 v5 = (origin + Vec3(-extents.x, -extents.y, extents.z)) * basis.mat;
+		Vec3 v6 = (origin + Vec3(extents.x, -extents.y, -extents.z)) * basis.mat;
+		Vec3 v7 = (origin + Vec3(-extents.x, extents.y, -extents.z)) * basis.mat;
+		
+		AddIrresoluteLine(v0, v2);
+		AddIrresoluteLine(v0, v4);
+		AddIrresoluteLine(v0, v3);
+
+		AddIrresoluteLine(v1, v5);
+		AddIrresoluteLine(v1, v7);
+		AddIrresoluteLine(v1, v6);
+
+		AddIrresoluteLine(v3, v6);
+		AddIrresoluteLine(v3, v5);
+
+		AddIrresoluteLine(v2, v5);
+		AddIrresoluteLine(v2, v7);
+
+		AddIrresoluteLine(v4, v7);
+		AddIrresoluteLine(v4, v6);
 	}
 
 	void Debug::DrawTexture(Shader *shader, const Texture &t)

@@ -1100,7 +1100,7 @@ bool ImGui::RadioButton(const char* label, bool active)
     ImVec2 center = check_bb.GetCenter();
     center.x = IM_ROUND(center.x);
     center.y = IM_ROUND(center.y);
-    const float radius = (square_sz - 1.0f) * 0.5f;
+    const float extents = (square_sz - 1.0f) * 0.5f;
 
     bool hovered, held;
     bool pressed = ButtonBehavior(total_bb, id, &hovered, &held);
@@ -1108,17 +1108,17 @@ bool ImGui::RadioButton(const char* label, bool active)
         MarkItemEdited(id);
 
     RenderNavHighlight(total_bb, id);
-    window->DrawList->AddCircleFilled(center, radius, GetColorU32((held && hovered) ? ImGuiCol_FrameBgActive : hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg), 16);
+    window->DrawList->AddCircleFilled(center, extents, GetColorU32((held && hovered) ? ImGuiCol_FrameBgActive : hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg), 16);
     if (active)
     {
         const float pad = ImMax(1.0f, IM_FLOOR(square_sz / 6.0f));
-        window->DrawList->AddCircleFilled(center, radius - pad, GetColorU32(ImGuiCol_CheckMark), 16);
+        window->DrawList->AddCircleFilled(center, extents - pad, GetColorU32(ImGuiCol_CheckMark), 16);
     }
 
     if (style.FrameBorderSize > 0.0f)
     {
-        window->DrawList->AddCircle(center + ImVec2(1,1), radius, GetColorU32(ImGuiCol_BorderShadow), 16, style.FrameBorderSize);
-        window->DrawList->AddCircle(center, radius, GetColorU32(ImGuiCol_Border), 16, style.FrameBorderSize);
+        window->DrawList->AddCircle(center + ImVec2(1,1), extents, GetColorU32(ImGuiCol_BorderShadow), 16, style.FrameBorderSize);
+        window->DrawList->AddCircle(center, extents, GetColorU32(ImGuiCol_Border), 16, style.FrameBorderSize);
     }
 
     if (g.LogEnabled)

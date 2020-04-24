@@ -5,18 +5,24 @@
 
 namespace cm
 {
-
 	struct MouseData
 	{
-		Vec2 position = 0;
+		Vec2 prev_mouse_position = Vec2(0);
+		Vec2 position = Vec2(0);
+		bool prev_mouse_codes[MOUSE_KEY_AMOUNT] = {};
 		bool mouse_codes[MOUSE_KEY_AMOUNT] = {};
 	};
 
 	struct KeyData
 	{
-		bool current_key_codes[KEY_CODE_AMOUNT] = {};
+		bool prev_key_codes[KEY_CODE_AMOUNT] = {};
+		bool key_codes[KEY_CODE_AMOUNT] = {};
 	};
 
+	struct InputModifiers
+	{
+
+	};
 	   	 	
 	class InputCallBacks;
 	class Input
@@ -24,31 +30,66 @@ namespace cm
 	public:
 		~Input() = default;
 		
-		inline static void SetKeyState(int32 index, bool state) {Assert(index < KEY_CODE_AMOUNT); key_data.current_key_codes[index] = state; }
-		inline static bool GetKey(int32 index) {Assert(index < KEY_CODE_AMOUNT); return key_data.current_key_codes[index]; }
+		inline static void SetKeyState(int32 index, bool state) {
+			Assert(index < KEY_CODE_AMOUNT); 
+			key_data.key_codes[index] = state; 
+		}
+		inline static bool GetKey(int32 index) {
+			Assert(index < KEY_CODE_AMOUNT); 
+			return key_data.key_codes[index]; 
+		}
 		inline static bool GetKeyDown(int32 index) { Assert(0); return false; }
 		inline static bool GetKeyUp(int32 index) { Assert(0); return false; }
 
 
-		inline static bool SetMouseKey(int32 index) { Assert(index < MOUSE_KEY_AMOUNT); mouse_data.mouse_codes[index] = true; };
-		inline static bool GetMouse(int32 index) { Assert(index < MOUSE_KEY_AMOUNT); return mouse_data.mouse_codes[index]; }
-		inline static bool GetMouseDown(int32 index) { Assert(0); return false; }
-		inline static bool GetMouseUp(int32 index) { Assert(0); return false; }
+		inline static void SetMousePosition(const real32 &x, const real32 &y) {
+			mouse_data.position = Vec2(x, y);
+		}
+		inline static void SetMouseKeyState(int32 index, bool state) { 
+			Assert(index < MOUSE_KEY_AMOUNT);
+			mouse_data.mouse_codes[index] = state;
+		}
+		inline static bool IsMouseJustDown(int32 index) { 
+			Assert(index < MOUSE_KEY_AMOUNT); 
+			return (mouse_data.prev_mouse_codes[index] == false && mouse_data.mouse_codes[index] == true) ? true : false;
+		}
+		inline static bool IsMouseHeldDown(int32 index) { 
+			Assert(index < MOUSE_KEY_AMOUNT);
+			return mouse_data.mouse_codes[index]; 
+		}
+		inline static bool IsMouseJustUp(int32 index) {
+			Assert(index < MOUSE_KEY_AMOUNT);
+			return (mouse_data.prev_mouse_codes[index] == true && mouse_data.mouse_codes[index] == false) ? true : false;
+		}
+		inline static bool IsMouseUp(int32 index) {
+			Assert(index < MOUSE_KEY_AMOUNT);
+			return !mouse_data.mouse_codes[index];
+		}
+
 		inline static Vec2 GetMousePosition() { return mouse_data.position; }
-		inline static Vec2 GetMouseLastPosition() { return last_mouse_data.position; }
+		inline static Vec2 GetMouseLastPosition() { return mouse_data.prev_mouse_position; }
+
+
+
+		inline static void Update()
+		{
+			mouse_data.prev_mouse_position= mouse_data.position;
+			for (uint32 i = 0; i < MOUSE_KEY_AMOUNT; i++)
+			{
+				mouse_data.prev_mouse_codes[i] = mouse_data.mouse_codes[i];
+			}
+		}
+
 
 		inline static void MousePositionCall(GLFWwindow *widow, double xpos, double ypos) {};
 		//inline static RegisterCallBack() {}
 
-		inline static void SetMousePosition(const real32 &x, const real32 &y) 
-		{ last_mouse_data.position = mouse_data.position; mouse_data.position = Vec2(x, y); }
 		
 		static std::vector<InputCallBacks *> msg;
-	private:
 
-		static MouseData last_mouse_data;
 		static MouseData mouse_data;
 
+	private:
 		static KeyData last_key_data;
 		static KeyData key_data;
 

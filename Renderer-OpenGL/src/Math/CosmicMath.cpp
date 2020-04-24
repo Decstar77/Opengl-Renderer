@@ -71,6 +71,16 @@ namespace cm
 		return ss.str();
 	}
 
+	std::string ToString(const Mat3 &a)
+	{
+		std::stringstream ss;
+		std::string space = "            ";
+		ss << "| " << a.arr[0] << space << a.arr[1] << space << a.arr[2] << " |" << '\n';
+		ss << "| " << a.arr[3] << space << a.arr[4] << space << a.arr[5] << " |" << '\n';
+		ss << "| " << a.arr[6] << space << a.arr[7] << space << a.arr[8] << " |" << '\n';
+		return ss.str();
+	}
+
 	real32 Dot(const Vec4 &a, const Vec4 &b)
 	{
 		return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
@@ -149,18 +159,33 @@ namespace cm
 		std::cout << ToString(m) << std::endl;
 	}
 
-	real32 GetLoggedMessages(const Mat4 &a, const int32 &row, const int32 &col)
+	real32 GetMatrixElement(const Mat4 &a, const int32 &row, const int32 &col)
 	{
 		return a.arr[4 * row + col];
 	}
 
-	Vec4 GetColumn(const Mat4 &a, const uint8 &col)
+	real32 GetMatrixElement(const Mat3 &a, const int32 &row, const int32 &col)
+	{
+		// @NOTE: This is 4 * because of the padding byte
+		return a.arr[4 * row + col];
+	}
+
+	Vec4 GetColumn(const Mat4 &a, const uint32 &col)
 	{
 		Vec4 column(0, 0, 0, 0);
 		column.x = a.arr[4 * 0 + col];
 		column.y = a.arr[4 * 1 + col];
 		column.z = a.arr[4 * 2 + col];
 		column.w = a.arr[4 * 3 + col];
+		return column;
+	}
+
+	Vec3 GetColumn(const Mat3 &a, const uint32 &col)
+	{
+		Vec3 column(0, 0, 0);
+		column.x = a.arr[4 * 0 + col];
+		column.y = a.arr[4 * 1 + col];
+		column.z = a.arr[4 * 2 + col];
 		return column;
 	}
 
@@ -187,7 +212,7 @@ namespace cm
 			{
 				if (c == col || c == col + 4 || c == col + 8 || c == col + 12)
 					continue;
-				result.arr[index++] = GetLoggedMessages(a, r, c);
+				result.arr[index++] = GetMatrixElement(a, r, c);
 			}
 		}
 		return result;
@@ -335,6 +360,36 @@ namespace cm
 		return result * a;
 	}
 
+	Mat3 Rotate(const Mat3 &a, const real32 &d_angle, Vec3 axis)
+	{
+		axis = Normalize(axis);
+		
+		real32 theata = DegToRad(d_angle);
+		real32 cos_theata = cosf(theata);
+		real32 sin_theata = sinf(theata);
+
+		Vec3 iPrime(0, 0, 0);
+		iPrime.x = Round(axis.x *axis.x * (1 - cos_theata) + cos_theata);
+		iPrime.y = Round(axis.x *axis.y * (1 - cos_theata) + axis.z * sin_theata);
+		iPrime.z = Round(axis.x *axis.z * (1 - cos_theata) - axis.y * sin_theata);
+
+		Vec3 jPrime(0, 0, 0);
+		jPrime.x = Round(axis.x *axis.y * (1 - cos_theata) - axis.z *sin_theata);
+		jPrime.y = Round(axis.y *axis.y * (1 - cos_theata) + cos_theata);
+		jPrime.z = Round(axis.y *axis.z * (1 - cos_theata) + axis.x *sin_theata);
+
+		Vec3 kPrime(0, 0, 0);
+		kPrime.x = Round(axis.x *axis.z * (1 - cos_theata) + axis.y *sin_theata);
+		kPrime.y = Round(axis.y *axis.z * (1 - cos_theata) - axis.x *sin_theata);
+		kPrime.z = Round(axis.z *axis.z * (1 - cos_theata) + cos_theata);
+		
+		Mat3 result(iPrime, jPrime, kPrime);
+		
+		Mat3 temp = result * a;
+
+		return temp;
+	}
+
 	Mat4 ScaleDirection(Mat4 a, real32 k, Vec3 unit_direction, bool should_normalize)
 	{
 		if (should_normalize && Mag(unit_direction) != 1)
@@ -420,6 +475,39 @@ namespace cm
 		return Transpose(rotation * translation);
 	}
 
+	Mat3 operator*(const Mat3 &a, const Mat3 &b)
+	{
+		Mat3 result(1);
+		// @NOTE: Steps through the rows
+		for (int32 i = 0; i < 3; i++)
+		{
+			// @NOTE: Steps through the columns
+			for (int32 y = 0; y < 3; y++)
+			{
+				// @NOTE: Gets the column vector of the right hand side
+				Vec3 col(0, 0, 0);
+				for (int32 x = 0; x < 3; x++)
+				{
+					col.arr[x] = GetMatrixElement(b, x, y);
+				}
+				// @NOTE: Adds to result
+				result.arr[4 * i + y] = Dot(col, a.data[i]);
+			}
+		}
+		return result;
+	}
+
+	Vec3 operator*(const Vec3 &a, const Mat3 &b)
+	{
+		Vec3 result(0, 0, 0);
+		for (uint32 i = 0; i < 3; i++)
+		{
+			Vec3 col = GetColumn(b, i);
+			result.arr[i] = Dot(col, a);
+		}
+		return result;
+	}
+
 	Mat4 operator /(Mat4 a, real32 b)
 	{
 		a.row0 = a.row0 / b;
@@ -433,18 +521,19 @@ namespace cm
 	{
 		Mat4 result(1);
 		// @NOTE: Steps through the rows
-		for (int i = 0; i < 4; i++)
+		for (int32 i = 0; i < 4; i++)
 		{
 			// @NOTE: Steps through the columns
-			for (int y = 0; y < 4; y++)
+			for (int32 y = 0; y < 4; y++)
 			{
 				// @NOTE: Gets the column vector of the right hand side
 				Vec4 col(0, 0, 0, 0);
-				for (int x = 0; x < 4; x++)
+				for (int32 x = 0; x < 4; x++)
 				{
-					col.arr[x] = GetLoggedMessages(b, x, y);
+					col.arr[x] = GetMatrixElement(b, x, y);
 				}
 				// @NOTE: Adds to result
+				// @NOTE: This is 4 * because of the padding byte
 				result.arr[4 * i + y] = Dot(col, a.data[i]);
 			}
 		}
@@ -464,7 +553,7 @@ namespace cm
 	Vec4 operator *(const Vec4 &a, const Mat4 &b)
 	{
 		Vec4 result(0, 0, 0, 0);
-		for (int i = 0; i < 4; i++)
+		for (uint32 i = 0; i < 4; i++)
 		{
 			Vec4 col = GetColumn(b, i);
 			result.arr[i] = Dot(col, a);

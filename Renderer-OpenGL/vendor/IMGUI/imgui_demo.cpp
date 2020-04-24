@@ -4667,7 +4667,7 @@ static void ShowExampleAppCustomRendering(bool* p_open)
             {
                 adding_preview = true;
                 points.push_back(mouse_pos_in_canvas);
-                if (!ImGui::IsMouseDown(0))
+                if (!ImGui::IsMouseHeldDown(0))
                     adding_line = adding_preview = false;
             }
             if (ImGui::IsItemHovered())

@@ -48,14 +48,18 @@ namespace cm
 		static void AddPersistentAABBMinMax(const Vec3 &min, const Vec3 &max);
 		static void AddIrresoluteAABBMinMax(const Vec3 &min, const Vec3 &max);
 
-		static void AddPersistentAABBCenterRaduis(const Vec3 &center, const Vec3 &radius);
-		static void AddIrresoluteAABBCenterRaduis(const Vec3 &center, const Vec3 &radius);
+		static void AddPersistentAABBCenterRaduis(const Vec3 &center, const Vec3 &extents);
+		static void AddIrresoluteAABBCenterRaduis(const Vec3 &center, const Vec3 &extents);
 
 		static void AddPersistentPlane(const Vec3 &origin, const Vec3 &normal);
 		static void AddIrresolutePlane(const Vec3 &origin, const Vec3 &normal);
 
 		static void AddPersistentPoint(const Vec3 &center);
 		static void AddIrresolutePoint(const Vec3 &center);
+
+		static void AddPersistentOBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis);
+		static void AddIrresoluteOBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis);
+
 
 		static void Draw(Shader *debug_shader);
 		static void DrawTexture(Shader *shader, const Texture &t);

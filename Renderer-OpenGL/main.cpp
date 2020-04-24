@@ -50,25 +50,18 @@ void MousePositionCallBack(GLFWwindow *widow, double xpos, double ypos)
 	}
 	
 	Input::SetMousePosition(current_mouse.x, current_mouse.y);	
-
 }
 
-Vec3 GetArcBallPoint(Vec2 mouse_coords)
+void MouseButtonCallBack(GLFWwindow* window, int32 button, int32 action, int32 mods)
 {
-	Vec4 ndc = GetNormalisedDeviceCoordinates(WINDOW_WIDTH, WINDOW_HEIGHT, mouse_coords.x, mouse_coords.y);
-
-	Vec3 p = Vec3(ndc.x, ndc.y, 0);
-
-	real32 ops = p.x * p.x + p.y * p.y;
-	if (ops <= 1 * 1)
+	if (action == GLFW_PRESS)
 	{
-		p.z = sqrt(1 * 1 - ops);
+		Input::SetMouseKeyState(button, true);
 	}
-	else
+	else if (action == GLFW_RELEASE)
 	{
-		p = Normalize(p);
+		Input::SetMouseKeyState(button, false);
 	}
-	return p;
 }
 
 void KeyCodeCallBack(GLFWwindow *window, int32 key, int32 scancode, int32 action, int32 mod)
@@ -114,7 +107,26 @@ GLFWwindow* CreateRenderingWindow()
 	//DESC: Callbacks
 	glfwSetCursorPosCallback(window, MousePositionCallBack);
 	glfwSetKeyCallback(window, KeyCodeCallBack);
+	glfwSetMouseButtonCallback(window, MouseButtonCallBack);
 	return window;
+}
+
+Vec3 GetArcBallPoint(Vec2 mouse_coords)
+{
+	Vec4 ndc = GetNormalisedDeviceCoordinates(WINDOW_WIDTH, WINDOW_HEIGHT, mouse_coords.x, mouse_coords.y);
+
+	Vec3 p = Vec3(ndc.x, ndc.y, 0);
+
+	real32 ops = p.x * p.x + p.y * p.y;
+	if (ops <= 1 * 1)
+	{
+		p.z = sqrt(1 * 1 - ops);
+	}
+	else
+	{
+		p = Normalize(p);
+	}
+	return p;
 }
 
 void InitializeStandardMeshes()
@@ -345,6 +357,17 @@ int main()
 	translation_widget.translation_plane = Plane(Vec3(0, 0, 0), Vec3(0, 1, 0));
 	translation_widget.x_bounding_volume = Aabb(Vec3(0.0), Vec3(0.5, 0.1, 0.1));
 
+	OBB obb;
+	obb.extents = Vec3(1);
+	obb.origin = Vec3(0);
+	obb.basis.mat = Mat3(1);
+
+	obb.basis.mat = Rotate(Mat3(1), 45.0f, Vec3(1,0,0));
+	obb.basis.mat = Rotate(obb.basis.mat, 45.0f, Vec3(0, 1, 0));
+
+	Debug::AddPersistentOBB(obb.origin, obb.extents, obb.basis);
+
+	//Debug::AddPersistentAABBCenterRaduis(Vec3(0), Vec3(1));
 
 	//************************************
 	// Initialize imported textures
@@ -842,12 +865,12 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		//************************************
-		// Process Windows Events
+		// Process window and input events
 		//************************************
-
-		std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
-		glfwPollEvents();
 		
+		std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
+		
+		glfwPollEvents();
 
 		//************************************
 		// Draw and update the editor 
@@ -931,9 +954,16 @@ int main()
 		}
 		if (!(mouse_input_for_editor_window)) 
 		{
-			if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
+			if (Input::IsMouseJustDown(MOUSE_BUTTON_1))
 			{
-				LOG("ISAUD)ISADJO");
+				LOG("DOWN");
+			}
+			if (Input::IsMouseJustUp(MOUSE_BUTTON_1))
+			{
+				//LOG("UP");
+			}
+			if (Input::IsMouseHeldDown(MOUSE_BUTTON_1))
+			{
 				double x, y;
 				glfwGetCursorPos(window, &x, &y);
 				fh += 0.4f * delta_time;
@@ -950,6 +980,8 @@ int main()
 			
 				Ray cam_ray = camera_controller.RayFromCamera(curr, Vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
 
+				bool hitobb = obb.CheckCollision(cam_ray);
+				Debug::Log(hitobb);
 				bool hit_gizmo = translation_widget.x_bounding_volume.CheckCollision(cam_ray) || translation_widget.is_held; 
 				if (hit_gizmo)
 				{
@@ -960,7 +992,7 @@ int main()
 						real32 t = translation_widget.translation_plane.CheckDistance(cam_ray);
 						Vec3 p0 = translation_widget.translation_plane.origin;
 						Vec3 p1 = cam_ray.Travel(t);
-						p0 = p1;
+				
 
 						Vec3 f = p1 - p0;
 						//real32 dist = Distance(p0, p1);
@@ -1408,22 +1440,32 @@ int main()
 		//RenderMesh(post_processing_shader, standard_meshes.quad);
 		//glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT); 
 
+
+		//************************************
+		// Process update input state
+		//************************************
+
+		Input::Update();
+
+
+		//************************************
+		// Swap the buffer into the screen
+		//************************************
+		
 		glfwSwapBuffers(window);
-
+			   		 
 		//************************************
-		// Collect Stats About Last Frame
+		// Calculate the frame time
 		//************************************
-
-
+		
 		std::chrono::time_point<std::chrono::steady_clock> endTime = std::chrono::steady_clock::now();
 		std::chrono::microseconds elapsedTime(std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime));
+		
 		float time = static_cast<float> (elapsedTime.count());
-		delta_time = time * 0.001f * 0.001f;
+		delta_time = time * 0.001f * 0.001f;		
+
 		run_time += delta_time;
 
-
-		//std::cout << "Ms: " << time * 0.001 << std::endl;
-		//std::cout << "Sc: " << time * 0.001f * 0.001f << std::endl;		
 	}
 
 

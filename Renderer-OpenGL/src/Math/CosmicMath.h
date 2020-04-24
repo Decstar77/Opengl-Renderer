@@ -274,9 +274,26 @@ namespace cm
 
 	struct Basis
 	{
-		Vec3 forward = Vec3(0, 0, 1);
-		Vec3 upward = Vec3(0, 1, 0);
-		Vec3 right = Vec3(1, 0, 0);
+		union 
+		{
+			Mat3 mat;
+			struct
+			{
+				Vec3 right;
+				Vec3 upward;
+				Vec3 forward;
+			};
+		};
+		Basis()
+		{
+			mat = Mat3(1);
+		}
+		Basis(const Vec3 &right, const Vec3 &upward, const Vec3 &forward)
+		{
+			this->right = right;
+			this->upward = upward;
+			this->forward = forward;
+		}
 	};
 
 
@@ -359,8 +376,16 @@ namespace cm
 	//************************************
 	// Matrix 3x3
 	//************************************
+
+	real32 GetMatrixElement(const Mat3 &a, const int32 &row, const int32 &col);
 	
+	Vec3 GetColumn(const Mat3 &a, const uint32 &col);
+
+	std::string ToString(const Mat3 &a);
+
 	real32 Det(const Mat3 &a);
+
+	Mat3 Rotate(const Mat3 &a, const real32 &d_angle, Vec3 axis);
 
 	Mat3 Mat4ToMat3(const Mat4 &a);
 
@@ -368,9 +393,9 @@ namespace cm
 	// Matrix 4x4
 	//************************************
 
-	real32 GetLoggedMessages(const Mat4 &a, const int32 &row, const int32 &col);
+	real32 GetMatrixElement(const Mat4 &a, const int32 &row, const int32 &col);
 	
-	Vec4 GetColumn(const Mat4 &a, const uint8 &col);
+	Vec4 GetColumn(const Mat4 &a, const uint32 &col);
 
 	std::string ToString(const Mat4 &a);
 
@@ -715,26 +740,30 @@ namespace cm
 		return _mm_div_ps(a.data, _mm_set1_ps(b));
 	}
 
-	inline  bool operator  ==(const Vec4 &a, const Vec4 &b)
+	inline bool operator  ==(const Vec4 &a, const Vec4 &b)
 	{
 		int32 *compared = reinterpret_cast<int32*>(&_mm_cmpeq_ps(a.data, b.data));
 		return(compared[0] & compared[1] & compared[2] & compared[3]);
 	}
 
-	inline  bool operator  !=(const Vec4 &a, const Vec4 &b)
+	inline bool operator  !=(const Vec4 &a, const Vec4 &b)
 	{
 		int32 *compared = reinterpret_cast<int32*>(&_mm_cmpneq_ps(a.data, b.data));
 		return(compared[0] | compared[1] | compared[2] | compared[3]);
-	}
-		
+	}	
+
+	Vec3 operator *(const Vec3 &a, const Mat3 &b);
+
+	Mat3 operator *(const Mat3 &a, const Mat3 &b);
+
 	Mat4  operator /(Mat4 a, float b);
 
 	Mat4  operator *(const Mat4 &a, const Mat4&b);
 
 	Mat4 operator +(const Mat4 &a, const Mat4 &b);
 	
-	Vec4  operator *(const Vec4 &a, const Mat4 &b);
-	
+	Vec4  operator *(const Vec4 &a, const Mat4 &b);	
+
 	inline Quat operator *(const Quat &q, const Quat &p)
 	{
 		real32 w = p.w * q.w		 - p.x * q.x		- p.y * q.y			- p.z * q.z;

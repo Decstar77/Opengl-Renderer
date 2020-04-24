@@ -76,8 +76,13 @@ namespace cm
 		~Aabb();
 	};
 
-	class OOB : public GeometricCollidable
+	class OBB : public GeometricCollidable
 	{
+
+	public:
+		Vec3 origin;
+		Vec3 extents;
+		Basis basis;
 
 	public:
 		virtual bool CheckCollision(const Ray &r) const override;

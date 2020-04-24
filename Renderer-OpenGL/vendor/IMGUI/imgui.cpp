@@ -4460,7 +4460,7 @@ void ImGui::EndFrame()
     if (g.DragDropActive)
     {
         bool is_delivered = g.DragDropPayload.Delivery;
-        bool is_elapsed = (g.DragDropPayload.DataFrameCount + 1 < g.FrameCount) && ((g.DragDropSourceFlags & ImGuiDragDropFlags_SourceAutoExpirePayload) || !IsMouseDown(g.DragDropMouseButton));
+        bool is_elapsed = (g.DragDropPayload.DataFrameCount + 1 < g.FrameCount) && ((g.DragDropSourceFlags & ImGuiDragDropFlags_SourceAutoExpirePayload) || !IsMouseHeldDown(g.DragDropMouseButton));
         if (is_delivered || is_elapsed)
             ClearDragDrop();
     }
@@ -4756,7 +4756,7 @@ bool ImGui::IsKeyReleased(int user_key_index)
     return g.IO.KeysDownDurationPrev[user_key_index] >= 0.0f && !g.IO.KeysDown[user_key_index];
 }
 
-bool ImGui::IsMouseDown(ImGuiMouseButton button)
+bool ImGui::IsMouseHeldDown(ImGuiMouseButton button)
 {
     ImGuiContext& g = *GImGui;
     IM_ASSERT(button >= 0 && button < IM_ARRAYSIZE(g.IO.MouseDown));
@@ -10070,7 +10070,7 @@ const ImGuiPayload* ImGui::AcceptDragDropPayload(const char* type, ImGuiDragDrop
     }
 
     g.DragDropAcceptFrameCount = g.FrameCount;
-    payload.Delivery = was_accepted_previously && !IsMouseDown(g.DragDropMouseButton); // For extern drag sources affecting os window focus, it's easier to just test !IsMouseDown() instead of IsMouseReleased()
+    payload.Delivery = was_accepted_previously && !IsMouseHeldDown(g.DragDropMouseButton); // For extern drag sources affecting os window focus, it's easier to just test !IsMouseDown() instead of IsMouseReleased()
     if (!payload.Delivery && !(flags & ImGuiDragDropFlags_AcceptBeforeDelivery))
         return NULL;
 
