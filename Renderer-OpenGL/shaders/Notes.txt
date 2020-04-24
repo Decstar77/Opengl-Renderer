@@ -13,7 +13,14 @@ Notes:
 			 : IE: It's sphereical coords
 			 : //http://paulbourke.net/miscellaneous/cubemaps/
 			 : //https://math.stackexchange.com/questions/1395679/how-would-i-find-a-point-on-a-sphere-with-a-uv-coordinate/	
-	
+	SSR:
+		http://imanolfotia.com/blog/update/2017/03/11/ScreenSpaceReflections.html
+		http://imanolfotia.com/blog/update/2019/05/16/better-reflections.html
+		http://roar11.com/2015/07/screen-space-glossy-reflections/
+		https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html#copyright
+		https://github.com/lettier/3d-game-shaders-for-beginners/blob/master/demonstration/shaders/fragment/screen-space-reflection.frag
+		https://github.com/ImanolFotia/Epsilon-Engine/blob/master/bin/Release/shaders/SSR.frag
+		https://github.com/godotengine/godot/blob/6a38ce1b318cc71c285c11f5b52f04a681c309fd/servers/rendering/rasterizer_rd/shaders/screen_space_reflection.glsl#L132
 DEMO:
 	SSR <---
 	MIRROR <---

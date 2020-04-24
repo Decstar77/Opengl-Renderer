@@ -3395,7 +3395,7 @@ static ImDrawList* GetViewportDrawList(ImGuiViewportP* viewport, size_t drawlist
     // Our ImDrawList system requires that there is always a command
     if (viewport->LastFrameDrawLists[drawlist_no] != g.FrameCount)
     {
-        draw_list->Clear();
+        draw_list->ClearLogger();
         draw_list->PushTextureID(g.IO.Fonts->TexID);
         draw_list->PushClipRect(viewport->Pos, viewport->Pos + viewport->Size, false);
         viewport->LastFrameDrawLists[drawlist_no] = g.FrameCount;
@@ -3928,7 +3928,7 @@ void ImGui::NewFrame()
     {
         ImGuiViewportP* viewport = g.Viewports[n];
         viewport->DrawData = NULL;
-        viewport->DrawDataP.Clear();
+        viewport->DrawDataP.ClearLogger();
     }
 
     // Drag and drop keep the source ID alive so even if the source disappear our state is consistent
@@ -4178,7 +4178,7 @@ void ImGui::Shutdown(ImGuiContext* context)
     g.WindowsTempSortBuffer.clear();
     g.CurrentWindow = NULL;
     g.CurrentWindowStack.clear();
-    g.WindowsById.Clear();
+    g.WindowsById.ClearLogger();
     g.NavWindow = NULL;
     g.HoveredWindow = g.HoveredRootWindow = g.HoveredWindowUnderMovingWindow = NULL;
     g.ActiveIdWindow = g.ActiveIdPreviousFrameWindow = NULL;
@@ -4194,7 +4194,7 @@ void ImGui::Shutdown(ImGuiContext* context)
         IM_DELETE(g.Viewports[i]);
     g.Viewports.clear();
 
-    g.TabBars.Clear();
+    g.TabBars.ClearLogger();
     g.CurrentTabBarStack.clear();
     g.ShrinkWidthBuffer.clear();
 
@@ -4523,7 +4523,7 @@ void ImGui::Render()
     for (int n = 0; n != g.Viewports.Size; n++)
     {
         ImGuiViewportP* viewport = g.Viewports[n];
-        viewport->DrawDataBuilder.Clear();
+        viewport->DrawDataBuilder.ClearLogger();
         if (viewport->DrawLists[0] != NULL)
             AddDrawListToDrawData(&viewport->DrawDataBuilder.Layers[0], GetBackgroundDrawList(viewport));
     }
@@ -6372,7 +6372,7 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         // DRAWING
 
         // Setup draw list and outer clipping rectangle
-        window->DrawList->Clear();
+        window->DrawList->ClearLogger();
         window->DrawList->PushTextureID(g.Font->ContainerAtlas->TexID);
         PushClipRect(host_rect.Min, host_rect.Max, false);
 
@@ -9393,9 +9393,9 @@ static void ImGui::NavUpdate()
     }
 
     // Reset search results
-    g.NavMoveResultLocal.Clear();
-    g.NavMoveResultLocalVisibleSet.Clear();
-    g.NavMoveResultOther.Clear();
+    g.NavMoveResultLocal.ClearLogger();
+    g.NavMoveResultLocalVisibleSet.ClearLogger();
+    g.NavMoveResultOther.ClearLogger();
 
     // When we have manually scrolled (without using navigation) and NavId becomes out of bounds, we project its bounding box to the visible area to restart navigation within visible items
     if (g.NavMoveRequest && g.NavMoveFromClampedRefRect && g.NavLayer == ImGuiNavLayer_Main)
@@ -9802,7 +9802,7 @@ void ImGui::ClearDragDrop()
 {
     ImGuiContext& g = *GImGui;
     g.DragDropActive = false;
-    g.DragDropPayload.Clear();
+    g.DragDropPayload.ClearLogger();
     g.DragDropAcceptFlags = ImGuiDragDropFlags_None;
     g.DragDropAcceptIdCurr = g.DragDropAcceptIdPrev = 0;
     g.DragDropAcceptIdCurrRectSurface = FLT_MAX;
@@ -14181,7 +14181,7 @@ void ImGui::DockBuilderRemoveNodeChildNodes(ImGuiID root_id)
 
     if (root_id == 0)
     {
-        dc->Nodes.Clear();
+        dc->Nodes.ClearLogger();
         dc->Requests.clear();
     }
     else if (has_central_node)

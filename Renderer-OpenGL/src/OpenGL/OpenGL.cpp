@@ -1377,6 +1377,9 @@ namespace cm
 		BindFrameBuffer(frame);
 		BindShader(shader);
 
+		uint32 old_width = OpenGlState::current_viewport_width;
+		uint32 old_height = OpenGlState::current_viewport_height;
+
 		SetViewPort(0, 0, dst->config.width, dst->config.height);
 		
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dst->object, 0);
@@ -1389,7 +1392,7 @@ namespace cm
 		GLMesh screen_quad = StandardMeshes::quad;
 		RenderMesh(shader, screen_quad);
 
-		SetViewPort(0, 0, 1280, 720);
+		SetViewPort(0, 0, old_width, old_height);
 
 		UnbindFrameBuffer();
 	}
@@ -1491,6 +1494,9 @@ namespace cm
 		Assert(src.object != 0);
 		Assert(dst->object != 0);
 
+		uint32 old_width = OpenGlState::current_viewport_width;
+		uint32 old_height = OpenGlState::current_viewport_height;
+
 		BindShader(shader);
 		BindFrameBuffer(frame);
 
@@ -1512,7 +1518,7 @@ namespace cm
 			RenderMesh(shader, cube);
 		}
 				
-		SetViewPort(0, 0, 1280, 720);
+		SetViewPort(0, 0, old_width, old_height);
 
 		UnbindFrameBuffer();
 	}
@@ -1681,8 +1687,11 @@ namespace cm
 		Assert(src.object != 0);
 		Assert(dst->object != 0);
 		Assert(dst->config.mipmaps)
+		
+		uint32 old_width = OpenGlState::current_viewport_width;
+		uint32 old_height = OpenGlState::current_viewport_height;
 
-			BindShader(shader);
+		BindShader(shader);
 		BindFrameBuffer(frame);
 
 		ShaderSetMat4(&shader, "projection", CubeMapMatrices::projection.arr);
@@ -1714,7 +1723,7 @@ namespace cm
 			}
 		}
 
-		SetViewPort(0, 0, 1280, 720);
+		SetViewPort(0, 0, old_width, old_height);
 
 		// @NOTE: Make sure we dont try to free somthing that was part of the cube map
 
@@ -1894,6 +1903,9 @@ namespace cm
 	{
 		Assert(created);
 		Assert(dst->object != 0);
+		
+		uint32 old_width = OpenGlState::current_viewport_width;
+		uint32 old_height = OpenGlState::current_viewport_height;
 
 		BindShader(shader);
 		BindFrameBuffer(frame);
@@ -1907,7 +1919,7 @@ namespace cm
 
 		RenderMesh(shader, StandardMeshes::quad);
 
-		SetViewPort(0, 0, 1280, 720);
+		SetViewPort(0, 0, old_width, old_height);
 
 	}
 

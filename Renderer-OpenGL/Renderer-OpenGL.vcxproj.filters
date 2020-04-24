@@ -57,9 +57,6 @@
     <ClCompile Include="src\Core\Renderer.cpp">
       <Filter>src\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\UIRenderer.cpp">
-      <Filter>src\Core</Filter>
-    </ClCompile>
     <ClCompile Include="src\Core\World.cpp">
       <Filter>src\Core</Filter>
     </ClCompile>
@@ -99,6 +96,12 @@
     <ClCompile Include="src\Math\CosmicGeometry.cpp">
       <Filter>src\Math</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\Debug.cpp">
+      <Filter>src\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Editor.cpp">
+      <Filter>src\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core.h">
@@ -128,17 +131,11 @@
     <ClInclude Include="src\Core\Renderer.h">
       <Filter>src\Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\UIRenderer.h">
-      <Filter>src\Core</Filter>
-    </ClInclude>
     <ClInclude Include="src\Core\World.h">
       <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine\AssetLoader.h">
       <Filter>src\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Debug.h">
-      <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Tutorials.h">
       <Filter>src</Filter>
@@ -184,6 +181,12 @@
     </ClInclude>
     <ClInclude Include="src\Math\CosmicGeometry.h">
       <Filter>src\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Debug.h">
+      <Filter>src\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Editor.h">
+      <Filter>src\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

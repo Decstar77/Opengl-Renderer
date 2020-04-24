@@ -17,10 +17,7 @@ namespace cm
 		bool current_key_codes[KEY_CODE_AMOUNT] = {};
 	};
 
-
-
-
-	
+	   	 	
 	class InputCallBacks;
 	class Input
 	{
@@ -29,13 +26,14 @@ namespace cm
 		
 		inline static void SetKeyState(int32 index, bool state) {Assert(index < KEY_CODE_AMOUNT); key_data.current_key_codes[index] = state; }
 		inline static bool GetKey(int32 index) {Assert(index < KEY_CODE_AMOUNT); return key_data.current_key_codes[index]; }
-		inline static bool GetKeyDown(int32 index) { return false; }
-		inline static bool GetKeyUp(int32 index) { return false; }
+		inline static bool GetKeyDown(int32 index) { Assert(0); return false; }
+		inline static bool GetKeyUp(int32 index) { Assert(0); return false; }
 
 
-		inline static bool GetMouse(int32 index) { Assert(index < MOUSE_KEY_AMOUNT); mouse_data.mouse_codes[index]; }
-		inline static bool GetMouseDown(int32 index) { return false; }
-		inline static bool GetMouseUp(int32 index) { return false; }
+		inline static bool SetMouseKey(int32 index) { Assert(index < MOUSE_KEY_AMOUNT); mouse_data.mouse_codes[index] = true; };
+		inline static bool GetMouse(int32 index) { Assert(index < MOUSE_KEY_AMOUNT); return mouse_data.mouse_codes[index]; }
+		inline static bool GetMouseDown(int32 index) { Assert(0); return false; }
+		inline static bool GetMouseUp(int32 index) { Assert(0); return false; }
 		inline static Vec2 GetMousePosition() { return mouse_data.position; }
 		inline static Vec2 GetMouseLastPosition() { return last_mouse_data.position; }
 

@@ -388,7 +388,7 @@ struct IMGUI_API ImBitVector
 {
     ImVector<ImU32> Storage;
     void            Create(int sz)              { Storage.resize((sz + 31) >> 5); memset(Storage.Data, 0, (size_t)Storage.Size * sizeof(Storage.Data[0])); }
-    void            Clear()                     { Storage.clear(); }
+    void            ClearLogger()                     { Storage.clear(); }
     bool            TestBit(int n) const        { IM_ASSERT(n < (Storage.Size << 5)); return ImBitArrayTestBit(Storage.Data, n); }
     void            SetBit(int n)               { IM_ASSERT(n < (Storage.Size << 5)); ImBitArraySetBit(Storage.Data, n); }
     void            ClearBit(int n)             { IM_ASSERT(n < (Storage.Size << 5)); ImBitArrayClearBit(Storage.Data, n); }
@@ -406,13 +406,13 @@ struct IMGUI_API ImPool
     ImPoolIdx       FreeIdx;    // Next free idx to use
 
     ImPool()    { FreeIdx = 0; }
-    ~ImPool()   { Clear(); }
+    ~ImPool()   { ClearLogger(); }
     T*          GetByKey(ImGuiID key)               { int idx = Map.GetInt(key, -1); return (idx != -1) ? &Buf[idx] : NULL; }
     T*          GetByIndex(ImPoolIdx n)             { return &Buf[n]; }
     ImPoolIdx   GetIndex(const T* p) const          { IM_ASSERT(p >= Buf.Data && p < Buf.Data + Buf.Size); return (ImPoolIdx)(p - Buf.Data); }
     T*          GetOrAddByKey(ImGuiID key)          { int* p_idx = Map.GetIntRef(key, -1); if (*p_idx != -1) return &Buf[*p_idx]; *p_idx = FreeIdx; return Add(); }
     bool        Contains(const T* p) const          { return (p >= Buf.Data && p < Buf.Data + Buf.Size); }
-    void        Clear()                             { for (int n = 0; n < Map.Data.Size; n++) { int idx = Map.Data[n].val_i; if (idx != -1) Buf[idx].~T(); } Map.Clear(); Buf.clear(); FreeIdx = 0; }
+    void        ClearLogger()                             { for (int n = 0; n < Map.Data.Size; n++) { int idx = Map.Data[n].val_i; if (idx != -1) Buf[idx].~T(); } Map.ClearLogger(); Buf.clear(); FreeIdx = 0; }
     T*          Add()                               { int idx = FreeIdx; if (idx == Buf.Size) { Buf.resize(Buf.Size + 1); FreeIdx++; } else { FreeIdx = *(int*)&Buf[idx]; } IM_PLACEMENT_NEW(&Buf[idx]) T(); return &Buf[idx]; }
     void        Remove(ImGuiID key, const T* p)     { Remove(key, GetIndex(p)); }
     void        Remove(ImGuiID key, ImPoolIdx idx)  { Buf[idx].~T(); *(int*)&Buf[idx] = FreeIdx; FreeIdx = idx; Map.SetInt(key, -1); }
@@ -886,8 +886,8 @@ struct ImGuiColumns
     ImVector<ImGuiColumnData> Columns;
     ImDrawListSplitter  Splitter;
 
-    ImGuiColumns()      { Clear(); }
-    void Clear()
+    ImGuiColumns()      { ClearLogger(); }
+    void ClearLogger()
     {
         ID = 0;
         Flags = ImGuiColumnsFlags_None;
@@ -937,7 +937,7 @@ struct ImDrawDataBuilder
 {
     ImVector<ImDrawList*>   Layers[2];           // Global layers for: regular, tooltip
 
-    void Clear()            { for (int n = 0; n < IM_ARRAYSIZE(Layers); n++) Layers[n].resize(0); }
+    void ClearLogger()            { for (int n = 0; n < IM_ARRAYSIZE(Layers); n++) Layers[n].resize(0); }
     void ClearFreeMemory()  { for (int n = 0; n < IM_ARRAYSIZE(Layers); n++) Layers[n].clear(); }
     IMGUI_API void FlattenIntoSingleLayer();
 };
@@ -983,8 +983,8 @@ struct ImGuiNavMoveResult
     float           DistAxial;
     ImRect          RectRel;            // Best candidate bounding box in window relative space
 
-    ImGuiNavMoveResult() { Clear(); }
-    void Clear()         { Window = NULL; ID = FocusScopeId = 0; DistBox = DistCenter = DistAxial = FLT_MAX; RectRel = ImRect(); }
+    ImGuiNavMoveResult() { ClearLogger(); }
+    void ClearLogger()         { Window = NULL; ID = FocusScopeId = 0; DistBox = DistCenter = DistAxial = FLT_MAX; RectRel = ImRect(); }
 };
 
 enum ImGuiNextWindowDataFlags_

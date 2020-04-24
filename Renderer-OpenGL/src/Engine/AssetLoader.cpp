@@ -588,6 +588,8 @@ namespace cm
 				ProcessError(import.GetErrorString());
 			}
 
+			Assert(this->resulting_animation_controllers[i].bones.size() <= 60); // @REASON: We have to many bones for the shader
+
 			import.FreeScene();
 		}
 

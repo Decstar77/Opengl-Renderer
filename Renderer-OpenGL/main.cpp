@@ -9,9 +9,9 @@
 
 #include "src/Core/EditableMesh.h"
 #include "src/Core/Renderer.h"
-#include "src/Core/UIRenderer.h"
+#include "src/Core/Editor.h"
 #include "Tutorials.h"
-#include "src/Debug.h"
+#include "src/Core/Debug.h"
 #include "src/Engine/AssetLoader.h"
 #include "src/Engine/Input.h"
 #include "src/Core/Sandbox.h"
@@ -19,7 +19,7 @@
 using namespace cm;
 
 
-
+// @TODO: Make platform thingy. Check SSAO shader and Imgui frame they have hardcoded values
 static const uint32 WINDOW_WIDTH = 1280;
 static const uint32 WINDOW_HEIGHT = 720;
 static const float MOUSE_SENSITIVITY = 0.08f;
@@ -49,7 +49,8 @@ void MousePositionCallBack(GLFWwindow *widow, double xpos, double ypos)
 		camera_controller.CameraRotate(yoffset, xoffset);
 	}
 	
-	Input::SetMousePosition(current_mouse.x, current_mouse.y);
+	Input::SetMousePosition(current_mouse.x, current_mouse.y);	
+
 }
 
 Vec3 GetArcBallPoint(Vec2 mouse_coords)
@@ -128,9 +129,7 @@ void InitializeStandardMeshes()
 	//plane.FuseVertices();
 	StandardMeshes::plane = plane.CreateMesh(false);
 
-
-	
-	
+		
 
 	EditableMesh quad; 
 	// CCW
@@ -151,9 +150,9 @@ int main()
 {
 	window = CreateRenderingWindow();
 	InitializeOpenGl(WINDOW_WIDTH, WINDOW_HEIGHT);
-	InitializeDebug();
+	InitializeDebug(WINDOW_WIDTH, WINDOW_HEIGHT, 5000);
 	InitializeStandardMeshes();
-
+	InitializeEditor(window);
 	OpenGLStatistics opengl_stats;
 	GetOpenglStatistics(&opengl_stats);
 	PrintOpenglStatistics(opengl_stats);
@@ -276,10 +275,14 @@ int main()
 	Shader ssao_shader;
 	ssao_shader.config.src_vert = ReadFile("shaders/demo_01/screenspace_ambient_occlusion_vert.glsl");
 	ssao_shader.config.src_frag = ReadFile("shaders/demo_01/screenspace_ambient_occlusion_frag.glsl");
-	//ssao_shader.config.src_vert = ReadFile("shaders/ssao_vert.glsl");
-	//ssao_shader.config.src_frag = ReadFile("shaders/ssao_frag.glsl");
 	ssao_shader.name = "screenspace_ambient_occlusion";
 	CreateShader(&ssao_shader);
+
+	Shader depth_shader;
+	depth_shader.config.src_vert = ReadFile("shaders/demo_01/depth_vert.glsl");
+	depth_shader.config.src_frag = ReadFile("shaders/demo_01/depth_frag.glsl");
+	depth_shader.name = "depth shader";
+	CreateShader(&depth_shader);
 
 	Shader demo_01_deffered_pbr_shader;
 	demo_01_deffered_pbr_shader.config.src_vert = ReadFile("shaders/demo_01/pbr_deffered_vert.glsl");
@@ -318,9 +321,30 @@ int main()
 	model_importer.import_vertex_binorms_tangents = true;
 	model_importer.model_paths.push_back("res/botdemo/FloorSet/Floor.fbx");
 	model_importer.model_paths.push_back("res/models/sphere.obj");
+	model_importer.model_paths.push_back("res/models/transform_widget.obj");
 	model_importer.Load();
 
 	StandardMeshes::sphere = model_importer.resulting_meshes[1].CreateMesh(true);
+
+
+
+
+
+
+	// @TODO: Remove
+	Shader transform_widget_shader;
+	transform_widget_shader.config.src_vert = ReadFile("shaders/demo_01/editor_widget_vert.glsl");
+	transform_widget_shader.config.src_frag = ReadFile("shaders/demo_01/editor_widget_frag.glsl");
+	CreateShader(&transform_widget_shader);
+
+	TranslationWidget translation_widget;
+	
+	translation_widget.mesh = model_importer.resulting_meshes[2].CreateMesh(true);
+	translation_widget.transform.scale = Vec3(0.05);
+	translation_widget.transform.rotation = EulerToQuat(Vec3(0, 90, 0));
+	translation_widget.translation_plane = Plane(Vec3(0, 0, 0), Vec3(0, 1, 0));
+	translation_widget.x_bounding_volume = Aabb(Vec3(0.0), Vec3(0.5, 0.1, 0.1));
+
 
 	//************************************
 	// Initialize imported textures
@@ -508,6 +532,35 @@ int main()
 	Assert(CheckFrameBuffer(ssao_buffer));
 	UnbindFrameBuffer();
 
+	FrameBuffer depth_buffer;
+
+	depth_buffer.colour0_texture_attachment.config.width = WINDOW_WIDTH;
+	depth_buffer.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
+	depth_buffer.colour0_texture_attachment.config.texture_format = GL_RG32F;
+	depth_buffer.colour0_texture_attachment.config.pixel_format = GL_RG;
+	depth_buffer.colour0_texture_attachment.config.data_type = GL_FLOAT;
+	depth_buffer.colour0_texture_attachment.config.min_filter = GL_LINEAR;
+	depth_buffer.colour0_texture_attachment.config.mag_filter = GL_LINEAR;
+	depth_buffer.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+	depth_buffer.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+	
+	depth_buffer.depthstencil_attchment.width = WINDOW_WIDTH;
+	depth_buffer.depthstencil_attchment.height = WINDOW_HEIGHT;
+	depth_buffer.depthstencil_attchment.render_buffer_format = GL_DEPTH_COMPONENT32;
+	depth_buffer.depthstencil_attchment.render_buffer_attachment_type = GL_DEPTH_ATTACHMENT;
+
+	CreateTexture(&depth_buffer.colour0_texture_attachment, nullptr);
+	CreateDepthStencilBuffer(&depth_buffer.depthstencil_attchment);
+	CreateFrameBuffer(&depth_buffer);
+
+	BindFrameBuffer(depth_buffer);
+
+	FrameBufferBindColourAttachtments(&depth_buffer);
+	FrameBufferBindRenderAttachtment(&depth_buffer);
+
+	Assert(CheckFrameBuffer(depth_buffer));
+	UnbindFrameBuffer();
+
 	FrameBuffer post_processing_buffer;
 
 	post_processing_buffer.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
@@ -633,7 +686,7 @@ int main()
 
 	ModeImport model_import;
 	model_import.import_vertex_binorms_tangents = true;
-	model_import.model_paths.push_back("res/models/man.dae");
+	model_import.model_paths.push_back("res/models/Idle.dae");
 	model_import.Load();
 	
 	AnimatedActor test_cube_guy;	
@@ -747,9 +800,9 @@ int main()
 	informer.LinkShader("LightingData", deferred_shader);
 	informer.LinkShader("LightingData", forward_phong_notext_shader);
 	
-	UIRenderer ui_renderer;
-	ui_renderer.Init(window);
 
+	RenderSettings render_settings;
+	
 	EditorConsole console;
 	console.Log("*****WELCOME TO A BAD RENDERER*****");
 	console.Log("General Stats");
@@ -758,11 +811,11 @@ int main()
 	console.Log("Version: " + opengl_stats.version);
 	console.Log("Shader lang: " + opengl_stats.shading_lang);
 
-	RenderSettings render_settings;
-
-	EditorRender editor_render_window;
+	EditorRenderSettingsWindow editor_render_window;
 	editor_render_window.delta_time = 0;
 	editor_render_window.render_settings = &render_settings;
+
+
 		
 	DirectionalLight sun_light;
 	sun_light.direction = Normalize(Vec3(2, -4, 1));
@@ -777,10 +830,9 @@ int main()
 	//DebugAddPersistentPoint(Vec3(0.0));
 	float z = 0.5;
 
-	Aabb test_aabb;
-	test_aabb.SetFromCenterRaduis(Vec3(0, 4, 0), Vec3(1));
+	
 
-	DebugAddPersistentAABBCenterRaduis(test_aabb.center, test_aabb.raduis);
+
 
 	float run_time = 1;
 	bool toggel = false;
@@ -803,6 +855,7 @@ int main()
 #if EDITOR_WINDOW
 		// @NOTE: Unbind any shader that was set.
 		UnbindShader();
+
 		// @NOTE: Set the clear colour to black for stencil errors
 		SetClearColour(Vec4(0, 0, 0, 1));
 
@@ -813,7 +866,7 @@ int main()
 		ClearAllBuffers();
 
 		// @NOTE: Render the current editor frame
-		ui_renderer.BeginFrame();
+		EditorBeginFrame();
 
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
@@ -839,8 +892,8 @@ int main()
 		editor_render_window.delta_time = delta_time;
 		editor_render_window.UpdateAndDraw();
 
+		EditorEndFrame();
 
-		ui_renderer.EndFrame();
 
 		// @NOTE: Get any input that was for one of the editor windows	
 		mouse_input_for_editor_window = *ImGui::GetIO().MouseDownOwned;
@@ -858,7 +911,7 @@ int main()
 		//************************************
 		// Process Custom Events
 		//************************************		
-		
+
 		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_F5))
 		{
 			FreeShader(&cubemap_shader);
@@ -876,9 +929,11 @@ int main()
 			post_processing_shader = CreateShader(ReadFile("shaders/post_processing_vert.glsl"), ReadFile("shaders/post_processing_frag.glsl"));
 			post_processing_shader.name = "post_processing_shader";
 		}
-		if (!(mouse_input_for_editor_window)) {
+		if (!(mouse_input_for_editor_window)) 
+		{
 			if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
 			{
+				LOG("ISAUD)ISADJO");
 				double x, y;
 				glfwGetCursorPos(window, &x, &y);
 				fh += 0.4f * delta_time;
@@ -889,14 +944,39 @@ int main()
 				Vec2 last = Input::GetMouseLastPosition();
 
 
-				Vec3 p1 = GetArcBallPoint(curr);
-				Vec3 p2 = GetArcBallPoint(last);
+				//Vec3 p1 = GetArcBallPoint(curr);
+				//Vec3 p2 = GetArcBallPoint(last);
 
-
+			
 				Ray cam_ray = camera_controller.RayFromCamera(curr, Vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
 
-				bool hit = test_aabb.CheckCollision(cam_ray);
-				console.Log(hit);
+				bool hit_gizmo = translation_widget.x_bounding_volume.CheckCollision(cam_ray) || translation_widget.is_held; 
+				if (hit_gizmo)
+				{
+					bool hit = translation_widget.translation_plane.CheckCollision(cam_ray);
+					translation_widget.is_held = true;
+					if (hit)
+					{
+						real32 t = translation_widget.translation_plane.CheckDistance(cam_ray);
+						Vec3 p0 = translation_widget.translation_plane.origin;
+						Vec3 p1 = cam_ray.Travel(t);
+						p0 = p1;
+
+						Vec3 f = p1 - p0;
+						//real32 dist = Distance(p0, p1);
+
+						translation_widget.translation_plane.origin.x = translation_widget.translation_plane.origin.x + f.x;
+						translation_widget.transform.position.x = translation_widget.transform.position.x + f.x;
+						translation_widget.x_bounding_volume.min.x = translation_widget.x_bounding_volume.min.x + f.x;
+						translation_widget.x_bounding_volume.max.x = translation_widget.x_bounding_volume.max.x + f.x;
+						Debug::AddIrresolutePlane(translation_widget.translation_plane.origin, translation_widget.translation_plane.normal);
+					}
+				}
+				else
+				{
+					// @TODO: Go through the world to see if we need to change the current objects selection
+				}
+
 			}
 			else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
 			{
@@ -957,12 +1037,35 @@ int main()
 
 		std::vector<Mat4> mats;
 
-		DebugAddIrresolutePoint(Vec3(0, 5, 2));
 
 		//************************************
 		// Render The Current Frame
 		//************************************
 
+		//************************************
+		// Render depth buffers 
+		//************************************
+
+		BindFrameBuffer(depth_buffer);
+		BindShader(depth_shader);
+
+		ClearColourBuffer();
+		ClearDepthBuffer();
+
+		ShaderSetMat4(&depth_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
+		ShaderSetMat4(&depth_shader, "view", camera_controller.main_camera.view_matrix.arr);
+
+		for (int32 i = 0; i < main_world.objects.size(); i++)
+		{
+			WorldObject *obj = main_world.objects[i];
+			Transform transform = obj->GetTransfrom();
+			Material mat = obj->GetMaterial();
+			Mat4 transform_matrix = obj->GetTransformMatrix();
+
+			ShaderSetMat4(&depth_shader, "model", transform_matrix.arr);
+
+			RenderMesh(depth_shader, obj->GetMeshForRender());
+		}
 		//************************************
 		// World gbuffer pass for static objects
 		//************************************
@@ -970,8 +1073,8 @@ int main()
 		BindFrameBuffer(worldspace_gbuffer);
 		BindShader(worldspace_gbuffer_shader);
 
-		RenderCommands::ClearColourBuffer();
-		RenderCommands::ClearDepthBuffer();		
+		ClearColourBuffer();
+		ClearDepthBuffer();		
 		
 		for (int32 i = 0; i < main_world.objects.size(); i++)
 		{
@@ -1022,9 +1125,9 @@ int main()
 #if 0
 		BindShader(worldspace_gbuffer_anim_shader);
 
-		ShaderBindTexture(worldspace_gbuffer_anim_shader, demo_floor_colour_map, 0, "colour_map");
-		ShaderBindTexture(worldspace_gbuffer_anim_shader, demo_floor_normal_map, 1, "normal_map");
-		ShaderBindTexture(worldspace_gbuffer_anim_shader, demo_floor_orm_map, 2, "orme_map");
+		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "colour_set", Vec3(0.7).arr);
+		ShaderSetInt32(&worldspace_gbuffer_anim_shader, "normal_set", 0);
+		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "orm_set", Vec3(1, 0.5, 0.1).arr);
 
 		test_cube_guy.animation_controller.Play(0);
 		test_cube_guy.animation_controller.Update(delta_time);
@@ -1219,8 +1322,8 @@ int main()
 		// Final render pass
 		//************************************
 
-		// @NOTE: Setup stencil buffer such that we discard any pixels that were drawn by the editor
 #if EDITOR_WINDOW
+		// @NOTE: Setup stencil buffer such that we discard any pixels that were drawn by the editor
 		StencilDiscardOnOne();
 		DisableDepthBuffer();
 #endif
@@ -1244,13 +1347,23 @@ int main()
 		ShaderSetInt32(&demo_01_postprocessing_shader, "tonemapping_method", static_cast<uint32>(render_settings.tonemapping));
 			   
 		RenderMesh(demo_01_postprocessing_shader, StandardMeshes::quad);
-			   		 
+		
+		EnableDepthBuffer();
+
 		//************************************
 		// DBUGING pass
 		//************************************	
 	
+		Debug::AddIrresoluteAABBMinMax(translation_widget.x_bounding_volume.min, translation_widget.x_bounding_volume.max);
+
 		DisableDepthBuffer();
-		DebugDrawLines(&debug_shader);
+		Debug::Draw(&debug_shader);
+		
+		BindShader(transform_widget_shader);
+		ShaderSetMat4(&transform_widget_shader, "model", translation_widget.transform.CalcTransformMatrix().arr);
+		ShaderSetVec3(&transform_widget_shader, "colour", Vec3(1, 0, 0).arr);
+		RenderMesh(transform_widget_shader, translation_widget.mesh);
+
 		EnableDepthBuffer();
 
 		
@@ -1267,8 +1380,8 @@ int main()
 			//DebugDrawTexture(&debug_mesh_shader, testing_blur_down01);
 			//DebugDrawTexture(&debug_mesh_shader, worldspace_gbuffer.colour2_texture_attachment);
 		
-			DebugDrawTexture(&debug_mesh_shader, bloom_map);
-			
+			//Debug::DrawTexture(&debug_mesh_shader, bloom_map);
+			//Debug::DrawTexture(&debug_mesh_shader, depth_buffer.colour0_texture_attachment);
 			//DebugDrawTexture(&debug_mesh_shader, test_renderer.frame_ssao_blured.colour0_texture_attachment);
 			//DebugDrawTexture(&debug_mesh_shader, ssao_buffer.colour0_texture_attachment); 
 			//DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
@@ -1281,7 +1394,7 @@ int main()
 
 		//BindShader(debug_mesh_shader);
 		glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
-		DebugDrawTexture(&debug_mesh_shader, viewspace_gbuffer.colour1_texture_attachment);
+		Debug::DrawTexture(&debug_mesh_shader, viewspace_gbuffer.colour1_texture_attachment);
 		//ShaderBindTexture(debug_mesh_shader, ssr_frame.colour0_texture_attachment, 0, "mesh_texture");
 		//ShaderSetMat4(&debug_mesh_shader, "model", Mat4(1).arr);
 		//RenderMesh(debug_mesh_shader, StandardMeshes::quad);
@@ -1313,8 +1426,8 @@ int main()
 		//std::cout << "Sc: " << time * 0.001f * 0.001f << std::endl;		
 	}
 
-	LOGC("CLEAING GLFW");	
+
+	FreeEditor();
 	glfwTerminate();
-	LOGC("FINISHING");
 	return 0;
 }

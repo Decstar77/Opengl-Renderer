@@ -328,6 +328,8 @@ namespace cm
 	
 	real32  Dot(const Vec3 &a, const Vec3 &b);
 
+	real32 Distance(const Vec3 &a, const Vec3 &b);
+	
 	real32 SqrdDistance(const Vec3 &a, const Vec3 &b);
 	
 	Vec3 Cross(const Vec3 &a, const Vec3 &b);
@@ -366,7 +368,7 @@ namespace cm
 	// Matrix 4x4
 	//************************************
 
-	real32 Get(const Mat4 &a, const int32 &row, const int32 &col);
+	real32 GetLoggedMessages(const Mat4 &a, const int32 &row, const int32 &col);
 	
 	Vec4 GetColumn(const Mat4 &a, const uint8 &col);
 
@@ -590,6 +592,17 @@ namespace cm
 		);
 		return r;
 	}
+
+	inline real32 Abs(const real32 &a)
+	{
+		return std::abs(a);
+	}
+
+	inline Vec3 Abs(const Vec3 &a)
+	{
+		return Vec3(std::abs(a.x), std::abs(a.y), std::abs(a.z));
+	}
+
 
 	//************************************
 	// Operator overloads for math structures

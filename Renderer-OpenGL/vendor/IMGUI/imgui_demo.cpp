@@ -4065,10 +4065,10 @@ struct ExampleAppLog
     ExampleAppLog()
     {
         AutoScroll = true;
-        Clear();
+        ClearLogger();
     }
 
-    void    Clear()
+    void    ClearLogger()
     {
         Buf.clear();
         LineOffsets.clear();
@@ -4116,7 +4116,7 @@ struct ExampleAppLog
         ImGui::BeginChild("scrolling", ImVec2(0,0), false, ImGuiWindowFlags_HorizontalScrollbar);
 
         if (clear)
-            Clear();
+            ClearLogger();
         if (copy)
             ImGui::LogToClipboard();
 

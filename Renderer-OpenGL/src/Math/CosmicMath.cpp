@@ -13,6 +13,8 @@ namespace cm
 		return a / magA;
 	}
 
+
+
 	real32 Dot(const Vec3 &a, const Vec3 &b)
 	{
 		return a.x * b.x + a.y * b.y + a.z * b.z;
@@ -21,6 +23,11 @@ namespace cm
 	real32 SqrdDistance(const Vec3 &a, const Vec3 &b)
 	{
 		return (a.x - b.x)*(a.x - b.x) + (a.y - b.y)*(a.y - b.y) + (a.z - b.z)*(a.z - b.z);
+	}
+
+	real32 Distance(const Vec3 &a, const Vec3 &b)
+	{
+		return Mag(a - b);
 	}
 
 	real32 Mag(const Vec3 &a)
@@ -142,7 +149,7 @@ namespace cm
 		std::cout << ToString(m) << std::endl;
 	}
 
-	real32 Get(const Mat4 &a, const int32 &row, const int32 &col)
+	real32 GetLoggedMessages(const Mat4 &a, const int32 &row, const int32 &col)
 	{
 		return a.arr[4 * row + col];
 	}
@@ -180,7 +187,7 @@ namespace cm
 			{
 				if (c == col || c == col + 4 || c == col + 8 || c == col + 12)
 					continue;
-				result.arr[index++] = Get(a, r, c);
+				result.arr[index++] = GetLoggedMessages(a, r, c);
 			}
 		}
 		return result;
@@ -435,7 +442,7 @@ namespace cm
 				Vec4 col(0, 0, 0, 0);
 				for (int x = 0; x < 4; x++)
 				{
-					col.arr[x] = Get(b, x, y);
+					col.arr[x] = GetLoggedMessages(b, x, y);
 				}
 				// @NOTE: Adds to result
 				result.arr[4 * i + y] = Dot(col, a.data[i]);

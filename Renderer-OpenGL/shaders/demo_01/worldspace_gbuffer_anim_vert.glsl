@@ -22,7 +22,7 @@ out VS_OUT
 	mat3 tbn_matrix;
 } vs_out;
 
-#define BONE_COUNT 50
+#define BONE_COUNT 60
 
 uniform int view_space;
 uniform mat4 model;

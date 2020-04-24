@@ -14,6 +14,14 @@ namespace cm
 	public:
 		Vec3 origin;
 		Vec3 direction;
+
+	public:
+		Vec3 Travel(real32 dist);
+
+	public:
+		Ray();
+		Ray(const Vec3 &origin, const Vec3 &direction);
+		~Ray();
 	};
 	   	  	
 	
@@ -27,10 +35,18 @@ namespace cm
 
 	class Plane : public GeometricCollidable
 	{
+	public:
+		Vec3 origin;
+		Vec3 normal;
 
 	public:
 		virtual bool CheckCollision(const Ray &r) const override;
+		real32 CheckDistance(Ray &r) const;
 
+	public:
+		Plane();
+		Plane(const Vec3 &origin, const Vec3 &normal);
+		~Plane();
 	};
 
 	class Sphere : public GeometricCollidable
@@ -50,10 +66,14 @@ namespace cm
 		Vec3 raduis = Vec3(0);
 
 		void SetFromCenterRaduis(const Vec3 &center, const Vec3 &raduis);
-		void SetFromMinMax();
+		void SetFromMinMax(const Vec3 &min, const Vec3 &max);
 
 		virtual bool CheckCollision(const Ray &r) const override;
 
+	public:
+		Aabb();
+		Aabb(const Vec3 &min, const Vec3 &max);
+		~Aabb();
 	};
 
 	class OOB : public GeometricCollidable
