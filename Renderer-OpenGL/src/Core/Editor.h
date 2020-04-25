@@ -31,11 +31,12 @@ namespace cm
 		Aabb y_bounding_volume;
 		Aabb z_bounding_volume;
 		Plane translation_plane;
-			
-		bool is_held = false;
+		
+		Vec3 offset = Vec3(0);
 
-		void CheckCollision();
-
+		bool is_selected = false;
+		
+		void CheckCollision(const Ray &r);
 		void Draw();
 	};
 

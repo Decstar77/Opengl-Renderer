@@ -365,7 +365,7 @@ int main()
 	obb.basis.mat = Rotate(Mat3(1), 45.0f, Vec3(1,0,0));
 	obb.basis.mat = Rotate(obb.basis.mat, 45.0f, Vec3(0, 1, 0));
 
-	Debug::AddPersistentOBB(obb.origin, obb.extents, obb.basis);
+	//Debug::AddPersistentOBB(obb.origin, obb.extents, obb.basis);
 
 	//Debug::AddPersistentAABBCenterRaduis(Vec3(0), Vec3(1));
 
@@ -954,13 +954,32 @@ int main()
 		}
 		if (!(mouse_input_for_editor_window)) 
 		{
+			Vec2 curr = Input::GetMousePosition();
+			Vec2 last = Input::GetMouseLastPosition();
+			Ray cam_ray = camera_controller.RayFromCamera(curr, Vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
+
 			if (Input::IsMouseJustDown(MOUSE_BUTTON_1))
 			{
-				LOG("DOWN");
+				// @NOTE: Do we hit a control widget
+				bool hit_gizmo = translation_widget.x_bounding_volume.CheckCollision(cam_ray);
+				if (hit_gizmo)
+				{
+					translation_widget.is_selected = true;
+					real32 t = translation_widget.translation_plane.CheckDistance(cam_ray);
+					Vec3 p0 = translation_widget.translation_plane.origin;
+					Vec3 p1 = cam_ray.Travel(t);
+					translation_widget.offset = p1 - p0;
+
+				}
+				// @NOTE: If not then look to see if we hit a selectable object
+				else
+				{
+
+				}
 			}
 			if (Input::IsMouseJustUp(MOUSE_BUTTON_1))
 			{
-				//LOG("UP");
+				translation_widget.is_selected = false;
 			}
 			if (Input::IsMouseHeldDown(MOUSE_BUTTON_1))
 			{
@@ -970,31 +989,18 @@ int main()
 				//point_light.light_position.x += 4 * delta_time;
 
 
-				Vec2 curr = Input::GetMousePosition();
-				Vec2 last = Input::GetMouseLastPosition();
-
-
 				//Vec3 p1 = GetArcBallPoint(curr);
 				//Vec3 p2 = GetArcBallPoint(last);
-
-			
-				Ray cam_ray = camera_controller.RayFromCamera(curr, Vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
-
-				bool hitobb = obb.CheckCollision(cam_ray);
-				Debug::Log(hitobb);
-				bool hit_gizmo = translation_widget.x_bounding_volume.CheckCollision(cam_ray) || translation_widget.is_held; 
-				if (hit_gizmo)
-				{
+				if (translation_widget.is_selected) {
 					bool hit = translation_widget.translation_plane.CheckCollision(cam_ray);
-					translation_widget.is_held = true;
 					if (hit)
 					{
 						real32 t = translation_widget.translation_plane.CheckDistance(cam_ray);
 						Vec3 p0 = translation_widget.translation_plane.origin;
 						Vec3 p1 = cam_ray.Travel(t);
-				
 
-						Vec3 f = p1 - p0;
+
+						Vec3 f = p1 - p0 - translation_widget.offset;
 						//real32 dist = Distance(p0, p1);
 
 						translation_widget.translation_plane.origin.x = translation_widget.translation_plane.origin.x + f.x;
@@ -1004,11 +1010,6 @@ int main()
 						Debug::AddIrresolutePlane(translation_widget.translation_plane.origin, translation_widget.translation_plane.normal);
 					}
 				}
-				else
-				{
-					// @TODO: Go through the world to see if we need to change the current objects selection
-				}
-
 			}
 			else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
 			{

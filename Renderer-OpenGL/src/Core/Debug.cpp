@@ -239,6 +239,8 @@ namespace cm
 
 		AddPersistentLine(v4, v7);
 		AddPersistentLine(v4, v6);
+
+		AddPersistentPoint(origin);
 	}
 
 	void Debug::AddIrresoluteOBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis)
@@ -270,6 +272,8 @@ namespace cm
 
 		AddIrresoluteLine(v4, v7);
 		AddIrresoluteLine(v4, v6);
+	
+		AddIrresolutePoint(origin);
 	}
 
 	void Debug::DrawTexture(Shader *shader, const Texture &t)
