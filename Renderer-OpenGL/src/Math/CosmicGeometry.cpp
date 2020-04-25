@@ -19,7 +19,7 @@ namespace cm
 
 	}
 	
-	Vec3 Ray::Travel(real32 dist)
+	Vec3 Ray::Travel(real32 dist) const
 	{
 		return origin + dist * direction;
 	}
@@ -53,16 +53,21 @@ namespace cm
 		return false;
 	}
 	   
-	real32 Plane::CheckDistance(Ray &r) const
+	bool Plane::CheckCollision(const Ray &r, CollisionInfo *collision_info) const
 	{
 		real32 demon = Dot(r.direction, normal);
 		if (Abs(demon) >= 0.001)
 		{
 			Vec3 to_origin = origin - r.origin;
 			real32 t = Dot(to_origin, normal) / demon;
-			return (t);
+			if (t >= 0)
+			{
+				collision_info->hit = true;
+				collision_info->dist = t;
+			}			
+			return (t >= 0);
 		}
-		return -1;
+		return false;
 	}
 
 	bool Sphere::CheckCollision(const Ray &r) const
@@ -138,6 +143,27 @@ namespace cm
 		return true;
 	}
 
+	bool Aabb::CheckCollision(const Ray &r, CollisionInfo *collision_info) const
+	{
+		throw std::logic_error("The method or operation is not implemented.");
+	}
+
+	OBB::OBB()
+	{
+
+	}
+
+	OBB::OBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis)
+	{
+		this->origin = origin;
+		this->extents = extents;
+		this->basis = basis;
+	}
+
+	OBB::~OBB()
+	{
+
+	}
 
 	bool OBB::CheckCollision(const Ray &r) const
 	{
@@ -190,6 +216,12 @@ namespace cm
 		return true;
 	}
 
+
+
+	bool OBB::CheckCollision(const Ray &r, CollisionInfo *collision_info) const
+	{
+		throw std::logic_error("The method or operation is not implemented.");
+	}
 
 	//void BoundingVolume::UpdateAABB(const mat4 &transform, const vec3 &pos)
 	//{

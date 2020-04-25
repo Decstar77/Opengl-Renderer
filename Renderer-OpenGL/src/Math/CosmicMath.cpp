@@ -13,8 +13,6 @@ namespace cm
 		return a / magA;
 	}
 
-
-
 	real32 Dot(const Vec3 &a, const Vec3 &b)
 	{
 		return a.x * b.x + a.y * b.y + a.z * b.z;
@@ -591,6 +589,34 @@ namespace cm
 		result.w = an.w * tinv + ds * t * bn.w;
 		
 		return Normalize(result);
+	}
+
+	Mat3 QuatToMat3(const Quat &q)
+	{
+		Mat3 mat(1);
+
+		real32 qxx = (q.x * q.x);
+		real32 qyy = (q.y * q.y);
+		real32 qzz = (q.z * q.z);
+		real32 qxz = (q.x * q.z);
+		real32 qxy = (q.x * q.y);
+		real32 qyz = (q.y * q.z);
+		real32 qwx = (q.w * q.x);
+		real32 qwy = (q.w * q.y);
+		real32 qwz = (q.w * q.z);
+
+		mat.row0.x = 1 - (2) * (qyy + qzz);
+		mat.row0.y = (2) * (qxy + qwz);
+		mat.row0.z = (2) * (qxz - qwy);
+
+		mat.row1.x = (2) * (qxy - qwz);
+		mat.row1.y = (1) - (2) * (qxx + qzz);
+		mat.row1.z = (2) * (qyz + qwx);
+
+		mat.row2.x = (2) * (qxz + qwy);
+		mat.row2.y = (2) * (qyz - qwx);
+		mat.row2.z = (1) - (2) * (qxx + qyy);
+		return mat;
 	}
 
 	Mat4 QuatToMat4(const Quat &q)

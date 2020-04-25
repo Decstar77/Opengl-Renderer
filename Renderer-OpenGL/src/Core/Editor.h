@@ -23,21 +23,37 @@ namespace cm
 
 	class TranslationWidget 
 	{
+	private:
+		enum class TranslationMode
+		{
+			none = 0,
+			x_axis =  1,
+			y_axis = 2,
+			z_axis = 3
+		};
+		void CalculateBoundingBoxes();
+
+	private:
+		GLMesh mesh;
+		TranslationMode translation_mode = TranslationMode::none;
+
 	public:
 		Transform transform;
-		WorldObject *object;
-		GLMesh mesh;
-		Aabb x_bounding_volume;
-		Aabb y_bounding_volume;
-		Aabb z_bounding_volume;
 		Plane translation_plane;
-		
-		Vec3 offset = Vec3(0);
-
+		OBB x_bounding_volume;
+		OBB y_bounding_volume;
+		OBB z_bounding_volume;
 		bool is_selected = false;
 		
-		void CheckCollision(const Ray &r);
-		void Draw();
+	public:		
+		void Create(const GLMesh &mesh);
+		bool Select(const Ray &camera_ray);
+		bool Update(const Ray &camera_ray);
+		Vec3 GetTranslaion();
+		const GLMesh GetMeshForRender();
+
+	public:
+		bool Deselect();
 	};
 
 

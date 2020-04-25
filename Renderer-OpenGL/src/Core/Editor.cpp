@@ -244,4 +244,169 @@ namespace cm
 
 
 
+	void TranslationWidget::CalculateBoundingBoxes()
+	{
+		// @NOTE: We take the conjugate because of model's blender coords ??
+		Mat3 rotation = QuatToMat3(Conjugate(transform.rotation));
+		Basis local_basis(rotation);
+
+		Vec3 x_origin = Vec3(0.36, 0, 0) * local_basis.mat;
+		Vec3 y_origin = Vec3(0, 0.36, 0) * local_basis.mat;
+		Vec3 z_origin = Vec3(0, 0, 0.36) * local_basis.mat;
+		
+		x_bounding_volume = OBB(transform.position + x_origin, Vec3(0.30, 0.05, 0.05), local_basis);
+		y_bounding_volume = OBB(transform.position + y_origin, Vec3(0.05, 0.30, 0.05), local_basis);
+		z_bounding_volume = OBB(transform.position + z_origin, Vec3(0.05, 0.05, 0.30), local_basis);
+	}
+
+	void TranslationWidget::Create(const GLMesh &mesh)
+	{
+		transform.position = Vec3(0);
+		transform.scale = Vec3(0.04);		
+		this->mesh = mesh;
+		CalculateBoundingBoxes();
+	}
+
+	bool TranslationWidget::Select(const Ray &camera_ray)
+	{
+		is_selected = false;
+
+		// @NOTE: Check x-axis
+		bool x_axis= x_bounding_volume.CheckCollision(camera_ray);
+		if (x_axis)
+		{
+			// @NOTE: Create a plane where the origin is the intersection and normal point towards the camera
+			translation_plane = Plane(transform.position, -1 * camera_ray.direction);
+
+			CollisionInfo colinfo;
+			translation_plane.CheckCollision(camera_ray, &colinfo);
+
+			Vec3 p0 = translation_plane.origin;
+			Vec3 p1 = camera_ray.Travel(colinfo.dist);
+
+			// @NOTE: Offset the origin to stop snapping
+			translation_plane.origin += p1 - p0;
+
+			translation_mode = TranslationMode::x_axis;
+
+			is_selected = true;
+			return is_selected;
+		}
+
+		// @NOTE: Check y-axis
+		bool y_axis = y_bounding_volume.CheckCollision(camera_ray);
+		Debug::Log(y_axis);
+		if (y_axis)
+		{
+			// @NOTE: Create a plane where the origin is the intersection and normal point towards the camera
+			translation_plane = Plane(transform.position, -1 * camera_ray.direction);
+			
+			CollisionInfo colinfo;
+			translation_plane.CheckCollision(camera_ray, &colinfo);
+
+			Vec3 p0 = translation_plane.origin;
+			Vec3 p1 = camera_ray.Travel(colinfo.dist);
+
+			// @NOTE: Offset the origin to stop snapping
+			translation_plane.origin += p1 - p0;
+			
+			translation_mode = TranslationMode::y_axis;
+			
+			is_selected = true;
+			return is_selected;
+		}
+
+		// @NOTE: Check z-axis
+		bool z_axis = z_bounding_volume.CheckCollision(camera_ray);
+		if (z_axis)
+		{
+			// @NOTE: Create a plane where the origin is the intersection and normal point towards the camera
+
+			translation_plane = Plane(transform.position, -1 * camera_ray.direction);
+			translation_plane = Plane(transform.position, Vec3(1,0,0));
+
+			CollisionInfo colinfo;
+			translation_plane.CheckCollision(camera_ray, &colinfo);
+
+
+			Vec3 p0 = translation_plane.origin;
+			Vec3 p1 = camera_ray.Travel(colinfo.dist);
+
+			// @NOTE: Offset the origin to stop snapping
+			translation_plane.origin += p1 - p0;
+
+			translation_mode = TranslationMode::z_axis;
+
+			is_selected = true;
+			return is_selected;
+		}
+
+		return is_selected;
+	}
+
+	bool TranslationWidget::Deselect()
+	{
+		return 0;
+	}
+
+	bool TranslationWidget::Update(const Ray &camera_ray)
+	{
+		if (is_selected) 
+		{
+			CollisionInfo colinfo;
+			translation_plane.CheckCollision(camera_ray, &colinfo);
+
+			Vec3 p0 = translation_plane.origin;
+			Vec3 p1 = camera_ray.Travel(colinfo.dist);
+			
+			Vec3 delta = p1 - p0;
+
+			switch (translation_mode)
+			{
+			case cm::TranslationWidget::TranslationMode::none: {
+				LOG(" WARNING: Translating nothing ??");
+				break;
+			}
+			case cm::TranslationWidget::TranslationMode::x_axis: {
+				translation_plane.origin.x = translation_plane.origin.x + delta.x;
+				Vec3 dir(delta.x ,0, 0);
+				dir = Rotate((transform.rotation), dir);
+				transform.position += dir;
+				break;
+			}
+			case cm::TranslationWidget::TranslationMode::y_axis: {
+				translation_plane.origin.y = translation_plane.origin.y + delta.y;				
+				Vec3 dir(0, delta.y, 0);
+				dir = Rotate((transform.rotation), dir);
+				transform.position += dir;
+				break;
+			}
+			case cm::TranslationWidget::TranslationMode::z_axis: {
+				translation_plane.origin.z = translation_plane.origin.z + delta.z;
+				Vec3 dir(0, 0, delta.z);
+				dir = Rotate((transform.rotation), dir);
+				transform.position += dir;
+				break;
+			}
+			default: {
+				LOG(" WARNING: Translating nothing ??");
+				break;
+			}
+			}
+
+			CalculateBoundingBoxes();
+		}
+		return is_selected;
+	}
+
+	Vec3 TranslationWidget::GetTranslaion()
+	{
+		return transform.position;
+	}
+
+	const GLMesh TranslationWidget::GetMeshForRender()
+	{
+		return mesh;
+	}
+
 }

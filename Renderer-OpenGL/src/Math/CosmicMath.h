@@ -240,6 +240,7 @@ namespace cm
 				Vec4 row3;
 			};
 		};
+
 		Mat4()
 		{
 			row0 = Vec4(1, 0, 0, 0);
@@ -255,12 +256,21 @@ namespace cm
 			row2 = Vec4(0, 0, a, 0);
 			row3 = Vec4(0, 0, 0, a);
 		}
+
 		Mat4(Vec4 _row0, Vec4 _row1, Vec4 _row2, Vec4 _row3)
 		{
 			row0 = _row0;
 			row1 = _row1;
 			row2 = _row2;
 			row3 = _row3;
+		}
+		
+		Mat4(Mat3 a, Vec3 translation)
+		{
+			row0 = Vec4(a.row0, 0);
+			row1 = Vec4(a.row1, 0);
+			row2 = Vec4(a.row2, 0);
+			row3 = Vec4(translation, 1);
 		}
 
 	};
@@ -284,10 +294,17 @@ namespace cm
 				Vec3 forward;
 			};
 		};
+
 		Basis()
 		{
 			mat = Mat3(1);
 		}
+
+		Basis(const Mat3 &basis)
+		{
+			this->mat = basis;
+		}
+		
 		Basis(const Vec3 &right, const Vec3 &upward, const Vec3 &forward)
 		{
 			this->right = right;
@@ -308,6 +325,8 @@ namespace cm
 	Quat Conjugate(const Quat &a);
 
 	Quat Normalize(const Quat &a);
+
+	Mat3 QuatToMat3(const Quat &q);
 
 	Mat4 QuatToMat4(const Quat &q);
 

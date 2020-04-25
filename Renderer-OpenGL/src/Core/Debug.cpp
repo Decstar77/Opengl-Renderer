@@ -210,69 +210,102 @@ namespace cm
 	}
 
 	void Debug::AddPersistentOBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis)
-	{
-		Vec3 v0 = (origin + extents) * basis.mat;
-		Vec3 v1 = (origin - extents) * basis.mat;
+	{	
+		Mat4 mat(basis.mat, origin);
 
-		Vec3 v2 = (origin + Vec3(-extents.x,  extents.y, extents.z)) * basis.mat;
-		Vec3 v3 = (origin + Vec3(extents.x, -extents.y, extents.z)) * basis.mat;
-		Vec3 v4 = (origin + Vec3(extents.x, extents.y, -extents.z)) * basis.mat;
+		Vec4 v0 = Vec4(extents, 1) * mat;
+		Vec4 v1 = Vec4(extents * -1, 1) * mat;
+		
+		Vec4 v2 = (Vec4(-extents.x,  extents.y, extents.z, 1)) * mat;
+		Vec4 v3 = (Vec4(extents.x, -extents.y, extents.z, 1)) * mat;
+		Vec4 v4 = (Vec4(extents.x, extents.y, -extents.z, 1)) * mat;
 
-		Vec3 v5 = (origin + Vec3(-extents.x, -extents.y, extents.z)) * basis.mat;
-		Vec3 v6 = (origin + Vec3(extents.x, -extents.y, -extents.z)) * basis.mat;
-		Vec3 v7 = (origin + Vec3(-extents.x, extents.y, -extents.z)) * basis.mat;
+		Vec4 v5 = (Vec4(-extents.x, -extents.y, extents.z, 1)) * mat;
+		Vec4 v6 = (Vec4(extents.x, -extents.y, -extents.z, 1)) * mat;
+		Vec4 v7 = (Vec4(-extents.x, extents.y, -extents.z, 1)) * mat;
+	
+		AddPersistentLine(Vec4ToVec3(v0), Vec4ToVec3(v2));
+		AddPersistentLine(Vec4ToVec3(v0), Vec4ToVec3(v4));
+		AddPersistentLine(Vec4ToVec3(v0), Vec4ToVec3(v3));
 
-				
-		AddPersistentLine(v0, v2);
-		AddPersistentLine(v0, v4);
-		AddPersistentLine(v0, v3);
+		AddPersistentLine(Vec4ToVec3(v1), Vec4ToVec3(v5));
+		AddPersistentLine(Vec4ToVec3(v1), Vec4ToVec3(v7));
+		AddPersistentLine(Vec4ToVec3(v1), Vec4ToVec3(v6));
+		AddPersistentLine(Vec4ToVec3(v3), Vec4ToVec3(v6));
+		AddPersistentLine(Vec4ToVec3(v3), Vec4ToVec3(v5));
+		AddPersistentLine(Vec4ToVec3(v2), Vec4ToVec3(v5));
+		AddPersistentLine(Vec4ToVec3(v2), Vec4ToVec3(v7));
+		AddPersistentLine(Vec4ToVec3(v4), Vec4ToVec3(v7));
+		AddPersistentLine(Vec4ToVec3(v4), Vec4ToVec3(v6));
 
-		AddPersistentLine(v1, v5);
-		AddPersistentLine(v1, v7);
-		AddPersistentLine(v1, v6);
+		//Vec3 right = (extents) *basis.mat;
 
-		AddPersistentLine(v3, v6);
-		AddPersistentLine(v3, v5);
-
-		AddPersistentLine(v2, v5);
-		AddPersistentLine(v2, v7);
-
-		AddPersistentLine(v4, v7);
-		AddPersistentLine(v4, v6);
+		//AddPersistentLine(origin, origin + Normalize(right));
 
 		AddPersistentPoint(origin);
 	}
 
 	void Debug::AddIrresoluteOBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis)
 	{
-		Vec3 v0 = (origin + extents) * basis.mat;
-		Vec3 v1 = (origin - extents) * basis.mat;
+		//Vec3 v0 = (origin + extents) * basis.mat;
+		//Vec3 v1 = (origin - extents) * basis.mat;
 
-		Vec3 v2 = (origin + Vec3(-extents.x, extents.y, extents.z)) * basis.mat;
-		Vec3 v3 = (origin + Vec3(extents.x, -extents.y, extents.z)) * basis.mat;
-		Vec3 v4 = (origin + Vec3(extents.x, extents.y, -extents.z)) * basis.mat;
+		//Vec3 v2 = (origin + Vec3(-extents.x, extents.y, extents.z)) * basis.mat;
+		//Vec3 v3 = (origin + Vec3(extents.x, -extents.y, extents.z)) * basis.mat;
+		//Vec3 v4 = (origin + Vec3(extents.x, extents.y, -extents.z)) * basis.mat;
 
-		Vec3 v5 = (origin + Vec3(-extents.x, -extents.y, extents.z)) * basis.mat;
-		Vec3 v6 = (origin + Vec3(extents.x, -extents.y, -extents.z)) * basis.mat;
-		Vec3 v7 = (origin + Vec3(-extents.x, extents.y, -extents.z)) * basis.mat;
-		
-		AddIrresoluteLine(v0, v2);
-		AddIrresoluteLine(v0, v4);
-		AddIrresoluteLine(v0, v3);
+		//Vec3 v5 = (origin + Vec3(-extents.x, -extents.y, extents.z)) * basis.mat;
+		//Vec3 v6 = (origin + Vec3(extents.x, -extents.y, -extents.z)) * basis.mat;
+		//Vec3 v7 = (origin + Vec3(-extents.x, extents.y, -extents.z)) * basis.mat;
+		//
+		//AddIrresoluteLine(v0, v2);
+		//AddIrresoluteLine(v0, v4);
+		//AddIrresoluteLine(v0, v3);
 
-		AddIrresoluteLine(v1, v5);
-		AddIrresoluteLine(v1, v7);
-		AddIrresoluteLine(v1, v6);
+		//AddIrresoluteLine(v1, v5);
+		//AddIrresoluteLine(v1, v7);
+		//AddIrresoluteLine(v1, v6);
 
-		AddIrresoluteLine(v3, v6);
-		AddIrresoluteLine(v3, v5);
+		//AddIrresoluteLine(v3, v6);
+		//AddIrresoluteLine(v3, v5);
 
-		AddIrresoluteLine(v2, v5);
-		AddIrresoluteLine(v2, v7);
+		//AddIrresoluteLine(v2, v5);
+		//AddIrresoluteLine(v2, v7);
 
-		AddIrresoluteLine(v4, v7);
-		AddIrresoluteLine(v4, v6);
+		//AddIrresoluteLine(v4, v7);
+		//AddIrresoluteLine(v4, v6);
 	
+		//AddIrresolutePoint(origin);
+			   		 	  	  
+		Mat4 mat(basis.mat, origin);
+
+		Vec4 v0 = Vec4(extents, 1) * mat;
+		Vec4 v1 = Vec4(extents * -1, 1) * mat;
+
+		Vec4 v2 = (Vec4(-extents.x, extents.y, extents.z, 1)) * mat;
+		Vec4 v3 = (Vec4(extents.x, -extents.y, extents.z, 1)) * mat;
+		Vec4 v4 = (Vec4(extents.x, extents.y, -extents.z, 1)) * mat;
+
+		Vec4 v5 = (Vec4(-extents.x, -extents.y, extents.z, 1)) * mat;
+		Vec4 v6 = (Vec4(extents.x, -extents.y, -extents.z, 1)) * mat;
+		Vec4 v7 = (Vec4(-extents.x, extents.y, -extents.z, 1)) * mat;
+
+		AddIrresoluteLine(Vec4ToVec3(v0), Vec4ToVec3(v2));
+		AddIrresoluteLine(Vec4ToVec3(v0), Vec4ToVec3(v4));
+		AddIrresoluteLine(Vec4ToVec3(v0), Vec4ToVec3(v3));
+		AddIrresoluteLine(Vec4ToVec3(v1), Vec4ToVec3(v5));
+		AddIrresoluteLine(Vec4ToVec3(v1), Vec4ToVec3(v7));
+		AddIrresoluteLine(Vec4ToVec3(v1), Vec4ToVec3(v6));
+		AddIrresoluteLine(Vec4ToVec3(v3), Vec4ToVec3(v6));
+		AddIrresoluteLine(Vec4ToVec3(v3), Vec4ToVec3(v5));
+		AddIrresoluteLine(Vec4ToVec3(v2), Vec4ToVec3(v5));
+		AddIrresoluteLine(Vec4ToVec3(v2), Vec4ToVec3(v7));
+		AddIrresoluteLine(Vec4ToVec3(v4), Vec4ToVec3(v7));
+		AddIrresoluteLine(Vec4ToVec3(v4), Vec4ToVec3(v6));
+
+		//Vec3 right = (extents) *basis.mat;
+
+		//AddPersistentLine(origin, origin + Normalize(right));
 		AddIrresolutePoint(origin);
 	}
 

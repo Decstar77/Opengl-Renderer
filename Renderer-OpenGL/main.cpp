@@ -350,24 +350,27 @@ int main()
 	CreateShader(&transform_widget_shader);
 
 	TranslationWidget translation_widget;
-	
-	translation_widget.mesh = model_importer.resulting_meshes[2].CreateMesh(true);
-	translation_widget.transform.scale = Vec3(0.05);
-	translation_widget.transform.rotation = EulerToQuat(Vec3(0, 90, 0));
-	translation_widget.translation_plane = Plane(Vec3(0, 0, 0), Vec3(0, 1, 0));
-	translation_widget.x_bounding_volume = Aabb(Vec3(0.0), Vec3(0.5, 0.1, 0.1));
+	translation_widget.Create(model_importer.resulting_meshes[2].CreateMesh(true));
+
 
 	OBB obb;
-	obb.extents = Vec3(1);
-	obb.origin = Vec3(0);
-	obb.basis.mat = Mat3(1);
+	obb.extents = Vec3(0.1, 0.5, 2);
+	obb.origin = Vec3(1, 0.4, 2.5);
+	//obb.extents = Vec3(1);
+	//obb.origin = Vec3(0,0 ,0);
 
+	//obb.extents = Vec3(1, 0.2, 0.2);
+	//obb.origin = Vec3(1, 1, -3);
+	//obb.basis.mat = Mat3(1);
+	//obb.basis.mat = Rotate(Mat3(1), 45.0f, Vec3(0, 0, 1));
 	obb.basis.mat = Rotate(Mat3(1), 45.0f, Vec3(1,0,0));
 	obb.basis.mat = Rotate(obb.basis.mat, 45.0f, Vec3(0, 1, 0));
 
-	//Debug::AddPersistentOBB(obb.origin, obb.extents, obb.basis);
+	Debug::AddPersistentOBB(obb.origin, obb.extents, obb.basis);
 
 	//Debug::AddPersistentAABBCenterRaduis(Vec3(0), Vec3(1));
+
+
 
 	//************************************
 	// Initialize imported textures
@@ -707,6 +710,10 @@ int main()
 	pbr_model.Free();
 
 
+
+
+
+
 	ModeImport model_import;
 	model_import.import_vertex_binorms_tangents = true;
 	model_import.model_paths.push_back("res/models/Idle.dae");
@@ -961,25 +968,11 @@ int main()
 			if (Input::IsMouseJustDown(MOUSE_BUTTON_1))
 			{
 				// @NOTE: Do we hit a control widget
-				bool hit_gizmo = translation_widget.x_bounding_volume.CheckCollision(cam_ray);
-				if (hit_gizmo)
-				{
-					translation_widget.is_selected = true;
-					real32 t = translation_widget.translation_plane.CheckDistance(cam_ray);
-					Vec3 p0 = translation_widget.translation_plane.origin;
-					Vec3 p1 = cam_ray.Travel(t);
-					translation_widget.offset = p1 - p0;
-
-				}
-				// @NOTE: If not then look to see if we hit a selectable object
-				else
-				{
-
-				}
+				translation_widget.Select(cam_ray);
 			}
 			if (Input::IsMouseJustUp(MOUSE_BUTTON_1))
 			{
-				translation_widget.is_selected = false;
+				//translation_widget.is_selected = false;
 			}
 			if (Input::IsMouseHeldDown(MOUSE_BUTTON_1))
 			{
@@ -988,28 +981,18 @@ int main()
 				fh += 0.4f * delta_time;
 				//point_light.light_position.x += 4 * delta_time;
 
+				
+				if (translation_widget.Update(cam_ray))
+				{
+					back_wall.transform.position = translation_widget.GetTranslaion();
+				}
+
+				LOG(obb.CheckCollision(cam_ray));
+
 
 				//Vec3 p1 = GetArcBallPoint(curr);
 				//Vec3 p2 = GetArcBallPoint(last);
-				if (translation_widget.is_selected) {
-					bool hit = translation_widget.translation_plane.CheckCollision(cam_ray);
-					if (hit)
-					{
-						real32 t = translation_widget.translation_plane.CheckDistance(cam_ray);
-						Vec3 p0 = translation_widget.translation_plane.origin;
-						Vec3 p1 = cam_ray.Travel(t);
 
-
-						Vec3 f = p1 - p0 - translation_widget.offset;
-						//real32 dist = Distance(p0, p1);
-
-						translation_widget.translation_plane.origin.x = translation_widget.translation_plane.origin.x + f.x;
-						translation_widget.transform.position.x = translation_widget.transform.position.x + f.x;
-						translation_widget.x_bounding_volume.min.x = translation_widget.x_bounding_volume.min.x + f.x;
-						translation_widget.x_bounding_volume.max.x = translation_widget.x_bounding_volume.max.x + f.x;
-						Debug::AddIrresolutePlane(translation_widget.translation_plane.origin, translation_widget.translation_plane.normal);
-					}
-				}
 			}
 			else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
 			{
@@ -1387,15 +1370,16 @@ int main()
 		// DBUGING pass
 		//************************************	
 	
-		Debug::AddIrresoluteAABBMinMax(translation_widget.x_bounding_volume.min, translation_widget.x_bounding_volume.max);
-
+		Debug::AddIrresoluteOBB(translation_widget.x_bounding_volume.origin, translation_widget.x_bounding_volume.extents, translation_widget.x_bounding_volume.basis);
+		Debug::AddIrresoluteOBB(translation_widget.y_bounding_volume.origin, translation_widget.y_bounding_volume.extents, translation_widget.y_bounding_volume.basis);
+		Debug::AddIrresoluteOBB(translation_widget.z_bounding_volume.origin, translation_widget.z_bounding_volume.extents, translation_widget.z_bounding_volume.basis);
 		DisableDepthBuffer();
 		Debug::Draw(&debug_shader);
 		
 		BindShader(transform_widget_shader);
 		ShaderSetMat4(&transform_widget_shader, "model", translation_widget.transform.CalcTransformMatrix().arr);
 		ShaderSetVec3(&transform_widget_shader, "colour", Vec3(1, 0, 0).arr);
-		RenderMesh(transform_widget_shader, translation_widget.mesh);
+		RenderMesh(transform_widget_shader, translation_widget.GetMeshForRender());
 
 		EnableDepthBuffer();
 
