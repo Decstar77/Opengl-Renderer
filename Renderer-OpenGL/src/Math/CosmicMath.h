@@ -265,14 +265,13 @@ namespace cm
 			row3 = _row3;
 		}
 		
-		Mat4(Mat3 a, Vec3 translation)
+		Mat4(const Mat3 &a, const Vec3 &translation)
 		{
 			row0 = Vec4(a.row0, 0);
 			row1 = Vec4(a.row1, 0);
 			row2 = Vec4(a.row2, 0);
 			row3 = Vec4(translation, 1);
 		}
-
 	};
 
 	struct  Polar_coord
@@ -365,6 +364,10 @@ namespace cm
 	real32  Dot(const Vec3 &a, const Vec3 &b);
 
 	real32 Distance(const Vec3 &a, const Vec3 &b);
+
+	int32 AbsMaxIndex(const Vec3 &a);
+
+	int32 MaxIndex(const Vec3 &a);
 	
 	real32 SqrdDistance(const Vec3 &a, const Vec3 &b);
 	

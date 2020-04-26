@@ -129,41 +129,11 @@ Vec3 GetArcBallPoint(Vec2 mouse_coords)
 	return p;
 }
 
-void InitializeStandardMeshes()
-{
-	EditableMesh plane;
-	// CCW
-	plane.AddTrianlge(Vec3(0, 0, 0), Vec3(1, 0, 0), Vec3(0, 1, 0));
-	plane.SetColour(Vec3(0.7, 0.1, 0.1));
-	plane.AddTrianlge(Vec3(0, 1, 0), Vec3(1, 0, 0), Vec3(1, 1, 0));
-	plane.SetColour(Vec3(0.1, 0.7, 0.1));
-	plane.RecaluclateNormals();
-	//plane.FuseVertices();
-	StandardMeshes::plane = plane.CreateMesh(false);
-
-		
-
-	EditableMesh quad; 
-	// CCW
-	quad.AddTrianlge(Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(-1, 1, 0));
-	quad.AddTextureCoords(Vec3(0, 0, 0), Vec3(1, 0, 0), Vec3(0, 1, 0));
-	quad.AddTrianlge(Vec3(-1, 1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0));
-	quad.AddTextureCoords(Vec3(0, 1, 0), Vec3(1, 0, 0), Vec3(1, 1, 0));	
-	// CW
-	//quad.AddTrianlge(Vec3(-1, -1, 0), Vec3(-1, 1, 0), Vec3(1, -1, 0));
-	//quad.AddTextureCoords(Vec3(0, 0, 0), Vec3(0, 1, 0), Vec3(01, 0, 0));
-	//quad.AddTrianlge(Vec3(-1, 1, 0), Vec3(1, 1, 0), Vec3(1, -1, 0));
-	//quad.AddTextureCoords(Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0));
-	quad.RecaluclateNormals();
-	StandardMeshes::quad = quad.CreateMesh(false);
-}
-
 int main()
 {
 	window = CreateRenderingWindow();
 	InitializeOpenGl(WINDOW_WIDTH, WINDOW_HEIGHT);
 	InitializeDebug(WINDOW_WIDTH, WINDOW_HEIGHT, 5000);
-	InitializeStandardMeshes();
 	InitializeEditor(window);
 	OpenGLStatistics opengl_stats;
 	GetOpenglStatistics(&opengl_stats);
@@ -409,7 +379,7 @@ int main()
 	left_wall.mesh = StandardMeshes::sphere;
 	left_wall.material.forward_shader = &forward_pbr_notext_shader;
 	left_wall.transform.scale = Vec3(1);
-	left_wall.transform.rotation = EulerToQuat(Vec3(0, 0, 90));
+	left_wall.transform.rotation = EulerToQuat(Vec3(394, -24, 142));
 	left_wall.transform.position = Vec3(-2, 2, 0);
 	left_wall.material.diffuse = Vec3(0.2);
 	left_wall.material.metalness = 0.2;
@@ -862,7 +832,7 @@ int main()
 
 	
 
-
+	
 
 	float run_time = 1;
 	bool toggel = false;
@@ -968,7 +938,7 @@ int main()
 			if (Input::IsMouseJustDown(MOUSE_BUTTON_1))
 			{
 				// @NOTE: Do we hit a control widget
-				translation_widget.Select(cam_ray);
+				//translation_widget.Select(cam_ray, left_wall.transform);
 			}
 			if (Input::IsMouseJustUp(MOUSE_BUTTON_1))
 			{
@@ -982,16 +952,10 @@ int main()
 				//point_light.light_position.x += 4 * delta_time;
 
 				
-				if (translation_widget.Update(cam_ray))
-				{
-					back_wall.transform.position = translation_widget.GetTranslaion();
-				}
-
-				LOG(obb.CheckCollision(cam_ray));
+				//translation_widget.Update(cam_ray, &left_wall.transform);
+										
 
 
-				//Vec3 p1 = GetArcBallPoint(curr);
-				//Vec3 p2 = GetArcBallPoint(last);
 
 			}
 			else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
@@ -1000,6 +964,20 @@ int main()
 
 			}
 		}
+
+		if (Input::GetKeyHeldDown(GLFW_KEY_R))
+		{		
+			translation_widget.transform.rotation = EulerToQuat(Vec3(0, 1, 0)) * translation_widget.transform.rotation;
+		}
+		if (Input::GetKeyHeldDown(GLFW_KEY_T))
+		{
+			translation_widget.transform.rotation = translation_widget.transform.rotation * EulerToQuat(Vec3(0, 0, 1));
+		}
+		if (Input::GetKeyHeldDown(GLFW_KEY_E))
+		{
+			translation_widget.transform.rotation = translation_widget.transform.rotation * EulerToQuat(Vec3(1, 0, 0));
+		}
+
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
 		{
 

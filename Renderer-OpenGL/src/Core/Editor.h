@@ -20,6 +20,14 @@ namespace cm
 	void EditorEndFrame();
 	void FreeEditor();
 		
+	class RotationWidget
+	{
+		
+
+
+	};
+
+
 
 	class TranslationWidget 
 	{
@@ -47,9 +55,8 @@ namespace cm
 		
 	public:		
 		void Create(const GLMesh &mesh);
-		bool Select(const Ray &camera_ray);
-		bool Update(const Ray &camera_ray);
-		Vec3 GetTranslaion();
+		bool Select(const Ray &camera_ray, const Transform &transform);
+		bool Update(const Ray &camera_ray, Transform *transform);
 		const GLMesh GetMeshForRender();
 
 	public:

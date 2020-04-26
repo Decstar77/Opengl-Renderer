@@ -267,7 +267,7 @@ namespace cm
 		CalculateBoundingBoxes();
 	}
 
-	bool TranslationWidget::Select(const Ray &camera_ray)
+	bool TranslationWidget::Select(const Ray &camera_ray, const Transform &transform)
 	{
 		is_selected = false;
 
@@ -277,6 +277,9 @@ namespace cm
 		{
 			// @NOTE: Create a plane where the origin is the intersection and normal point towards the camera
 			translation_plane = Plane(transform.position, -1 * camera_ray.direction);
+
+			this->transform.position = transform.position;
+			this->transform.rotation = transform.rotation;
 
 			CollisionInfo colinfo;
 			translation_plane.CheckCollision(camera_ray, &colinfo);
@@ -300,6 +303,9 @@ namespace cm
 		{
 			// @NOTE: Create a plane where the origin is the intersection and normal point towards the camera
 			translation_plane = Plane(transform.position, -1 * camera_ray.direction);
+
+			this->transform.position = transform.position;
+			this->transform.rotation = transform.rotation;
 			
 			CollisionInfo colinfo;
 			translation_plane.CheckCollision(camera_ray, &colinfo);
@@ -321,9 +327,10 @@ namespace cm
 		if (z_axis)
 		{
 			// @NOTE: Create a plane where the origin is the intersection and normal point towards the camera
-
 			translation_plane = Plane(transform.position, -1 * camera_ray.direction);
-			translation_plane = Plane(transform.position, Vec3(1,0,0));
+
+			this->transform.position = transform.position;
+			this->transform.rotation = transform.rotation;
 
 			CollisionInfo colinfo;
 			translation_plane.CheckCollision(camera_ray, &colinfo);
@@ -349,10 +356,11 @@ namespace cm
 		return 0;
 	}
 
-	bool TranslationWidget::Update(const Ray &camera_ray)
+	bool TranslationWidget::Update(const Ray &camera_ray, Transform *transform)
 	{
 		if (is_selected) 
 		{
+			Assert(transform);
 			CollisionInfo colinfo;
 			translation_plane.CheckCollision(camera_ray, &colinfo);
 
@@ -368,24 +376,27 @@ namespace cm
 				break;
 			}
 			case cm::TranslationWidget::TranslationMode::x_axis: {
-				translation_plane.origin.x = translation_plane.origin.x + delta.x;
-				Vec3 dir(delta.x ,0, 0);
-				dir = Rotate((transform.rotation), dir);
-				transform.position += dir;
+				int32 index = AbsMaxIndex(x_bounding_volume.basis.right);
+				translation_plane.origin.arr[index] = translation_plane.origin.arr[index] + delta.arr[index];
+				Vec3 dir(delta.arr[index] * Sign(x_bounding_volume.basis.right.arr[index]),0, 0);
+				dir = Rotate((this->transform.rotation), dir);
+				this->transform.position += dir;
 				break;
 			}
 			case cm::TranslationWidget::TranslationMode::y_axis: {
-				translation_plane.origin.y = translation_plane.origin.y + delta.y;				
-				Vec3 dir(0, delta.y, 0);
-				dir = Rotate((transform.rotation), dir);
-				transform.position += dir;
+				int32 index = AbsMaxIndex(y_bounding_volume.basis.upward);
+				translation_plane.origin.arr[index] = translation_plane.origin.arr[index] + delta.arr[index];
+				Vec3 dir(0, delta.arr[index] * Sign(y_bounding_volume.basis.upward.arr[index]), 0);
+				dir = Rotate((this->transform.rotation), dir);
+				this->transform.position += dir;
 				break;
 			}
 			case cm::TranslationWidget::TranslationMode::z_axis: {
-				translation_plane.origin.z = translation_plane.origin.z + delta.z;
-				Vec3 dir(0, 0, delta.z);
-				dir = Rotate((transform.rotation), dir);
-				transform.position += dir;
+				int32 index = AbsMaxIndex(z_bounding_volume.basis.forward);
+				translation_plane.origin.arr[index] = translation_plane.origin.arr[index] + delta.arr[index];
+				Vec3 dir(0, 0, delta.arr[index] * Sign(z_bounding_volume.basis.forward.arr[index]));
+				dir = Rotate((this->transform.rotation), dir);
+				this->transform.position += dir;
 				break;
 			}
 			default: {
@@ -393,15 +404,10 @@ namespace cm
 				break;
 			}
 			}
-
+			transform->position = this->transform.position;
 			CalculateBoundingBoxes();
 		}
 		return is_selected;
-	}
-
-	Vec3 TranslationWidget::GetTranslaion()
-	{
-		return transform.position;
 	}
 
 	const GLMesh TranslationWidget::GetMeshForRender()

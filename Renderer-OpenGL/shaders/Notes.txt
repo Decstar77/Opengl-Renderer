@@ -59,6 +59,8 @@ Performace:
 
 TODO:
 	HIGH PRIO:
+		Inverse(mat3);
+		Mat4ToQuat();
 		Sort out shader mayhem !		
 		Rewrite EdiableMesh class.
 		Figure out how to write to gpu animation data nicely

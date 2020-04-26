@@ -28,6 +28,19 @@ namespace cm
 		return Mag(a - b);
 	}
 
+	int32 AbsMaxIndex(const Vec3 &a)
+	{
+		real32 x = Abs(a.x);
+		real32 y = Abs(a.y);
+		real32 z = Abs(a.z);
+		return (x > y) ? ((x > z) ? 0 : 2) : ((y > z) ? 1 : 2);
+	}
+
+	int32 MaxIndex(const Vec3 &a)
+	{
+		return (a.x > a.y) ? ((a.x > a.z) ? 0 : 2) : ((a.y > a.z) ? 1 : 2);
+	}
+
 	real32 Mag(const Vec3 &a)
 	{
 		return sqrt(a.x*a.x + a.y * a.y + a.z * a.z);

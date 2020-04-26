@@ -38,7 +38,10 @@ namespace cm
 			Assert(index < KEY_CODE_AMOUNT); 
 			return key_data.key_codes[index]; 
 		}
-		inline static bool GetKeyDown(int32 index) { Assert(0); return false; }
+		inline static bool GetKeyHeldDown(int32 index) {
+			Assert(index < KEY_CODE_AMOUNT);
+			return key_data.key_codes[index];
+		}
 		inline static bool GetKeyUp(int32 index) { Assert(0); return false; }
 
 

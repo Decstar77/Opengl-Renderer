@@ -265,13 +265,14 @@ namespace cm
 	{
 		//LayoutBuffer l = LayoutBuffer(std::vector<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float4, ShaderDataType::Float4 }));
 		LayoutBuffer l = LayoutBuffer(std::vector<ShaderDataType>({ 
-			ShaderDataType::Float3, 
-			ShaderDataType::Float3, 
-			ShaderDataType::Float2, 
-			ShaderDataType::Float3,
-			ShaderDataType::Float3,
-			ShaderDataType::Float4, 
-			ShaderDataType::Float4 }));
+			ShaderDataType::Float3, //vpos
+			ShaderDataType::Float3, //vnorm
+			ShaderDataType::Float2,	//vtext
+			ShaderDataType::Float3,	//tan
+			ShaderDataType::Float3,	//bitan
+			ShaderDataType::Float4, //bone index
+			ShaderDataType::Float4  //bone weight
+			}));
 		std::vector<real32> data;
 		uint32 vert_size = static_cast<uint32>(vertices.size());
 		for (uint32 i = 0; i < vert_size; i++)
