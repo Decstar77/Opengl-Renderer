@@ -336,12 +336,9 @@ namespace cm
 		return a;
 	}
 
-	Mat4 Rotate(Mat4 a, real32 d_angle, Vec3 axis, bool should_normalize)
+	Mat4 Rotate(Mat4 a, real32 d_angle, Vec3 axis)
 	{
-		if (should_normalize && Mag(axis) != 1)
-		{
-			axis = Normalize(axis);
-		}
+		axis = Normalize(axis);
 		real32 theata = DegToRad(d_angle);
 		real32 cos_theata = cosf(theata);
 		real32 sin_theata = sinf(theata);
@@ -395,10 +392,33 @@ namespace cm
 		kPrime.z = Round(axis.z *axis.z * (1 - cos_theata) + cos_theata);
 		
 		Mat3 result(iPrime, jPrime, kPrime);
-		
-		Mat3 temp = result * a;
 
-		return temp;
+		return result * a;
+	}
+
+	Quat Rotate(const Quat &q, const real32 &d_angle, Vec3 axis)
+	{
+		// @HELP: https://stackoverflow.com/questions/4436764/rotating-a-quaternion-on-1-axis
+		axis = Normalize(axis);
+
+		real32 rangle = DegToRad(d_angle);
+		
+		real32 s = sin(rangle / 2.0);
+		real32 c = cos(rangle / 2.0);
+
+		real32 x = axis.x * s;
+		real32 y = axis.y * s;
+		real32 z = axis.z * s;
+		real32 w = c;
+
+		Quat result = Normalize(Quat(x, y, z, w));
+		return result;
+	}
+
+	Quat Rotate(const Quat &a, const Quat &b)
+	{
+		// @NOTE: I always forget this, that's why I made this a function. Also more readable this way
+		return a * b;
 	}
 
 	Mat4 ScaleDirection(Mat4 a, real32 k, Vec3 unit_direction, bool should_normalize)
@@ -682,7 +702,6 @@ namespace cm
 	Vec3 Rotate(const Quat &r, const Vec3 &point)
 	{
 		//@Help: https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
-
 		Quat rc = Conjugate(Normalize(r));
 		Quat pp = Quat(point, 0);
 		Quat res = (r * pp) * rc;

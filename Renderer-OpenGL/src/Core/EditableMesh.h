@@ -85,13 +85,12 @@ namespace cm
 
 	class EditableMesh
 	{
+		//https://answers.unity.com/questions/228841/dynamically-combine-verticies-that-share-the-same.html
 	public:
 		std::vector<Vertex> vertices;
 		std::vector<uint32> indices;
-		std::vector<IndexedTriangle> tris;
 
-		std::string name;
-		
+		std::string name;		
 		bool has_positions = false;
 		bool has_normals = false;
 		bool has_texture_coords = false;
@@ -102,16 +101,11 @@ namespace cm
 	public:
 		GLMesh CreateAnimMesh();
 		GLMesh CreateMesh(bool tangets);
+		GLMesh CreateMesh();
 		void LoadMesh(GLMesh mesh);
-		void AddTrianlge(const Vec3 &pos1, const Vec3 &pos2, const Vec3 &pos3);
-		void AddTextureCoords(const Vec3 &t1, const Vec3 &t2, const Vec3 &t3);
-		void AddTrianlge(const Vertex &p1, const Vertex &p2, const Vertex &p3);
 		void ConvertToPNT(std::vector<float> *data, std::vector<uint32> *index) const;
-		void RecaluclateNormals();
-		void FuseVertices(float tollerance = FLOATING_POINT_ERROR_PRESCION);
 
 		void ConvertToOther(std::vector<float> *data, std::vector<uint32> *index) const; //<-- Just for testing purposes
-		void SetColour(const Vec3 colour);
 
 	};
 

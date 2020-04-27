@@ -290,7 +290,7 @@ namespace cm
 			// @NOTE: Offset the origin to stop snapping
 			translation_plane.origin += p1 - p0;
 
-			translation_mode = TranslationMode::x_axis;
+			translation_mode = TransformationMode::x_axis;
 
 			is_selected = true;
 			return is_selected;
@@ -316,7 +316,7 @@ namespace cm
 			// @NOTE: Offset the origin to stop snapping
 			translation_plane.origin += p1 - p0;
 			
-			translation_mode = TranslationMode::y_axis;
+			translation_mode = TransformationMode::y_axis;
 			
 			is_selected = true;
 			return is_selected;
@@ -342,7 +342,7 @@ namespace cm
 			// @NOTE: Offset the origin to stop snapping
 			translation_plane.origin += p1 - p0;
 
-			translation_mode = TranslationMode::z_axis;
+			translation_mode = TransformationMode::z_axis;
 
 			is_selected = true;
 			return is_selected;
@@ -371,11 +371,11 @@ namespace cm
 
 			switch (translation_mode)
 			{
-			case cm::TranslationWidget::TranslationMode::none: {
+			case cm::TransformationMode::none: {
 				LOG(" WARNING: Translating nothing ??");
 				break;
 			}
-			case cm::TranslationWidget::TranslationMode::x_axis: {
+			case cm::TransformationMode::x_axis: {
 				int32 index = AbsMaxIndex(x_bounding_volume.basis.right);
 				translation_plane.origin.arr[index] = translation_plane.origin.arr[index] + delta.arr[index];
 				Vec3 dir(delta.arr[index] * Sign(x_bounding_volume.basis.right.arr[index]),0, 0);
@@ -383,7 +383,7 @@ namespace cm
 				this->transform.position += dir;
 				break;
 			}
-			case cm::TranslationWidget::TranslationMode::y_axis: {
+			case cm::TransformationMode::y_axis: {
 				int32 index = AbsMaxIndex(y_bounding_volume.basis.upward);
 				translation_plane.origin.arr[index] = translation_plane.origin.arr[index] + delta.arr[index];
 				Vec3 dir(0, delta.arr[index] * Sign(y_bounding_volume.basis.upward.arr[index]), 0);
@@ -391,7 +391,7 @@ namespace cm
 				this->transform.position += dir;
 				break;
 			}
-			case cm::TranslationWidget::TranslationMode::z_axis: {
+			case cm::TransformationMode::z_axis: {
 				int32 index = AbsMaxIndex(z_bounding_volume.basis.forward);
 				translation_plane.origin.arr[index] = translation_plane.origin.arr[index] + delta.arr[index];
 				Vec3 dir(0, 0, delta.arr[index] * Sign(z_bounding_volume.basis.forward.arr[index]));
@@ -413,6 +413,147 @@ namespace cm
 	const GLMesh TranslationWidget::GetMeshForRender()
 	{
 		return mesh;
+	}
+
+	void RotationWidget::CalculateBoundingBoxes()
+	{
+		Mat3 rotation = QuatToMat3(Conjugate(transform.rotation));
+		Basis local_basis(rotation);
+		
+		// @NOTE: x-axis 
+		Vec3 x_origin01 = Vec3(0, 0.4, 0.4)	  * local_basis.mat;
+		Vec3 x_origin02 = Vec3(0, -0.4, -0.4) * local_basis.mat;
+		Vec3 x_origin03 = Vec3(0, 0.4, -0.4)  * local_basis.mat;
+		Vec3 x_origin04 = Vec3(0, -0.4, 0.4)  * local_basis.mat;
+
+		x_bounding_volumes[0] = OBB(transform.position + x_origin01, Vec3(0.05, 0.2, 0.05), Rotate(local_basis.mat, -45, Vec3(1, 0, 0)));
+		x_bounding_volumes[1] = OBB(transform.position + x_origin02, Vec3(0.05, 0.2, 0.05), Rotate(local_basis.mat, -45, Vec3(1, 0, 0)));
+		x_bounding_volumes[2] = OBB(transform.position + x_origin03, Vec3(0.05, 0.2, 0.05), Rotate(local_basis.mat, 45, Vec3(1, 0, 0)));
+		x_bounding_volumes[3] = OBB(transform.position + x_origin04, Vec3(0.05, 0.2, 0.05), Rotate(local_basis.mat, 45, Vec3(1, 0, 0)));
+
+		// @NOTE: y-axis 
+		Vec3 y_origin01 = Vec3(0.4, 0, 0.4)	  * local_basis.mat;
+		Vec3 y_origin02 = Vec3(-0.4, 0, -0.4) * local_basis.mat;
+		Vec3 y_origin03 = Vec3(0.4, 0,-0.4)  * local_basis.mat;
+		Vec3 y_origin04 = Vec3(-0.4, 0, 0.4)  * local_basis.mat;
+
+		y_bounding_volumes[0] = OBB(transform.position + y_origin01, Vec3(0.2, 0.05, 0.05), Rotate(local_basis.mat, 45, Vec3(0, 1, 0)));
+		y_bounding_volumes[1] = OBB(transform.position + y_origin02, Vec3(0.2, 0.05, 0.05), Rotate(local_basis.mat, 45, Vec3(0, 1, 0)));
+		y_bounding_volumes[2] = OBB(transform.position + y_origin03, Vec3(0.2, 0.05, 0.05), Rotate(local_basis.mat, -45, Vec3(0, 1, 0)));
+		y_bounding_volumes[3] = OBB(transform.position + y_origin04, Vec3(0.2, 0.05, 0.05), Rotate(local_basis.mat, -45, Vec3(0, 1, 0)));
+
+		// @NOTE: z-axis, 0.6 because of pythag.
+		Vec3 z_origin01 = Vec3(0.6, 0, 0)	* local_basis.mat;
+		Vec3 z_origin02 = Vec3(0, 0.6, 0)	* local_basis.mat;
+		Vec3 z_origin03 = Vec3(0, -0.6, 0)	* local_basis.mat;
+		Vec3 z_origin04 = Vec3(-0.6, 0, 0)	* local_basis.mat;
+
+		z_bounding_volumes[0] = OBB(transform.position + z_origin01, Vec3(0.05, 0.2, 0.05), local_basis);
+		z_bounding_volumes[1] = OBB(transform.position + z_origin02, Vec3(0.2, 0.05, 0.05), local_basis);
+		z_bounding_volumes[2] = OBB(transform.position + z_origin03, Vec3(0.2, 0.05, 0.05), local_basis);
+		z_bounding_volumes[3] = OBB(transform.position + z_origin04, Vec3(0.05, 0.2, 0.05), local_basis);
+	}
+
+	bool RotationWidget::Select(const Ray &camera_ray, const Transform &transform)
+	{
+		is_selected = false;
+		for (int32 i = 0; i < 4; i++)
+		{
+			if (x_bounding_volumes[i].CheckCollision(camera_ray))
+			{
+				is_selected = true;
+
+				transform_plane = Plane(x_bounding_volumes[i].origin, camera_ray.direction);
+				
+				transformation_mode = TransformationMode::x_axis;
+				//Debug::AddPersistentPlane(transform_plane.origin, transform_plane.normal);
+				return is_selected;
+			}		
+		}
+		
+		for (int32 i = 0; i < 4; i++)
+		{
+			if (y_bounding_volumes[i].CheckCollision(camera_ray))
+			{
+				is_selected = true;
+				return is_selected;
+			}
+		}
+
+		for (int32 i = 0; i < 4; i++)
+		{
+			if (z_bounding_volumes[i].CheckCollision(camera_ray))
+			{
+				is_selected = true;
+				return is_selected;
+			}
+		}
+		return is_selected;
+	}
+
+	bool RotationWidget::Update(const Ray &camera_ray, Transform *transform)
+	{
+		if (is_selected)
+		{
+			CollisionInfo colinfo;
+			transform_plane.CheckCollision(camera_ray, &colinfo);
+
+			Vec3 p0 = transform_plane.origin;
+			Vec3 p1 = camera_ray.Travel(colinfo.dist);
+
+			Vec3 delta = p1 - p0;
+
+			switch (transformation_mode)
+			{
+			case cm::TransformationMode::none:
+				break;
+			case cm::TransformationMode::x_axis: {
+				int32 index = AbsMaxIndex(delta);
+				transform_plane.origin = p1;
+				//float d = Clamp(Dot(Normalize(p1), Normalize(p0)), -1, 1);
+				
+				Vec3 e = Normalize( p0 - this->transform.position );
+				Vec3 f = Normalize( p1 - this->transform.position );
+
+				real32 d = Clamp(Dot(e, f), -1, 1);
+				Vec3 t = Rotate(RadToDeg( acos( d )), f, Cross(e, f));
+
+
+				real32 s = Dot (Cross(e, f), camera_ray.direction);
+
+				//LOG(s);
+				//LOG(Sign(s));
+				//LOG(acos(d * Sign(s)));
+
+
+				Basis b = x_bounding_volumes[0].basis;
+				//Debug::AddPersistentLine(x_bounding_volumes->origin, x_bounding_volumes->origin + Normalize(b.right));
+
+				Vec3 q = Normalize(camera_ray.direction);
+				Vec3 p = Normalize(b.right);
+
+				real32 h = Dot(q, p);
+					
+
+				Vec3 dir = Vec3(1, 0, 0);
+				// @NOTE: Move the upward vector into 'local space'
+				dir = Rotate(this->transform.rotation, dir);
+
+				Quat r = Rotate(this->transform.rotation, RadToDeg( acos(d) * Sign(s) *Sign(h) * -1),dir);
+				this->transform.rotation = r * this->transform.rotation;
+
+				break; 
+			}
+			case cm::TransformationMode::y_axis:
+				break;
+			case cm::TransformationMode::z_axis:
+				break;
+			default:
+				break;
+			}
+			CalculateBoundingBoxes();
+		}
+		return is_selected;
 	}
 
 }

@@ -337,6 +337,10 @@ namespace cm
 
 	Vec3 Rotate(const real32 &d_angle, const Vec3 &point, const Vec3 &axis);
 
+	Quat Rotate(const Quat &q, const real32 &d_angle, Vec3 axis);
+
+	Quat Rotate(const Quat &a, const Quat &b);
+
 	//************************************
 	// Coordinate spaces
 	//************************************
@@ -439,7 +443,7 @@ namespace cm
 
 	Mat4 Translate(Mat4 a, Polar_coord p_coord);
 
-	Mat4 Rotate(Mat4 a, real32 dangle, Vec3 axis, bool should_normalize = true);
+	Mat4 Rotate(Mat4 a, real32 dangle, Vec3 axis);
 
 	Mat4 ScaleDirection(Mat4 a, real32 k, Vec3 unit_direction, bool should_normalize = true);
 

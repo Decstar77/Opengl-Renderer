@@ -303,7 +303,6 @@ int main()
 	model_importer.import_vertex_binorms_tangents = true;
 	model_importer.model_paths.push_back("res/botdemo/FloorSet/Floor.fbx");
 	model_importer.model_paths.push_back("res/models/sphere.obj");
-	model_importer.model_paths.push_back("res/models/transform_widget.obj");
 	model_importer.Load();
 
 	StandardMeshes::sphere = model_importer.resulting_meshes[1].CreateMesh(true);
@@ -314,14 +313,25 @@ int main()
 
 
 	// @TODO: Remove
+	ModeImport remove_this_model_import;
+	remove_this_model_import.import_animations = true;
+	remove_this_model_import.import_vertex_binorms_tangents = true;
+	remove_this_model_import.model_paths.push_back("res/models/translation_widget_colour.dae");
+	remove_this_model_import.model_paths.push_back("res/models/rotation_widget_colour.dae");
+	remove_this_model_import.Load();
+
 	Shader transform_widget_shader;
 	transform_widget_shader.config.src_vert = ReadFile("shaders/demo_01/editor_widget_vert.glsl");
 	transform_widget_shader.config.src_frag = ReadFile("shaders/demo_01/editor_widget_frag.glsl");
 	CreateShader(&transform_widget_shader);
+	
+	RotationWidget rotation_widget;
+	rotation_widget.mesh = remove_this_model_import.resulting_meshes[1].CreateMesh();
+	rotation_widget.transform.scale = Vec3(0.04);
+	rotation_widget.CalculateBoundingBoxes();
 
 	TranslationWidget translation_widget;
-	translation_widget.Create(model_importer.resulting_meshes[2].CreateMesh(true));
-
+	translation_widget.Create(remove_this_model_import.resulting_meshes[0].CreateMesh());
 
 	OBB obb;
 	obb.extents = Vec3(0.1, 0.5, 2);
@@ -939,6 +949,7 @@ int main()
 			{
 				// @NOTE: Do we hit a control widget
 				//translation_widget.Select(cam_ray, left_wall.transform);
+				rotation_widget.Select(cam_ray, left_wall.transform);
 			}
 			if (Input::IsMouseJustUp(MOUSE_BUTTON_1))
 			{
@@ -951,7 +962,7 @@ int main()
 				fh += 0.4f * delta_time;
 				//point_light.light_position.x += 4 * delta_time;
 
-				
+				rotation_widget.Update(cam_ray, &left_wall.transform);
 				//translation_widget.Update(cam_ray, &left_wall.transform);
 										
 
@@ -966,16 +977,33 @@ int main()
 		}
 
 		if (Input::GetKeyHeldDown(GLFW_KEY_R))
-		{		
-			translation_widget.transform.rotation = EulerToQuat(Vec3(0, 1, 0)) * translation_widget.transform.rotation;
+		{	
+			Vec3 dir = Vec3(0, 1, 0);
+			// @NOTE: Move the upward vector into 'local space'
+			dir = Rotate(translation_widget.transform.rotation, dir);		
+			// @NOTE: Rotate 
+			Quat r = Rotate(translation_widget.transform.rotation, 15, dir);
+			// @NOTE: Apply rotation
+			translation_widget.transform.rotation = r * translation_widget.transform.rotation;
+
+
+
+
+
+
+
+			//rotation_widget.transform.rotation = rotation_widget.transform.rotation * EulerToQuat(Vec3(1, 1, 1));
+			//rotation_widget.transform.position += Vec3(1 * delta_time);
+			rotation_widget.CalculateBoundingBoxes();
 		}
 		if (Input::GetKeyHeldDown(GLFW_KEY_T))
 		{
-			translation_widget.transform.rotation = translation_widget.transform.rotation * EulerToQuat(Vec3(0, 0, 1));
+			rotation_widget.transform.rotation = rotation_widget.transform.rotation * EulerToQuat(Vec3(0, 0, 1));
+			rotation_widget.CalculateBoundingBoxes();
 		}
 		if (Input::GetKeyHeldDown(GLFW_KEY_E))
 		{
-			translation_widget.transform.rotation = translation_widget.transform.rotation * EulerToQuat(Vec3(1, 0, 0));
+			//rotation_widget.transform.rotation = rotation_widget.transform.rotation * EulerToQuat(Vec3(1, 0, 0));
 		}
 
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
@@ -1319,8 +1347,8 @@ int main()
 #if EDITOR_WINDOW
 		// @NOTE: Setup stencil buffer such that we discard any pixels that were drawn by the editor
 		StencilDiscardOnOne();
-		DisableDepthBuffer();
 #endif
+		DisableDepthBuffer();
 		BindShader(demo_01_postprocessing_shader);
 
 		ShaderBindTexture(demo_01_postprocessing_shader, post_processing_buffer.colour0_texture_attachment, 0, "scene_texture");
@@ -1348,19 +1376,58 @@ int main()
 		// DBUGING pass
 		//************************************	
 	
-		Debug::AddIrresoluteOBB(translation_widget.x_bounding_volume.origin, translation_widget.x_bounding_volume.extents, translation_widget.x_bounding_volume.basis);
-		Debug::AddIrresoluteOBB(translation_widget.y_bounding_volume.origin, translation_widget.y_bounding_volume.extents, translation_widget.y_bounding_volume.basis);
-		Debug::AddIrresoluteOBB(translation_widget.z_bounding_volume.origin, translation_widget.z_bounding_volume.extents, translation_widget.z_bounding_volume.basis);
-		DisableDepthBuffer();
-		Debug::Draw(&debug_shader);
-		
+		// @NOTE: Because we disable the depth buffer when drawing the screen space quad. We can now draw anything with depth on top of it
+		//		: for debug reasons
+		//Debug::AddIrresoluteOBB(translation_widget.x_bounding_volume.origin, translation_widget.x_bounding_volume.extents, translation_widget.x_bounding_volume.basis);
+		//Debug::AddIrresoluteOBB(translation_widget.y_bounding_volume.origin, translation_widget.y_bounding_volume.extents, translation_widget.y_bounding_volume.basis);
+		//Debug::AddIrresoluteOBB(translation_widget.z_bounding_volume.origin, translation_widget.z_bounding_volume.extents, translation_widget.z_bounding_volume.basis);
+
+
+
+	/*	Debug::AddIrresoluteOBB(rotation_widget.x_bounding_volumes[0].origin, rotation_widget.x_bounding_volumes[0].extents, rotation_widget.x_bounding_volumes[0].basis);
+		Debug::AddIrresoluteOBB(rotation_widget.x_bounding_volumes[1].origin, rotation_widget.x_bounding_volumes[1].extents, rotation_widget.x_bounding_volumes[1].basis);
+		Debug::AddIrresoluteOBB(rotation_widget.x_bounding_volumes[2].origin, rotation_widget.x_bounding_volumes[2].extents, rotation_widget.x_bounding_volumes[2].basis);
+		Debug::AddIrresoluteOBB(rotation_widget.x_bounding_volumes[3].origin, rotation_widget.x_bounding_volumes[3].extents, rotation_widget.x_bounding_volumes[3].basis);
+
+		Debug::AddIrresoluteOBB(rotation_widget.y_bounding_volumes[0].origin, rotation_widget.y_bounding_volumes[0].extents, rotation_widget.y_bounding_volumes[0].basis);
+		Debug::AddIrresoluteOBB(rotation_widget.y_bounding_volumes[1].origin, rotation_widget.y_bounding_volumes[1].extents, rotation_widget.y_bounding_volumes[1].basis);
+		Debug::AddIrresoluteOBB(rotation_widget.y_bounding_volumes[2].origin, rotation_widget.y_bounding_volumes[2].extents, rotation_widget.y_bounding_volumes[2].basis);
+		Debug::AddIrresoluteOBB(rotation_widget.y_bounding_volumes[3].origin, rotation_widget.y_bounding_volumes[3].extents, rotation_widget.y_bounding_volumes[3].basis);
+
+		Debug::AddIrresoluteOBB(rotation_widget.z_bounding_volumes[0].origin, rotation_widget.z_bounding_volumes[0].extents, rotation_widget.z_bounding_volumes[0].basis);
+		Debug::AddIrresoluteOBB(rotation_widget.z_bounding_volumes[1].origin, rotation_widget.z_bounding_volumes[1].extents, rotation_widget.z_bounding_volumes[1].basis);
+		Debug::AddIrresoluteOBB(rotation_widget.z_bounding_volumes[2].origin, rotation_widget.z_bounding_volumes[2].extents, rotation_widget.z_bounding_volumes[2].basis);
+		Debug::AddIrresoluteOBB(rotation_widget.z_bounding_volumes[3].origin, rotation_widget.z_bounding_volumes[3].extents, rotation_widget.z_bounding_volumes[3].basis);*/
+		//static float theta = 0;
+		//theta += delta_time;
+		//Vec3 aa = Vec3(cos(theta), sin(theta), 0);
+		//Vec3 bb = Vec3(cos(theta + 0.1), sin(theta + 0.1), 0);
+		//Debug::AddIrresoluteLine(Vec3(0), aa);
+		//Debug::AddIrresoluteLine(Vec3(0), bb);
+		//Debug::AddIrresoluteLine(Vec3(0), Cross(aa, bb));
+
+
+		//Vec3 aa = Normalize(Vec3(1, 1, 0));
+		//Vec3 bb = Normalize(Vec3(1, 0, 0));
+		//real32 ddd = Dot(aa, bb);
+		//real32 dd = Clamp(ddd, -1, 1);
+		//Vec3 cc = Cross(aa, bb);
+		//real32 d_angle = RadToDeg(acos(dd));
+		//real32 sh = sin(DegToRad(d_angle / 2));
+		//real32 ch = cos(DegToRad(d_angle / 2));
+
+		//Vec3 aaab = Rotate(d_angle, bb, cc);
+
+
 		BindShader(transform_widget_shader);
 		ShaderSetMat4(&transform_widget_shader, "model", translation_widget.transform.CalcTransformMatrix().arr);
-		ShaderSetVec3(&transform_widget_shader, "colour", Vec3(1, 0, 0).arr);
 		RenderMesh(transform_widget_shader, translation_widget.GetMeshForRender());
 
-		EnableDepthBuffer();
+		ShaderSetMat4(&transform_widget_shader, "model", rotation_widget.transform.CalcTransformMatrix().arr);
+		RenderMesh(transform_widget_shader, rotation_widget.mesh);
 
+
+		Debug::Draw(&debug_shader);
 		
 		////////////////////
 		// Post Debug Drawing

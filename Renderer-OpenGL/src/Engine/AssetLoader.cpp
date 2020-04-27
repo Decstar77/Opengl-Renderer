@@ -215,7 +215,6 @@ namespace cm
 			// Vertex Colours
 			if (colours && import_vertex_colours)
 			{
-				Assert(0); // @TODO: Check before use
 				vertex.colour.x = mesh->mColors[0]->r;
 				vertex.colour.y = mesh->mColors[0]->g;
 				vertex.colour.z = mesh->mColors[0]->b;

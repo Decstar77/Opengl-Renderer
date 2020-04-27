@@ -20,11 +20,30 @@ namespace cm
 	void EditorEndFrame();
 	void FreeEditor();
 		
+	enum class TransformationMode
+	{
+		none = 0,
+		x_axis = 1,
+		y_axis = 2,
+		z_axis = 3
+	};
+
 	class RotationWidget
 	{
+	public:
+		GLMesh mesh;		
+		Transform transform;
+		Plane transform_plane;
+		TransformationMode transformation_mode;
+		OBB x_bounding_volumes[4];
+		OBB y_bounding_volumes[4];
+		OBB z_bounding_volumes[4];
+
+		bool is_selected = false;
 		
-
-
+		void CalculateBoundingBoxes();
+		bool Select(const Ray &camera_ray, const Transform &transform);
+		bool Update(const Ray &camera_ray, Transform *transform);
 	};
 
 
@@ -32,18 +51,12 @@ namespace cm
 	class TranslationWidget 
 	{
 	private:
-		enum class TranslationMode
-		{
-			none = 0,
-			x_axis =  1,
-			y_axis = 2,
-			z_axis = 3
-		};
+
 		void CalculateBoundingBoxes();
 
 	private:
 		GLMesh mesh;
-		TranslationMode translation_mode = TranslationMode::none;
+		TransformationMode translation_mode = TransformationMode::none;
 
 	public:
 		Transform transform;
