@@ -199,19 +199,6 @@ namespace cm
 			if (tmin > tmax) { return false; }
 			if (tmax < 0) { return false; }
 		}
-
-
-		// @TODO: t is the intersection point from the ray. o + t * d;
-		real32 t = 0;
-		// @NOTE: At this point they definitely intersect
-		if (tmin > 0)
-		{
-			t = tmin;
-		}
-		else
-		{
-			t = tmax;
-		}
 		
 		return true;
 	}
@@ -220,7 +207,50 @@ namespace cm
 
 	bool OBB::CheckCollision(const Ray &r, CollisionInfo *collision_info) const
 	{
-		throw std::logic_error("The method or operation is not implemented.");
+		real32 tmin = -REAL_MAX;
+		real32 tmax = REAL_MAX;
+
+		for (int32 i = 0; i < 3; i++)
+		{
+			real32 demon = Dot(r.direction, basis.mat.data[i]);
+			if (Abs(demon) < 0.001)
+			{
+				// @NOTE: Ray parallel to a plane
+				Vec3 to_origin = origin - r.origin;
+				real32 r = Dot(basis.mat.data[i], to_origin);
+				if (-r - extents.arr[i] > 0 || -r + extents.arr[i] > 0)
+				{
+					return false;
+				}
+			}
+
+			Vec3 to_origin = origin - r.origin;
+			real32 q = Dot(basis.mat.data[i], to_origin);
+			real32 s = Dot(basis.mat.data[i], r.direction);
+
+
+			real32 t0 = (q + extents.arr[i]) / s;
+			real32 t1 = (q - extents.arr[i]) / s;
+
+			if (t0 > t1) { ::std::swap(t0, t1); }
+			if (t0 > tmin) { tmin = t0; }
+			if (t1 < tmax) { tmax = t1; }
+
+			if (tmin > tmax) { return false; }
+			if (tmax < 0) { return false; }
+		}		
+		real32 t = 0;
+		if (tmin > 0)
+		{
+			t = tmin;
+		}
+		else
+		{
+			t = tmax;
+		}
+		collision_info->dist = t;
+		collision_info->hit = true;
+		return true;
 	}
 
 	//void BoundingVolume::UpdateAABB(const mat4 &transform, const vec3 &pos)

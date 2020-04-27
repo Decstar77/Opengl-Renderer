@@ -106,9 +106,9 @@ namespace cm
 	class WorldObject
 	{
 	public:				
-		virtual const Material GetMaterial() const = 0;
-		virtual const Transform GetTransform() const = 0;
-		virtual const GLMesh GetMeshForRender() const = 0;	
+		virtual Material *GetMaterial() = 0;
+		virtual Transform *GetTransform() = 0;
+		virtual GLMesh *GetMeshForRender() = 0;	
 		virtual const Mat4 GetTransformMatrix() const = 0;
 		virtual const uint32 GetRenderFlags() const = 0;
 		virtual ~WorldObject() {};
@@ -134,8 +134,4 @@ namespace cm
 		std::vector<SpotLight> spot_lights;
 		std::vector<PointLight> point_lights;
 	};
-
-
-
-	void RenderWorld(Shader *shader, Shader *batch_shader, const World &world);
 }

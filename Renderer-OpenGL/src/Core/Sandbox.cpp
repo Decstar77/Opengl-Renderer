@@ -42,19 +42,19 @@ namespace cm
 	//ShaderSetVec3(shader, "diffuse_colour", Vec3(0.23, 0.48, 0.34).arr);
 	//ShaderSetVec3(shader, "specular_colour", Vec3(0.2f).arr);
 
-	const cm::GLMesh Actor::GetMeshForRender() const
+	cm::GLMesh *Actor::GetMeshForRender()
 	{
-		return mesh;
+		return &mesh;
 	}	   	  
 	   
-	const cm::Material Actor::GetMaterial() const
+	cm::Material *Actor::GetMaterial() 
 	{
-		return material;
+		return &material;
 	}
 
-	const cm::Transform Actor::GetTransform() const
+	cm::Transform *Actor::GetTransform()
 	{
-		return transform;
+		return &transform;
 	}
 
 	const cm::Mat4 Actor::GetTransformMatrix() const
@@ -67,14 +67,19 @@ namespace cm
 		return 0;
 	}
 
-	const cm::Material AnimatedActor::GetMaterial() const
+	cm::Material *AnimatedActor::GetMaterial() 
 	{
-		return material;
+		return &material;
 	}
 
-	const cm::Transform AnimatedActor::GetTransform() const
+	cm::Transform *AnimatedActor::GetTransform()
 	{
-		return transform;
+		return &transform;
+	}
+
+	cm::GLMesh *AnimatedActor::GetMeshForRender()
+	{
+		return &mesh;
 	}
 
 	const cm::Mat4 AnimatedActor::GetTransformMatrix() const
@@ -87,9 +92,5 @@ namespace cm
 		return 0;
 	}
 
-	const cm::GLMesh AnimatedActor::GetMeshForRender() const
-	{
-		return mesh;
-	}
 
 }

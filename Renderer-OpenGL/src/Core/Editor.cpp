@@ -276,17 +276,18 @@ namespace cm
 	{
 		is_selected = false;
 
+		CollisionInfo colinfo;
+		real32 closest_box = REAL_MAX;
 		// @NOTE: Check x-axis
-		bool x_axis= x_bounding_volume.CheckCollision(camera_ray);
-		if (x_axis)
+		bool x_axis= x_bounding_volume.CheckCollision(camera_ray, &colinfo);
+		if (x_axis && closest_box > colinfo.dist)
 		{
 			// @NOTE: Create a plane where the origin is the intersection and normal point towards the camera
 			translation_plane = Plane(transform.position, -1 * camera_ray.direction);
 
 			this->transform.position = transform.position;
 			this->transform.rotation = transform.rotation;
-
-			CollisionInfo colinfo;
+						
 			translation_plane.CheckCollision(camera_ray, &colinfo);
 
 			Vec3 p0 = translation_plane.origin;
@@ -297,13 +298,14 @@ namespace cm
 
 			translation_mode = TransformationMode::x_axis;
 
+			closest_box = colinfo.dist;
+
 			is_selected = true;
-			return is_selected;
 		}
 
 		// @NOTE: Check y-axis
-		bool y_axis = y_bounding_volume.CheckCollision(camera_ray);
-		if (y_axis)
+		bool y_axis = y_bounding_volume.CheckCollision(camera_ray, &colinfo);
+		if (y_axis && closest_box > colinfo.dist)
 		{
 			// @NOTE: Create a plane where the origin is the intersection and normal point towards the camera
 			translation_plane = Plane(transform.position, -1 * camera_ray.direction);
@@ -311,7 +313,6 @@ namespace cm
 			this->transform.position = transform.position;
 			this->transform.rotation = transform.rotation;
 			
-			CollisionInfo colinfo;
 			translation_plane.CheckCollision(camera_ray, &colinfo);
 
 			Vec3 p0 = translation_plane.origin;
@@ -321,14 +322,15 @@ namespace cm
 			translation_plane.origin += p1 - p0;
 			
 			translation_mode = TransformationMode::y_axis;
-			
+
+			closest_box = colinfo.dist;
+
 			is_selected = true;
-			return is_selected;
 		}
 
 		// @NOTE: Check z-axis
-		bool z_axis = z_bounding_volume.CheckCollision(camera_ray);
-		if (z_axis)
+		bool z_axis = z_bounding_volume.CheckCollision(camera_ray, &colinfo);
+		if (z_axis && closest_box > colinfo.dist)
 		{
 			// @NOTE: Create a plane where the origin is the intersection and normal point towards the camera
 			translation_plane = Plane(transform.position, -1 * camera_ray.direction);
@@ -336,10 +338,8 @@ namespace cm
 			this->transform.position = transform.position;
 			this->transform.rotation = transform.rotation;
 
-			CollisionInfo colinfo;
 			translation_plane.CheckCollision(camera_ray, &colinfo);
-
-
+			
 			Vec3 p0 = translation_plane.origin;
 			Vec3 p1 = camera_ray.Travel(colinfo.dist);
 
@@ -348,8 +348,9 @@ namespace cm
 
 			translation_mode = TransformationMode::z_axis;
 
+			closest_box = colinfo.dist;
+
 			is_selected = true;
-			return is_selected;
 		}
 
 		return is_selected;
@@ -462,9 +463,13 @@ namespace cm
 	{
 		// @TODO: Make is select the axis closest to the ray
 		is_selected = false;
+		CollisionInfo colinfo;
+		real32 closest_box = REAL_MAX;
+		
 		for (int32 i = 0; i < 4; i++)
 		{
-			if (x_bounding_volumes[i].CheckCollision(camera_ray))
+			x_bounding_volumes[i].CheckCollision(camera_ray, &colinfo);
+			if (colinfo.hit && closest_box > colinfo.dist)
 			{
 				transformation_mode = TransformationMode::x_axis;
 				transform_plane = Plane(x_bounding_volumes[i].origin, camera_ray.direction);
@@ -473,13 +478,14 @@ namespace cm
 				this->transform.rotation = transform.rotation;
 
 				is_selected = true;
-				return is_selected;
+				closest_box = colinfo.dist;
 			}		
 		}
 		
 		for (int32 i = 0; i < 4; i++)
 		{
-			if (y_bounding_volumes[i].CheckCollision(camera_ray))
+			y_bounding_volumes[i].CheckCollision(camera_ray, &colinfo);
+			if (colinfo.hit && closest_box > colinfo.dist)
 			{
 				transformation_mode = TransformationMode::y_axis;
 				transform_plane = Plane(y_bounding_volumes[i].origin, camera_ray.direction);
@@ -488,13 +494,14 @@ namespace cm
 				this->transform.rotation = transform.rotation;
 
 				is_selected = true;
-				return is_selected;
+				closest_box = colinfo.dist;
 			}
 		}
 
 		for (int32 i = 0; i < 4; i++)
 		{
-			if (z_bounding_volumes[i].CheckCollision(camera_ray))
+			z_bounding_volumes[i].CheckCollision(camera_ray, &colinfo);
+			if (colinfo.hit && closest_box > colinfo.dist)
 			{
 				transformation_mode = TransformationMode::z_axis;
 				transform_plane = Plane(z_bounding_volumes[i].origin, camera_ray.direction);
@@ -503,7 +510,7 @@ namespace cm
 				this->transform.rotation = transform.rotation;
 
 				is_selected = true;
-				return is_selected;
+				closest_box = colinfo.dist;
 			}
 		}
 		return is_selected;

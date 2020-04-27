@@ -468,6 +468,8 @@ namespace cm
 
 	void RenderMesh(const Shader &shader, const GLMesh &mesh);
 
+	void RenderMesh(const Shader &shader, const GLMesh *mesh);
+
 	//************************************
 	// Other Functions
 	//************************************

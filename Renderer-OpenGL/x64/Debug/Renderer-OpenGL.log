@@ -1,7 +1,2 @@
-﻿  main.cpp
-  Sandbox.cpp
-  Editor.cpp
-  Renderer.cpp
-  World.cpp
-  Generating Code...
+﻿  Editor.cpp
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

@@ -828,12 +828,12 @@ int main()
 					case cm::WidgetMode::none:
 						break;
 					case cm::WidgetMode::translation: {
-						Transform transform = selected_world_object->GetTransform();
+						Transform transform = *selected_world_object->GetTransform();
 						translation_widget.Select(cam_ray, transform);
 						break;
 					}
 					case cm::WidgetMode::rotation: {
-						Transform transform = selected_world_object->GetTransform();
+						Transform transform = *selected_world_object->GetTransform();
 						rotation_widget.Select(cam_ray, transform);
 						break;
 					}
@@ -861,10 +861,10 @@ int main()
 					case cm::WidgetMode::none:
 						break;
 					case cm::WidgetMode::translation:
-						translation_widget.Update(cam_ray, &test_cube_guy.transform);
+						translation_widget.Update(cam_ray, selected_world_object->GetTransform());
 						break;
 					case cm::WidgetMode::rotation:
-						rotation_widget.Update(cam_ray, &test_cube_guy.transform);
+						rotation_widget.Update(cam_ray, selected_world_object->GetTransform());
 						break;
 					case cm::WidgetMode::scaling:
 						break;
@@ -889,7 +889,7 @@ int main()
 			if (selected_world_object)
 			{
 				selected_widget_mode = selected_widget_mode == WidgetMode::translation ? WidgetMode::none : WidgetMode::translation;
-				Transform transform = selected_world_object->GetTransform();
+				Transform transform = *selected_world_object->GetTransform();
 				translation_widget.SetTransform(transform);
 			}
 		}
@@ -899,7 +899,7 @@ int main()
 			if (selected_world_object)
 			{
 				selected_widget_mode = selected_widget_mode == WidgetMode::rotation ? WidgetMode::none : WidgetMode::rotation ;
-				Transform transform = selected_world_object->GetTransform();
+				Transform transform = *selected_world_object->GetTransform();
 				rotation_widget.SetTransform(transform);
 			}			
 		}
@@ -979,9 +979,9 @@ int main()
 
 		for (int32 i = 0; i < main_world.objects.size(); i++)
 		{
-			WorldObject *obj = main_world.objects[i];
-			Transform transform = obj->GetTransform();
-			Material mat = obj->GetMaterial();
+			WorldObject *obj	= main_world.objects[i];
+			Transform transform = *obj->GetTransform();
+			Material mat		= *obj->GetMaterial();
 			Mat4 transform_matrix = obj->GetTransformMatrix();
 
 			ShaderSetMat4(&depth_shader, "model", transform_matrix.arr);
@@ -1000,9 +1000,9 @@ int main()
 		
 		for (int32 i = 0; i < main_world.objects.size(); i++)
 		{
-			WorldObject *obj = main_world.objects[i];
-			Transform transform = obj->GetTransform();
-			Material mat = obj->GetMaterial();
+			WorldObject *obj	= main_world.objects[i];
+			Transform transform = *obj->GetTransform();
+			Material mat		= *obj->GetMaterial();
 			Mat4 transform_matrix = obj->GetTransformMatrix();
 					   
 			if (mat.diffuse_texture != nullptr)
@@ -1079,8 +1079,8 @@ int main()
 		for (int32 i = 0; i < main_world.objects.size(); i++)
 		{
 			WorldObject *obj = main_world.objects[i];
-			Transform transform = obj->GetTransform();
-			Material mat = obj->GetMaterial();
+			Transform transform = *obj->GetTransform();
+			Material mat = *obj->GetMaterial();
 			Mat4 transform_matrix = obj->GetTransformMatrix();
 
 			if (mat.diffuse_texture != nullptr)

@@ -15,9 +15,9 @@ namespace cm
 		Material material;
 		GLMesh mesh;
 
-		virtual const GLMesh GetMeshForRender() const override;
-		virtual const Material GetMaterial() const override;
-		virtual const Transform GetTransform() const override;
+		virtual GLMesh *GetMeshForRender() override;
+		virtual Material *GetMaterial() override;
+		virtual Transform *GetTransform() override;
 		virtual const Mat4 GetTransformMatrix() const override;
 		virtual const uint32 GetRenderFlags() const override;
 	};
@@ -31,11 +31,11 @@ namespace cm
 		Transform transform;
 		AnimationController animation_controller;
 
-		virtual const Material GetMaterial() const override;
-		virtual const Transform GetTransform() const override;
+		virtual Material *GetMaterial() override;
+		virtual Transform *GetTransform() override;
+		virtual GLMesh *GetMeshForRender() override;
 		virtual const Mat4 GetTransformMatrix() const override;
 		virtual const uint32 GetRenderFlags() const override;
-		virtual const GLMesh GetMeshForRender() const override;
 	};
 
 

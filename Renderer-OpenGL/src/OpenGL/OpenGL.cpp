@@ -1120,6 +1120,19 @@ namespace cm
 		UnbindVertexArray();
 	}
 
+	void RenderMesh(const Shader &shader, const GLMesh *mesh)
+	{
+		BindShader(shader);
+
+		BindVertexArray(mesh->vao);
+		BindIndexBuffer(mesh->ibo);
+
+		glDrawElements(GL_TRIANGLES, mesh->ibo.index_count, GL_UNSIGNED_INT, 0);
+
+		UnbindIndexBuffer();
+		UnbindVertexArray();
+	}
+
 	void GetOpenglStatistics(OpenGLStatistics *stats)
 	{
 		stats->vendor = std::string((const char*)glGetString(GL_VENDOR));
