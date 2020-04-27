@@ -11,7 +11,7 @@
 
 namespace cm
 {
-	class ModeImport
+	class ModelImport
 	{	
 	private:
 		Mat4 ToMatrix4f(const aiMatrix4x4 *ai_mat);

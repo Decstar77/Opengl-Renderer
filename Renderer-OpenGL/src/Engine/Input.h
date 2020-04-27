@@ -34,17 +34,17 @@ namespace cm
 			Assert(index < KEY_CODE_AMOUNT); 
 			key_data.key_codes[index] = state; 
 		}
-		inline static bool GetKey(int32 index) {
+		inline static bool GetKeyJustDown(int32 index) {
 			Assert(index < KEY_CODE_AMOUNT); 
-			return key_data.key_codes[index]; 
+			return (key_data.prev_key_codes[index] == false && key_data.key_codes[index] == true) ? true : false;
 		}
 		inline static bool GetKeyHeldDown(int32 index) {
 			Assert(index < KEY_CODE_AMOUNT);
 			return key_data.key_codes[index];
 		}
-		inline static bool GetKeyUp(int32 index) { Assert(0); return false; }
-
-
+		inline static bool GetKeyJustUp(int32 index) { 
+			return (key_data.prev_key_codes[index] == true && key_data.key_codes[index] == false) ? true : false;
+		}
 		inline static void SetMousePosition(const real32 &x, const real32 &y) {
 			mouse_data.position = Vec2(x, y);
 		}
@@ -81,8 +81,11 @@ namespace cm
 			{
 				mouse_data.prev_mouse_codes[i] = mouse_data.mouse_codes[i];
 			}
+			for (uint32 i = 0; i < KEY_CODE_AMOUNT; i++)
+			{
+				key_data.prev_key_codes[i] = key_data.key_codes[i];
+			}
 		}
-
 
 		inline static void MousePositionCall(GLFWwindow *widow, double xpos, double ypos) {};
 		//inline static RegisterCallBack() {}
@@ -90,13 +93,12 @@ namespace cm
 		
 		static std::vector<InputCallBacks *> msg;
 
-		static MouseData mouse_data;
+
 
 	private:
-		static KeyData last_key_data;
+
+		static MouseData mouse_data;
 		static KeyData key_data;
-
-
 
 	private:
 		Input() = delete;

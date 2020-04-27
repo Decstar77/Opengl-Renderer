@@ -52,7 +52,7 @@ namespace cm
 		return material;
 	}
 
-	const cm::Transform Actor::GetTransfrom() const
+	const cm::Transform Actor::GetTransform() const
 	{
 		return transform;
 	}
@@ -72,7 +72,7 @@ namespace cm
 		return material;
 	}
 
-	const cm::Transform AnimatedActor::GetTransfrom() const
+	const cm::Transform AnimatedActor::GetTransform() const
 	{
 		return transform;
 	}

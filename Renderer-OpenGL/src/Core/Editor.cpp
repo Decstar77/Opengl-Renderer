@@ -241,22 +241,27 @@ namespace cm
 		}
 		fps_graph[99] = delta_time * 1000.f;
 	}
+	
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
 
-
-
-	void TranslationWidget::CalculateBoundingBoxes()
+	TranslationWidget::TranslationWidget()
 	{
-		// @NOTE: We take the conjugate because of model's blender coords ??
-		Mat3 rotation = QuatToMat3(Conjugate(transform.rotation));
-		Basis local_basis(rotation);
 
-		Vec3 x_origin = Vec3(0.36, 0, 0) * local_basis.mat;
-		Vec3 y_origin = Vec3(0, 0.36, 0) * local_basis.mat;
-		Vec3 z_origin = Vec3(0, 0, 0.36) * local_basis.mat;
-		
-		x_bounding_volume = OBB(transform.position + x_origin, Vec3(0.30, 0.05, 0.05), local_basis);
-		y_bounding_volume = OBB(transform.position + y_origin, Vec3(0.05, 0.30, 0.05), local_basis);
-		z_bounding_volume = OBB(transform.position + z_origin, Vec3(0.05, 0.05, 0.30), local_basis);
+	}
+
+	TranslationWidget::~TranslationWidget()
+	{
+
+	}
+
+	void TranslationWidget::SetTransform(const Transform &transform)
+	{
+		this->transform.position = transform.position;
+		this->transform.rotation = transform.rotation;
+		this->mesh = mesh;
+		CalculateBoundingBoxes();
 	}
 
 	void TranslationWidget::Create(const GLMesh &mesh)
@@ -298,7 +303,6 @@ namespace cm
 
 		// @NOTE: Check y-axis
 		bool y_axis = y_bounding_volume.CheckCollision(camera_ray);
-		Debug::Log(y_axis);
 		if (y_axis)
 		{
 			// @NOTE: Create a plane where the origin is the intersection and normal point towards the camera
@@ -349,11 +353,6 @@ namespace cm
 		}
 
 		return is_selected;
-	}
-
-	bool TranslationWidget::Deselect()
-	{
-		return 0;
 	}
 
 	bool TranslationWidget::Update(const Ray &camera_ray, Transform *transform)
@@ -410,16 +409,221 @@ namespace cm
 		return is_selected;
 	}
 
+	void TranslationWidget::CalculateBoundingBoxes()
+	{
+		// @NOTE: We take the conjugate because of model's blender coords ??
+		Mat3 rotation = QuatToMat3(Conjugate(transform.rotation));
+		Basis local_basis(rotation);
+
+		Vec3 x_origin = Vec3(0.36, 0, 0) * local_basis.mat;
+		Vec3 y_origin = Vec3(0, 0.36, 0) * local_basis.mat;
+		Vec3 z_origin = Vec3(0, 0, 0.36) * local_basis.mat;
+
+		x_bounding_volume = OBB(transform.position + x_origin, Vec3(0.30, 0.05, 0.05), local_basis);
+		y_bounding_volume = OBB(transform.position + y_origin, Vec3(0.05, 0.30, 0.05), local_basis);
+		z_bounding_volume = OBB(transform.position + z_origin, Vec3(0.05, 0.05, 0.30), local_basis);
+	}
+
 	const GLMesh TranslationWidget::GetMeshForRender()
 	{
 		return mesh;
 	}
 
-	void RotationWidget::CalculateBoundingBoxes()
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	
+	RotationWidget::RotationWidget()
 	{
+
+	}
+
+	RotationWidget::~RotationWidget()
+	{
+
+	}
+
+	void RotationWidget::SetTransform(const Transform &transform)
+	{
+		this->transform.position = transform.position;
+		this->transform.rotation = transform.rotation;
+		CalculateBoundingBoxes();
+	}
+
+	void RotationWidget::Create(const GLMesh &mesh)
+	{
+		transform.position = Vec3(0);
+		transform.scale = Vec3(0.04);
+		this->mesh = mesh;
+		CalculateBoundingBoxes();
+	}
+
+	bool RotationWidget::Select(const Ray &camera_ray, const Transform &transform)
+	{
+		// @TODO: Make is select the axis closest to the ray
+		is_selected = false;
+		for (int32 i = 0; i < 4; i++)
+		{
+			if (x_bounding_volumes[i].CheckCollision(camera_ray))
+			{
+				transformation_mode = TransformationMode::x_axis;
+				transform_plane = Plane(x_bounding_volumes[i].origin, camera_ray.direction);
+
+				this->transform.position = transform.position;
+				this->transform.rotation = transform.rotation;
+
+				is_selected = true;
+				return is_selected;
+			}		
+		}
+		
+		for (int32 i = 0; i < 4; i++)
+		{
+			if (y_bounding_volumes[i].CheckCollision(camera_ray))
+			{
+				transformation_mode = TransformationMode::y_axis;
+				transform_plane = Plane(y_bounding_volumes[i].origin, camera_ray.direction);
+				
+				this->transform.position = transform.position;
+				this->transform.rotation = transform.rotation;
+
+				is_selected = true;
+				return is_selected;
+			}
+		}
+
+		for (int32 i = 0; i < 4; i++)
+		{
+			if (z_bounding_volumes[i].CheckCollision(camera_ray))
+			{
+				transformation_mode = TransformationMode::z_axis;
+				transform_plane = Plane(z_bounding_volumes[i].origin, camera_ray.direction);
+				
+				this->transform.position = transform.position;
+				this->transform.rotation = transform.rotation;
+
+				is_selected = true;
+				return is_selected;
+			}
+		}
+		return is_selected;
+	}
+
+	bool RotationWidget::Update(const Ray &camera_ray, Transform *transform)
+	{
+		if (is_selected)
+		{
+			CollisionInfo colinfo;
+			transform_plane.CheckCollision(camera_ray, &colinfo);
+
+			Vec3 p0 = transform_plane.origin;
+			Vec3 p1 = camera_ray.Travel(colinfo.dist);
+
+			Vec3 d0 = Normalize(p0 - this->transform.position);
+			Vec3 d1 = Normalize(p1 - this->transform.position);
+			
+			switch (transformation_mode)
+			{
+			case cm::TransformationMode::none: {
+				LOG(" WARNING: Rotating nothing ??");
+				break;
+			}
+			case cm::TransformationMode::x_axis: {
+				// @NOTE: Get the axis of rotation
+				Basis b = x_bounding_volumes[0].basis;
+
+				// @NOTE: Normalize for safety
+				Vec3 ncr = Normalize(camera_ray.direction);
+				Vec3 nbr = Normalize(b.right);
+
+				// @NOTE: Get the angle theta from d0 to d1. The clamp is for floating point errors 
+				real32 theta = Clamp(Dot(d0, d1), -1, 1);
+
+				// @NOTE: The first dot is determining which way the user is dragging the widget
+				//		: The second is determining if the user is facing away or two the right basis vector
+				//		: of the widget. This is to determine the correct rotation direction
+				int32 dir = Sign( Dot(Cross(d0, d1), ncr) ) * Sign( Dot(ncr, nbr) ) * -1;
+
+				// @NOTE: Conversions
+				theta = RadToDeg(acos(theta) * dir);
+				
+				// @NOTE: Apply the rotation
+				Quat r = Rotate(this->transform.rotation, theta, nbr);			
+				this->transform.rotation = r * this->transform.rotation;
+
+				// @NOTE: Put the origin where the ray intersected the plane
+				transform_plane.origin = p1;
+				break; 
+			}
+			case cm::TransformationMode::y_axis: {
+				// @NOTE: Get the axis of rotation
+				Basis b = y_bounding_volumes[0].basis;
+
+				// @NOTE: Normalize for safety
+				Vec3 ncr = Normalize(camera_ray.direction);
+				Vec3 nbu = Normalize(b.upward);
+
+				// @NOTE: Get the angle theta from d0 to d1. The clamp is for floating point errors 
+				real32 theta = Clamp(Dot(d0, d1), -1, 1);
+
+				// @NOTE: The first dot is determining which way the user is dragging the widget
+				//		: The second is determining if the user is facing away or two the right basis vector
+				//		: of the widget. This is to determine the correct rotation direction
+				int32 dir = Sign(Dot(Cross(d0, d1), ncr)) * Sign(Dot(ncr, nbu)) * -1;
+
+				// @NOTE: Conversions
+				theta = RadToDeg(acos(theta) * dir);
+
+				// @NOTE: Apply the rotation
+				Quat r = Rotate(this->transform.rotation, theta, nbu);
+				this->transform.rotation = r * this->transform.rotation;
+
+				// @NOTE: Put the origin where the ray intersected the plane
+				transform_plane.origin = p1;
+				break;
+			}
+			case cm::TransformationMode::z_axis: {
+				Basis b = z_bounding_volumes[0].basis;
+
+				// @NOTE: Normalize for safety
+				Vec3 ncr = Normalize(camera_ray.direction);
+				Vec3 nbf = Normalize(b.forward);
+
+				// @NOTE: Get the angle theta from d0 to d1. The clamp is for floating point errors 
+				real32 theta = Clamp(Dot(d0, d1), -1, 1);
+
+				// @NOTE: The first dot is determining which way the user is dragging the widget
+				//		: The second is determining if the user is facing away or two the right basis vector
+				//		: of the widget. This is to determine the correct rotation direction
+				int32 dir = Sign(Dot(Cross(d0, d1), ncr)) * Sign(Dot(ncr, nbf)) * -1;
+
+				// @NOTE: Conversions
+				theta = RadToDeg(acos(theta) * dir);
+
+				// @NOTE: Apply the rotation
+				Quat r = Rotate(this->transform.rotation, theta, nbf);
+				this->transform.rotation = r * this->transform.rotation;
+
+				// @NOTE: Put the origin where the ray intersected the plane
+				transform_plane.origin = p1;
+				break;
+			}
+			default: {
+				LOG(" WARNING: Rotating nothing ??");
+				break;
+			}
+			}
+			transform->rotation = this->transform.rotation;	
+			CalculateBoundingBoxes();
+		}
+		return is_selected;
+	}
+
+	void RotationWidget::CalculateBoundingBoxes()
+	{		
 		Mat3 rotation = QuatToMat3(Conjugate(transform.rotation));
 		Basis local_basis(rotation);
-		
+
 		// @NOTE: x-axis 
 		Vec3 x_origin01 = Vec3(0, 0.4, 0.4)	  * local_basis.mat;
 		Vec3 x_origin02 = Vec3(0, -0.4, -0.4) * local_basis.mat;
@@ -434,7 +638,7 @@ namespace cm
 		// @NOTE: y-axis 
 		Vec3 y_origin01 = Vec3(0.4, 0, 0.4)	  * local_basis.mat;
 		Vec3 y_origin02 = Vec3(-0.4, 0, -0.4) * local_basis.mat;
-		Vec3 y_origin03 = Vec3(0.4, 0,-0.4)  * local_basis.mat;
+		Vec3 y_origin03 = Vec3(0.4, 0, -0.4)  * local_basis.mat;
 		Vec3 y_origin04 = Vec3(-0.4, 0, 0.4)  * local_basis.mat;
 
 		y_bounding_volumes[0] = OBB(transform.position + y_origin01, Vec3(0.2, 0.05, 0.05), Rotate(local_basis.mat, 45, Vec3(0, 1, 0)));
@@ -454,106 +658,9 @@ namespace cm
 		z_bounding_volumes[3] = OBB(transform.position + z_origin04, Vec3(0.05, 0.2, 0.05), local_basis);
 	}
 
-	bool RotationWidget::Select(const Ray &camera_ray, const Transform &transform)
+	const cm::GLMesh RotationWidget::GetMeshForRender() const
 	{
-		is_selected = false;
-		for (int32 i = 0; i < 4; i++)
-		{
-			if (x_bounding_volumes[i].CheckCollision(camera_ray))
-			{
-				is_selected = true;
-
-				transform_plane = Plane(x_bounding_volumes[i].origin, camera_ray.direction);
-				
-				transformation_mode = TransformationMode::x_axis;
-				//Debug::AddPersistentPlane(transform_plane.origin, transform_plane.normal);
-				return is_selected;
-			}		
-		}
-		
-		for (int32 i = 0; i < 4; i++)
-		{
-			if (y_bounding_volumes[i].CheckCollision(camera_ray))
-			{
-				is_selected = true;
-				return is_selected;
-			}
-		}
-
-		for (int32 i = 0; i < 4; i++)
-		{
-			if (z_bounding_volumes[i].CheckCollision(camera_ray))
-			{
-				is_selected = true;
-				return is_selected;
-			}
-		}
-		return is_selected;
-	}
-
-	bool RotationWidget::Update(const Ray &camera_ray, Transform *transform)
-	{
-		if (is_selected)
-		{
-			CollisionInfo colinfo;
-			transform_plane.CheckCollision(camera_ray, &colinfo);
-
-			Vec3 p0 = transform_plane.origin;
-			Vec3 p1 = camera_ray.Travel(colinfo.dist);
-
-			Vec3 delta = p1 - p0;
-
-			switch (transformation_mode)
-			{
-			case cm::TransformationMode::none:
-				break;
-			case cm::TransformationMode::x_axis: {
-				int32 index = AbsMaxIndex(delta);
-				transform_plane.origin = p1;
-				//float d = Clamp(Dot(Normalize(p1), Normalize(p0)), -1, 1);
-				
-				Vec3 e = Normalize( p0 - this->transform.position );
-				Vec3 f = Normalize( p1 - this->transform.position );
-
-				real32 d = Clamp(Dot(e, f), -1, 1);
-				Vec3 t = Rotate(RadToDeg( acos( d )), f, Cross(e, f));
-
-
-				real32 s = Dot (Cross(e, f), camera_ray.direction);
-
-				//LOG(s);
-				//LOG(Sign(s));
-				//LOG(acos(d * Sign(s)));
-
-
-				Basis b = x_bounding_volumes[0].basis;
-				//Debug::AddPersistentLine(x_bounding_volumes->origin, x_bounding_volumes->origin + Normalize(b.right));
-
-				Vec3 q = Normalize(camera_ray.direction);
-				Vec3 p = Normalize(b.right);
-
-				real32 h = Dot(q, p);
-					
-
-				Vec3 dir = Vec3(1, 0, 0);
-				// @NOTE: Move the upward vector into 'local space'
-				dir = Rotate(this->transform.rotation, dir);
-
-				Quat r = Rotate(this->transform.rotation, RadToDeg( acos(d) * Sign(s) *Sign(h) * -1),dir);
-				this->transform.rotation = r * this->transform.rotation;
-
-				break; 
-			}
-			case cm::TransformationMode::y_axis:
-				break;
-			case cm::TransformationMode::z_axis:
-				break;
-			default:
-				break;
-			}
-			CalculateBoundingBoxes();
-		}
-		return is_selected;
+		return mesh;
 	}
 
 }

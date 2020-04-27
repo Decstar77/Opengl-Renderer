@@ -56,27 +56,27 @@ namespace cm
 		Vec3 cameraUp = basis.upward;
 		Vec3 cameraRight = basis.right;
 
-		if (Input::GetKey(KEY_Q))
+		if (Input::GetKeyHeldDown(KEY_Q))
 		{
 			cameraPos.y += cameraSpeed;
 		}
-		if (Input::GetKey(KEY_E))
+		if (Input::GetKeyHeldDown(KEY_E))
 		{
 			cameraPos.y -= cameraSpeed;
 		}
-		if (Input::GetKey(KEY_W))
+		if (Input::GetKeyHeldDown(KEY_W))
 		{
 			cameraPos += cameraSpeed * cameraFront;
 		}
-		if (Input::GetKey(KEY_S))
+		if (Input::GetKeyHeldDown(KEY_S))
 		{
 			cameraPos -= cameraSpeed * cameraFront;
 		}
-		if (Input::GetKey(KEY_A))
+		if (Input::GetKeyHeldDown(KEY_A))
 		{
 			cameraPos -= cameraRight * cameraSpeed;
 		}
-		if (Input::GetKey(KEY_D))
+		if (Input::GetKeyHeldDown(KEY_D))
 		{
 			cameraPos += cameraRight * cameraSpeed;
 		}

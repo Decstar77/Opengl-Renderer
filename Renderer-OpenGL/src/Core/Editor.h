@@ -28,30 +28,56 @@ namespace cm
 		z_axis = 3
 	};
 
-	class RotationWidget
+	enum class WidgetMode
+	{
+		none = 0,
+		translation = 1,
+		rotation = 2,
+		scaling
+	};
+
+	class Widget3D
 	{
 	public:
+		virtual void Create(const GLMesh &mesh) = 0;
+		virtual bool Select(const Ray &camera_ray, const Transform &transform) = 0;
+		virtual bool Update(const Ray &camera_ray, Transform *transform) = 0;
+		virtual const GLMesh GetMeshForRender() const = 0;
+	};
+
+	class RotationWidget
+	{
+	private:
+		void CalculateBoundingBoxes();
+
+	private:
 		GLMesh mesh;		
+		TransformationMode transformation_mode;
+
+	public:
 		Transform transform;
 		Plane transform_plane;
-		TransformationMode transformation_mode;
 		OBB x_bounding_volumes[4];
 		OBB y_bounding_volumes[4];
 		OBB z_bounding_volumes[4];
-
 		bool is_selected = false;
-		
-		void CalculateBoundingBoxes();
+	
+	public:		
+		void SetTransform(const Transform &transform);
+		void Create(const GLMesh &mesh);
 		bool Select(const Ray &camera_ray, const Transform &transform);
 		bool Update(const Ray &camera_ray, Transform *transform);
+		const GLMesh GetMeshForRender() const;
+
+	public:
+		RotationWidget();
+		~RotationWidget();
+
 	};
-
-
 
 	class TranslationWidget 
 	{
 	private:
-
 		void CalculateBoundingBoxes();
 
 	private:
@@ -67,13 +93,16 @@ namespace cm
 		bool is_selected = false;
 		
 	public:		
+		void SetTransform(const Transform &transform);
 		void Create(const GLMesh &mesh);
 		bool Select(const Ray &camera_ray, const Transform &transform);
 		bool Update(const Ray &camera_ray, Transform *transform);
 		const GLMesh GetMeshForRender();
 
 	public:
-		bool Deselect();
+		TranslationWidget();
+		~TranslationWidget();
+		
 	};
 
 

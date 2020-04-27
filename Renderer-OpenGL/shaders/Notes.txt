@@ -76,3 +76,10 @@ TODO:
 	LOW PRIO:
 		OpenGL layout class		
 
+
+		Rotate point about another poitn
+			Vec3 p = Vec3(0, 0, 1);
+	Vec3 f = Vec3(1, 1, 1);
+
+	Vec3 e = f - p;
+	Vec3 d = Rotate(90, e, Vec3(0, 0, 1)) + p;

@@ -328,7 +328,7 @@ namespace cm
 	Mat3 QuatToMat3(const Quat &q);
 
 	Mat4 QuatToMat4(const Quat &q);
-
+		
 	real32 Mag(const Quat &a);
 
 	std::string ToString(const Quat &a);
@@ -415,6 +415,8 @@ namespace cm
 
 	Mat3 Mat4ToMat3(const Mat4 &a);
 
+	Quat Mat3ToQuat(const Mat3 &a);
+
 	//************************************
 	// Matrix 4x4
 	//************************************
@@ -444,6 +446,8 @@ namespace cm
 	Mat4 Translate(Mat4 a, Polar_coord p_coord);
 
 	Mat4 Rotate(Mat4 a, real32 dangle, Vec3 axis);
+
+	Quat Mat4ToQuat(const Mat4 &a);
 
 	Mat4 ScaleDirection(Mat4 a, real32 k, Vec3 unit_direction, bool should_normalize = true);
 

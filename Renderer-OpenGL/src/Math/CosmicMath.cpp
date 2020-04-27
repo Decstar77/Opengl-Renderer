@@ -143,10 +143,86 @@ namespace cm
 		return result;
 	}
 
+	cm::Quat Mat3ToQuat(const Mat3 &a)
+	{
+		//@ HELP: 3D Math Primer for Graphics and Game Development		
+		real32 m11 = a.row0.x;
+		real32 m12 = a.row0.y;
+		real32 m13 = a.row0.z;
+
+		real32 m21 = a.row1.x;
+		real32 m22 = a.row1.y;
+		real32 m23 = a.row1.z;
+
+		real32 m31 = a.row2.x;
+		real32 m32 = a.row2.y;
+		real32 m33 = a.row2.z;
+
+		real32 x2 = m11 - m22 - m33;
+		real32 y2 = m22 - m11 - m33;
+		real32 z2 = m33 - m11 - m22;
+		real32 w2 = m11 + m22 + m33;
+
+		int32 index = 0;
+		real32 big2 = w2;
+		if (x2 > big2)
+		{
+			big2 = x2;
+			index = 1;
+		}
+		if (y2 > big2)
+		{
+			big2 = y2;
+			index = 2;
+		}
+		if (z2 > big2)
+		{
+			big2 = z2;
+			index = 3;
+		}
+
+		real32 big = sqrt(big2 + 1.0f) * 0.5f;
+		real32 mult = 0.25f / big;
+
+		switch (index)
+		{
+		case 0: {
+			real32 x = (m23 - m32) * mult;
+			real32 y = (m31 - m13) * mult;
+			real32 z = (m12 - m21) * mult;
+			real32 w = big;
+			return Quat(x, y, z, w);
+		}
+		case 1: {
+			real32 x = big;
+			real32 y = (m12 + m21) * mult;
+			real32 z = (m31 + m13) * mult;
+			real32 w = (m23 - m32) * mult;
+			return Quat(x, y, z, w);
+		}
+		case 2: {
+			real32 x = (m12 + m21) * mult;
+			real32 y = big;
+			real32 z = (m23 + m32) * mult;
+			real32 w = (m31 - m13) * mult;
+			return Quat(x, y, z, w);
+		}
+		case 3: {
+			real32 x = (m31 + m13) * mult;
+			real32 y = (m23 + m32) * mult;
+			real32 z = big;
+			real32 w = (m12 - m21) * mult;
+			return Quat(x, y, z, w);
+		}
+		default:
+			Assert(0);
+			return Quat(0, 0, 0, 1);
+		}
+	}
+
 	Mat4 CalculateTransformMatrix(const Vec3 & position, const Vec3 & scale, const Quat & rotation)
 	{
-		// @NOTE: This is what stack overflow/people recommend. The order doesn't much matter in terms of major, but in term of functionality
-		//		: Example, scaling first require higher translation values.
+		// @HELP: Real time rendering book
 		Mat4 trans(1);
 		Mat4 rot(1);
 		Mat4 scl(1);
@@ -403,8 +479,8 @@ namespace cm
 
 		real32 rangle = DegToRad(d_angle);
 		
-		real32 s = sin(rangle / 2.0);
-		real32 c = cos(rangle / 2.0);
+		real32 s = SafeTruncateDouble(sin(rangle / 2.0));
+		real32 c = SafeTruncateDouble(cos(rangle / 2.0));
 
 		real32 x = axis.x * s;
 		real32 y = axis.y * s;
@@ -419,6 +495,83 @@ namespace cm
 	{
 		// @NOTE: I always forget this, that's why I made this a function. Also more readable this way
 		return a * b;
+	}
+
+	Quat Mat4ToQuat(const Mat4 &a)
+	{
+		//@ HELP: 3D Math Primer for Graphics and Game Development		
+		real32 m11 = a.row0.x;
+		real32 m12 = a.row0.y;
+		real32 m13 = a.row0.z;
+
+		real32 m21 = a.row1.x;
+		real32 m22 = a.row1.y;
+		real32 m23 = a.row1.z;
+		
+		real32 m31 = a.row2.x;
+		real32 m32 = a.row2.y;
+		real32 m33 = a.row2.z;
+
+		real32 x2 = m11 - m22 - m33;
+		real32 y2 = m22 - m11 - m33;
+		real32 z2 = m33 - m11 - m22;
+		real32 w2 = m11 + m22 + m33;
+
+		int32 index = 0;
+		real32 big2 = w2;
+		if (x2 > big2)
+		{
+			big2 = x2;
+			index = 1;
+		}
+		if (y2 > big2)
+		{
+			big2 = y2;
+			index = 2;
+		}
+		if (z2 > big2)
+		{
+			big2 = z2;
+			index = 3;
+		}
+
+		real32 big = sqrt(big2 + 1.0f) * 0.5f;
+		real32 mult = 0.25f / big;
+
+		switch (index)
+		{
+		case 0: {
+			real32 x = (m23 - m32) * mult;
+			real32 y = (m31 - m13) * mult;
+			real32 z = (m12 - m21) * mult;
+			real32 w = big;
+			return Quat(x, y, z, w);
+		}
+		case 1: {
+			real32 x = big;
+			real32 y = (m12 + m21) * mult;
+			real32 z = (m31 + m13) * mult;
+			real32 w = (m23 - m32) * mult;
+			return Quat(x, y, z, w);
+		}
+		case 2: {
+			real32 x = (m12 + m21) * mult;
+			real32 y = big;
+			real32 z = (m23 + m32) * mult;
+			real32 w = (m31 - m13) * mult;
+			return Quat(x, y, z, w);
+		}
+		case 3: {
+			real32 x = (m31 + m13) * mult;
+			real32 y = (m23 + m32) * mult;
+			real32 z = big;
+			real32 w = (m12 - m21) * mult;
+			return Quat(x, y, z, w);
+		}
+		default: 
+			Assert(0);
+			return Quat(0, 0, 0, 1);
+		}
 	}
 
 	Mat4 ScaleDirection(Mat4 a, real32 k, Vec3 unit_direction, bool should_normalize)

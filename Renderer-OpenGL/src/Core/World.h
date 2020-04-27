@@ -49,18 +49,6 @@ namespace cm
 
 	struct RenderSettings
 	{
-		bool shadow_pass = true;
-		bool defferd_pass = true;
-		bool ssr = true;
-
-
-		bool ssao = false;
-		bool ssao_changed = false;
-		int32 ssao_kernel_size = 32; 
-		real32 ssao_radius = 1.5;
-		real32 ssao_bias = 0.025;
-		real32 ssao_strength = 1.2;
-
 		enum TonemapMethod
 		{
 			// @NOTE: These vaules are important because they are cast to the shader
@@ -74,6 +62,20 @@ namespace cm
 			Dependent = 0,
 			Independent = 1
 		};
+
+
+		bool shadow_pass = true;
+		bool defferd_pass = true;
+		bool ssr = true;
+
+
+		bool ssao = false;
+		bool ssao_changed = false;
+		int32 ssao_kernel_size = 32; 
+		real32 ssao_radius = 1.5;
+		real32 ssao_bias = 0.025;
+		real32 ssao_strength = 1.2;
+
 
 		
 
@@ -105,10 +107,11 @@ namespace cm
 	{
 	public:				
 		virtual const Material GetMaterial() const = 0;
-		virtual const Transform GetTransfrom() const = 0;
+		virtual const Transform GetTransform() const = 0;
 		virtual const Mat4 GetTransformMatrix() const = 0;
 		virtual const uint32 GetRenderFlags() const = 0;
 		virtual const GLMesh GetMeshForRender() const = 0;	
+		virtual ~WorldObject() {};
 	};
 
 	class World 

@@ -120,7 +120,7 @@ namespace cm
 		return true;
 	}
 
-	Mat4 ModeImport::ToMatrix4f(const aiMatrix4x4 *ai_mat)
+	Mat4 ModelImport::ToMatrix4f(const aiMatrix4x4 *ai_mat)
 	{
 
 		uint32 size = sizeof(Mat4);
@@ -136,7 +136,7 @@ namespace cm
 	}
 
 
-	int32 ModeImport::FindMinVertexWeight(Vertex vertex)
+	int32 ModelImport::FindMinVertexWeight(Vertex vertex)
 	{
 		real32 min_weight = REAL_MAX;
 		int32 min_index = -1;
@@ -155,7 +155,7 @@ namespace cm
 		return min_index;
 	}
 
-	void ModeImport::ProcessMeshCombine(const aiScene *scene, aiMesh *mesh, uint32 index)
+	void ModelImport::ProcessMeshCombine(const aiScene *scene, aiMesh *mesh, uint32 index)
 	{
 		// @NOTE: Get the meta data from the current mesh.
 		bool positions = mesh->HasPositions();
@@ -303,7 +303,7 @@ namespace cm
 		emesh->name = mesh->mName.C_Str();
 	}
 
-	void ModeImport::ProcessMesh(const aiScene * scene, aiNode *node, uint32 index)
+	void ModelImport::ProcessMesh(const aiScene * scene, aiNode *node, uint32 index)
 	{
 		for (uint32 i = 0; i < node->mNumMeshes; i++)
 		{
@@ -322,7 +322,7 @@ namespace cm
 
 
 
-	void ModeImport::StoreAllBones(const aiMesh * mesh, AnimationController *ac)
+	void ModelImport::StoreAllBones(const aiMesh * mesh, AnimationController *ac)
 	{
 		for (uint32 i = 0; i < mesh->mNumBones; i++)
 		{
@@ -350,7 +350,7 @@ namespace cm
 		}
 	}
 
-	const aiNode* ModeImport::FindRootNodeOfBones(const aiNode *node, AnimationController *ac)
+	const aiNode* ModelImport::FindRootNodeOfBones(const aiNode *node, AnimationController *ac)
 	{
 		// @NOTE: If anything this will give us problems
 		std::string name = node->mName.C_Str();
@@ -372,7 +372,7 @@ namespace cm
 		return nullptr;
 	}
 
-	aiMatrix4x4 ModeImport::CalcRootNodeTransformMatrix(const aiNode *node)
+	aiMatrix4x4 ModelImport::CalcRootNodeTransformMatrix(const aiNode *node)
 	{
 		if (node->mParent == NULL)
 		{
@@ -381,7 +381,7 @@ namespace cm
 		return CalcRootNodeTransformMatrix(node->mParent) * node->mTransformation;
 	}
 
-	void ModeImport::StoreNodeTransformMatrices(const aiNode *node, AnimationController *ac)
+	void ModelImport::StoreNodeTransformMatrices(const aiNode *node, AnimationController *ac)
 	{
 		std::string name = node->mName.C_Str();
 				
@@ -400,7 +400,7 @@ namespace cm
 		}
 	}
 
-	void ModeImport::SortBoneParents(const aiNode *node, uint32 parent_index, AnimationController *ac)
+	void ModelImport::SortBoneParents(const aiNode *node, uint32 parent_index, AnimationController *ac)
 	{
 		std::string name = node->mName.C_Str();
 		for (uint32 i = 1; i < ac->bones.size(); i++)
@@ -419,7 +419,7 @@ namespace cm
 		}
 	}
 
-	void ModeImport::SortBoneChildren(AnimationController *ac)
+	void ModelImport::SortBoneChildren(AnimationController *ac)
 	{
 		// @NOTE: This assumes the bone array's parents are correctly set and sorted
 		//		: Start at one as we don't care about root
@@ -434,7 +434,7 @@ namespace cm
 		}
 	}
 
-	void ModeImport::ProcessAnimationChannels(aiAnimation *anim, Animation *animation)
+	void ModelImport::ProcessAnimationChannels(aiAnimation *anim, Animation *animation)
 	{
 		for (uint32 i = 0; i < anim->mNumChannels; i++)
 		{
@@ -481,7 +481,7 @@ namespace cm
 		}
 	}
 
-	void ModeImport::ProcessBones(const aiScene *scene, AnimationController *ac)
+	void ModelImport::ProcessBones(const aiScene *scene, AnimationController *ac)
 	{
 		// @NOTE: Order is important
 		//		: Create a dummy root node. This bone doesn't actually exist in the mesh
@@ -517,7 +517,7 @@ namespace cm
 		SortBoneChildren(ac);
 	}
 	
-	void ModeImport::ProcessAnimations(const aiScene *scene, AnimationController *ac)
+	void ModelImport::ProcessAnimations(const aiScene *scene, AnimationController *ac)
 	{
 		// @TODO: Loop throught the all the animations, Processing bones should be independt on this.
 		Assert(scene->mNumAnimations <= 1);
@@ -552,7 +552,7 @@ namespace cm
 		LOG("ERROR:ASSIMP -> " << err);
 	}
 
-	bool ModeImport::Load()
+	bool ModelImport::Load()
 	{		
 		bool result = false;
 		uint32 import_mesh_count = SafeTruncateUint64(model_paths.size());
@@ -595,7 +595,7 @@ namespace cm
 		return result;
 	}	   
 
-	bool ModeImport::Free()
+	bool ModelImport::Free()
 	{
 		resulting_meshes.clear();
 		resulting_animation_controllers.clear();

@@ -29,9 +29,12 @@ static MassAggregateEngine physics_engine;
 static GLFWwindow *window = nullptr;
 static float delta_time = 0;
 
-
 static bool DRAW_LIGHT_POSITIONS = false;
 static bool move_camera = false;
+
+// @TODO: Make a context strct
+WidgetMode selected_widget_mode = WidgetMode::none;
+WorldObject *selected_world_object = nullptr;
 
 void MousePositionCallBack(GLFWwindow *widow, double xpos, double ypos)
 {
@@ -111,23 +114,6 @@ GLFWwindow* CreateRenderingWindow()
 	return window;
 }
 
-Vec3 GetArcBallPoint(Vec2 mouse_coords)
-{
-	Vec4 ndc = GetNormalisedDeviceCoordinates(WINDOW_WIDTH, WINDOW_HEIGHT, mouse_coords.x, mouse_coords.y);
-
-	Vec3 p = Vec3(ndc.x, ndc.y, 0);
-
-	real32 ops = p.x * p.x + p.y * p.y;
-	if (ops <= 1 * 1)
-	{
-		p.z = sqrt(1 * 1 - ops);
-	}
-	else
-	{
-		p = Normalize(p);
-	}
-	return p;
-}
 
 int main()
 {
@@ -135,6 +121,8 @@ int main()
 	InitializeOpenGl(WINDOW_WIDTH, WINDOW_HEIGHT);
 	InitializeDebug(WINDOW_WIDTH, WINDOW_HEIGHT, 5000);
 	InitializeEditor(window);
+
+
 	OpenGLStatistics opengl_stats;
 	GetOpenglStatistics(&opengl_stats);
 	PrintOpenglStatistics(opengl_stats);
@@ -277,6 +265,11 @@ int main()
 	demo_01_postprocessing_shader.config.src_frag = ReadFile("shaders/demo_01/postprocessing_frag.glsl");
 	demo_01_postprocessing_shader.name = "demo_01_postprocessing_shader";
 	CreateShader(&demo_01_postprocessing_shader);
+	
+	Shader transform_widget_shader;
+	transform_widget_shader.config.src_vert = ReadFile("res/engine/shaders/editor_widget_vert.glsl");
+	transform_widget_shader.config.src_frag = ReadFile("res/engine/shaders/editor_widget_frag.glsl");
+	CreateShader(&transform_widget_shader);
 
 	//************************************
 	// Load texture assets
@@ -298,59 +291,31 @@ int main()
 	// Load mesh assets
 	//************************************
 
-	ModeImport model_importer;
+	// @TODO: Remove
+	ModelImport model_importer;
 	model_importer.import_animations = true;
 	model_importer.import_vertex_binorms_tangents = true;
 	model_importer.model_paths.push_back("res/botdemo/FloorSet/Floor.fbx");
 	model_importer.model_paths.push_back("res/models/sphere.obj");
 	model_importer.Load();
-
 	StandardMeshes::sphere = model_importer.resulting_meshes[1].CreateMesh(true);
 
 
 
-
-
-
-	// @TODO: Remove
-	ModeImport remove_this_model_import;
-	remove_this_model_import.import_animations = true;
-	remove_this_model_import.import_vertex_binorms_tangents = true;
-	remove_this_model_import.model_paths.push_back("res/models/translation_widget_colour.dae");
-	remove_this_model_import.model_paths.push_back("res/models/rotation_widget_colour.dae");
-	remove_this_model_import.Load();
-
-	Shader transform_widget_shader;
-	transform_widget_shader.config.src_vert = ReadFile("shaders/demo_01/editor_widget_vert.glsl");
-	transform_widget_shader.config.src_frag = ReadFile("shaders/demo_01/editor_widget_frag.glsl");
-	CreateShader(&transform_widget_shader);
+	ModelImport editor_mesh_importer;
+	editor_mesh_importer.import_animations = true;
+	editor_mesh_importer.import_vertex_binorms_tangents = true;
+	editor_mesh_importer.model_paths.push_back("res/engine/meshes/translation_widget.dae");
+	editor_mesh_importer.model_paths.push_back("res/engine/meshes/rotation_widget.dae");
+	editor_mesh_importer.Load();
 	
-	RotationWidget rotation_widget;
-	rotation_widget.mesh = remove_this_model_import.resulting_meshes[1].CreateMesh();
-	rotation_widget.transform.scale = Vec3(0.04);
-	rotation_widget.CalculateBoundingBoxes();
-
 	TranslationWidget translation_widget;
-	translation_widget.Create(remove_this_model_import.resulting_meshes[0].CreateMesh());
+	translation_widget.Create(editor_mesh_importer.resulting_meshes[0].CreateMesh());
 
-	OBB obb;
-	obb.extents = Vec3(0.1, 0.5, 2);
-	obb.origin = Vec3(1, 0.4, 2.5);
-	//obb.extents = Vec3(1);
-	//obb.origin = Vec3(0,0 ,0);
-
-	//obb.extents = Vec3(1, 0.2, 0.2);
-	//obb.origin = Vec3(1, 1, -3);
-	//obb.basis.mat = Mat3(1);
-	//obb.basis.mat = Rotate(Mat3(1), 45.0f, Vec3(0, 0, 1));
-	obb.basis.mat = Rotate(Mat3(1), 45.0f, Vec3(1,0,0));
-	obb.basis.mat = Rotate(obb.basis.mat, 45.0f, Vec3(0, 1, 0));
-
-	Debug::AddPersistentOBB(obb.origin, obb.extents, obb.basis);
-
-	//Debug::AddPersistentAABBCenterRaduis(Vec3(0), Vec3(1));
-
-
+	RotationWidget rotation_widget;
+	rotation_widget.Create(editor_mesh_importer.resulting_meshes[1].CreateMesh());
+	
+	editor_mesh_importer.Free();
 
 	//************************************
 	// Initialize imported textures
@@ -382,20 +347,15 @@ int main()
 	floor_test.material.diffuse = Vec3(0.86);
 	floor_test.material.metalness = 0.6;
 	floor_test.material.roughness = 0;
-
-
-
+		
 	Actor left_wall;
 	left_wall.mesh = StandardMeshes::sphere;
 	left_wall.material.forward_shader = &forward_pbr_notext_shader;
-	left_wall.transform.scale = Vec3(1);
 	left_wall.transform.rotation = EulerToQuat(Vec3(394, -24, 142));
-	left_wall.transform.position = Vec3(-2, 2, 0);
+	left_wall.transform.position = Vec3(1, 1, 0);
 	left_wall.material.diffuse = Vec3(0.2);
 	left_wall.material.metalness = 0.2;
 	left_wall.material.roughness = 1;
-
-
 
 	Actor right_wall;
 	right_wall.mesh = floor_test.mesh;
@@ -406,8 +366,6 @@ int main()
 	right_wall.material.diffuse = Vec3(0.2);
 	right_wall.material.metalness = 0.2;
 	right_wall.material.roughness = 1;
-
-
 
 	Actor back_wall;
 	back_wall.mesh = floor_test.mesh;
@@ -675,7 +633,7 @@ int main()
 
 	
 
-	ModeImport pbr_model;
+	ModelImport pbr_model;
 	pbr_model.model_paths.push_back("res/models/claud_bot.obj");
 	pbr_model.import_vertex_binorms_tangents = true;
 	pbr_model.Load();
@@ -694,7 +652,7 @@ int main()
 
 
 
-	ModeImport model_import;
+	ModelImport model_import;
 	model_import.import_vertex_binorms_tangents = true;
 	model_import.model_paths.push_back("res/models/Idle.dae");
 	model_import.Load();
@@ -848,7 +806,7 @@ int main()
 	bool toggel = false;
 
 	bool mouse_input_for_editor_window = false;
-
+	selected_world_object = &back_wall;
 	while (!glfwWindowShouldClose(window))
 	{
 		//************************************
@@ -948,8 +906,24 @@ int main()
 			if (Input::IsMouseJustDown(MOUSE_BUTTON_1))
 			{
 				// @NOTE: Do we hit a control widget
-				//translation_widget.Select(cam_ray, left_wall.transform);
-				rotation_widget.Select(cam_ray, left_wall.transform);
+				if (selected_world_object)
+				{
+					switch (selected_widget_mode)
+					{
+					case cm::WidgetMode::none:
+						break;
+					case cm::WidgetMode::translation:
+						translation_widget.Select(cam_ray, back_wall.transform);
+						break;
+					case cm::WidgetMode::rotation:
+						rotation_widget.Select(cam_ray, back_wall.transform);
+						break;
+					case cm::WidgetMode::scaling:
+						break;
+					default:
+						break;
+					}
+				}
 			}
 			if (Input::IsMouseJustUp(MOUSE_BUTTON_1))
 			{
@@ -961,11 +935,26 @@ int main()
 				glfwGetCursorPos(window, &x, &y);
 				fh += 0.4f * delta_time;
 				//point_light.light_position.x += 4 * delta_time;
-
-				rotation_widget.Update(cam_ray, &left_wall.transform);
-				//translation_widget.Update(cam_ray, &left_wall.transform);
+				if (selected_world_object)
+				{
+					switch (selected_widget_mode)
+					{
+					case cm::WidgetMode::none:
+						break;
+					case cm::WidgetMode::translation:
+						translation_widget.Update(cam_ray, &back_wall.transform);
+						break;
+					case cm::WidgetMode::rotation:
+						rotation_widget.Update(cam_ray, &back_wall.transform);
+						break;
+					case cm::WidgetMode::scaling:
+						break;
+					default:
+						break;
+					}					
+				}
 										
-
+				
 
 
 			}
@@ -976,36 +965,28 @@ int main()
 			}
 		}
 
-		if (Input::GetKeyHeldDown(GLFW_KEY_R))
+		if (Input::GetKeyJustDown(GLFW_KEY_T))
+		{			
+			if (selected_world_object)
+			{
+				selected_widget_mode = selected_widget_mode == WidgetMode::translation ? WidgetMode::none : WidgetMode::translation;
+				Transform transform = selected_world_object->GetTransform();
+				translation_widget.SetTransform(transform);
+			}
+		}
+
+		if (Input::GetKeyJustDown(GLFW_KEY_R))
 		{	
-			Vec3 dir = Vec3(0, 1, 0);
-			// @NOTE: Move the upward vector into 'local space'
-			dir = Rotate(translation_widget.transform.rotation, dir);		
-			// @NOTE: Rotate 
-			Quat r = Rotate(translation_widget.transform.rotation, 15, dir);
-			// @NOTE: Apply rotation
-			translation_widget.transform.rotation = r * translation_widget.transform.rotation;
-
-
-
-
-
-
-
-			//rotation_widget.transform.rotation = rotation_widget.transform.rotation * EulerToQuat(Vec3(1, 1, 1));
-			//rotation_widget.transform.position += Vec3(1 * delta_time);
-			rotation_widget.CalculateBoundingBoxes();
-		}
-		if (Input::GetKeyHeldDown(GLFW_KEY_T))
-		{
-			rotation_widget.transform.rotation = rotation_widget.transform.rotation * EulerToQuat(Vec3(0, 0, 1));
-			rotation_widget.CalculateBoundingBoxes();
-		}
-		if (Input::GetKeyHeldDown(GLFW_KEY_E))
-		{
-			//rotation_widget.transform.rotation = rotation_widget.transform.rotation * EulerToQuat(Vec3(1, 0, 0));
+			if (selected_world_object)
+			{
+				selected_widget_mode = selected_widget_mode == WidgetMode::rotation ? WidgetMode::none : WidgetMode::rotation ;
+				Transform transform = selected_world_object->GetTransform();
+				rotation_widget.SetTransform(transform);
+			}			
 		}
 
+
+		
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
 		{
 
@@ -1080,7 +1061,7 @@ int main()
 		for (int32 i = 0; i < main_world.objects.size(); i++)
 		{
 			WorldObject *obj = main_world.objects[i];
-			Transform transform = obj->GetTransfrom();
+			Transform transform = obj->GetTransform();
 			Material mat = obj->GetMaterial();
 			Mat4 transform_matrix = obj->GetTransformMatrix();
 
@@ -1101,7 +1082,7 @@ int main()
 		for (int32 i = 0; i < main_world.objects.size(); i++)
 		{
 			WorldObject *obj = main_world.objects[i];
-			Transform transform = obj->GetTransfrom();
+			Transform transform = obj->GetTransform();
 			Material mat = obj->GetMaterial();
 			Mat4 transform_matrix = obj->GetTransformMatrix();
 					   
@@ -1179,7 +1160,7 @@ int main()
 		for (int32 i = 0; i < main_world.objects.size(); i++)
 		{
 			WorldObject *obj = main_world.objects[i];
-			Transform transform = obj->GetTransfrom();
+			Transform transform = obj->GetTransform();
 			Material mat = obj->GetMaterial();
 			Mat4 transform_matrix = obj->GetTransformMatrix();
 
@@ -1378,53 +1359,33 @@ int main()
 	
 		// @NOTE: Because we disable the depth buffer when drawing the screen space quad. We can now draw anything with depth on top of it
 		//		: for debug reasons
-		//Debug::AddIrresoluteOBB(translation_widget.x_bounding_volume.origin, translation_widget.x_bounding_volume.extents, translation_widget.x_bounding_volume.basis);
-		//Debug::AddIrresoluteOBB(translation_widget.y_bounding_volume.origin, translation_widget.y_bounding_volume.extents, translation_widget.y_bounding_volume.basis);
-		//Debug::AddIrresoluteOBB(translation_widget.z_bounding_volume.origin, translation_widget.z_bounding_volume.extents, translation_widget.z_bounding_volume.basis);
 
-
-
-	/*	Debug::AddIrresoluteOBB(rotation_widget.x_bounding_volumes[0].origin, rotation_widget.x_bounding_volumes[0].extents, rotation_widget.x_bounding_volumes[0].basis);
-		Debug::AddIrresoluteOBB(rotation_widget.x_bounding_volumes[1].origin, rotation_widget.x_bounding_volumes[1].extents, rotation_widget.x_bounding_volumes[1].basis);
-		Debug::AddIrresoluteOBB(rotation_widget.x_bounding_volumes[2].origin, rotation_widget.x_bounding_volumes[2].extents, rotation_widget.x_bounding_volumes[2].basis);
-		Debug::AddIrresoluteOBB(rotation_widget.x_bounding_volumes[3].origin, rotation_widget.x_bounding_volumes[3].extents, rotation_widget.x_bounding_volumes[3].basis);
-
-		Debug::AddIrresoluteOBB(rotation_widget.y_bounding_volumes[0].origin, rotation_widget.y_bounding_volumes[0].extents, rotation_widget.y_bounding_volumes[0].basis);
-		Debug::AddIrresoluteOBB(rotation_widget.y_bounding_volumes[1].origin, rotation_widget.y_bounding_volumes[1].extents, rotation_widget.y_bounding_volumes[1].basis);
-		Debug::AddIrresoluteOBB(rotation_widget.y_bounding_volumes[2].origin, rotation_widget.y_bounding_volumes[2].extents, rotation_widget.y_bounding_volumes[2].basis);
-		Debug::AddIrresoluteOBB(rotation_widget.y_bounding_volumes[3].origin, rotation_widget.y_bounding_volumes[3].extents, rotation_widget.y_bounding_volumes[3].basis);
-
-		Debug::AddIrresoluteOBB(rotation_widget.z_bounding_volumes[0].origin, rotation_widget.z_bounding_volumes[0].extents, rotation_widget.z_bounding_volumes[0].basis);
-		Debug::AddIrresoluteOBB(rotation_widget.z_bounding_volumes[1].origin, rotation_widget.z_bounding_volumes[1].extents, rotation_widget.z_bounding_volumes[1].basis);
-		Debug::AddIrresoluteOBB(rotation_widget.z_bounding_volumes[2].origin, rotation_widget.z_bounding_volumes[2].extents, rotation_widget.z_bounding_volumes[2].basis);
-		Debug::AddIrresoluteOBB(rotation_widget.z_bounding_volumes[3].origin, rotation_widget.z_bounding_volumes[3].extents, rotation_widget.z_bounding_volumes[3].basis);*/
-		//static float theta = 0;
-		//theta += delta_time;
-		//Vec3 aa = Vec3(cos(theta), sin(theta), 0);
-		//Vec3 bb = Vec3(cos(theta + 0.1), sin(theta + 0.1), 0);
-		//Debug::AddIrresoluteLine(Vec3(0), aa);
-		//Debug::AddIrresoluteLine(Vec3(0), bb);
-		//Debug::AddIrresoluteLine(Vec3(0), Cross(aa, bb));
-
-
-		//Vec3 aa = Normalize(Vec3(1, 1, 0));
-		//Vec3 bb = Normalize(Vec3(1, 0, 0));
-		//real32 ddd = Dot(aa, bb);
-		//real32 dd = Clamp(ddd, -1, 1);
-		//Vec3 cc = Cross(aa, bb);
-		//real32 d_angle = RadToDeg(acos(dd));
-		//real32 sh = sin(DegToRad(d_angle / 2));
-		//real32 ch = cos(DegToRad(d_angle / 2));
-
-		//Vec3 aaab = Rotate(d_angle, bb, cc);
 
 
 		BindShader(transform_widget_shader);
-		ShaderSetMat4(&transform_widget_shader, "model", translation_widget.transform.CalcTransformMatrix().arr);
-		RenderMesh(transform_widget_shader, translation_widget.GetMeshForRender());
 
-		ShaderSetMat4(&transform_widget_shader, "model", rotation_widget.transform.CalcTransformMatrix().arr);
-		RenderMesh(transform_widget_shader, rotation_widget.mesh);
+		switch (selected_widget_mode)
+		{
+		case cm::WidgetMode::none:
+			break;
+		case cm::WidgetMode::translation: {
+			ShaderSetMat4(&transform_widget_shader, "model", translation_widget.transform.CalcTransformMatrix().arr);
+			RenderMesh(transform_widget_shader, translation_widget.GetMeshForRender());
+			break;
+		}
+		case cm::WidgetMode::rotation: {
+			ShaderSetMat4(&transform_widget_shader, "model", rotation_widget.transform.CalcTransformMatrix().arr);
+			RenderMesh(transform_widget_shader, rotation_widget.GetMeshForRender());
+			break;
+		}
+		case cm::WidgetMode::scaling:
+			break;
+		default:
+			break;
+		}
+
+
+
 
 
 		Debug::Draw(&debug_shader);
@@ -1432,7 +1393,7 @@ int main()
 		////////////////////
 		// Post Debug Drawing
 		////////////////////
-
+		
 		if (toggel)
 		{
 			//DebugDrawTexture(&debug_mesh_shader, brdf_lookup_texture);

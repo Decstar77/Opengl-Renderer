@@ -9,8 +9,6 @@ namespace cm
 
 	std::vector<InputCallBacks *> Input::msg = {};
 
-	KeyData Input::last_key_data = {};
-
 
 
 }
