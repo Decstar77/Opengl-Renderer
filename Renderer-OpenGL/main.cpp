@@ -551,87 +551,6 @@ int main()
 	Assert(CheckFrameBuffer(post_processing_buffer));
 	UnbindFrameBuffer();
 	
-	//************************************
-	// Initialize pbr IBL 
-	//************************************
-	
-	Texture hdri;
-	hdri.config = texture_importer.texture_configs[0];
-	CreateTexture(&hdri, texture_importer.texture_data[0].data());
-
-	Texture brdf_lookup_texture;
-	brdf_lookup_texture.config.texture_format = GL_RG32F;
-	brdf_lookup_texture.config.pixel_format = GL_RG;
-	brdf_lookup_texture.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	brdf_lookup_texture.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	brdf_lookup_texture.config.min_filter = GL_LINEAR;
-	brdf_lookup_texture.config.mag_filter = GL_LINEAR;
-	brdf_lookup_texture.config.width = 512;
-	brdf_lookup_texture.config.height= 512;
-	CreateTexture(&brdf_lookup_texture, nullptr);
-
-	CubeMap enviroment_map;
-	enviroment_map.config.texture_format = GL_RGB32F;
-	enviroment_map.config.pixel_format = GL_RGB;
-	enviroment_map.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
-	enviroment_map.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	enviroment_map.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	enviroment_map.config.min_filter = GL_LINEAR_MIPMAP_LINEAR;
-	enviroment_map.config.mipmaps = true;
-	enviroment_map.config.width	 = 512;
-	enviroment_map.config.height = 512;
-	CreateCubeMap(&enviroment_map, nullptr);
-
-	CubeMap irradiance_map;
-	irradiance_map.config.texture_format = GL_RGB32F;
-	irradiance_map.config.pixel_format = GL_RGB;
-	irradiance_map.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
-	irradiance_map.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	irradiance_map.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	irradiance_map.config.width = 32;
-	irradiance_map.config.height = 32;
-	CreateCubeMap(&irradiance_map, nullptr);
-
-	CubeMap prefilter_map;
-	prefilter_map.config.texture_format = GL_RGB32F;
-	prefilter_map.config.pixel_format = GL_RGB;
-	prefilter_map.config.width	= 128;
-	prefilter_map.config.height = 128;
-	prefilter_map.config.mipmaps = true;
-	prefilter_map.config.min_filter = GL_LINEAR_MIPMAP_LINEAR;
-	prefilter_map.config.mag_filter = GL_LINEAR;
-	CreateCubeMap(&prefilter_map, nullptr);
-	
-	CubeMapGenerator eqi_to_map;
-	eqi_to_map.Create();
-	eqi_to_map.Convert(hdri, &enviroment_map);
-	eqi_to_map.Free();	
-	
-	Texture map_to_eqi;
-	map_to_eqi.config = hdri.config;
-	CreateTexture(&map_to_eqi, nullptr);
-
-	EquirectangularGenerator cube_to_eqi;
-	cube_to_eqi.Create();
-	cube_to_eqi.Convert(enviroment_map, &map_to_eqi);
-	cube_to_eqi.Free();
-
-	IrradianceGenerator irradiance_calc;
-	irradiance_calc.Create();
-	irradiance_calc.Convert(enviroment_map, &irradiance_map);
-	irradiance_calc.Free();
-	
-	PrefilterGenerator gen_prefilter;
-	gen_prefilter.Create();
-	gen_prefilter.Convert(enviroment_map, &prefilter_map);
-	gen_prefilter.Free();
-
-	LookUpTextureGenerator brdf_lookup;
-	brdf_lookup.Create();	
-	brdf_lookup.Convert(&brdf_lookup_texture);
-	brdf_lookup.Free();
-
-	
 
 	ModelImport pbr_model;
 	pbr_model.model_paths.push_back("res/models/claud_bot.obj");
@@ -648,10 +567,6 @@ int main()
 	pbr_model.Free();
 
 
-
-
-
-
 	ModelImport model_import;
 	model_import.import_vertex_binorms_tangents = true;
 	model_import.model_paths.push_back("res/models/Idle.dae");
@@ -661,7 +576,7 @@ int main()
 	EditableMesh emesh = model_import.resulting_meshes[0];
 	test_cube_guy.mesh = emesh.CreateAnimMesh();
 	test_cube_guy.animation_controller = model_import.resulting_animation_controllers[0];	
-	test_cube_guy.transform.scale = Vec3(.5);
+	test_cube_guy.transform.scale = Vec3(1);
 	test_cube_guy.transform.rotation = EulerToQuat(Vec3(0, 0, 0));
 	test_cube_guy.transform.position = Vec3(0, 0, 0);
 
@@ -806,7 +721,7 @@ int main()
 	bool toggel = false;
 
 	bool mouse_input_for_editor_window = false;
-	selected_world_object = &back_wall;
+	selected_world_object = &test_cube_guy;
 	while (!glfwWindowShouldClose(window))
 	{
 		//************************************
@@ -912,12 +827,16 @@ int main()
 					{
 					case cm::WidgetMode::none:
 						break;
-					case cm::WidgetMode::translation:
-						translation_widget.Select(cam_ray, back_wall.transform);
+					case cm::WidgetMode::translation: {
+						Transform transform = selected_world_object->GetTransform();
+						translation_widget.Select(cam_ray, transform);
 						break;
-					case cm::WidgetMode::rotation:
-						rotation_widget.Select(cam_ray, back_wall.transform);
+					}
+					case cm::WidgetMode::rotation: {
+						Transform transform = selected_world_object->GetTransform();
+						rotation_widget.Select(cam_ray, transform);
 						break;
+					}
 					case cm::WidgetMode::scaling:
 						break;
 					default:
@@ -942,10 +861,10 @@ int main()
 					case cm::WidgetMode::none:
 						break;
 					case cm::WidgetMode::translation:
-						translation_widget.Update(cam_ray, &back_wall.transform);
+						translation_widget.Update(cam_ray, &test_cube_guy.transform);
 						break;
 					case cm::WidgetMode::rotation:
-						rotation_widget.Update(cam_ray, &back_wall.transform);
+						rotation_widget.Update(cam_ray, &test_cube_guy.transform);
 						break;
 					case cm::WidgetMode::scaling:
 						break;
@@ -1125,7 +1044,7 @@ int main()
 		//************************************
 		// Gbuffer pass for animated objects
 		//************************************
-#if 0
+#if 1
 		BindShader(worldspace_gbuffer_anim_shader);
 
 		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "colour_set", Vec3(0.7).arr);

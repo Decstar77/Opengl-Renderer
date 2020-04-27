@@ -108,9 +108,9 @@ namespace cm
 	public:				
 		virtual const Material GetMaterial() const = 0;
 		virtual const Transform GetTransform() const = 0;
+		virtual const GLMesh GetMeshForRender() const = 0;	
 		virtual const Mat4 GetTransformMatrix() const = 0;
 		virtual const uint32 GetRenderFlags() const = 0;
-		virtual const GLMesh GetMeshForRender() const = 0;	
 		virtual ~WorldObject() {};
 	};
 
