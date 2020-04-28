@@ -1,47 +1,6 @@
 #include "Sandbox.h"
-
-
-
 namespace cm
 {
-//	void Actor::SetTextures(Shader *shader)
-//	{
-//		if (material.diffuse_texture)
-//		{
-//			ShaderBindTexture(*shader, *material.diffuse_texture, 0, "colour_map");
-//		}
-//
-//		if (material.normal_texture)
-//		{
-//			ShaderBindTexture(*shader, *material.normal_texture, 1, "normal_map");
-//		}
-//
-//		if (material.occlusion_roughness_metallic)
-//		{
-//			ShaderBindTexture(*shader, *material.occlusion_roughness_metallic, 2, "oc_r_m_map");
-//		}
-//
-//		if (material.emssive_texture)
-//		{
-//			ShaderBindTexture(*shader, *material.occlusion_roughness_metallic, 3, "emssive_map");
-//		}
-//	}
-
-//	void Actor::SetMaterialValues(Shader *shader)
-//	{		
-//		ShaderSetFloat(shader, "material_roughness", material.roughness);
-//		//ShaderSetVec3(shader, "specular_colour", Vec3(0.2f).arr);
-//	}
-//
-//	void Actor::SetTransformValues(Shader *shader)
-//	{
-//		ShaderSetMat4(shader, "model", transform.CalcTransformMatrix().arr);
-//	}
-
-
-	//ShaderSetVec3(shader, "diffuse_colour", Vec3(0.23, 0.48, 0.34).arr);
-	//ShaderSetVec3(shader, "specular_colour", Vec3(0.2f).arr);
-
 	cm::GLMesh *Actor::GetMeshForRender()
 	{
 		return &mesh;
@@ -55,6 +14,15 @@ namespace cm
 	cm::Transform *Actor::GetTransform()
 	{
 		return &transform;
+	}
+
+	cm::GeometricCollider *Actor::GetCollider()
+	{	
+		if (obb.extents == Vec3(0))
+		{
+			return nullptr;
+		}
+		return &obb;
 	}
 
 	const cm::Mat4 Actor::GetTransformMatrix() const
@@ -82,6 +50,11 @@ namespace cm
 		return &mesh;
 	}
 
+	cm::GeometricCollider * AnimatedActor::GetCollider()
+	{
+		return nullptr;
+	}
+
 	const cm::Mat4 AnimatedActor::GetTransformMatrix() const
 	{
 		return transform.CalcTransformMatrix();
@@ -92,5 +65,21 @@ namespace cm
 		return 0;
 	}
 
+	cm::Actor CreateActorCube()
+	{
+		Assert(StandardMeshes::IsInitilized());
+
+		Actor cube;
+		
+		cube.material.diffuse = Vec3(0.85);
+		cube.material.roughness = 0.8;
+		cube.material.metalness = 0.1;
+
+		cube.obb = OBB(Vec3(0), Vec3(1), Basis());
+
+		cube.mesh = StandardMeshes::Cube();
+
+		return cube;
+	}
 
 }

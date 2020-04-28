@@ -28,7 +28,7 @@ namespace cm
 		z_axis = 3
 	};
 
-	enum class WidgetMode
+	enum class ControlWidget
 	{
 		none = 0,
 		translation = 1,
@@ -105,7 +105,12 @@ namespace cm
 		
 	};
 
+	class ScalingWidget
+	{
 
+	};
+
+	
 
 	class EditorConsole
 	{		

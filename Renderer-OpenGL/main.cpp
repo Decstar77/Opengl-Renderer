@@ -33,7 +33,7 @@ static bool DRAW_LIGHT_POSITIONS = false;
 static bool move_camera = false;
 
 // @TODO: Make a context strct
-WidgetMode selected_widget_mode = WidgetMode::none;
+ControlWidget selected_widget_mode = ControlWidget::none;
 WorldObject *selected_world_object = nullptr;
 
 void MousePositionCallBack(GLFWwindow *widow, double xpos, double ypos)
@@ -349,10 +349,11 @@ int main()
 	floor_test.material.roughness = 0;
 		
 	Actor left_wall;
-	left_wall.mesh = StandardMeshes::sphere;
+	left_wall.mesh = floor_test.mesh;
 	left_wall.material.forward_shader = &forward_pbr_notext_shader;
-	left_wall.transform.rotation = EulerToQuat(Vec3(394, -24, 142));
-	left_wall.transform.position = Vec3(1, 1, 0);
+	left_wall.transform.scale = Vec3(0.05);
+	left_wall.transform.rotation = EulerToQuat(Vec3(0, 0, 90));
+	left_wall.transform.position = Vec3(-10, 10, 0);
 	left_wall.material.diffuse = Vec3(0.2);
 	left_wall.material.metalness = 0.2;
 	left_wall.material.roughness = 1;
@@ -637,7 +638,10 @@ int main()
 
 	texture_importer.Free();
 
+	Actor test_cube = CreateActorCube();
 	World main_world;
+
+	main_world.RegisterWorldObject(&test_cube);
 
 	main_world.objects.push_back(&pbr_gun);
 	main_world.objects.push_back(&floor_test);
@@ -821,27 +825,50 @@ int main()
 			if (Input::IsMouseJustDown(MOUSE_BUTTON_1))
 			{
 				// @NOTE: Do we hit a control widget
+				bool using_widget = false;
 				if (selected_world_object)
 				{
 					switch (selected_widget_mode)
 					{
-					case cm::WidgetMode::none:
+					case cm::ControlWidget::none:
 						break;
-					case cm::WidgetMode::translation: {
+					case cm::ControlWidget::translation: {
 						Transform transform = *selected_world_object->GetTransform();
-						translation_widget.Select(cam_ray, transform);
+						using_widget = translation_widget.Select(cam_ray, transform);
 						break;
 					}
-					case cm::WidgetMode::rotation: {
+					case cm::ControlWidget::rotation: {
 						Transform transform = *selected_world_object->GetTransform();
-						rotation_widget.Select(cam_ray, transform);
+						using_widget = rotation_widget.Select(cam_ray, transform);
 						break;
 					}
-					case cm::WidgetMode::scaling:
+					case cm::ControlWidget::scaling:
 						break;
 					default:
 						break;
 					}
+				}
+				if (!using_widget)
+				{
+					// @NOTE: Assume we miss everything
+					selected_world_object = nullptr;
+					for (int32 i = 0; i < main_world.objects.size(); i++)
+					{
+						WorldObject *current = main_world.objects[i];
+						GeometricCollider *collider = current->GetCollider();
+						if (collider == nullptr)
+						{
+							continue;
+						}
+						// TODO: Sorting 
+						if (collider->CheckCollision(cam_ray))
+						{
+							selected_world_object = current;
+							break;
+						}
+					}
+
+					
 				}
 			}
 			if (Input::IsMouseJustUp(MOUSE_BUTTON_1))
@@ -858,24 +885,34 @@ int main()
 				{
 					switch (selected_widget_mode)
 					{
-					case cm::WidgetMode::none:
+					case cm::ControlWidget::none:
 						break;
-					case cm::WidgetMode::translation:
-						translation_widget.Update(cam_ray, selected_world_object->GetTransform());
+					case cm::ControlWidget::translation: {
+						Transform *transform = selected_world_object->GetTransform();
+						GeometricCollider *collider = selected_world_object->GetCollider();
+						translation_widget.Update(cam_ray, transform);
+						if (collider)
+						{
+							collider->Update(transform);
+						}
 						break;
-					case cm::WidgetMode::rotation:
-						rotation_widget.Update(cam_ray, selected_world_object->GetTransform());
+					}
+					case cm::ControlWidget::rotation: {
+						Transform *transform = selected_world_object->GetTransform();
+						GeometricCollider *collider = selected_world_object->GetCollider();
+						rotation_widget.Update(cam_ray, transform);
+						if (collider)
+						{
+							collider->Update(transform);
+						}
 						break;
-					case cm::WidgetMode::scaling:
+					}
+					case cm::ControlWidget::scaling:
 						break;
 					default:
 						break;
 					}					
 				}
-										
-				
-
-
 			}
 			else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
 			{
@@ -888,7 +925,7 @@ int main()
 		{			
 			if (selected_world_object)
 			{
-				selected_widget_mode = selected_widget_mode == WidgetMode::translation ? WidgetMode::none : WidgetMode::translation;
+				selected_widget_mode = selected_widget_mode == ControlWidget::translation ? ControlWidget::none : ControlWidget::translation;
 				Transform transform = *selected_world_object->GetTransform();
 				translation_widget.SetTransform(transform);
 			}
@@ -898,7 +935,7 @@ int main()
 		{	
 			if (selected_world_object)
 			{
-				selected_widget_mode = selected_widget_mode == WidgetMode::rotation ? WidgetMode::none : WidgetMode::rotation ;
+				selected_widget_mode = selected_widget_mode == ControlWidget::rotation ? ControlWidget::none : ControlWidget::rotation ;
 				Transform transform = *selected_world_object->GetTransform();
 				rotation_widget.SetTransform(transform);
 			}			
@@ -1279,30 +1316,31 @@ int main()
 		// @NOTE: Because we disable the depth buffer when drawing the screen space quad. We can now draw anything with depth on top of it
 		//		: for debug reasons
 
-
+		Debug::AddIrresoluteOBB(test_cube.obb.origin, test_cube.obb.extents, test_cube.obb.basis);
 
 		BindShader(transform_widget_shader);
-
-		switch (selected_widget_mode)
-		{
-		case cm::WidgetMode::none:
-			break;
-		case cm::WidgetMode::translation: {
-			ShaderSetMat4(&transform_widget_shader, "model", translation_widget.transform.CalcTransformMatrix().arr);
-			RenderMesh(transform_widget_shader, translation_widget.GetMeshForRender());
-			break;
+		if (selected_world_object)
+		{			
+			switch (selected_widget_mode)
+			{
+			case cm::ControlWidget::none:
+				break;
+			case cm::ControlWidget::translation: {
+				ShaderSetMat4(&transform_widget_shader, "model", translation_widget.transform.CalcTransformMatrix().arr);
+				RenderMesh(transform_widget_shader, translation_widget.GetMeshForRender());
+				break;
+			}
+			case cm::ControlWidget::rotation: {
+				ShaderSetMat4(&transform_widget_shader, "model", rotation_widget.transform.CalcTransformMatrix().arr);
+				RenderMesh(transform_widget_shader, rotation_widget.GetMeshForRender());
+				break;
+			}
+			case cm::ControlWidget::scaling:
+				break;
+			default:
+				break;
+			}
 		}
-		case cm::WidgetMode::rotation: {
-			ShaderSetMat4(&transform_widget_shader, "model", rotation_widget.transform.CalcTransformMatrix().arr);
-			RenderMesh(transform_widget_shader, rotation_widget.GetMeshForRender());
-			break;
-		}
-		case cm::WidgetMode::scaling:
-			break;
-		default:
-			break;
-		}
-
 
 
 

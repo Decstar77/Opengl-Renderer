@@ -24,6 +24,7 @@ namespace cm
 		return origin + dist * direction;
 	}
 
+
 	Plane::Plane()
 	{
 
@@ -70,11 +71,20 @@ namespace cm
 		return false;
 	}
 
-	bool Sphere::CheckCollision(const Ray &r) const
+	void Plane::Update(const Transform &t)
 	{
-		throw std::logic_error("The method or operation is not implemented.");
+		Basis b = Basis( QuatToMat3(Conjugate(t.rotation)) );
+		this->origin = t.position;
+		this->normal = b.forward;
 	}
-	
+
+	void Plane::Update(const Transform *t)
+	{
+		Basis b = Basis(QuatToMat3(Conjugate(t->rotation)));
+		this->origin = t->position;
+		this->normal = b.forward;
+	}
+
 	Aabb::Aabb()
 	{
 
@@ -95,7 +105,7 @@ namespace cm
 		this->min = center - raduis;
 		this->max = center + raduis;
 		this->center = center;
-		this->raduis = raduis;
+		this->radius = raduis;
 	}
 
 	void Aabb::SetFromMinMax(const Vec3 &min, const Vec3 &max)
@@ -103,7 +113,7 @@ namespace cm
 		this->min = min;
 		this->max = max;
 		this->center = (min + max) / 2.0;
-		this->raduis = Abs(max - this->center);
+		this->radius = Abs(max - this->center);
 	}
 
 	bool Aabb::CheckCollision(const Ray &r) const
@@ -147,6 +157,48 @@ namespace cm
 	{
 		throw std::logic_error("The method or operation is not implemented.");
 	}
+
+	void Aabb::Update(const Transform &t)
+	{
+		// @SPEED: This is matrix calc is slow
+		Mat4 transform_matrix = t.CalcTransformMatrix();
+		Vec3 old_center = this->center;
+		Vec3 old_radius = this->radius;
+		for (int32 i = 0; i < 3; i++)
+		{
+			this->center.arr[i] = t.position.arr[i];
+			this->radius.arr[i] = 0;
+			for (int32 j = 0; j < 3; j++)
+			{
+				this->center.arr[i] += transform_matrix.data[j].arr[i] * old_center.arr[j];
+				this->radius.arr[i] += abs(transform_matrix.data[j].arr[i]) *old_radius.arr[j];
+			}
+		}
+		this->min = this->center - this->radius;
+		this->max = this->center + this->radius;
+	}
+
+	void Aabb::Update(const Transform *t)
+	{	
+		// @SPEED: This is matrix calc is slow
+		Mat4 transform_matrix = t->CalcTransformMatrix();
+		Vec3 old_center = this->center;
+		Vec3 old_radius = this->radius;
+		for (int32 i = 0; i < 3; i++)
+		{
+			this->center.arr[i] = t->position.arr[i];
+			this->radius.arr[i] = 0;
+			for (int32 j = 0; j < 3; j++)
+			{
+				this->center.arr[i] += transform_matrix.data[j].arr[i] * old_center.arr[j];
+				this->radius.arr[i] += abs(transform_matrix.data[j].arr[i]) *old_radius.arr[j];
+			}
+		}
+		this->min = this->center - this->radius;
+		this->max = this->center + this->radius;
+	}
+
+
 
 	OBB::OBB()
 	{
@@ -253,23 +305,21 @@ namespace cm
 		return true;
 	}
 
+	void OBB::Update(const Transform &t)
+	{
+		this->origin = t.position;
+		this->basis = Basis(QuatToMat3( Conjugate(t.rotation) ));
+	}
+
+	void OBB::Update(const Transform *t)
+	{
+		this->origin = t->position;
+		this->basis = Basis(QuatToMat3(Conjugate(t->rotation)));
+	}
+
 	//void BoundingVolume::UpdateAABB(const mat4 &transform, const vec3 &pos)
 	//{
-	//	aabb box;
-	//	for (int i = 0; i < 3; i++)
-	//	{
-	//		box.center.arr[i] = pos.arr[i];
-	//		box.raduis.arr[i] = 0;
-	//		for (int j = 0; j < 3; j++)
-	//		{
-	//			box.center.arr[i] += transform.data[j].arr[i] * original_aabb.center.arr[j];
-	//			box.raduis.arr[i] += abs(transform.data[j].arr[i]) * original_aabb.raduis.arr[j];
-	//		}
-	//	}
 
-	//	box.min = box.center - box.raduis;
-	//	box.max = box.center + box.raduis;
-	//	current_aabb = box;
 	//}
 
 	//Transform::Transform() : position(0), scale(1)

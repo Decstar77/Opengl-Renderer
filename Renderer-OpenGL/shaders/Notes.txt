@@ -21,6 +21,13 @@ Notes:
 		https://github.com/lettier/3d-game-shaders-for-beginners/blob/master/demonstration/shaders/fragment/screen-space-reflection.frag
 		https://github.com/ImanolFotia/Epsilon-Engine/blob/master/bin/Release/shaders/SSR.frag
 		https://github.com/godotengine/godot/blob/6a38ce1b318cc71c285c11f5b52f04a681c309fd/servers/rendering/rasterizer_rd/shaders/screen_space_reflection.glsl#L132
+
+Problems:
+	Writing GPU data -- Animation data, texture data.
+	Interaction bettween transform and bounding mesh and ??? collision mesh ???
+	
+
+
 DEMO:
 	SSR <---
 	MIRROR <---
@@ -46,11 +53,7 @@ RECAP:
 	quats
 	transforms
 
-DAY:
-	1hour{
-	finish opengl thing
-	chapter 2
-	}
+}
 
 Performace:
 	We do all copies for WorldObject function

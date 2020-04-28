@@ -5,7 +5,7 @@ namespace cm
 {
 	//===============================================================//
 	/*
-		Code is slow compared to other but understandable as this is a first attempt
+
 	*/
 	//===============================================================//
 
@@ -30,15 +30,16 @@ namespace cm
 		~Ray();
 	};	   	  	
 	
-	class GeometricCollidable
+	class GeometricCollider
 	{
 	public:
 		virtual bool CheckCollision(const Ray &r) const = 0;
 		virtual bool CheckCollision(const Ray &r, CollisionInfo *collision_info) const = 0;
-			
+		virtual void Update(const Transform &t) { Assert(0); }
+		virtual void Update(const Transform *t) { Assert(0); }
 	};
 
-	class Plane : public GeometricCollidable
+	class Plane : public GeometricCollider
 	{
 	public:
 		Vec3 origin;
@@ -48,27 +49,22 @@ namespace cm
 		virtual bool CheckCollision(const Ray &r) const override;
 		virtual bool CheckCollision(const Ray &r, CollisionInfo *collision_info) const override;
 
+		virtual void Update(const Transform &t) override;
+		virtual void Update(const Transform *t) override;
+
 	public:
 		Plane();
 		Plane(const Vec3 &origin, const Vec3 &normal);
 		~Plane();
 	};
 
-	class Sphere : public GeometricCollidable
-	{
-
-	public:
-		virtual bool CheckCollision(const Ray &r) const override;
-
-	};
-
-	class Aabb : public GeometricCollidable
+	class Aabb : public GeometricCollider
 	{
 	public:
 		Vec3 min = Vec3(0);
 		Vec3 max = Vec3(0);
 		Vec3 center = Vec3(0);
-		Vec3 raduis = Vec3(0);
+		Vec3 radius = Vec3(0);
 
 	public:
 		void SetFromCenterRaduis(const Vec3 &center, const Vec3 &raduis);
@@ -77,13 +73,16 @@ namespace cm
 		virtual bool CheckCollision(const Ray &r) const override;
 		virtual bool CheckCollision(const Ray &r, CollisionInfo *collision_info) const override;
 
+		virtual void Update(const Transform &t) override;
+		virtual void Update(const Transform *t) override;
+
 	public:
 		Aabb();
 		Aabb(const Vec3 &min, const Vec3 &max);
 		~Aabb();
 	};
 
-	class OBB : public GeometricCollidable
+	class OBB : public GeometricCollider
 	{
 	public:
 		Vec3 origin = Vec3(0);
@@ -93,6 +92,9 @@ namespace cm
 	public:
 		virtual bool CheckCollision(const Ray &r) const override;
 		virtual bool CheckCollision(const Ray &r, CollisionInfo *collision_info) const override;
+
+		virtual void Update(const Transform &t) override;
+		virtual void Update(const Transform *t) override;
 
 	public:
 		OBB();

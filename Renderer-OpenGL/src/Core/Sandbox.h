@@ -13,11 +13,13 @@ namespace cm
 		uint32 render_flags = RENDERFLAG_CAST_SHADOWS;
 		Transform transform;
 		Material material;
+		OBB obb;
 		GLMesh mesh;
 
 		virtual GLMesh *GetMeshForRender() override;
 		virtual Material *GetMaterial() override;
 		virtual Transform *GetTransform() override;
+		virtual GeometricCollider *GetCollider() override;
 		virtual const Mat4 GetTransformMatrix() const override;
 		virtual const uint32 GetRenderFlags() const override;
 	};
@@ -34,12 +36,12 @@ namespace cm
 		virtual Material *GetMaterial() override;
 		virtual Transform *GetTransform() override;
 		virtual GLMesh *GetMeshForRender() override;
+		virtual GeometricCollider *GetCollider() override;
 		virtual const Mat4 GetTransformMatrix() const override;
 		virtual const uint32 GetRenderFlags() const override;
 	};
 
-
-
+	Actor CreateActorCube();
 
 
 

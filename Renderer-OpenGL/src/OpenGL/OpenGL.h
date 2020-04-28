@@ -501,6 +501,10 @@ namespace cm
 		static GLMesh cube;
 		static GLMesh sphere;
 		static GLMesh cone;
+		inline static bool IsInitilized() { return created; }
+		inline static GLMesh Cube() {Assert(created); return cube; }
+		inline static GLMesh Plane() {Assert(created); return plane; }
+		inline static GLMesh ScreenSpaceQuad() {Assert(created); return quad; }
 
 		static void Initilize();
 	};
