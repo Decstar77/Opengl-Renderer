@@ -41,15 +41,66 @@ namespace cm
 
 	class Widget3D
 	{
+	protected:
+		bool object_aligning = false;
+
 	public:
+		virtual Transform *GetTransform() = 0;
 		virtual void SetTransform(const Transform &transform) = 0;
+		
+		virtual real32 GetSnappingAmount() = 0;
+		virtual void SetSnappingAmount(const real32 &deg) = 0;
+
+		virtual bool IsObjectAligning() { return object_aligning; }
+		virtual void ObjectAlign() = 0;
+		virtual void WorldAlign() = 0;
+
 		virtual void Create(const GLMesh &mesh) = 0;
 		virtual bool Select(const Ray &camera_ray, const Transform &transform) = 0;
 		virtual bool Update(const Ray &camera_ray, Transform *transform) = 0;
 		virtual const GLMesh GetMeshForRender() const = 0;
 	};
 
-	class RotationWidget
+	class TranslationWidget : public Widget3D
+	{
+	private:
+		void CalculateBoundingBoxes();
+
+	private:
+		GLMesh mesh;
+		TransformationMode translation_mode = TransformationMode::none;
+		real32 snapping_amount = 0;
+
+	public:
+		Transform transform;
+		Plane translation_plane;
+		OBB x_bounding_volume;
+		OBB y_bounding_volume;
+		OBB z_bounding_volume;
+		bool is_selected = false;
+
+	public:
+		virtual Transform *GetTransform() override;
+		void SetTransform(const Transform &transform) override;
+
+		virtual real32 GetSnappingAmount() override;
+		virtual void SetSnappingAmount(const real32 &deg) override;
+
+		virtual void ObjectAlign() override;
+		virtual void WorldAlign() override;
+
+		void Create(const GLMesh &mesh) override;
+		bool Select(const Ray &camera_ray, const Transform &transform) override;
+		bool Update(const Ray &camera_ray, Transform *transform) override;
+		const GLMesh GetMeshForRender() const override;
+
+	public:
+		TranslationWidget();
+		~TranslationWidget();
+
+	};
+
+	class RotationWidget : public Widget3D
 	{
 	private:
 		void CalculateBoundingBoxes();
@@ -57,6 +108,7 @@ namespace cm
 	private:
 		GLMesh mesh;		
 		TransformationMode transformation_mode;
+		real32 snapping_amount = 0; 
 
 	public:
 		Transform transform;
@@ -67,11 +119,19 @@ namespace cm
 		bool is_selected = false;
 	
 	public:		
-		void SetTransform(const Transform &transform);
-		void Create(const GLMesh &mesh);
-		bool Select(const Ray &camera_ray, const Transform &transform);
-		bool Update(const Ray &camera_ray, Transform *transform);
-		const GLMesh GetMeshForRender() const;
+		virtual Transform *GetTransform() override;
+		void SetTransform(const Transform &transform) override;
+		
+		virtual real32 GetSnappingAmount() override;
+		virtual void SetSnappingAmount(const real32 &deg) override;
+
+		virtual void ObjectAlign() override;
+		virtual void WorldAlign() override;
+
+		void Create(const GLMesh &mesh) override;
+		bool Select(const Ray &camera_ray, const Transform &transform) override;
+		bool Update(const Ray &camera_ray, Transform *transform) override;
+		const GLMesh GetMeshForRender() const override; 
 
 	public:
 		RotationWidget();
@@ -79,35 +139,7 @@ namespace cm
 
 	};
 
-	class TranslationWidget 
-	{
-	private:
-		void CalculateBoundingBoxes();
 
-	private:
-		GLMesh mesh;
-		TransformationMode translation_mode = TransformationMode::none;
-
-	public:
-		Transform transform;
-		Plane translation_plane;
-		OBB x_bounding_volume;
-		OBB y_bounding_volume;
-		OBB z_bounding_volume;
-		bool is_selected = false;
-		
-	public:		
-		void SetTransform(const Transform &transform);
-		void Create(const GLMesh &mesh);
-		bool Select(const Ray &camera_ray, const Transform &transform);
-		bool Update(const Ray &camera_ray, Transform *transform);
-		const GLMesh GetMeshForRender();
-
-	public:
-		TranslationWidget();
-		~TranslationWidget();
-		
-	};
 
 	class ScalingWidget
 	{

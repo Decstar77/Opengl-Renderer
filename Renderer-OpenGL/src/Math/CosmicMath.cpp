@@ -13,6 +13,13 @@ namespace cm
 		return a / magA;
 	}
 
+	bool Equal(const Vec2 &a1, const Vec2 a2, const real32 &epsilon /*= FLOATING_POINT_ERROR_PRESCION*/)
+	{
+		real32 dx = Abs(a1.x) - Abs(a2.x);
+		real32 dy = Abs(a1.y) - Abs(a2.y);
+		return (dx < epsilon && dy < epsilon);
+	}
+
 	real32 Dot(const Vec3 &a, const Vec3 &b)
 	{
 		return a.x * b.x + a.y * b.y + a.z * b.z;
@@ -747,18 +754,45 @@ namespace cm
 
 	Quat EulerToQuat(const Vec3 &euler_angle)
 	{
-		Vec3 c = Vec3(cos(DegToRad(euler_angle.x) / 2), cos(DegToRad(euler_angle.y) / 2), cos(DegToRad(euler_angle.z) / 2));
-		Vec3 s = Vec3(sin(DegToRad(euler_angle.x) / 2), sin(DegToRad(euler_angle.y) / 2), sin(DegToRad(euler_angle.z) / 2));
+		Vec3 c = Vec3(cos(DegToRad(euler_angle.x) / 2.0f), cos(DegToRad(euler_angle.y) / 2.0f), cos(DegToRad(euler_angle.z) / 2.0f));
+		Vec3 s = Vec3(sin(DegToRad(euler_angle.x) / 2.0f), sin(DegToRad(euler_angle.y) / 2.0f), sin(DegToRad(euler_angle.z) / 2.0f));
 
 		Quat q;
 		q.x = s.x * c.y * c.z - c.x * s.y * s.z;
 		q.y = c.x * s.y * c.z + s.x * c.y * s.z;
 		q.z = c.x * c.y * s.z - s.x * s.y * c.z;
-		q.w = c.x * c.y * c.z + s.x * s.y * s.z;
+		q.w = c.x * c.y * c.z + s.x * s.y * s.z;		
 
 		return q;
 	}
 	
+	cm::Vec3 QuatToEuler(const Quat &q)
+	{
+		// @HELP: Glm and Math book
+		Vec3 euler;
+		Vec2 sp;
+		sp.x = 2.f * (q.y * q.z + q.w * q.x);
+		sp.y = q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z;
+				
+		if (Equal(Vec2(sp.x, sp.y), Vec2(0)))
+		{
+			euler.x = 2.0 * atan2(q.w, q.x);
+		}
+		else
+		{
+			euler.x = atan2(sp.x, sp.y);
+		}
+		
+		euler.y = asin( Clamp(-2.0f * (q.x * q.z - q.w * q.y), -1.0, 1.0f) );
+		euler.z = atan2( 2.0f * (q.x * q.y + q.w * q.z), q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z );
+
+		euler.x = RadToDeg(euler.x);
+		euler.y = RadToDeg(euler.y);
+		euler.z = RadToDeg(euler.z);
+
+		return euler;
+	}
+
 	Quat Slerp(const Quat &a, const Quat &b, const real32 &t)
 	{
 		Quat an = Normalize(a);

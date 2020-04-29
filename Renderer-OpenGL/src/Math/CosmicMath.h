@@ -319,6 +319,8 @@ namespace cm
 
 	Quat EulerToQuat(const Vec3 &euler_angle);
 	
+	Vec3 QuatToEuler(const Quat &q);
+
 	Quat Slerp(const Quat &a, const Quat &b, const real32 &t);
 
 	Quat Conjugate(const Quat &a);
@@ -358,6 +360,8 @@ namespace cm
 	real32 Mag(const Vec2 &a);
 
 	Vec2 Normalize(const Vec2 &a);
+
+	bool Equal(const Vec2 &a1, const Vec2 a2, const real32 &epsilon = FLOATING_POINT_ERROR_PRESCION);
 
 	//************************************
 	// Vector3

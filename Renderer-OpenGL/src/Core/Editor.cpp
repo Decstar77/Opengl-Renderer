@@ -308,11 +308,14 @@ namespace cm
 		if (world_object)
 		{
 			Transform *transform = world_object->GetTransform();
+			Vec3 euler = QuatToEuler(transform->rotation);			
+
 			ImGui::DragFloat3("Position", transform->position.arr, 0.1);		
-			ImGui::DragFloat3("Rotation", transform->rotation.arr, 0.1);
+			ImGui::DragFloat3("Rotation", euler.arr, 0.1);
 			ImGui::DragFloat3("Scale", transform->scale.arr, 0.1);
 
-
+			// @NOTE: Apply any trasforms
+			//transform->rotation = EulerToQuat(euler);
 			GeometricCollider *collider = world_object->GetCollider();
 			if (collider)
 			{
@@ -339,12 +342,36 @@ namespace cm
 
 	}
 
+	cm::Transform *TranslationWidget::GetTransform()
+	{
+		return &transform;
+	}
+
 	void TranslationWidget::SetTransform(const Transform &transform)
 	{
 		this->transform.position = transform.position;
-		this->transform.rotation = transform.rotation;
-		this->mesh = mesh;
+		this->transform.rotation = transform.rotation;		
 		CalculateBoundingBoxes();
+	}
+
+	real32 TranslationWidget::GetSnappingAmount()
+	{
+		return snapping_amount;
+	}
+
+	void TranslationWidget::SetSnappingAmount(const real32 &deg)
+	{
+		snapping_amount = Abs(deg);
+	}
+
+	void TranslationWidget::ObjectAlign()
+	{
+
+	}
+
+	void TranslationWidget::WorldAlign()
+	{
+
 	}
 
 	void TranslationWidget::Create(const GLMesh &mesh)
@@ -508,7 +535,7 @@ namespace cm
 		z_bounding_volume = OBB(transform.position + z_origin, Vec3(0.05, 0.05, 0.30), local_basis);
 	}
 
-	const GLMesh TranslationWidget::GetMeshForRender()
+	const GLMesh TranslationWidget::GetMeshForRender() const
 	{
 		return mesh;
 	}
@@ -527,11 +554,40 @@ namespace cm
 
 	}
 
+	cm::Transform * RotationWidget::GetTransform()
+	{
+		return &transform;
+	}
+
 	void RotationWidget::SetTransform(const Transform &transform)
 	{
 		this->transform.position = transform.position;
-		this->transform.rotation = transform.rotation;
+		if (object_aligning)
+		{
+			this->transform.rotation = transform.rotation;
+		}		
 		CalculateBoundingBoxes();
+	}
+
+	real32 RotationWidget::GetSnappingAmount()
+	{
+		return snapping_amount;
+	}
+
+	void RotationWidget::SetSnappingAmount(const real32 &deg)
+	{
+		snapping_amount = Abs(deg);
+	}
+
+	void RotationWidget::ObjectAlign()
+	{
+		object_aligning = true;
+	}
+
+	void RotationWidget::WorldAlign()
+	{
+		object_aligning = false;
+		this->transform.rotation = Quat();
 	}
 
 	void RotationWidget::Create(const GLMesh &mesh)
@@ -557,7 +613,10 @@ namespace cm
 				transform_plane = Plane(x_bounding_volumes[i].origin, camera_ray.direction);
 
 				this->transform.position = transform.position;
-				this->transform.rotation = transform.rotation;
+				if (object_aligning)
+				{
+					this->transform.rotation = transform.rotation;
+				}
 
 				is_selected = true;
 				closest_box = colinfo.dist;
@@ -573,7 +632,11 @@ namespace cm
 				transform_plane = Plane(y_bounding_volumes[i].origin, camera_ray.direction);
 				
 				this->transform.position = transform.position;
-				this->transform.rotation = transform.rotation;
+				if (object_aligning)
+				{
+					this->transform.rotation = transform.rotation;
+				}
+				
 
 				is_selected = true;
 				closest_box = colinfo.dist;
@@ -589,7 +652,10 @@ namespace cm
 				transform_plane = Plane(z_bounding_volumes[i].origin, camera_ray.direction);
 				
 				this->transform.position = transform.position;
-				this->transform.rotation = transform.rotation;
+				if (object_aligning)
+				{
+					this->transform.rotation = transform.rotation;
+				}
 
 				is_selected = true;
 				closest_box = colinfo.dist;
@@ -635,10 +701,20 @@ namespace cm
 
 				// @NOTE: Conversions
 				theta = RadToDeg(acos(theta) * dir);
+
+				// @NOTE: Snapping
+				if (Abs(theta) < snapping_amount)
+				{
+					break;
+				}
+				else if (Abs(theta) > snapping_amount && snapping_amount >= 0.01)
+				{
+					theta = snapping_amount * dir;
+				}
 				
 				// @NOTE: Apply the rotation
-				Quat r = Rotate(this->transform.rotation, theta, nbr);			
-				this->transform.rotation = r * this->transform.rotation;
+				Quat r = Rotate(transform->rotation, theta, nbr);
+				transform->rotation = r * transform->rotation;
 
 				// @NOTE: Put the origin where the ray intersected the plane
 				transform_plane.origin = p1;
@@ -663,9 +739,19 @@ namespace cm
 				// @NOTE: Conversions
 				theta = RadToDeg(acos(theta) * dir);
 
+				// @NOTE: Snapping
+				if (Abs(theta) < snapping_amount)
+				{
+					break;
+				}
+				else if (Abs(theta) > snapping_amount && snapping_amount >= 0.01)
+				{
+					theta = snapping_amount * dir;
+				}
+
 				// @NOTE: Apply the rotation
-				Quat r = Rotate(this->transform.rotation, theta, nbu);
-				this->transform.rotation = r * this->transform.rotation;
+				Quat r = Rotate(transform->rotation, theta, nbu);
+				transform->rotation = r * transform->rotation;
 
 				// @NOTE: Put the origin where the ray intersected the plane
 				transform_plane.origin = p1;
@@ -689,9 +775,20 @@ namespace cm
 				// @NOTE: Conversions
 				theta = RadToDeg(acos(theta) * dir);
 
+				// @NOTE: Snapping
+				if (Abs(theta) < snapping_amount)
+				{
+					break;
+				}
+				else if (Abs(theta) > snapping_amount && snapping_amount >= 0.01)
+				{
+					theta = snapping_amount * dir;
+				}
+
 				// @NOTE: Apply the rotation
-				Quat r = Rotate(this->transform.rotation, theta, nbf);
-				this->transform.rotation = r * this->transform.rotation;
+				Quat r = Rotate(transform->rotation, theta, nbf);
+				transform->rotation = r * transform->rotation;
+			
 
 				// @NOTE: Put the origin where the ray intersected the plane
 				transform_plane.origin = p1;
@@ -702,7 +799,12 @@ namespace cm
 				break;
 			}
 			}
-			transform->rotation = this->transform.rotation;	
+
+			if (object_aligning)
+			{
+				this->transform.rotation = transform->rotation;
+			}
+			
 			CalculateBoundingBoxes();
 		}
 		return is_selected;

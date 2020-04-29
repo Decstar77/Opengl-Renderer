@@ -35,6 +35,7 @@ static bool move_camera = false;
 // @TODO: Make a context strct
 ControlWidget selected_widget_mode = ControlWidget::none;
 WorldObject *selected_world_object = nullptr;
+Widget3D *current_widget = nullptr;
 
 void MousePositionCallBack(GLFWwindow *widow, double xpos, double ypos)
 {
@@ -249,6 +250,7 @@ int main()
 	editor_mesh_importer.model_paths.push_back("res/engine/meshes/rotation_widget.dae");
 	editor_mesh_importer.Load();
 	
+
 	TranslationWidget translation_widget;
 	translation_widget.Create(editor_mesh_importer.resulting_meshes[0].CreateMesh());
 
@@ -286,7 +288,7 @@ int main()
 	floor_test.material.diffuse = Vec3(0.86);
 	floor_test.material.metalness = 0.6;
 	floor_test.material.roughness = 0;
-		
+	
 	StaticWorldObject left_wall;
 	left_wall.mesh = floor_test.mesh;
 	left_wall.transform.scale = Vec3(0.05);
@@ -625,8 +627,8 @@ int main()
 	editor_render_window.delta_time = 0;
 	editor_render_window.render_settings = &render_settings;
 
-	EditorWorldObjectSpawner editor_actor_spawner;
-	editor_actor_spawner.world = &main_world;
+	EditorWorldObjectSpawner editor_worldobject_spawner;
+	editor_worldobject_spawner.world = &main_world;
 
 	EditorWorldObjectInspector editor_world_object_inspector;
 	
@@ -705,9 +707,8 @@ int main()
 		editor_render_window.delta_time = delta_time;
 		editor_render_window.UpdateAndDraw();
 
-		editor_actor_spawner.UpdateAndDraw();
-
-
+		editor_worldobject_spawner.UpdateAndDraw();
+		
 		editor_world_object_inspector.world_object = selected_world_object;
 		editor_world_object_inspector.UpdateAndDraw();
 		if (selected_world_object)
@@ -739,13 +740,6 @@ int main()
 
 		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_F5))
 		{
-			FreeShader(&cubemap_shader);
-			cubemap_shader = CreateShader(ReadFile("shaders/skybox_vert.glsl"), ReadFile("shaders/skybox_frag.glsl"));
-
-			//FreeShader(&pbr_texture_shader);
-			//pbr_texture_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_texture_frag.glsl"));
-			//ShaderBindUniformBuffer(pbr_texture_shader, 0, "Matrices");
-			//ShaderBindUniformBuffer(pbr_texture_shader, 1, "Lighting");
 
 		}
 		if (!(mouse_input_for_editor_window)) 
@@ -760,25 +754,11 @@ int main()
 				bool using_widget = false;
 				if (selected_world_object)
 				{
-					switch (selected_widget_mode)
+					if (current_widget)
 					{
-					case cm::ControlWidget::none:
-						break;
-					case cm::ControlWidget::translation: {
 						Transform transform = *selected_world_object->GetTransform();
-						using_widget = translation_widget.Select(cam_ray, transform);
-						break;
-					}
-					case cm::ControlWidget::rotation: {
-						Transform transform = *selected_world_object->GetTransform();
-						using_widget = rotation_widget.Select(cam_ray, transform);
-						break;
-					}
-					case cm::ControlWidget::scaling:
-						break;
-					default:
-						break;
-					}
+						using_widget = current_widget->Select(cam_ray, transform);			
+					}				
 				}
 				if (!using_widget)
 				{
@@ -792,18 +772,24 @@ int main()
 						{
 							continue;
 						}
+
 						// TODO: Sorting 
 						if (collider->CheckCollision(cam_ray))
 						{
+							// @NOTE: Select our new object
 							selected_world_object = current;
-							Transform transform = *selected_world_object->GetTransform();
-							translation_widget.SetTransform(transform);
-							rotation_widget.SetTransform(transform);
+
+							// @NOTE: Snap the controll widgets to the newly selected object
+							if (current_widget)
+							{
+								Transform transform = *selected_world_object->GetTransform();
+								current_widget->SetTransform(transform);
+							}
+
+							// @NOTE: Leave the loop as we've found our new object
 							break;
 						}
-					}
-
-					
+					}					
 				}
 			}
 			if (Input::IsMouseJustUp(MOUSE_BUTTON_1))
@@ -816,37 +802,20 @@ int main()
 				glfwGetCursorPos(window, &x, &y);
 				fh += 0.4f * delta_time;
 				//point_light.light_position.x += 4 * delta_time;
+
 				if (selected_world_object)
 				{
-					switch (selected_widget_mode)
+					if (current_widget)
 					{
-					case cm::ControlWidget::none:
-						break;
-					case cm::ControlWidget::translation: {
 						Transform *transform = selected_world_object->GetTransform();
 						GeometricCollider *collider = selected_world_object->GetCollider();
-						translation_widget.Update(cam_ray, transform);
+						current_widget->Update(cam_ray, transform);
+
 						if (collider)
 						{
 							collider->Update(transform);
 						}
-						break;
-					}
-					case cm::ControlWidget::rotation: {
-						Transform *transform = selected_world_object->GetTransform();
-						GeometricCollider *collider = selected_world_object->GetCollider();
-						rotation_widget.Update(cam_ray, transform);
-						if (collider)
-						{
-							collider->Update(transform);
-						}
-						break;
-					}
-					case cm::ControlWidget::scaling:
-						break;
-					default:
-						break;
-					}					
+					}		
 				}
 			}
 			else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
@@ -856,13 +825,29 @@ int main()
 			}
 		}
 
+		if (Input::GetKeyJustDown(GLFW_KEY_GRAVE_ACCENT))
+		{
+			if (translation_widget.IsObjectAligning()) {
+				translation_widget.WorldAlign();
+			}
+			else {
+				translation_widget.ObjectAlign();
+			}
+			
+			if (rotation_widget.IsObjectAligning()) {
+				rotation_widget.WorldAlign();
+			}
+			else {
+				rotation_widget.ObjectAlign();
+			}
+
+		}
+
 		if (Input::GetKeyJustDown(GLFW_KEY_T))
 		{			
 			if (selected_world_object)
-			{
-				selected_widget_mode = selected_widget_mode == ControlWidget::translation ? ControlWidget::none : ControlWidget::translation;
-				Transform transform = *selected_world_object->GetTransform();
-				translation_widget.SetTransform(transform);
+			{				
+				current_widget = (current_widget == &translation_widget) ? nullptr : &translation_widget;
 			}
 		}
 
@@ -870,13 +855,9 @@ int main()
 		{	
 			if (selected_world_object)
 			{
-				selected_widget_mode = selected_widget_mode == ControlWidget::rotation ? ControlWidget::none : ControlWidget::rotation ;
-				Transform transform = *selected_world_object->GetTransform();
-				rotation_widget.SetTransform(transform);
+				current_widget = (current_widget == &rotation_widget) ? nullptr : &rotation_widget;
 			}			
 		}
-
-
 		
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
 		{
@@ -935,6 +916,7 @@ int main()
 		//************************************
 		// Render The Current Frame
 		//************************************
+#pragma region RenderingLogic
 
 		//************************************
 		// Render depth buffers 
@@ -1243,7 +1225,8 @@ int main()
 		RenderMesh(demo_01_postprocessing_shader, StandardMeshes::quad);
 		
 		EnableDepthBuffer();
-
+#pragma endregion
+		
 		//************************************
 		// DBUGING pass
 		//************************************	
@@ -1251,28 +1234,13 @@ int main()
 		// @NOTE: Because we disable the depth buffer when drawing the screen space quad. We can now draw anything with depth on top of it
 		//		: for debug reasons
 		
-		
 		if (selected_world_object)
 		{		
 			BindShader(transform_widget_shader);
-			switch (selected_widget_mode)
+			if (current_widget)
 			{
-			case cm::ControlWidget::none:
-				break;
-			case cm::ControlWidget::translation: {
-				ShaderSetMat4(&transform_widget_shader, "model", translation_widget.transform.CalcTransformMatrix().arr);
-				RenderMesh(transform_widget_shader, translation_widget.GetMeshForRender());
-				break;
-			}
-			case cm::ControlWidget::rotation: {
-				ShaderSetMat4(&transform_widget_shader, "model", rotation_widget.transform.CalcTransformMatrix().arr);
-				RenderMesh(transform_widget_shader, rotation_widget.GetMeshForRender());
-				break;
-			}
-			case cm::ControlWidget::scaling:
-				break;
-			default:
-				break;
+				ShaderSetMat4(&transform_widget_shader, "model", current_widget->GetTransform()->CalcTransformMatrix().arr);
+				RenderMesh(transform_widget_shader, current_widget->GetMeshForRender());
 			}
 
 			GeometricCollider* collider = selected_world_object->GetCollider();
