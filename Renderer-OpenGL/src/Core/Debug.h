@@ -19,11 +19,13 @@ namespace cm
 	class Debug
 	{
 		// @TODO: Clean up memory when terminating
-		// @TODO: Move shaders into class
 		// @TODO: More cleanup
 	private:
 		static bool created;
-
+		static Shader line_shader;
+		static Shader texture_shader;
+		static Mat4 projection;
+		static Mat4 view;
 	public:
 		static uint32 window_height;
 		static uint32 window_width; 		
@@ -60,9 +62,10 @@ namespace cm
 		static void AddPersistentOBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis);
 		static void AddIrresoluteOBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis);
 
+		static void Update(const Mat4 &projection, const Mat4 &view);
 
-		static void Draw(Shader *debug_shader);
-		static void DrawTexture(Shader *shader, const Texture &t);
+		static void DrawLines();
+		static void DrawTexture(const Texture &t);
 
 		static void Create();
 		static void Free();

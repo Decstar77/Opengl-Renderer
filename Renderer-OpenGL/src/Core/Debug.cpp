@@ -6,7 +6,15 @@ namespace cm
 	cm::DebugQueue Debug::debug_queue;
 
 	bool Debug::created = false;
-	
+
+	cm::Shader Debug::line_shader;
+
+	cm::Shader Debug::texture_shader;
+
+	cm::Mat4 Debug::projection;
+
+	cm::Mat4 Debug::view;
+
 	uint32 Debug::window_height = 0;
 
 	uint32 Debug::window_width = 0;
@@ -48,8 +56,7 @@ namespace cm
 
 	void Debug::Log(const Mat3 &msg)
 	{
-		Assert(0); // @REASON: Incomplete
-		//logging_stream << ToString(msg)<< '\n';
+		logging_stream << ToString(msg) << '\n';
 	}
 
 	void Debug::Log(const Mat4 &msg)
@@ -67,46 +74,7 @@ namespace cm
 
 	}
 
-	void Debug::Draw(Shader *debug_shader)
-	{
-		//@Redo: DebugQueue stores a irrseloute and we just free the vbo inside.
-		WriteBufferData(&debug_queue.persistent_vao.vertex_buffers[0], debug_queue.persistent_vertices, 0);
 
-		BindShader(*debug_shader);
-
-		BindVertexArray(debug_queue.persistent_vao);
-
-		uint32 amount = (uint32)debug_queue.persistent_vertices.size();
-
-		glDrawArrays(GL_LINES, 0, amount);
-
-		UnbindVertexArray();
-
-		amount = (uint32)debug_queue.irresolute_vertices.size();
-		if (amount > 0)
-		{
-			VertexBuffer irresolute_vbo;
-			irresolute_vbo.lbo = (std::vector<ShaderDataType> {ShaderDataType::Float4});// padding byte
-			irresolute_vbo.size_bytes = sizeof(Vec4) * amount;
-			irresolute_vbo.flags = VertexFlags::READ_WRITE;
-			CreateVertexBuffer(&irresolute_vbo);
-			WriteBufferData(&irresolute_vbo, debug_queue.irresolute_vertices, 0);
-
-			VertexArray irresolute_vao;
-			irresolute_vao.vertex_buffers.push_back(irresolute_vbo);
-
-			CreateVertexArray(&irresolute_vao);
-
-			BindVertexArray(irresolute_vao);
-
-			glDrawArrays(GL_LINES, 0, amount);
-
-			UnbindVertexArray();
-
-			FreeVertexArray(&irresolute_vao, true);
-			debug_queue.irresolute_vertices.clear();
-		}
-	}
 
 	void Debug::AddPersistentLine(const Vec3 &a, const Vec3 &b)
 	{
@@ -238,45 +206,11 @@ namespace cm
 		AddPersistentLine(Vec4ToVec3(v4), Vec4ToVec3(v7));
 		AddPersistentLine(Vec4ToVec3(v4), Vec4ToVec3(v6));
 
-		//Vec3 right = (extents) *basis.mat;
-
-		//AddPersistentLine(origin, origin + Normalize(right));
-
 		AddPersistentPoint(origin);
 	}
 
 	void Debug::AddIrresoluteOBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis)
 	{
-		//Vec3 v0 = (origin + extents) * basis.mat;
-		//Vec3 v1 = (origin - extents) * basis.mat;
-
-		//Vec3 v2 = (origin + Vec3(-extents.x, extents.y, extents.z)) * basis.mat;
-		//Vec3 v3 = (origin + Vec3(extents.x, -extents.y, extents.z)) * basis.mat;
-		//Vec3 v4 = (origin + Vec3(extents.x, extents.y, -extents.z)) * basis.mat;
-
-		//Vec3 v5 = (origin + Vec3(-extents.x, -extents.y, extents.z)) * basis.mat;
-		//Vec3 v6 = (origin + Vec3(extents.x, -extents.y, -extents.z)) * basis.mat;
-		//Vec3 v7 = (origin + Vec3(-extents.x, extents.y, -extents.z)) * basis.mat;
-		//
-		//AddIrresoluteLine(v0, v2);
-		//AddIrresoluteLine(v0, v4);
-		//AddIrresoluteLine(v0, v3);
-
-		//AddIrresoluteLine(v1, v5);
-		//AddIrresoluteLine(v1, v7);
-		//AddIrresoluteLine(v1, v6);
-
-		//AddIrresoluteLine(v3, v6);
-		//AddIrresoluteLine(v3, v5);
-
-		//AddIrresoluteLine(v2, v5);
-		//AddIrresoluteLine(v2, v7);
-
-		//AddIrresoluteLine(v4, v7);
-		//AddIrresoluteLine(v4, v6);
-	
-		//AddIrresolutePoint(origin);
-			   		 	  	  
 		Mat4 mat(basis.mat, origin);
 
 		Vec4 v0 = Vec4(extents, 1) * mat;
@@ -303,24 +237,139 @@ namespace cm
 		AddIrresoluteLine(Vec4ToVec3(v4), Vec4ToVec3(v7));
 		AddIrresoluteLine(Vec4ToVec3(v4), Vec4ToVec3(v6));
 
-		//Vec3 right = (extents) *basis.mat;
-
-		//AddPersistentLine(origin, origin + Normalize(right));
 		AddIrresolutePoint(origin);
 	}
-
-	void Debug::DrawTexture(Shader *shader, const Texture &t)
+	
+	void Debug::Update(const Mat4 &projection, const Mat4 &view)
 	{
-		BindShader(*shader);
-		ShaderSetMat4(shader, "model", Mat4(1).arr);
-		ShaderBindTexture(*shader, t, 0, "mesh_texture");
-		RenderMesh(*shader, StandardMeshes::quad);
+		Debug::projection = projection;
+		Debug::view = view;
 	}
 
+	void Debug::DrawTexture(const Texture &t)
+	{
+		BindShader(texture_shader);
+		ShaderBindTexture(texture_shader, t, 0, "src_texture");
+		RenderMesh(texture_shader, StandardMeshes::quad);
+	}
+
+	void Debug::DrawLines()
+	{
+		WriteBufferData(&debug_queue.persistent_vao.vertex_buffers[0], debug_queue.persistent_vertices, 0);
+
+		BindShader(line_shader);
+		ShaderSetMat4(&line_shader, "projection", projection.arr);
+		ShaderSetMat4(&line_shader, "view", view.arr);
+
+		BindVertexArray(debug_queue.persistent_vao);
+
+		uint32 amount = static_cast<uint32>(debug_queue.persistent_vertices.size());
+
+		glDrawArrays(GL_LINES, 0, amount);
+
+		UnbindVertexArray();
+
+		amount = (uint32)debug_queue.irresolute_vertices.size();
+		if (amount > 0)
+		{
+			VertexBuffer irresolute_vbo;
+			irresolute_vbo.lbo = (std::vector<ShaderDataType> {ShaderDataType::Float4});// padding byte
+			irresolute_vbo.size_bytes = sizeof(Vec4) * amount;
+			irresolute_vbo.flags = VertexFlags::READ_WRITE;
+			CreateVertexBuffer(&irresolute_vbo);
+			WriteBufferData(&irresolute_vbo, debug_queue.irresolute_vertices, 0);
+
+			VertexArray irresolute_vao;
+			irresolute_vao.vertex_buffers.push_back(irresolute_vbo);
+
+			CreateVertexArray(&irresolute_vao);
+
+			BindVertexArray(irresolute_vao);
+
+			glDrawArrays(GL_LINES, 0, amount);
+
+			UnbindVertexArray();
+
+			FreeVertexArray(&irresolute_vao, true);
+			debug_queue.irresolute_vertices.clear();
+		}
+	}
 
 	void Debug::Create()
 	{
 		Assert(!created);
+
+		std::string line_vert_src = R"(
+			#version 420
+			layout(location = 0) in vec4 vpos; // @NOTE: Our vec3 have a padding byte
+
+			uniform mat4 projection;
+			uniform mat4 view;
+
+			void main()
+			{
+				gl_Position =  projection * view * vec4(vpos.xyz, 1.0);
+			}
+
+
+		)";
+
+		std::string line_frag_src = R"(
+			#version 430
+			out vec4 g_colour;
+
+			void main()
+			{				
+				vec3 colour = vec3(0.1, 0.1, 0.1);
+				g_colour = vec4(colour, 1.0);
+			}
+		)";
+
+
+		std::string text_vert_src = R"(
+			#version 420 core
+			layout (location = 0) in vec3 vpos;
+			layout (location = 1) in vec3 vnorm;
+			layout (location = 2) in vec2 vtext;
+
+			out vec2 texture_coords;
+			void main()
+			{
+				texture_coords = vtext;	
+				gl_Position = vec4(vpos, 1.0);
+			}
+		)";
+
+		std::string text_frag_src = R"(
+			#version 430
+			out vec4 g_colour;
+
+			uniform sampler2D src_texture;
+
+			in vec2 texture_coords;
+
+			void main()
+			{
+				vec3 col = texture(src_texture, texture_coords).rgb;
+				g_colour = vec4(vec3(col), 1.0);
+    
+	
+				// Depth testing for shadow map
+				//float depthValue = texture(mesh_texture, fs_in.TexCoords).r;
+				//FragColour = vec4(vec3(depthValue), 1.0);
+				//FragColour = vec4(1.0);
+			}
+
+		)";
+							   		 
+		line_shader.config.src_vert = line_vert_src;
+		line_shader.config.src_frag = line_frag_src;
+		CreateShader(&line_shader);
+
+		texture_shader.config.src_vert = text_vert_src;
+		texture_shader.config.src_frag = text_frag_src;
+		CreateShader(&texture_shader);
+
 		created = true;
 	}
 
@@ -380,6 +429,15 @@ namespace cm
 
 	void InitializeDebug(uint32 window_width, uint32 window_height, uint32 vertex_allocation)
 	{
+		GLint flags; glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+		if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+		{
+			glEnable(GL_DEBUG_OUTPUT);
+			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+			glDebugMessageCallback(glDebugOutput, nullptr);
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+		}
+
 		Debug::window_width = window_width;
 		Debug::window_height = window_height;
 		Debug::Create();
@@ -389,7 +447,7 @@ namespace cm
 
 
 		VertexBuffer vbo;
-		vbo.lbo = (std::vector<ShaderDataType> {ShaderDataType::Float4});// padding 
+		vbo.lbo = (std::vector<ShaderDataType> {ShaderDataType::Float4}); // @NOTE: padding 
 		vbo.size_bytes = sizeof(Vec4) * vertex_allocation;
 		vbo.flags = VertexFlags::READ_WRITE;
 		CreateVertexBuffer(&vbo);
@@ -397,15 +455,6 @@ namespace cm
 		debug_queue->persistent_vao.vertex_buffers.push_back(vbo);
 
 		CreateVertexArray(&debug_queue->persistent_vao);
-
-		GLint flags; glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-		if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
-		{
-			glEnable(GL_DEBUG_OUTPUT);
-			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-			glDebugMessageCallback(glDebugOutput, nullptr);
-			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-		}
 
 	}
 

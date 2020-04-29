@@ -1,9 +1,7 @@
 ﻿  main.cpp
-  Camera.cpp
   Editor.cpp
   Renderer.cpp
   Sandbox.cpp
   World.cpp
-  CosmicGeometry.cpp
   Generating Code...
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

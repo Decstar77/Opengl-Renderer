@@ -9,6 +9,7 @@ namespace cm
 	*/
 	//===============================================================//
 
+	
 	struct CollisionInfo
 	{
 		bool hit = false;
@@ -30,9 +31,18 @@ namespace cm
 		~Ray();
 	};	   	  	
 	
+
+	enum class GeometricColliderType
+	{
+		plane = 0,
+		axis_aligned_bounding_box,
+		object_bounding_box 
+	};
+
 	class GeometricCollider
 	{
 	public:
+		virtual GeometricColliderType GetColliderType() const = 0;
 		virtual bool CheckCollision(const Ray &r) const = 0;
 		virtual bool CheckCollision(const Ray &r, CollisionInfo *collision_info) const = 0;
 		virtual void Update(const Transform &t) { Assert(0); }
@@ -44,13 +54,16 @@ namespace cm
 	public:
 		Vec3 origin;
 		Vec3 normal;
-			   
+
 	public:
+		virtual GeometricColliderType GetColliderType() const override;
 		virtual bool CheckCollision(const Ray &r) const override;
 		virtual bool CheckCollision(const Ray &r, CollisionInfo *collision_info) const override;
 
 		virtual void Update(const Transform &t) override;
 		virtual void Update(const Transform *t) override;
+
+
 
 	public:
 		Plane();
@@ -67,6 +80,8 @@ namespace cm
 		Vec3 radius = Vec3(0);
 
 	public:
+		virtual GeometricColliderType GetColliderType() const override;
+
 		void SetFromCenterRaduis(const Vec3 &center, const Vec3 &raduis);
 		void SetFromMinMax(const Vec3 &min, const Vec3 &max);
 
@@ -90,6 +105,8 @@ namespace cm
 		Basis basis;
 
 	public:
+		virtual GeometricColliderType GetColliderType() const override;
+
 		virtual bool CheckCollision(const Ray &r) const override;
 		virtual bool CheckCollision(const Ray &r, CollisionInfo *collision_info) const override;
 

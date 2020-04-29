@@ -1,9 +1,12 @@
 #pragma once
 #include "Core.h"
-#include "Core/World.h"
 #include "Math/CosmicMath.h"
 #include "Math/CosmicGeometry.h"
+
 #include "Core/Debug.h"
+#include "Core/World.h"
+#include "Core/Sandbox.h"
+
 // @NOTE: Apparently this doesn't work, therefore I've defined it in the visual studio pre processor
 //#define IMGUI_IMPL_OPENGL_LOADER_GLEW
 #include "../vendor/IMGUI/imgui.h"
@@ -39,6 +42,7 @@ namespace cm
 	class Widget3D
 	{
 	public:
+		virtual void SetTransform(const Transform &transform) = 0;
 		virtual void Create(const GLMesh &mesh) = 0;
 		virtual bool Select(const Ray &camera_ray, const Transform &transform) = 0;
 		virtual bool Update(const Ray &camera_ray, Transform *transform) = 0;
@@ -148,4 +152,34 @@ namespace cm
 
 	};
 
+	class EditorActorSpawner
+	{
+	private:
+		void SpawnCube();
+		void SpawnPlane();
+
+	public:
+		void UpdateAndDraw();
+		
+		World *world = nullptr;
+
+	public:
+		EditorActorSpawner();
+		EditorActorSpawner(World *world);
+		~EditorActorSpawner();
+	};
+
+	class EditorWorldObjectInspector
+	{
+	public: 
+		void UpdateAndDraw();
+		
+		WorldObject *world_object = nullptr;
+
+	public:
+		EditorWorldObjectInspector();
+		EditorWorldObjectInspector(WorldObject *actor);
+		~EditorWorldObjectInspector();
+
+	};
 }

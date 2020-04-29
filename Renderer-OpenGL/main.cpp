@@ -154,115 +154,55 @@ int main()
 		std::cout << "MAX ANTI  " << a << std::endl;
 	}
 
-	//Shader qq = CreateShader(ReadFile("shaders/quad_vert.glsl"), ReadFile("shaders/quad_frag.glsl"));
-	//qq.name = "quad";
-
-	//Shader pbr_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_frag.glsl"));
-	//pbr_shader.name = "pbr_shader";
-
-	//Shader pbr_texture_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_texture_frag.glsl"));
-	//pbr_texture_shader.name = "pbr_texture_shader";
-
 	Shader cubemap_shader = CreateShader(ReadFile("shaders/skybox_vert.glsl"), ReadFile("shaders/skybox_frag.glsl"));
 	cubemap_shader.name = "cubemap_shader";
 
-	Shader debug_shader = CreateShader(ReadFile("shaders/debug_vert.glsl"), ReadFile("shaders/debug_frag.glsl"));
-	debug_shader.name = "debug_shader";
-
-	Shader debug_mesh_shader = CreateShader(ReadFile("shaders/debug_mesh_vert.glsl"), ReadFile("shaders/debug_mesh_frag.glsl"));
-	debug_mesh_shader.name = "debug_quad_shader";
-	
-	Shader deferred_shader = CreateShader(ReadFile("shaders/deffered_shader_vert.glsl"), ReadFile("shaders/deffered_shader_frag.glsl"));
-	deferred_shader.name = "deffered_shader";
-
-	Shader ssao_gbuffer_shader = CreateShader(ReadFile("shaders/ssao_gbuffer_vert.glsl"), ReadFile("shaders/ssao_gbuffer_frag.glsl"));
-	ssao_gbuffer_shader.name = "ssao_gbuffer_shader";
-
-
-
-	Shader simple_blur_shader = CreateShader(ReadFile("shaders/simple_blur_vert.glsl"), ReadFile("shaders/simple_blur_frag.glsl"));
-	simple_blur_shader.name = "simple_blur";
-
-	//Shader instance_shader_test = CreateShader(ReadFile("shaders/instance_test_vert.glsl"), ReadFile("shaders/instance_test_frag.glsl"));
-	//instance_shader_test.name = "instancing_test";
-	
-	Shader forward_phong_notext_shader = CreateShader(ReadFile("shaders/forward_phong_notext_vert.glsl"), ReadFile("shaders/forward_phong_notext_frag.glsl"));
-	forward_phong_notext_shader.name = "forward_phong_notext_shader";
-
-	Shader forward_pbr_notext_shader = CreateShader(ReadFile("shaders/forward_pbr_notext_vert.glsl"), ReadFile("shaders/forward_pbr_notext_frag.glsl"));
-	forward_pbr_notext_shader.name = "forward_pbr_notext_shader";
-
-	Shader simple_phong_shader = CreateShader(ReadFile("shaders/simple_phong_vert.glsl"), ReadFile("shaders/simple_phong_frag.glsl"));
-	simple_phong_shader.name = "simple_phong_shader";
-
-	Shader animation_test_shader = CreateShader(ReadFile("shaders/test_anim_vert.glsl"), ReadFile("shaders/forward_pbr_notext_frag.glsl"));
-	animation_test_shader.name = "animation_test_shader";
-
-
-	Shader post_processing_shader = CreateShader(ReadFile("shaders/post_processing_vert.glsl"), ReadFile("shaders/post_processing_frag.glsl"));
-	post_processing_shader.name = "post_processing_shader";
-
-	Shader simple_shadow_map_shader = CreateShader(ReadFile("shaders/simple_shadow_map_vert.glsl"), ReadFile("shaders/simple_shadow_map_frag.glsl"));
-	simple_shadow_map_shader.name = "simple_shadow_map_vert";
-
-	Shader gpu_gaussian_blur_shader = CreateShader(ReadFile("shaders/Compute/GPU_gaussian_blur_vert.glsl"), ReadFile("shaders/Compute/GPU_gaussian_blur_frag.glsl"));
-	gpu_gaussian_blur_shader.name = "gaussian_blur";
-
-	Shader g_buffer_shader = CreateShader(ReadFile("shaders/Compute/g_buffer_vert.glsl"), ReadFile("shaders/Compute/g_buffer_frag.glsl"));
-	g_buffer_shader.name = "g_buffer_shader ";
-
-	Shader sanitycheck_shader = CreateShader(ReadFile("shaders/sanitycheck_vert.glsl"), ReadFile("shaders/sanitycheck_frag.glsl"));
-	sanitycheck_shader.name = "sanitycheck_shader ";
-
 	Shader ssr_shader = CreateShader(ReadFile("shaders/ssr_vert.glsl"), ReadFile("shaders/ssr_frag.glsl"));
 	ssr_shader.name = "ssr_shader ";
-
-
-
 
 	//************************************
 	// Load shaders
 	//************************************
 
 	Shader worldspace_gbuffer_shader;
-	worldspace_gbuffer_shader.config.src_vert = ReadFile("shaders/demo_01/worldspace_gbuffer_vert.glsl");
-	worldspace_gbuffer_shader.config.src_frag = ReadFile("shaders/demo_01/worldspace_gbuffer_frag.glsl");
+	worldspace_gbuffer_shader.config.src_vert = ReadFile("res/botdemo/shaders/worldspace_gbuffer_vert.glsl");
+	worldspace_gbuffer_shader.config.src_frag = ReadFile("res/botdemo/shaders/worldspace_gbuffer_frag.glsl");
 	worldspace_gbuffer_shader.name = "demo_bot_gbuffer_shader";
 	CreateShader(&worldspace_gbuffer_shader);
 
 	Shader worldspace_gbuffer_anim_shader;
-	worldspace_gbuffer_anim_shader.config.src_vert = ReadFile("shaders/demo_01/worldspace_gbuffer_anim_vert.glsl");
-	worldspace_gbuffer_anim_shader.config.src_frag = ReadFile("shaders/demo_01/worldspace_gbuffer_frag.glsl");
+	worldspace_gbuffer_anim_shader.config.src_vert = ReadFile("res/botdemo/shaders/worldspace_gbuffer_anim_vert.glsl");
+	worldspace_gbuffer_anim_shader.config.src_frag = ReadFile("res/botdemo/shaders/worldspace_gbuffer_frag.glsl");
 	worldspace_gbuffer_anim_shader.name = "demo_bot_gbuffer_anim_shader";
 	CreateShader(&worldspace_gbuffer_anim_shader);
 
 	Shader viewspace_gbuffer_shader;
-	viewspace_gbuffer_shader.config.src_vert = ReadFile("shaders/demo_01/viewspace_gbuffer_vert.glsl");
-	viewspace_gbuffer_shader.config.src_frag = ReadFile("shaders/demo_01/viewspace_gbuffer_frag.glsl");
+	viewspace_gbuffer_shader.config.src_vert = ReadFile("res/botdemo/shaders/viewspace_gbuffer_vert.glsl");
+	viewspace_gbuffer_shader.config.src_frag = ReadFile("res/botdemo/shaders/viewspace_gbuffer_frag.glsl");
 	viewspace_gbuffer_shader.name = "viewspace_gbuffer_shader";
 	CreateShader(&viewspace_gbuffer_shader);
 
 	Shader ssao_shader;
-	ssao_shader.config.src_vert = ReadFile("shaders/demo_01/screenspace_ambient_occlusion_vert.glsl");
-	ssao_shader.config.src_frag = ReadFile("shaders/demo_01/screenspace_ambient_occlusion_frag.glsl");
+	ssao_shader.config.src_vert = ReadFile("res/botdemo/shaders/screenspace_ambient_occlusion_vert.glsl");
+	ssao_shader.config.src_frag = ReadFile("res/botdemo/shaders/screenspace_ambient_occlusion_frag.glsl");
 	ssao_shader.name = "screenspace_ambient_occlusion";
 	CreateShader(&ssao_shader);
 
 	Shader depth_shader;
-	depth_shader.config.src_vert = ReadFile("shaders/demo_01/depth_vert.glsl");
-	depth_shader.config.src_frag = ReadFile("shaders/demo_01/depth_frag.glsl");
+	depth_shader.config.src_vert = ReadFile("res/botdemo/shaders/depth_vert.glsl");
+	depth_shader.config.src_frag = ReadFile("res/botdemo/shaders/depth_frag.glsl");
 	depth_shader.name = "depth shader";
 	CreateShader(&depth_shader);
 
 	Shader demo_01_deffered_pbr_shader;
-	demo_01_deffered_pbr_shader.config.src_vert = ReadFile("shaders/demo_01/pbr_deffered_vert.glsl");
-	demo_01_deffered_pbr_shader.config.src_frag = ReadFile("shaders/demo_01/pbr_deffered_frag.glsl");
+	demo_01_deffered_pbr_shader.config.src_vert = ReadFile("res/botdemo/shaders/pbr_deffered_vert.glsl");
+	demo_01_deffered_pbr_shader.config.src_frag = ReadFile("res/botdemo/shaders/pbr_deffered_frag.glsl");
 	demo_01_deffered_pbr_shader.name = "demo_01_deffered_pbr_shader";
 	CreateShader(&demo_01_deffered_pbr_shader);
 
 	Shader demo_01_postprocessing_shader;
-	demo_01_postprocessing_shader.config.src_vert = ReadFile("shaders/demo_01/postprocessing_vert.glsl");
-	demo_01_postprocessing_shader.config.src_frag = ReadFile("shaders/demo_01/postprocessing_frag.glsl");
+	demo_01_postprocessing_shader.config.src_vert = ReadFile("res/botdemo/shaders/postprocessing_vert.glsl");
+	demo_01_postprocessing_shader.config.src_frag = ReadFile("res/botdemo/shaders/postprocessing_frag.glsl");
 	demo_01_postprocessing_shader.name = "demo_01_postprocessing_shader";
 	CreateShader(&demo_01_postprocessing_shader);
 	
@@ -274,6 +214,7 @@ int main()
 	//************************************
 	// Load texture assets
 	//************************************
+	
 	// @TODO: Free is FAR down the file
 	TextureImport texture_importer;
 	texture_importer.flip = false;
@@ -299,7 +240,6 @@ int main()
 	model_importer.model_paths.push_back("res/models/sphere.obj");
 	model_importer.Load();
 	StandardMeshes::sphere = model_importer.resulting_meshes[1].CreateMesh(true);
-
 
 
 	ModelImport editor_mesh_importer;
@@ -342,7 +282,6 @@ int main()
 
 	Actor floor_test;	
 	floor_test.mesh = model_importer.resulting_meshes[0].CreateMesh(true);
-	floor_test.material.forward_shader = &forward_pbr_notext_shader;
 	floor_test.transform.scale = Vec3(0.05);
 	floor_test.material.diffuse = Vec3(0.86);
 	floor_test.material.metalness = 0.6;
@@ -350,7 +289,6 @@ int main()
 		
 	Actor left_wall;
 	left_wall.mesh = floor_test.mesh;
-	left_wall.material.forward_shader = &forward_pbr_notext_shader;
 	left_wall.transform.scale = Vec3(0.05);
 	left_wall.transform.rotation = EulerToQuat(Vec3(0, 0, 90));
 	left_wall.transform.position = Vec3(-10, 10, 0);
@@ -360,7 +298,6 @@ int main()
 
 	Actor right_wall;
 	right_wall.mesh = floor_test.mesh;
-	right_wall.material.forward_shader = &forward_pbr_notext_shader;
 	right_wall.transform.scale = Vec3(0.01);
 	right_wall.transform.rotation = EulerToQuat(Vec3(0, 0, -90));
 	right_wall.transform.position = Vec3(2, 2, 0);
@@ -370,7 +307,6 @@ int main()
 
 	Actor back_wall;
 	back_wall.mesh = floor_test.mesh;
-	back_wall.material.forward_shader = &forward_pbr_notext_shader;
 	back_wall.transform.scale = Vec3(0.01);
 	back_wall.transform.rotation = EulerToQuat(Vec3(-90, 0, 0));
 	back_wall.transform.position = Vec3(0, 2, -2);
@@ -559,7 +495,6 @@ int main()
 	pbr_model.Load();
 
 	Actor pbr_gun;
-	pbr_gun.material.forward_shader = &forward_pbr_notext_shader;
 	pbr_gun.mesh = pbr_model.resulting_meshes[0].CreateMesh(true);
 	pbr_gun.transform.rotation = EulerToQuat(Vec3(0, 90, 0));
 	pbr_gun.transform.position = Vec3(0, 1, 1);
@@ -638,10 +573,8 @@ int main()
 
 	texture_importer.Free();
 
-	Actor test_cube = CreateActorCube();
 	World main_world;
 
-	main_world.RegisterWorldObject(&test_cube);
 
 	main_world.objects.push_back(&pbr_gun);
 	main_world.objects.push_back(&floor_test);
@@ -674,18 +607,10 @@ int main()
 	informer.CreateUBO("LightingData", BUFFER_LAYOUT(ShaderDataType::Float4, ShaderDataType::Float4, ShaderDataType::Float4,
 		ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4), 1);
 
-	informer.LinkShader("WorldMatrices", debug_shader);
-	informer.LinkShader("WorldMatrices", debug_mesh_shader);
-	informer.LinkShader("WorldMatrices", forward_phong_notext_shader);
-	informer.LinkShader("WorldMatrices", deferred_shader);	
-	informer.LinkShader("WorldMatrices", g_buffer_shader);
-
 	informer.LinkShader("WorldMatrices", worldspace_gbuffer_shader);
 	informer.LinkShader("LightingData", demo_01_deffered_pbr_shader);
 
 
-	informer.LinkShader("LightingData", deferred_shader);
-	informer.LinkShader("LightingData", forward_phong_notext_shader);
 	
 
 	RenderSettings render_settings;
@@ -702,8 +627,11 @@ int main()
 	editor_render_window.delta_time = 0;
 	editor_render_window.render_settings = &render_settings;
 
+	EditorActorSpawner editor_actor_spawner;
+	editor_actor_spawner.world = &main_world;
 
-		
+	EditorWorldObjectInspector editor_world_object_inspector;
+	
 	DirectionalLight sun_light;
 	sun_light.direction = Normalize(Vec3(2, -4, 1));
 	sun_light.light_colour = Vec3(.5);
@@ -779,9 +707,22 @@ int main()
 		editor_render_window.delta_time = delta_time;
 		editor_render_window.UpdateAndDraw();
 
+		editor_actor_spawner.UpdateAndDraw();
+
+
+		// @NOTE:
+		editor_world_object_inspector.world_object = selected_world_object;
+		editor_world_object_inspector.UpdateAndDraw();
+		if (selected_world_object)
+		{
+			rotation_widget.SetTransform(*selected_world_object->GetTransform());
+			translation_widget.SetTransform(*selected_world_object->GetTransform());
+		}
+		
+		
 		EditorEndFrame();
 
-
+		
 		// @NOTE: Get any input that was for one of the editor windows	
 		mouse_input_for_editor_window = *ImGui::GetIO().MouseDownOwned;
 	
@@ -804,17 +745,11 @@ int main()
 			FreeShader(&cubemap_shader);
 			cubemap_shader = CreateShader(ReadFile("shaders/skybox_vert.glsl"), ReadFile("shaders/skybox_frag.glsl"));
 
-			FreeShader(&forward_pbr_notext_shader);
-			forward_pbr_notext_shader = CreateShader(ReadFile("shaders/forward_pbr_notext_vert.glsl"), ReadFile("shaders/forward_pbr_notext_frag.glsl"));
-
 			//FreeShader(&pbr_texture_shader);
 			//pbr_texture_shader = CreateShader(ReadFile("shaders/pbr_vert.glsl"), ReadFile("shaders/pbr_texture_frag.glsl"));
 			//ShaderBindUniformBuffer(pbr_texture_shader, 0, "Matrices");
 			//ShaderBindUniformBuffer(pbr_texture_shader, 1, "Lighting");
 
-			FreeShader(&post_processing_shader);
-			post_processing_shader = CreateShader(ReadFile("shaders/post_processing_vert.glsl"), ReadFile("shaders/post_processing_frag.glsl"));
-			post_processing_shader.name = "post_processing_shader";
 		}
 		if (!(mouse_input_for_editor_window)) 
 		{
@@ -864,6 +799,9 @@ int main()
 						if (collider->CheckCollision(cam_ray))
 						{
 							selected_world_object = current;
+							Transform transform = *selected_world_object->GetTransform();
+							translation_widget.SetTransform(transform);
+							rotation_widget.SetTransform(transform);
 							break;
 						}
 					}
@@ -1315,12 +1253,11 @@ int main()
 	
 		// @NOTE: Because we disable the depth buffer when drawing the screen space quad. We can now draw anything with depth on top of it
 		//		: for debug reasons
-
-		Debug::AddIrresoluteOBB(test_cube.obb.origin, test_cube.obb.extents, test_cube.obb.basis);
-
-		BindShader(transform_widget_shader);
+		
+		
 		if (selected_world_object)
-		{			
+		{		
+			BindShader(transform_widget_shader);
 			switch (selected_widget_mode)
 			{
 			case cm::ControlWidget::none:
@@ -1340,12 +1277,36 @@ int main()
 			default:
 				break;
 			}
+
+			GeometricCollider* collider = selected_world_object->GetCollider();
+			if (collider)
+			{
+				switch (collider->GetColliderType())
+				{
+				case cm::GeometricColliderType::plane: {
+					Plane *plane = reinterpret_cast<Plane*>(collider);
+					Debug::AddIrresolutePlane(plane->origin, plane->normal);
+					break;
+				}
+				case cm::GeometricColliderType::axis_aligned_bounding_box: {
+					Aabb *aabb = reinterpret_cast<Aabb*>(collider);
+					Debug::AddIrresoluteAABBMinMax(aabb->min, aabb->max);
+					break;
+				}
+				case cm::GeometricColliderType::object_bounding_box: {
+					OBB *obb = reinterpret_cast<OBB*>(collider);
+					Debug::AddIrresoluteOBB(obb->origin, obb->extents, obb->basis);
+					break;
+				}
+				default:
+					break;
+				}
+			}
 		}
 
-
-
-
-		Debug::Draw(&debug_shader);
+		Debug::Update(camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix);
+		
+		Debug::DrawLines();
 		
 		////////////////////
 		// Post Debug Drawing
@@ -1374,7 +1335,7 @@ int main()
 
 		//BindShader(debug_mesh_shader);
 		glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
-		Debug::DrawTexture(&debug_mesh_shader, viewspace_gbuffer.colour1_texture_attachment);
+		Debug::DrawTexture(viewspace_gbuffer.colour1_texture_attachment);
 		//ShaderBindTexture(debug_mesh_shader, ssr_frame.colour0_texture_attachment, 0, "mesh_texture");
 		//ShaderSetMat4(&debug_mesh_shader, "model", Mat4(1).arr);
 		//RenderMesh(debug_mesh_shader, StandardMeshes::quad);

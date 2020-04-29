@@ -241,7 +241,90 @@ namespace cm
 		}
 		fps_graph[99] = delta_time * 1000.f;
 	}
-	
+
+	EditorActorSpawner::EditorActorSpawner()
+	{
+
+	}
+
+	EditorActorSpawner::EditorActorSpawner(World *world)
+	{
+		this->world = world;
+	}
+
+	EditorActorSpawner::~EditorActorSpawner()
+	{
+
+	}
+
+	void EditorActorSpawner::SpawnCube()
+	{
+		Actor *cube = CreateActorCube();
+		world->RegisterWorldObject(cube);
+	}
+
+	void EditorActorSpawner::SpawnPlane()
+	{
+		Actor *plane = CreateActorPlane();
+		world->RegisterWorldObject(plane);
+	}
+
+	void EditorActorSpawner::UpdateAndDraw()
+	{
+		Assert(world);
+		ImGui::Begin("Spawner");
+
+		if (ImGui::Button("Spawn cube"))
+		{
+			SpawnCube();
+		}
+		if (ImGui::Button("Spawn plane"))
+		{
+			SpawnPlane();
+		}
+
+		ImGui::End();
+	}
+
+	EditorWorldObjectInspector::EditorWorldObjectInspector()
+	{
+
+	}
+
+	EditorWorldObjectInspector::EditorWorldObjectInspector(WorldObject *world_object)
+	{
+		this->world_object = world_object;
+	}
+
+	EditorWorldObjectInspector::~EditorWorldObjectInspector()
+	{
+
+	}
+
+	void EditorWorldObjectInspector::UpdateAndDraw()
+	{
+		ImGui::Begin("Inspector");
+
+		if (world_object)
+		{
+			Transform *transform = world_object->GetTransform();
+			ImGui::DragFloat3("Position", transform->position.arr, 0.1);		
+			ImGui::DragFloat3("Rotation", transform->rotation.arr, 0.1);
+			ImGui::DragFloat3("Scale", transform->scale.arr, 0.1);
+
+
+			GeometricCollider *collider = world_object->GetCollider();
+			if (collider)
+			{
+				collider->Update(transform);
+			}
+		}
+
+		ImGui::End();
+	}
+
+
+
 	//---------------------------------------------------------------
 	//---------------------------------------------------------------
 	//---------------------------------------------------------------
@@ -461,7 +544,6 @@ namespace cm
 
 	bool RotationWidget::Select(const Ray &camera_ray, const Transform &transform)
 	{
-		// @TODO: Make is select the axis closest to the ray
 		is_selected = false;
 		CollisionInfo colinfo;
 		real32 closest_box = REAL_MAX;
@@ -669,5 +751,9 @@ namespace cm
 	{
 		return mesh;
 	}
+
+
+
+
 
 }

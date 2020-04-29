@@ -41,8 +41,8 @@ namespace cm
 		virtual const uint32 GetRenderFlags() const override;
 	};
 
-	Actor CreateActorCube();
-
+	Actor* CreateActorCube();
+	Actor* CreateActorPlane();
 
 
 

@@ -41,6 +41,11 @@ namespace cm
 
 	}
 
+	cm::GeometricColliderType Plane::GetColliderType() const
+	{
+		return GeometricColliderType::plane;
+	}
+
 	bool Plane::CheckCollision(const Ray &r) const
 	{
 		// @NOTE: Assumes that everything is normalized
@@ -98,6 +103,11 @@ namespace cm
 	Aabb::~Aabb()
 	{
 
+	}
+
+	cm::GeometricColliderType Aabb::GetColliderType() const
+	{
+		return GeometricColliderType::axis_aligned_bounding_box;
 	}
 
 	void Aabb::SetFromCenterRaduis(const Vec3 &center, const Vec3 &raduis)
@@ -215,6 +225,11 @@ namespace cm
 	OBB::~OBB()
 	{
 
+	}
+
+	cm::GeometricColliderType OBB::GetColliderType() const
+	{
+		return GeometricColliderType::object_bounding_box;
 	}
 
 	bool OBB::CheckCollision(const Ray &r) const

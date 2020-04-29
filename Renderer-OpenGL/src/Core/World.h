@@ -107,15 +107,6 @@ namespace cm
 	{
 	public:				
 		//************************************
-		// Method:    GetMaterial
-		// FullName:  cm::WorldObject::GetMaterial
-		// Access:    virtual public 
-		// Returns:   cm::Material *
-		// Qualifier:
-		//************************************
-		virtual Material *GetMaterial() = 0;
-
-		//************************************
 		// Method:    GetTransform
 		// FullName:  cm::WorldObject::GetTransform
 		// Access:    virtual public 
@@ -123,6 +114,15 @@ namespace cm
 		// Qualifier:
 		//************************************
 		virtual Transform *GetTransform() = 0;
+
+		//************************************
+		// Method:    GetMaterial
+		// FullName:  cm::WorldObject::GetMaterial
+		// Access:    virtual public 
+		// Returns:   cm::Material *
+		// Qualifier:
+		//************************************
+		virtual Material *GetMaterial() = 0;
 		
 		//************************************
 		// Method:    GetMeshForRender
@@ -142,7 +142,6 @@ namespace cm
 		// Qualifier: 
 		//************************************
 		virtual GeometricCollider *GetCollider() { return nullptr; }
-		
 
 
 
@@ -154,6 +153,8 @@ namespace cm
 		virtual ~WorldObject() {};
 	};
 	
+
+
 
 	class World 
 	{

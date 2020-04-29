@@ -65,21 +65,38 @@ namespace cm
 		return 0;
 	}
 
-	cm::Actor CreateActorCube()
+	cm::Actor* CreateActorCube()
 	{
 		Assert(StandardMeshes::IsInitilized());
 
-		Actor cube;
+		Actor *cube = new Actor();
 		
-		cube.material.diffuse = Vec3(0.85);
-		cube.material.roughness = 0.8;
-		cube.material.metalness = 0.1;
+		cube->material.diffuse = Vec3(0.85);
+		cube->material.roughness = 0.8;
+		cube->material.metalness = 0.1;
 
-		cube.obb = OBB(Vec3(0), Vec3(1), Basis());
+		cube->obb = OBB(Vec3(0), Vec3(1), Basis());
 
-		cube.mesh = StandardMeshes::Cube();
+		cube->mesh = StandardMeshes::Cube();
 
 		return cube;
+	}
+
+	cm::Actor* CreateActorPlane()
+	{
+		Assert(StandardMeshes::IsInitilized());
+
+		Actor *plane = new Actor();
+
+		plane->material.diffuse = Vec3(0.85);
+		plane->material.roughness = 0.8;
+		plane->material.metalness = 0.1;
+
+		plane->obb = OBB(Vec3(0), Vec3(1, 1, 0), Basis());
+
+		plane->mesh = StandardMeshes::Plane();
+
+		return plane;
 	}
 
 }
