@@ -154,7 +154,32 @@ namespace cm
 	};
 	
 
+	class StaticWorldObject : public WorldObject
+	{
+	public:
+		Transform transform;
+		Material material;
+		GLMesh mesh;
+		OBB obb;
+		uint32 render_flags = RENDERFLAG_CAST_SHADOWS;
 
+		virtual GLMesh *GetMeshForRender() override;
+		virtual Material *GetMaterial() override;
+		virtual Transform *GetTransform() override;
+		virtual GeometricCollider *GetCollider() override;
+		virtual const Mat4 GetTransformMatrix() const override;
+		virtual const uint32 GetRenderFlags() const override;
+	};
+
+	//class DynamicWorldObject : public WorldObject
+	//{
+
+	//};
+
+	//class AnimatedWorldObject : public WorldObject
+	//{
+
+	//};
 
 	class World 
 	{
@@ -178,4 +203,7 @@ namespace cm
 		std::vector<SpotLight> spot_lights;
 		std::vector<PointLight> point_lights;
 	};
+
+	StaticWorldObject* CreateWorldObjectCube();
+	StaticWorldObject* CreateWorldObjectPlane();
 }

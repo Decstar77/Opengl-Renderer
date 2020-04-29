@@ -7,23 +7,6 @@
 
 namespace cm
 {
-	class Actor : public WorldObject
-	{
-	public:
-		uint32 render_flags = RENDERFLAG_CAST_SHADOWS;
-		Transform transform;
-		Material material;
-		OBB obb;
-		GLMesh mesh;
-
-		virtual GLMesh *GetMeshForRender() override;
-		virtual Material *GetMaterial() override;
-		virtual Transform *GetTransform() override;
-		virtual GeometricCollider *GetCollider() override;
-		virtual const Mat4 GetTransformMatrix() const override;
-		virtual const uint32 GetRenderFlags() const override;
-	};
-
 	class AnimatedActor : public  WorldObject
 	{
 	public:
@@ -40,9 +23,6 @@ namespace cm
 		virtual const Mat4 GetTransformMatrix() const override;
 		virtual const uint32 GetRenderFlags() const override;
 	};
-
-	Actor* CreateActorCube();
-	Actor* CreateActorPlane();
 
 
 

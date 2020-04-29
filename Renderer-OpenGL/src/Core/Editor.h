@@ -152,7 +152,7 @@ namespace cm
 
 	};
 
-	class EditorActorSpawner
+	class EditorWorldObjectSpawner
 	{
 	private:
 		void SpawnCube();
@@ -164,9 +164,9 @@ namespace cm
 		World *world = nullptr;
 
 	public:
-		EditorActorSpawner();
-		EditorActorSpawner(World *world);
-		~EditorActorSpawner();
+		EditorWorldObjectSpawner();
+		EditorWorldObjectSpawner(World *world);
+		~EditorWorldObjectSpawner();
 	};
 
 	class EditorWorldObjectInspector

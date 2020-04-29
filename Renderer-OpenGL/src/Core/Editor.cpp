@@ -242,34 +242,34 @@ namespace cm
 		fps_graph[99] = delta_time * 1000.f;
 	}
 
-	EditorActorSpawner::EditorActorSpawner()
+	EditorWorldObjectSpawner::EditorWorldObjectSpawner()
 	{
 
 	}
 
-	EditorActorSpawner::EditorActorSpawner(World *world)
+	EditorWorldObjectSpawner::EditorWorldObjectSpawner(World *world)
 	{
 		this->world = world;
 	}
 
-	EditorActorSpawner::~EditorActorSpawner()
+	EditorWorldObjectSpawner::~EditorWorldObjectSpawner()
 	{
 
 	}
 
-	void EditorActorSpawner::SpawnCube()
+	void EditorWorldObjectSpawner::SpawnCube()
 	{
-		Actor *cube = CreateActorCube();
+		StaticWorldObject *cube = CreateWorldObjectCube();
 		world->RegisterWorldObject(cube);
 	}
 
-	void EditorActorSpawner::SpawnPlane()
+	void EditorWorldObjectSpawner::SpawnPlane()
 	{
-		Actor *plane = CreateActorPlane();
+		StaticWorldObject *plane = CreateWorldObjectPlane();
 		world->RegisterWorldObject(plane);
 	}
 
-	void EditorActorSpawner::UpdateAndDraw()
+	void EditorWorldObjectSpawner::UpdateAndDraw()
 	{
 		Assert(world);
 		ImGui::Begin("Spawner");

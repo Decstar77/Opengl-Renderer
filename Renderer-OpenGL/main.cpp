@@ -280,14 +280,14 @@ int main()
 	// Initialize imported meshes 
 	//************************************
 
-	Actor floor_test;	
+	StaticWorldObject floor_test;	
 	floor_test.mesh = model_importer.resulting_meshes[0].CreateMesh(true);
 	floor_test.transform.scale = Vec3(0.05);
 	floor_test.material.diffuse = Vec3(0.86);
 	floor_test.material.metalness = 0.6;
 	floor_test.material.roughness = 0;
 		
-	Actor left_wall;
+	StaticWorldObject left_wall;
 	left_wall.mesh = floor_test.mesh;
 	left_wall.transform.scale = Vec3(0.05);
 	left_wall.transform.rotation = EulerToQuat(Vec3(0, 0, 90));
@@ -296,7 +296,7 @@ int main()
 	left_wall.material.metalness = 0.2;
 	left_wall.material.roughness = 1;
 
-	Actor right_wall;
+	StaticWorldObject right_wall;
 	right_wall.mesh = floor_test.mesh;
 	right_wall.transform.scale = Vec3(0.01);
 	right_wall.transform.rotation = EulerToQuat(Vec3(0, 0, -90));
@@ -305,7 +305,7 @@ int main()
 	right_wall.material.metalness = 0.2;
 	right_wall.material.roughness = 1;
 
-	Actor back_wall;
+	StaticWorldObject back_wall;
 	back_wall.mesh = floor_test.mesh;
 	back_wall.transform.scale = Vec3(0.01);
 	back_wall.transform.rotation = EulerToQuat(Vec3(-90, 0, 0));
@@ -494,7 +494,7 @@ int main()
 	pbr_model.import_vertex_binorms_tangents = true;
 	pbr_model.Load();
 
-	Actor pbr_gun;
+	StaticWorldObject pbr_gun;
 	pbr_gun.mesh = pbr_model.resulting_meshes[0].CreateMesh(true);
 	pbr_gun.transform.rotation = EulerToQuat(Vec3(0, 90, 0));
 	pbr_gun.transform.position = Vec3(0, 1, 1);
@@ -609,8 +609,6 @@ int main()
 
 	informer.LinkShader("WorldMatrices", worldspace_gbuffer_shader);
 	informer.LinkShader("LightingData", demo_01_deffered_pbr_shader);
-
-
 	
 
 	RenderSettings render_settings;
@@ -627,7 +625,7 @@ int main()
 	editor_render_window.delta_time = 0;
 	editor_render_window.render_settings = &render_settings;
 
-	EditorActorSpawner editor_actor_spawner;
+	EditorWorldObjectSpawner editor_actor_spawner;
 	editor_actor_spawner.world = &main_world;
 
 	EditorWorldObjectInspector editor_world_object_inspector;
@@ -710,7 +708,6 @@ int main()
 		editor_actor_spawner.UpdateAndDraw();
 
 
-		// @NOTE:
 		editor_world_object_inspector.world_object = selected_world_object;
 		editor_world_object_inspector.UpdateAndDraw();
 		if (selected_world_object)
