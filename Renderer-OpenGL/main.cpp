@@ -37,6 +37,7 @@ ControlWidget selected_widget_mode = ControlWidget::none;
 WorldObject *selected_world_object = nullptr;
 Widget3D *current_widget = nullptr;
 
+
 void MousePositionCallBack(GLFWwindow *widow, double xpos, double ypos)
 {
 	// @NOTE: GetLastMouse is now actually 2 frames behind. Thats why we use GetMouse. 
@@ -840,7 +841,6 @@ int main()
 			else {
 				rotation_widget.ObjectAlign();
 			}
-
 		}
 
 		if (Input::GetKeyJustDown(GLFW_KEY_T))

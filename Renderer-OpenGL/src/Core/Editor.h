@@ -41,102 +41,77 @@ namespace cm
 
 	class Widget3D
 	{
-	protected:
-		bool object_aligning = false;
-
 	public:
-		virtual Transform *GetTransform() = 0;
-		virtual void SetTransform(const Transform &transform) = 0;
+		virtual Transform *GetTransform();
+		virtual void SetTransform(const Transform &transform);
 		
-		virtual real32 GetSnappingAmount() = 0;
-		virtual void SetSnappingAmount(const real32 &deg) = 0;
+		virtual real32 GetSnappingAmount();
+		virtual void SetSnappingAmount(const real32 &deg);
 
-		virtual bool IsObjectAligning() { return object_aligning; }
-		virtual void ObjectAlign() = 0;
-		virtual void WorldAlign() = 0;
+		virtual bool IsObjectAligning();
+		virtual void ObjectAlign();
+		virtual void WorldAlign();
 
 		virtual void Create(const GLMesh &mesh) = 0;
 		virtual bool Select(const Ray &camera_ray, const Transform &transform) = 0;
 		virtual bool Update(const Ray &camera_ray, Transform *transform) = 0;
-		virtual const GLMesh GetMeshForRender() const = 0;
+		virtual const GLMesh GetMeshForRender() const;
+
+	protected:
+		Transform transform;
+		GLMesh mesh;
+
+		TransformationMode transformation_mode = TransformationMode::none;
+		bool object_aligning = false;
+		real32 snapping_amount = 0;
+	
+	protected:
+		virtual void CalculateBoundingBoxes() = 0;
 	};
 
 	class TranslationWidget : public Widget3D
 	{
-	private:
-		void CalculateBoundingBoxes();
-
-	private:
-		GLMesh mesh;
-		TransformationMode translation_mode = TransformationMode::none;
-		real32 snapping_amount = 0;
-
-	public:
-		Transform transform;
+	public:		
 		Plane translation_plane;
 		OBB x_bounding_volume;
 		OBB y_bounding_volume;
 		OBB z_bounding_volume;
 		bool is_selected = false;
 
-	public:
-		virtual Transform *GetTransform() override;
-		void SetTransform(const Transform &transform) override;
-
-		virtual real32 GetSnappingAmount() override;
-		virtual void SetSnappingAmount(const real32 &deg) override;
-
-		virtual void ObjectAlign() override;
-		virtual void WorldAlign() override;
-
+	public:	
 		void Create(const GLMesh &mesh) override;
 		bool Select(const Ray &camera_ray, const Transform &transform) override;
 		bool Update(const Ray &camera_ray, Transform *transform) override;
-		const GLMesh GetMeshForRender() const override;
 
 	public:
 		TranslationWidget();
 		~TranslationWidget();
 
+	private:		
+		virtual void CalculateBoundingBoxes() override;
 	};
 
 	class RotationWidget : public Widget3D
 	{
-	private:
-		void CalculateBoundingBoxes();
-
-	private:
-		GLMesh mesh;		
-		TransformationMode transformation_mode;
-		real32 snapping_amount = 0; 
-
 	public:
-		Transform transform;
 		Plane transform_plane;
 		OBB x_bounding_volumes[4];
 		OBB y_bounding_volumes[4];
 		OBB z_bounding_volumes[4];
 		bool is_selected = false;
-	
-	public:		
-		virtual Transform *GetTransform() override;
-		void SetTransform(const Transform &transform) override;
-		
-		virtual real32 GetSnappingAmount() override;
-		virtual void SetSnappingAmount(const real32 &deg) override;
 
-		virtual void ObjectAlign() override;
-		virtual void WorldAlign() override;
-
+	public:
 		void Create(const GLMesh &mesh) override;
 		bool Select(const Ray &camera_ray, const Transform &transform) override;
 		bool Update(const Ray &camera_ray, Transform *transform) override;
-		const GLMesh GetMeshForRender() const override; 
+
 
 	public:
 		RotationWidget();
 		~RotationWidget();
 
+	private:
+		virtual void CalculateBoundingBoxes() override;	
 	};
 
 

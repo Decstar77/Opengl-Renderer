@@ -298,11 +298,11 @@ namespace cm
 	{
 		Mat3 result(1);
 		int index = 0;
-		for (int r = 0; r < 4; r++)
+		for (int32 r = 0; r < 4; r++)
 		{
 			if (row == r)
 				continue;
-			for (int c = 0; c < 4; c++)
+			for (int32 c = 0; c < 4; c++)
 			{
 				if (c == col || c == col + 4 || c == col + 8 || c == col + 12)
 					continue;
@@ -350,10 +350,11 @@ namespace cm
 	bool CheckOrthogonal(const Mat4 &a, const real32 tolerance)
 	{
 		Mat4 result = a * Transpose(a);
-		for (int i = 0; i < 4; i++)
+		for (int32 i = 0; i < 4; i++)
 		{
-			if (abs(1 - abs(result.arr[i * 5])) > tolerance)
+			if (abs(1 - abs(result.arr[i * 5])) > tolerance) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -373,9 +374,9 @@ namespace cm
 		Mat4 result(1);
 		Mat3 ad(1);
 		int index = 0;
-		for (int row = 0; row < 4; row++)
+		for (int32 row = 0; row < 4; row++)
 		{
-			for (int col = 0; col < 4; col++)
+			for (int32 col = 0; col < 4; col++)
 			{
 				if ((row + col) % 2)
 				{

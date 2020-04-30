@@ -326,11 +326,59 @@ namespace cm
 		ImGui::End();
 	}
 
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
 
+	cm::Transform * Widget3D::GetTransform()
+	{
+		return &transform;
+	}
 
-	//---------------------------------------------------------------
-	//---------------------------------------------------------------
-	//---------------------------------------------------------------
+	void Widget3D::SetTransform(const Transform &transform)
+	{
+		this->transform.position = transform.position;
+		if (object_aligning)
+		{
+			this->transform.rotation = transform.rotation;
+		}
+		CalculateBoundingBoxes();
+	}
+
+	real32 Widget3D::GetSnappingAmount()
+	{
+		return snapping_amount;
+	}
+
+	void Widget3D::SetSnappingAmount(const real32 &deg)
+	{
+		snapping_amount = Abs(deg);
+	}
+
+	bool Widget3D::IsObjectAligning()
+	{
+		return object_aligning;
+	}
+
+	void Widget3D::ObjectAlign()
+	{
+		object_aligning = true;
+	}
+
+	void Widget3D::WorldAlign()
+	{
+		object_aligning = false;
+		this->transform.rotation = Quat();
+	}
+
+	const cm::GLMesh Widget3D::GetMeshForRender() const
+	{
+		return mesh;
+	}
+
 
 	TranslationWidget::TranslationWidget()
 	{
@@ -342,61 +390,60 @@ namespace cm
 
 	}
 
-	cm::Transform *TranslationWidget::GetTransform()
-	{
-		return &transform;
-	}
-
-	void TranslationWidget::SetTransform(const Transform &transform)
-	{
-		this->transform.position = transform.position;
-		this->transform.rotation = transform.rotation;		
-		CalculateBoundingBoxes();
-	}
-
-	real32 TranslationWidget::GetSnappingAmount()
-	{
-		return snapping_amount;
-	}
-
-	void TranslationWidget::SetSnappingAmount(const real32 &deg)
-	{
-		snapping_amount = Abs(deg);
-	}
-
-	void TranslationWidget::ObjectAlign()
-	{
-
-	}
-
-	void TranslationWidget::WorldAlign()
-	{
-
-	}
-
 	void TranslationWidget::Create(const GLMesh &mesh)
 	{
 		transform.position = Vec3(0);
-		transform.scale = Vec3(0.04);		
+		transform.scale = Vec3(0.04);
 		this->mesh = mesh;
 		CalculateBoundingBoxes();
 	}
 
 	bool TranslationWidget::Select(const Ray &camera_ray, const Transform &transform)
 	{
+		// @NOTE: Because of the way the bounding boxes are created (by messing the extents not rotating)
+		//		: They all share the same basis vectors
 		is_selected = false;
 
 		CollisionInfo colinfo;
 		real32 closest_box = REAL_MAX;
+
 		// @NOTE: Check x-axis
 		bool x_axis= x_bounding_volume.CheckCollision(camera_ray, &colinfo);
 		if (x_axis && closest_box > colinfo.dist)
-		{
-			// @NOTE: Create a plane where the origin is the intersection and normal point towards the camera
-			translation_plane = Plane(transform.position, -1 * camera_ray.direction);
+		{			
+			real32 df = Dot(camera_ray.direction, x_bounding_volume.basis.forward);
+			real32 dr = Dot(camera_ray.direction, x_bounding_volume.basis.right);
+			real32 du = Dot(camera_ray.direction, x_bounding_volume.basis.upward);
+			
+			// @NOTE: Pick the the smallest dot and create a plane from the smallest basis
+			//		: execpt the basis that well slide on in this case the right vector
+			if (df < dr)
+			{
+				if (du < df)
+				{
+					translation_plane = Plane(transform.position, x_bounding_volume.basis.upward);
+				}
+				else
+				{
+					translation_plane = Plane(transform.position, x_bounding_volume.basis.forward);
+				}
+			}
+			else
+			{
+				if (du < dr)
+				{
+					translation_plane = Plane(transform.position, x_bounding_volume.basis.upward);
+				}
+				else
+				{
+					translation_plane = Plane(transform.position, x_bounding_volume.basis.forward);
+				}
+			}			
 
 			this->transform.position = transform.position;
-			this->transform.rotation = transform.rotation;
+			if (object_aligning) {
+				this->transform.rotation = transform.rotation;
+			}
 						
 			translation_plane.CheckCollision(camera_ray, &colinfo);
 
@@ -406,10 +453,11 @@ namespace cm
 			// @NOTE: Offset the origin to stop snapping
 			translation_plane.origin += p1 - p0;
 
-			translation_mode = TransformationMode::x_axis;
-
+			// @NOTE: Set mode
+			transformation_mode = TransformationMode::x_axis;
+			
+			// @NOTE: Set dist to check against
 			closest_box = colinfo.dist;
-
 			is_selected = true;
 		}
 
@@ -418,11 +466,40 @@ namespace cm
 		if (y_axis && closest_box > colinfo.dist)
 		{
 			// @NOTE: Create a plane where the origin is the intersection and normal point towards the camera
-			translation_plane = Plane(transform.position, -1 * camera_ray.direction);
+			real32 df = Dot(camera_ray.direction, y_bounding_volume.basis.forward);
+			real32 dr = Dot(camera_ray.direction, y_bounding_volume.basis.right);
+			real32 du = Dot(camera_ray.direction, y_bounding_volume.basis.upward);
+
+			// @NOTE: Pick the the smallest dot and create a plane from the smallest basis
+			//		: execpt the basis that well slide on in this case the up vector
+			if (df < dr)
+			{
+				if (du < df)
+				{
+					translation_plane = Plane(transform.position, y_bounding_volume.basis.forward);
+				}
+				else
+				{
+					translation_plane = Plane(transform.position, y_bounding_volume.basis.forward);
+				}
+			}
+			else
+			{
+				if (du < dr)
+				{
+					translation_plane = Plane(transform.position, y_bounding_volume.basis.forward);
+				}
+				else
+				{
+					translation_plane = Plane(transform.position, y_bounding_volume.basis.right);
+				}
+			}
 
 			this->transform.position = transform.position;
-			this->transform.rotation = transform.rotation;
-			
+			if (object_aligning) {
+				this->transform.rotation = transform.rotation;
+			}
+
 			translation_plane.CheckCollision(camera_ray, &colinfo);
 
 			Vec3 p0 = translation_plane.origin;
@@ -430,11 +507,12 @@ namespace cm
 
 			// @NOTE: Offset the origin to stop snapping
 			translation_plane.origin += p1 - p0;
-			
-			translation_mode = TransformationMode::y_axis;
 
+			// @NOTE: Set mode
+			transformation_mode = TransformationMode::y_axis;
+
+			// @NOTE: Set dist to check against
 			closest_box = colinfo.dist;
-
 			is_selected = true;
 		}
 
@@ -443,23 +521,54 @@ namespace cm
 		if (z_axis && closest_box > colinfo.dist)
 		{
 			// @NOTE: Create a plane where the origin is the intersection and normal point towards the camera
-			translation_plane = Plane(transform.position, -1 * camera_ray.direction);
+			real32 df = Dot(camera_ray.direction, z_bounding_volume.basis.forward);
+			real32 dr = Dot(camera_ray.direction, z_bounding_volume.basis.right);
+			real32 du = Dot(camera_ray.direction, z_bounding_volume.basis.upward);
+
+			// @NOTE: Pick the the smallest dot and create a plane from the smallest basis
+			//		: execpt the basis that well slide on in this case the right vector
+			if (du < df)
+			{
+				if (du < dr)
+				{
+					translation_plane = Plane(transform.position, z_bounding_volume.basis.upward);
+				}
+				else
+				{
+					translation_plane = Plane(transform.position, z_bounding_volume.basis.right);
+				}
+			}
+			else
+			{
+				if (dr < df)
+				{
+					translation_plane = Plane(transform.position, z_bounding_volume.basis.right);
+				}
+				else
+				{
+					translation_plane = Plane(transform.position, z_bounding_volume.basis.upward);
+				}
+			}
 
 			this->transform.position = transform.position;
-			this->transform.rotation = transform.rotation;
+			if (object_aligning) {
+				this->transform.rotation = transform.rotation;
+			}
+			
 
 			translation_plane.CheckCollision(camera_ray, &colinfo);
-			
+
 			Vec3 p0 = translation_plane.origin;
 			Vec3 p1 = camera_ray.Travel(colinfo.dist);
 
 			// @NOTE: Offset the origin to stop snapping
 			translation_plane.origin += p1 - p0;
 
-			translation_mode = TransformationMode::z_axis;
+			// @NOTE: Set mode
+			transformation_mode = TransformationMode::z_axis;
 
+			// @NOTE: Set dist to check against
 			closest_box = colinfo.dist;
-
 			is_selected = true;
 		}
 
@@ -478,35 +587,63 @@ namespace cm
 			Vec3 p1 = camera_ray.Travel(colinfo.dist);
 			
 			Vec3 delta = p1 - p0;
-
-			switch (translation_mode)
+			
+			switch (transformation_mode)
 			{
 			case cm::TransformationMode::none: {
 				LOG(" WARNING: Translating nothing ??");
 				break;
 			}
 			case cm::TransformationMode::x_axis: {
-				int32 index = AbsMaxIndex(x_bounding_volume.basis.right);
-				translation_plane.origin.arr[index] = translation_plane.origin.arr[index] + delta.arr[index];
-				Vec3 dir(delta.arr[index] * Sign(x_bounding_volume.basis.right.arr[index]),0, 0);
-				dir = Rotate((this->transform.rotation), dir);
-				this->transform.position += dir;
+				Vec3 dir = Normalize( x_bounding_volume.basis.right );
+				real32 dist = Dot(delta, x_bounding_volume.basis.right);
+
+				if (Abs(dist) < snapping_amount)
+				{
+					break;
+				}
+				else if (Abs(dist) > snapping_amount && snapping_amount > 0)
+				{
+					dist = snapping_amount * Sign(dist);
+				}
+
+				this->transform.position += dir * dist ;
+				translation_plane.origin = p1;
 				break;
 			}
 			case cm::TransformationMode::y_axis: {
-				int32 index = AbsMaxIndex(y_bounding_volume.basis.upward);
-				translation_plane.origin.arr[index] = translation_plane.origin.arr[index] + delta.arr[index];
-				Vec3 dir(0, delta.arr[index] * Sign(y_bounding_volume.basis.upward.arr[index]), 0);
-				dir = Rotate((this->transform.rotation), dir);
-				this->transform.position += dir;
+				Vec3 dir = Normalize(y_bounding_volume.basis.upward);
+				real32 dist = Dot(delta, y_bounding_volume.basis.upward);
+				
+				if (Abs(dist) < snapping_amount)
+				{
+					break;
+				}
+				else if (Abs(dist) > snapping_amount && snapping_amount > 0)
+				{
+					dist = snapping_amount * Sign(dist);
+				}
+
+				this->transform.position += dir * dist;
+				translation_plane.origin = p1;
+
 				break;
 			}
 			case cm::TransformationMode::z_axis: {
-				int32 index = AbsMaxIndex(z_bounding_volume.basis.forward);
-				translation_plane.origin.arr[index] = translation_plane.origin.arr[index] + delta.arr[index];
-				Vec3 dir(0, 0, delta.arr[index] * Sign(z_bounding_volume.basis.forward.arr[index]));
-				dir = Rotate((this->transform.rotation), dir);
-				this->transform.position += dir;
+				Vec3 dir = Normalize(z_bounding_volume.basis.forward);
+				real32 dist = Dot(delta, z_bounding_volume.basis.forward);
+
+				if (Abs(dist) < snapping_amount)
+				{
+					break;
+				}
+				else if (Abs(dist) > snapping_amount && snapping_amount > 0)
+				{
+					dist = snapping_amount * Sign(dist);
+				}
+
+				this->transform.position += dir * dist;
+				translation_plane.origin = p1;
 				break;
 			}
 			default: {
@@ -534,15 +671,6 @@ namespace cm
 		y_bounding_volume = OBB(transform.position + y_origin, Vec3(0.05, 0.30, 0.05), local_basis);
 		z_bounding_volume = OBB(transform.position + z_origin, Vec3(0.05, 0.05, 0.30), local_basis);
 	}
-
-	const GLMesh TranslationWidget::GetMeshForRender() const
-	{
-		return mesh;
-	}
-
-	//---------------------------------------------------------------
-	//---------------------------------------------------------------
-	//---------------------------------------------------------------
 	
 	RotationWidget::RotationWidget()
 	{
@@ -552,42 +680,6 @@ namespace cm
 	RotationWidget::~RotationWidget()
 	{
 
-	}
-
-	cm::Transform * RotationWidget::GetTransform()
-	{
-		return &transform;
-	}
-
-	void RotationWidget::SetTransform(const Transform &transform)
-	{
-		this->transform.position = transform.position;
-		if (object_aligning)
-		{
-			this->transform.rotation = transform.rotation;
-		}		
-		CalculateBoundingBoxes();
-	}
-
-	real32 RotationWidget::GetSnappingAmount()
-	{
-		return snapping_amount;
-	}
-
-	void RotationWidget::SetSnappingAmount(const real32 &deg)
-	{
-		snapping_amount = Abs(deg);
-	}
-
-	void RotationWidget::ObjectAlign()
-	{
-		object_aligning = true;
-	}
-
-	void RotationWidget::WorldAlign()
-	{
-		object_aligning = false;
-		this->transform.rotation = Quat();
 	}
 
 	void RotationWidget::Create(const GLMesh &mesh)
@@ -707,7 +799,7 @@ namespace cm
 				{
 					break;
 				}
-				else if (Abs(theta) > snapping_amount && snapping_amount >= 0.01)
+				else if (Abs(theta) > snapping_amount && snapping_amount > 0.0f)
 				{
 					theta = snapping_amount * dir;
 				}
@@ -744,7 +836,7 @@ namespace cm
 				{
 					break;
 				}
-				else if (Abs(theta) > snapping_amount && snapping_amount >= 0.01)
+				else if (Abs(theta) > snapping_amount && snapping_amount > 0.0f)
 				{
 					theta = snapping_amount * dir;
 				}
@@ -780,7 +872,7 @@ namespace cm
 				{
 					break;
 				}
-				else if (Abs(theta) > snapping_amount && snapping_amount >= 0.01)
+				else if (Abs(theta) > snapping_amount && snapping_amount > 0.0f)
 				{
 					theta = snapping_amount * dir;
 				}
@@ -848,14 +940,4 @@ namespace cm
 		z_bounding_volumes[2] = OBB(transform.position + z_origin03, Vec3(0.2, 0.05, 0.05), local_basis);
 		z_bounding_volumes[3] = OBB(transform.position + z_origin04, Vec3(0.05, 0.2, 0.05), local_basis);
 	}
-
-	const cm::GLMesh RotationWidget::GetMeshForRender() const
-	{
-		return mesh;
-	}
-
-
-
-
-
 }
