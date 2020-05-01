@@ -212,6 +212,13 @@ namespace cm
 				Vec3 row2;
 			};
 		};
+		Mat3()
+		{
+			row0 = Vec3(1, 0, 0);
+			row1 = Vec3(0, 1, 0);
+			row2 = Vec3(0, 0, 1);
+		}
+
 		Mat3(real32 a)
 		{
 			row0 = Vec3(a, 0, 0);
@@ -333,7 +340,9 @@ namespace cm
 		
 	real32 Mag(const Quat &a);
 
-	std::string ToString(const Quat &a);
+	String ToString(const Quat &a);
+
+	bool Equal(const Quat &q1, const Quat &q2, const real32 &epsilon = FLOATING_POINT_ERROR_PRESCION);
 
 	Vec3 Rotate(const Quat &r, const Vec3 &point);
 
@@ -387,7 +396,7 @@ namespace cm
 
 	bool CompareVec(const Vec3 &a, const Vec3 &b, const real &epsilon = FLOATING_POINT_ERROR_PRESCION);
 
-	std::string ToString(const Vec3 &a);
+	String ToString(const Vec3 &a);
 
 	//************************************
 	// Vector4
@@ -401,7 +410,7 @@ namespace cm
 
 	Vec4 Vec3ToVec4(const Vec3 &a, const real32  &w);
 
-	std::string ToString(const Vec4 &a);
+	String ToString(const Vec4 &a);
 
 	//************************************
 	// Matrix 3x3
@@ -411,9 +420,15 @@ namespace cm
 	
 	Vec3 GetColumn(const Mat3 &a, const uint32 &col);
 
-	std::string ToString(const Mat3 &a);
+	Vec3 DecomposeToScale(const Mat3 &a);
+
+	Mat3 DecomposeToRotationMatrix(const Mat3 &a);
+	
+	String ToString(const Mat3 &a);
 
 	real32 Det(const Mat3 &a);
+
+	Mat3 ScaleDirection(const Mat3 &a, const real32 &k, Vec3 direction);
 
 	Mat3 Rotate(const Mat3 &a, const real32 &d_angle, Vec3 axis);
 
@@ -429,7 +444,7 @@ namespace cm
 	
 	Vec4 GetColumn(const Mat4 &a, const uint32 &col);
 
-	std::string ToString(const Mat4 &a);
+	String ToString(const Mat4 &a);
 
 	bool CheckOrthogonal(const Mat4 &a, const real32 tolerance = 0.01);
 
@@ -819,6 +834,27 @@ namespace cm
 		int32 *compared = reinterpret_cast<int32*>(&_mm_cmpneq_ps(a.data, b.data));
 		return(compared[0] | compared[1] | compared[2] | compared[3]);
 	}	
+
+	inline Mat3 operator /(const Mat3 &a, const real32 &b)
+	{
+		Mat3 result;
+		for (int32 i = 0; i < 9; i++)
+		{
+			result.arr[i] = a.arr[i] / b;
+		}
+		return result;
+	}
+
+	inline Mat3 operator /(const real32 &a, const Mat3 &b)
+	{
+		Mat3 result;
+		for (int32 i = 0; i < 9; i++)
+		{
+			result.arr[i] = b.arr[i] / a;
+		}
+		return result;
+	}
+
 
 	Vec3 operator *(const Vec3 &a, const Mat3 &b);
 

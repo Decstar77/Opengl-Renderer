@@ -62,7 +62,7 @@ namespace cm
 		GLMesh mesh;
 
 		TransformationMode transformation_mode = TransformationMode::none;
-		bool object_aligning = false;
+		bool object_aligning = true;
 		real32 snapping_amount = 0;
 	
 	protected:
@@ -79,9 +79,9 @@ namespace cm
 		bool is_selected = false;
 
 	public:	
-		void Create(const GLMesh &mesh) override;
-		bool Select(const Ray &camera_ray, const Transform &transform) override;
-		bool Update(const Ray &camera_ray, Transform *transform) override;
+		virtual void Create(const GLMesh &mesh) override;
+		virtual bool Select(const Ray &camera_ray, const Transform &transform) override;
+		virtual bool Update(const Ray &camera_ray, Transform *transform) override;
 
 	public:
 		TranslationWidget();
@@ -101,11 +101,10 @@ namespace cm
 		bool is_selected = false;
 
 	public:
-		void Create(const GLMesh &mesh) override;
-		bool Select(const Ray &camera_ray, const Transform &transform) override;
-		bool Update(const Ray &camera_ray, Transform *transform) override;
-
-
+		virtual void Create(const GLMesh &mesh) override;
+		virtual bool Select(const Ray &camera_ray, const Transform &transform) override;
+		virtual bool Update(const Ray &camera_ray, Transform *transform) override;
+				
 	public:
 		RotationWidget();
 		~RotationWidget();
@@ -114,31 +113,56 @@ namespace cm
 		virtual void CalculateBoundingBoxes() override;	
 	};
 
-
-
-	class ScalingWidget
+	class ScalingWidget : public Widget3D
 	{
+	public:
+		Plane transformation_plane;
+		OBB x_bounding_volume;
+		OBB y_bounding_volume;
+		OBB z_bounding_volume;
+		bool is_selected = false;
 
+	public:
+		virtual void Create(const GLMesh &mesh) override;
+		virtual bool Select(const Ray &camera_ray, const Transform &transform) override;
+		virtual bool Update(const Ray &camera_ray, Transform *transform) override;
+
+		// @NOTE: We don't support arbitary scaling directions
+		//		: This stems from the fact that we store out scaling in a 
+		//		: object space Vec3 and thus making it impossible to 
+		//		: scale arbitary directions. At least I think.
+		virtual void WorldAlign() override;
+	public:
+		ScalingWidget();
+		~ScalingWidget();
+
+	private:
+		virtual void CalculateBoundingBoxes() override;
 	};
 
-	
+
 
 	class EditorConsole
 	{		
 	public:
-		void Log(const std::string &msg);
-		void Log(const bool msg);
+		void LogInfo(const String &msg);
+		void LogInfo(const bool msg);
+
+		void LogWarning(const String &msg);
+		void LogWarning(const bool msg);
+
 		void UpdateAndDraw();
 		void ClearLogger();
-		void ExeCommand(const std::string &cmd);
+		void ExeCommand(const String &cmd);
 
 	public:
-		std::string title = "Console";
+		String title = "Console";
 
 	private:
 		char input_buffer[256];
 		StringStream commands;
-		StringStream current;
+		StringStream log_info;
+		StringStream log_warnings;
 		StringStream history;
 
 
@@ -178,15 +202,29 @@ namespace cm
 
 	class EditorWorldObjectInspector
 	{
+	public:
+
 	public: 
-		void UpdateAndDraw();
+		void SetWorldObject(WorldObject *world_object);
+		bool UpdateAndDraw();
 		
-		WorldObject *world_object = nullptr;
+		
 
 	public:
 		EditorWorldObjectInspector();
 		EditorWorldObjectInspector(WorldObject *actor);
 		~EditorWorldObjectInspector();
 
+	private:
+		WorldObject *world_object = nullptr;
+
+
+		// @NOTE: I do this because we loose the non-canonical euler rotation when we are 
+		//		: converting from qaut to euler as it gives us the canonical form. This dummy var
+		//		: then acts as out non canonical form which the user plays with and then we convert 
+		//		: back into a quat. This has the down side landing in gimbal lock, but is much better
+		//		: than having to rewrite the whole transform class inorder to store a euler rotation
+		Vec3 euler_angles = Vec3(0);
+		Quat quat_angle = Quat();
 	};
 }

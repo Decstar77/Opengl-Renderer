@@ -3,7 +3,7 @@
 #include "../vendor/std_image.h"
 namespace cm
 {
-	std::string ReadFile(const std::string &file_directory)
+	String ReadFile(const String &file_directory)
 	{
 		std::ifstream file;
 		file.open(file_directory);
@@ -16,7 +16,7 @@ namespace cm
 		return ss.str();
 	}
 
-	bool LoadTexture(std::vector<uint8> *storage, TextureConfig *config, const std::string &file_directory)
+	bool LoadTexture(std::vector<uint8> *storage, TextureConfig *config, const String &file_directory)
 	{
 		int32 width = 0;
 		int32 height = 0;
@@ -67,7 +67,7 @@ namespace cm
 
 	void TextureImportMultiThread::Load()
 	{
-		std::thread thread = std::thread(&TextureImportMultiThread::DoLoad, this);
+		Thread thread = Thread(&TextureImportMultiThread::DoLoad, this);
 		thread.join();
 	}
 
@@ -91,7 +91,7 @@ namespace cm
 		return working.load();
 	}
 
-	bool TextureImportMultiThread::SetTexturePath(const std::string &path)
+	bool TextureImportMultiThread::SetTexturePath(const String &path)
 	{
 		if (!IsWorking())
 		{
@@ -131,7 +131,7 @@ namespace cm
 			int32 height = 0;
 			int32 nrChannels = 0;
 			
-			const std::string &path = texture_paths[i];
+			const String &path = texture_paths[i];
 			stbi_set_flip_vertically_on_load(flip);
 			//real32 *data = stbi_loadf(path.c_str(), &width, &height, &nrChannels, 0);
 			real32 *data = stbi_loadf(path.c_str(), &width, &height, &nrChannels, 0);
@@ -297,14 +297,14 @@ namespace cm
 			for (uint32 i = 0; i < mesh->mNumBones; i++)
 			{
 				aiBone *b = mesh->mBones[i];
-				std::string cur_bone_name = b->mName.C_Str();
+				String cur_bone_name = b->mName.C_Str();
 				int32 bone_index = -1;
 
 				// @NOTE: Find the bone index
 				// @SPEED: Again a hash map will solve some of this.
 				for (uint32 j = 0; j < ac->bones.size(); j++)
 				{
-					std::string bone_name = ac->bones.at(j).name;
+					String bone_name = ac->bones.at(j).name;
 					
 					if (bone_name == cur_bone_name)
 					{
@@ -422,7 +422,7 @@ namespace cm
 	const aiNode* ModelImport::FindRootNodeOfBones(const aiNode *node, AnimationController *ac)
 	{
 		// @NOTE: If anything this will give us problems
-		std::string name = node->mName.C_Str();
+		String name = node->mName.C_Str();
 		for (uint32 i = 1; i < ac->bones.size(); i++)
 		{
 			if (name == ac->bones.at(i).name)
@@ -452,7 +452,7 @@ namespace cm
 
 	void ModelImport::StoreNodeTransformMatrices(const aiNode *node, AnimationController *ac)
 	{
-		std::string name = node->mName.C_Str();
+		String name = node->mName.C_Str();
 				
 		for (uint32 i = 1; i < ac->bones.size(); i++)
 		{
@@ -471,7 +471,7 @@ namespace cm
 
 	void ModelImport::SortBoneParents(const aiNode *node, uint32 parent_index, AnimationController *ac)
 	{
-		std::string name = node->mName.C_Str();
+		String name = node->mName.C_Str();
 		for (uint32 i = 1; i < ac->bones.size(); i++)
 		{
 			if (name == ac->bones.at(i).name)
@@ -615,7 +615,7 @@ namespace cm
 		ProcessBones(scene, ac);			   		 
 	}
 
-	void ProcessError(const std::string &err)
+	void ProcessError(const String &err)
 	{
 		// @TODO: Log file ?
 		LOG("ERROR:ASSIMP -> " << err);

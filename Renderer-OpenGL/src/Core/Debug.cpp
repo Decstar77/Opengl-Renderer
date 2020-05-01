@@ -1,7 +1,9 @@
 #include "Debug.h"
 namespace cm
 {
-	StringStream Debug::logging_stream;
+	StringStream Debug::log_info_stream;
+
+	StringStream Debug::log_warnings_stream;
 
 	cm::DebugQueue Debug::debug_queue;
 
@@ -19,62 +21,101 @@ namespace cm
 
 	uint32 Debug::window_width = 0;
 
-	void Debug::Log(const std::string &msg)
+	void Debug::Log(const String &msg)
 	{
-		logging_stream << msg << '\n';
+		log_info_stream << msg << '\n';
 	}
 
 	void Debug::Log(const bool &msg)
 	{
-		logging_stream << msg << '\n';
+		log_info_stream << msg << '\n';
 	}
 
 	void Debug::Log(const uint32 &msg)
 	{
-		logging_stream << msg << '\n';
+		log_info_stream << msg << '\n';
 	}
 
 	void Debug::Log(const int32 &msg)
 	{
-		logging_stream << msg << '\n';
+		log_info_stream << msg << '\n';
 	}
 
 	void Debug::Log(const real32 &msg)
 	{
-		logging_stream << msg << '\n';
+		log_info_stream << msg << '\n';
 	}
 
 	void Debug::Log(const Vec3 &msg)
 	{
-		logging_stream << ToString(msg) << '\n';
+		log_info_stream << ToString(msg) << '\n';
 	}
 
 	void Debug::Log(const Vec4 &msg)
 	{
-		logging_stream << ToString(msg) << '\n';
+		log_info_stream << ToString(msg) << '\n';
 	}
 
 	void Debug::Log(const Mat3 &msg)
 	{
-		logging_stream << ToString(msg) << '\n';
+		log_info_stream << ToString(msg) << '\n';
 	}
 
 	void Debug::Log(const Mat4 &msg)
 	{
-		logging_stream << ToString(msg) << '\n';
+		log_info_stream << ToString(msg) << '\n';
 	}
 
 	void Debug::ClearLogger()
 	{
-		logging_stream.str(std::string());
+		log_info_stream.str(String());
+		log_warnings_stream.str(String());
 	}
 
 	void Debug::ClearPersistent()
 	{
 
 	}
+	   
+	void Debug::LogWarning(const String &msg)
+	{
+		log_warnings_stream << "WARNING: " << msg << '\n';
+	}
 
+	void Debug::LogWarning(const uint32 &msg)
+	{
+		log_info_stream << "WARNING: " << msg << '\n';
+	}
 
+	void Debug::LogWarning(const int32 &msg)
+	{
+		log_info_stream << "WARNING: " << msg << '\n';
+	}
+
+	void Debug::LogWarning(const real32 &msg)
+	{
+		log_info_stream << "WARNING: " << msg << '\n';
+	}
+
+	void Debug::LogWarning(const Vec3 &msg)
+	{
+		log_info_stream << "WARNING: " << ToString(msg) << '\n';
+	}
+
+	void Debug::LogWarning(const Vec4 &msg)
+	{
+		log_info_stream << "WARNING: " << ToString(msg) << '\n';
+	}
+
+	void Debug::LogWarning(const Mat3 &msg)
+	{
+		log_info_stream << "WARNING: " << ToString(msg) << '\n';
+	}
+
+	void Debug::LogWarning(const Mat4 &msg)
+	{
+		log_info_stream << "WARNING: " << ToString(msg) << '\n';
+	}
 
 	void Debug::AddPersistentLine(const Vec3 &a, const Vec3 &b)
 	{
@@ -299,7 +340,7 @@ namespace cm
 	{
 		Assert(!created);
 
-		std::string line_vert_src = R"(
+		String line_vert_src = R"(
 			#version 420
 			layout(location = 0) in vec4 vpos; // @NOTE: Our vec3 have a padding byte
 
@@ -314,7 +355,7 @@ namespace cm
 
 		)";
 
-		std::string line_frag_src = R"(
+		String line_frag_src = R"(
 			#version 430
 			out vec4 g_colour;
 
@@ -326,7 +367,7 @@ namespace cm
 		)";
 
 
-		std::string text_vert_src = R"(
+		String text_vert_src = R"(
 			#version 420 core
 			layout (location = 0) in vec3 vpos;
 			layout (location = 1) in vec3 vnorm;
@@ -340,7 +381,7 @@ namespace cm
 			}
 		)";
 
-		std::string text_frag_src = R"(
+		String text_frag_src = R"(
 			#version 430
 			out vec4 g_colour;
 

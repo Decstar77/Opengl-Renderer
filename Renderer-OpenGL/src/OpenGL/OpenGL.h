@@ -85,10 +85,10 @@ namespace cm
 
 	struct OpenGLStatistics
 	{
-		std::string vendor;
-		std::string renderer;
-		std::string version;
-		std::string shading_lang;
+		String vendor;
+		String renderer;
+		String version;
+		String shading_lang;
 
 		int32 work_grp_cnt[3];
 		int32 work_grp_size[3];
@@ -142,7 +142,7 @@ namespace cm
 		uint32 width = 0;
 		uint32 height = 0;
 		bool mipmaps = false;
-		std::string uniform_name = "";
+		String uniform_name = "";
 	};
 
 	struct CubeMapConfig
@@ -159,16 +159,16 @@ namespace cm
 		uint32 width = 0;
 		uint32 height = 0;
 		bool mipmaps = false;
-		std::string uniform_name = "";
+		String uniform_name = "";
 	};
 
 	struct ShaderConfig
 	{
 		ShaderType type;
-		std::string name;
-		std::string src_vert;	// NOTE: Gets freed and set to Linked when sucessfully created else emptry string
-		std::string src_frag;	// NOTE: Gets freed and set to Linked when sucessfully created else emptry string
-		std::string src_geom;	// NOTE: Gets freed and set to Linked when sucessfully created else emptry string		
+		String name;
+		String src_vert;	// NOTE: Gets freed and set to Linked when sucessfully created else emptry string
+		String src_frag;	// NOTE: Gets freed and set to Linked when sucessfully created else emptry string
+		String src_geom;	// NOTE: Gets freed and set to Linked when sucessfully created else emptry string		
 	};
 
 	struct Texture
@@ -209,12 +209,12 @@ namespace cm
 	struct Shader
 	{
 		uint32 shader_program;
-		std::unordered_map<std::string, uint32> uniform_cache;
+		std::unordered_map<String, uint32> uniform_cache;
 
 		ShaderConfig config;
 		// @TODO: Remove these
 		ShaderType type;
-		std::string name;
+		String name;
 	};
 
 	struct GLMesh
@@ -393,12 +393,12 @@ namespace cm
 	// @TODO: Make void, it's just here for function overloading
 	Shader CreateShader(Shader *shader);
 
-	Shader CreateShader(std::string vertex_source, std::string fragment_source);
+	Shader CreateShader(String vertex_source, String fragment_source);
 
-	Shader CreateComputeShader(std::string source);
+	Shader CreateComputeShader(String source);
 
 	// @TODO: Complete
-	//Shader CreateBatchShaderFromShader(std::string vertex_source, std::string fragment_source);
+	//Shader CreateBatchShaderFromShader(String vertex_source, String fragment_source);
 
 
 	void FreeShader(Shader *shader);
@@ -407,26 +407,26 @@ namespace cm
 
 	void UnbindShader();
 
-	uint32 GetUniformLocation(Shader *shader, const std::string &uniform_name);
+	uint32 GetUniformLocation(Shader *shader, const String &uniform_name);
 
-	void ShaderSetInt32(Shader *shader, const std::string &uniform_name, int x);
+	void ShaderSetInt32(Shader *shader, const String &uniform_name, int x);
 
-	void ShaderSetFloat(Shader *shader, const std::string &uniform_name, float x);
+	void ShaderSetFloat(Shader *shader, const String &uniform_name, float x);
 
-	void ShaderSetVec3(Shader *shader, const std::string &uniform_name, float x, float y, float z);
+	void ShaderSetVec3(Shader *shader, const String &uniform_name, float x, float y, float z);
 
-	void ShaderSetVec3(Shader *shader, const std::string &uniform_name, float* data);
+	void ShaderSetVec3(Shader *shader, const String &uniform_name, float* data);
 
-	void ShaderSetMat4(Shader *shader, const std::string &uniform_name, float* data);
+	void ShaderSetMat4(Shader *shader, const String &uniform_name, float* data);
 
-	void ShaderBindUniformBuffer(const Shader &shader, uint32 binding_point, const std::string &uniform_name);
+	void ShaderBindUniformBuffer(const Shader &shader, uint32 binding_point, const String &uniform_name);
 
 	// @TODO: Complete
 	//void ShaderBindUniformBuffersFromSource(Shader &shader);
 
-	void ShaderBindTexture(Shader &shader, const Texture &texture, uint32 texture_slot, const std::string &uniform_name);
+	void ShaderBindTexture(Shader &shader, const Texture &texture, uint32 texture_slot, const String &uniform_name);
 
-	void ShaderBindCubeMap(Shader *shader, const CubeMap &cube_map, uint32 texture_slot, const std::string &uniform_name);
+	void ShaderBindCubeMap(Shader *shader, const CubeMap &cube_map, uint32 texture_slot, const String &uniform_name);
 
 	//************************************
 	// FrameBuffer Functions

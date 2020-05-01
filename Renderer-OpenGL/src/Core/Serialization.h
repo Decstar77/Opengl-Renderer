@@ -51,7 +51,7 @@ namespace cm
 		void ReadTexture(const Texture &texture);
 
 		void Create(int32 width, int32 height);
-		bool Write(const std::string &filename);
+		bool Write(const String &filename);
 		void Free();
 
 	};
@@ -71,7 +71,7 @@ namespace cm
 
 	public:
 		void Create(const GLMesh &mesh);
-		void Write(const std::string &file_name);
+		void Write(const String &file_name);
 		void Free();
 
 	public:

@@ -15,9 +15,18 @@ namespace cm
 
 	bool Equal(const Vec2 &a1, const Vec2 a2, const real32 &epsilon /*= FLOATING_POINT_ERROR_PRESCION*/)
 	{
-		real32 dx = Abs(a1.x) - Abs(a2.x);
-		real32 dy = Abs(a1.y) - Abs(a2.y);
+		real32 dx = Abs(a1.x - a2.x);
+		real32 dy = Abs(a1.y - a2.y);
 		return (dx < epsilon && dy < epsilon);
+	}
+
+	bool Equal(const Quat &q1, const Quat &q2, const real32 &epsilon /*= FLOATING_POINT_ERROR_PRESCION*/)
+	{
+		real32 dx = Abs(q1.x - q2.x);
+		real32 dy = Abs(q1.y - q2.y);
+		real32 dz = Abs(q1.z - q2.z);
+		real32 dw = Abs(q1.w - q2.w);
+		return (dx < epsilon && dy < epsilon && dz < epsilon && dw < epsilon);
 	}
 
 	real32 Dot(const Vec3 &a, const Vec3 &b)
@@ -82,17 +91,17 @@ namespace cm
 		return resx && resy && resz;
 	}
 
-	std::string ToString(const Vec3 &a)
+	String ToString(const Vec3 &a)
 	{
 		StringStream ss;
 		ss << '(' << a.x << ", " << a.y << ", " << a.z << ')';
 		return ss.str();
 	}
 
-	std::string ToString(const Mat3 &a)
+	String ToString(const Mat3 &a)
 	{
 		StringStream ss;
-		std::string space = "            ";
+		String space = "            ";
 		ss << "| " << a.arr[0] << space << a.arr[1] << space << a.arr[2] << " |" << '\n';
 		ss << "| " << a.arr[3] << space << a.arr[4] << space << a.arr[5] << " |" << '\n';
 		ss << "| " << a.arr[6] << space << a.arr[7] << space << a.arr[8] << " |" << '\n';
@@ -125,7 +134,7 @@ namespace cm
 		return Vec4(a.x, a.y, a.z, w);
 	}
 
-	std::string ToString(const Vec4 &a)
+	String ToString(const Vec4 &a)
 	{
 		StringStream ss;
 		ss << '(' << a.x << ", " << a.y << ", " << a.z << ", " << a.w << ')';
@@ -283,10 +292,32 @@ namespace cm
 		return column;
 	}
 
-	std::string ToString(const Mat4 &a)
+	cm::Vec3 DecomposeToScale(const Mat3 &a)
+	{
+		real32 x = Mag(a.row0);
+		real32 y = Mag(a.row1);
+		real32 z = Mag(a.row2);
+		Vec3 result = Vec3(x, y, z);
+		return result;
+	}
+
+	cm::Mat3 DecomposeToRotationMatrix(const Mat3 &a)
+	{
+		Vec3 scale = DecomposeToScale(a);
+		Mat3 result;
+
+		for (int32 i = 0; i < 3; i++)
+		{
+			result.data[i] = a.data[i] / scale.arr[i];
+		}
+
+		return result;
+	}
+
+	String ToString(const Mat4 &a)
 	{
 		StringStream ss;
-		std::string space = "            ";
+		String space = "            ";
 		ss << "| " << a.arr[0] << space << a.arr[1] << space << a.arr[2] << space << a.arr[3] << " |" << '\n';
 		ss << "| " << a.arr[4] << space << a.arr[5] << space << a.arr[6] << space << a.arr[7] << " |" << '\n';
 		ss << "| " << a.arr[8] << space << a.arr[9] << space << a.arr[10] << space << a.arr[11] << " |" << '\n';
@@ -609,6 +640,29 @@ namespace cm
 		return result * a;
 	}
 
+	cm::Mat3 ScaleDirection(const Mat3 &a, const real32 &k, Vec3 direction)
+	{
+		direction = Normalize(direction);
+
+		Vec3 i_prime(0, 0, 0);
+		i_prime.x = 1 + (k - 1) * direction.x * direction.x;
+		i_prime.y = (k - 1) * direction.x * direction.y;
+		i_prime.z = (k - 1) * direction.x * direction.z;
+
+		Vec3 j_prime(0, 0, 0);
+		j_prime.x = (k - 1) * direction.x * direction.y;
+		j_prime.y = 1 + (k - 1) * direction.y * direction.y;
+		j_prime.z = (k - 1) * direction.y * direction.z;
+
+		Vec3 k_prime(0, 0, 0);
+		k_prime.x = (k - 1) * direction.x * direction.z;
+		k_prime.y = (k - 1) * direction.y * direction.z;
+		k_prime.z = 1 + (k - 1) * direction.z * direction.z;
+
+		Mat3 result(i_prime, j_prime, k_prime);
+		return result;
+	}
+
 	Mat4 ScaleCardinal(Mat4 a, Vec3 direction)
 	{
 		a.row0 = a.row0 * direction.x;
@@ -777,7 +831,7 @@ namespace cm
 				
 		if (Equal(Vec2(sp.x, sp.y), Vec2(0)))
 		{
-			euler.x = 2.0 * atan2(q.w, q.x);
+			euler.x = 2.0f * atan2(q.w, q.x);
 		}
 		else
 		{
@@ -912,7 +966,7 @@ namespace cm
 		return Quat(a.x / m, a.y / m, a.z / m, a.w / m);
 	}
 
-	std::string ToString(const Quat & a)
+	String ToString(const Quat & a)
 	{
 		StringStream ss;
 		ss << '(' << '{' << a.x << ", " << a.y << ", " << a.z << '}' << ' ' << a.w << ')';

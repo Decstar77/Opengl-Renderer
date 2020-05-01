@@ -1,22 +1,2 @@
-﻿  main.cpp
-  Animation.cpp
-  Camera.cpp
-  Debug.cpp
-  EditableMesh.cpp
-f:\renderer-opengl\renderer-opengl\src\core\editablemesh.cpp(91): warning C4267: 'argument': conversion from 'size_t' to 'uint32', possible loss of data
-  Editor.cpp
-  Renderer.cpp
-  Sandbox.cpp
-  Serialization.cpp
-  World.cpp
-  AssetLoader.cpp
-  Input.cpp
-  CosmicGeometry.cpp
-  CosmicMath.cpp
-f:\renderer-opengl\renderer-opengl\src\math\cosmicmath.cpp(780): warning C4244: '=': conversion from 'double' to 'real32', possible loss of data
-  CosmicNoise.cpp
-  OpenGL.cpp
-  Tutorials.cpp
-  Utility.cpp
-  Generating Code...
+﻿  Editor.cpp
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

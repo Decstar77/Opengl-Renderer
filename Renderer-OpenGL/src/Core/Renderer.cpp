@@ -11,7 +11,7 @@ namespace cm
 
 	}
 
-	void Informer::CreateUBO(const std::string &name, const LayoutBuffer &lbo, int32 binding_location)
+	void Informer::CreateUBO(const String &name, const LayoutBuffer &lbo, int32 binding_location)
 	{
 		UniformBuffer ubo;
 		ubo.lbo = lbo;
@@ -22,7 +22,7 @@ namespace cm
 		ubos.push_back(ubo);
 	}
 
-	void Informer::LinkShader(const std::string &name, Shader shader)
+	void Informer::LinkShader(const String &name, Shader shader)
 	{
 		int32 binding_location = ubo_data[name];
 		ShaderBindUniformBuffer(shader, binding_location, name);

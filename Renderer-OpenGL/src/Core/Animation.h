@@ -16,7 +16,7 @@ namespace cm
 		int32 parent_index = -1;
 
 		// @NOTE: Child bones indices. -1 is an invaild value
-		std::string name = "Empty";
+		String name = "Empty";
 		std::vector<int32> child_indices;
 	};
 
@@ -24,7 +24,7 @@ namespace cm
 	{
 	public:
 		int32 bone_index = -1;
-		std::string bone_name;
+		String bone_name;
 		std::vector<real32> postime;
 		std::vector<Vec3> poskeys;
 
@@ -48,7 +48,7 @@ namespace cm
 		real32 ticks_per_second = 0;
 		real32 animation_speed = 1;
 		AnimationFlags flags = AnimationFlags::Loop;
-		std::string name;
+		String name;
 		std::vector<AnimationFrames> frames;
 		std::vector<Bone> *working_bones;
 	
@@ -58,7 +58,7 @@ namespace cm
 	private:
 		void AnimateBones(const real &animation_time, Bone *bone, const Mat4 &parent_transform);
 
-		int32 GetAnimationChannel(const std::string &bone_name);
+		int32 GetAnimationChannel(const String &bone_name);
 
 		Vec3 CalculateInterpolatedScaling(const real32 &animation_time, const int32 &keyset_index);
 		Vec3 CalculateInterpolatedPosition(const real32 &animation_time, const int32 &keyset_index);
@@ -83,7 +83,7 @@ namespace cm
 		// @NOTE: All the animation key frames the corrapsond some of the bones
 		std::vector<Animation> animations;
 
-		void Play(const std::string &name);
+		void Play(const String &name);
 		void Play(uint32 animation_index);
 
 		void Update(real32 delta_time);		

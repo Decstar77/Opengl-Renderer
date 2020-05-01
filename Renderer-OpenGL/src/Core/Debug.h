@@ -29,11 +29,12 @@ namespace cm
 	public:
 		static uint32 window_height;
 		static uint32 window_width; 		
-		static StringStream logging_stream;
+		static StringStream log_info_stream;
+		static StringStream log_warnings_stream;
 		static DebugQueue debug_queue;
 
 	public:
-		static void Log(const std::string &msg);
+		static void Log(const String &msg);
 		static void Log(const bool &msg);
 		static void Log(const uint32 &msg);
 		static void Log(const int32 &msg);
@@ -42,7 +43,17 @@ namespace cm
 		static void Log(const Vec3 &msg);
 		static void Log(const Vec4 &msg);
 		static void Log(const Mat3 &msg);
-		static void Log(const Mat4 &msg);					   		 
+		static void Log(const Mat4 &msg);	
+		
+		static void LogWarning(const String &msg);
+		static void LogWarning(const uint32 &msg);
+		static void LogWarning(const int32 &msg);
+		static void LogWarning(const real32 &msg);
+
+		static void LogWarning(const Vec3 &msg);
+		static void LogWarning(const Vec4 &msg);
+		static void LogWarning(const Mat3 &msg);
+		static void LogWarning(const Mat4 &msg);
 		
 		static void AddPersistentLine(const Vec3 &a, const Vec3 &b);
 		static void AddIrresoluteLine(const Vec3 &a, const Vec3 &b);

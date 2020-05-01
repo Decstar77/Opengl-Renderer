@@ -510,10 +510,10 @@ namespace cm
 #define CHECK(type, loc)
 #endif
 
-	Shader CreateShader(std::string vertex_source, std::string fragment_source)
+	Shader CreateShader(String vertex_source, String fragment_source)
 	{
-		std::string vertex_code_str = vertex_source;
-		std::string fragment_code_str = fragment_source;
+		String vertex_code_str = vertex_source;
+		String fragment_code_str = fragment_source;
 
 
 		const char* vertex_code = vertex_code_str.c_str();
@@ -586,7 +586,7 @@ namespace cm
 		return {};
 	}
 
-	Shader CreateComputeShader(std::string source)
+	Shader CreateComputeShader(String source)
 	{
 		const char *shader_ = source.c_str();
 
@@ -766,7 +766,7 @@ namespace cm
 		glUseProgram(0);
 	}
 
-	uint32 GetUniformLocation(Shader *shader, const std::string &uniform_name)
+	uint32 GetUniformLocation(Shader *shader, const String &uniform_name)
 	{
 		if (shader->uniform_cache.find(uniform_name) != shader->uniform_cache.end())
 		{
@@ -780,51 +780,51 @@ namespace cm
 		}
 	}
 
-	void ShaderSetInt32(Shader *shader, const std::string &uniform_name, int x)
+	void ShaderSetInt32(Shader *shader, const String &uniform_name, int x)
 	{
 		uint32 loc = GetUniformLocation(shader, uniform_name);
 		CHECK("INT32", loc);
 		glUniform1i(loc, x);
 	}
 
-	void ShaderSetFloat(Shader *shader, const std::string &uniform_name, float x)
+	void ShaderSetFloat(Shader *shader, const String &uniform_name, float x)
 	{
 		uint32 loc = GetUniformLocation(shader, uniform_name);
 		CHECK("FLOAT", loc);
 		glUniform1f(loc, x);
 	}
 
-	void ShaderSetVec3(Shader *shader, const std::string &uniform_name, float x, float y, float z)
+	void ShaderSetVec3(Shader *shader, const String &uniform_name, float x, float y, float z)
 	{
 		uint32 loc = GetUniformLocation(shader, uniform_name);
 		CHECK("VEC3", loc);
 		glUniform3f(loc, x, y, z);
 	}
 
-	void ShaderSetVec3(Shader *shader, const std::string &uniform_name, float* data)
+	void ShaderSetVec3(Shader *shader, const String &uniform_name, float* data)
 	{
 		uint32 loc = GetUniformLocation(shader, uniform_name);
 		CHECK("VEC3", loc);
 		glUniform3fv(loc, 1, data);
 	}
 
-	void ShaderSetMat4(Shader *shader, const std::string &uniform_name, float* data)
+	void ShaderSetMat4(Shader *shader, const String &uniform_name, float* data)
 	{
 		uint32 loc = GetUniformLocation(shader, uniform_name);
 		CHECK("MAT4", loc);
 		glUniformMatrix4fv(loc, 1, false, data);
 	}
 
-	void ShaderBindUniformBuffer(const Shader &shader, uint32 binding_point, const std::string &uniform_name)
+	void ShaderBindUniformBuffer(const Shader &shader, uint32 binding_point, const String &uniform_name)
 	{
 		uint32 uniformBlockIndexRed = glGetUniformBlockIndex(shader.shader_program, uniform_name.c_str());
 		glUniformBlockBinding(shader.shader_program, uniformBlockIndexRed, binding_point);
 	}
 
-	void ShaderBindTexture(Shader &shader, const Texture &texture, uint32 texture_slot, const std::string &uniform_name)
+	void ShaderBindTexture(Shader &shader, const Texture &texture, uint32 texture_slot, const String &uniform_name)
 	{
 		uint32 loc = -1;
-		std::string name = uniform_name;
+		String name = uniform_name;
 		if (uniform_name == "")
 		{
 			name = texture.config.uniform_name;
@@ -832,7 +832,7 @@ namespace cm
 		loc = GetUniformLocation(&shader, name);
 		if (loc == -1)
 		{
-			std::string ss = "ERROR::SHADER::TEXTURE: " + shader.name + " " + uniform_name;
+			String ss = "ERROR::SHADER::TEXTURE: " + shader.name + " " + uniform_name;
 			LOGC(ss.c_str());
 		}
 		else
@@ -843,10 +843,10 @@ namespace cm
 		}		
 	}
 	
-	void ShaderBindCubeMap(Shader *shader, const CubeMap &cube_map, uint32 texture_slot, const std::string &uniform_name)
+	void ShaderBindCubeMap(Shader *shader, const CubeMap &cube_map, uint32 texture_slot, const String &uniform_name)
 	{
 		uint32 loc = -1;
-		std::string name = uniform_name;
+		String name = uniform_name;
 		if (uniform_name == "")
 		{
 			name = cube_map.config.uniform_name;
@@ -855,7 +855,7 @@ namespace cm
 		loc = GetUniformLocation(shader, name);
 		if (loc == -1)
 		{
-			std::string ss = "ERROR::SHADER::TEXTURE: " + shader->name + " " + uniform_name;
+			String ss = "ERROR::SHADER::TEXTURE: " + shader->name + " " + uniform_name;
 			LOGC(ss.c_str());
 		}
 		else
@@ -1156,10 +1156,10 @@ namespace cm
 
 	void GetOpenglStatistics(OpenGLStatistics *stats)
 	{
-		stats->vendor = std::string((const char*)glGetString(GL_VENDOR));
-		stats->renderer = std::string((const char*)glGetString(GL_RENDERER));
-		stats->version = std::string((const char*)glGetString(GL_VERSION));
-		stats->shading_lang = std::string((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+		stats->vendor = String((const char*)glGetString(GL_VENDOR));
+		stats->renderer = String((const char*)glGetString(GL_RENDERER));
+		stats->version = String((const char*)glGetString(GL_VERSION));
+		stats->shading_lang = String((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &stats->work_grp_cnt[0]);
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &stats->work_grp_cnt[1]);
@@ -1273,7 +1273,7 @@ namespace cm
 	void CubeMapGenerator::Create()
 	{
 		Assert(!created);
-		std::string vert_src = R"(
+		String vert_src = R"(
 			#version 330 core
 			layout (location = 0) in vec3 vpos;
 
@@ -1289,7 +1289,7 @@ namespace cm
 			}			
 		)";
 
-		std::string frag_src = R"(
+		String frag_src = R"(
 			#version 330 core
 			out vec4 FragColor;
 			in vec3 local_pos;
@@ -1379,7 +1379,7 @@ namespace cm
 	void EquirectangularGenerator::Create()
 	{
 		Assert(!created);
-		std::string vert_src = R"(
+		String vert_src = R"(
 			#version 330 core
 			layout (location = 0) in vec3 vpos;
 			layout (location = 1) in vec3 vnormal;
@@ -1394,7 +1394,7 @@ namespace cm
 			}			
 		)";
 
-		std::string frag_src = R"(
+		String frag_src = R"(
 			#version 330 core
 			out vec4 FragColor;
 
@@ -1485,7 +1485,7 @@ namespace cm
 	void IrradianceGenerator::Create()
 	{
 		Assert(!created);
-		std::string vert_src = R"(
+		String vert_src = R"(
 			#version 330 core
 			layout (location = 0) in vec3 vpos;
 
@@ -1501,7 +1501,7 @@ namespace cm
 			}			
 		)";
 
-		std::string frag_src = R"(
+		String frag_src = R"(
 		#version 330 core
 		out vec4 FragColor;
 		in vec3 local_pos;
@@ -1611,7 +1611,7 @@ namespace cm
 	void PrefilterGenerator::Create()
 	{
 		Assert(!created);
-		std::string vert_src = R"(
+		String vert_src = R"(
 			#version 330 core
 			layout (location = 0) in vec3 vpos;
 
@@ -1627,7 +1627,7 @@ namespace cm
 			}			
 		)";
 
-		std::string frag_src = R"(
+		String frag_src = R"(
 			#version 330 core
 			out vec4 FragColor;
 			in vec3 WorldPos;
@@ -1821,7 +1821,7 @@ namespace cm
 	void LookUpTextureGenerator::Create()
 	{
 		Assert(!created);
-		std::string vert_src = R"(
+		String vert_src = R"(
 			#version 330 core
 			layout (location = 0) in vec3 vpos;
 			layout (location = 1) in vec3 vnormal;
@@ -1837,7 +1837,7 @@ namespace cm
 		)";
 
 
-		std::string frag_src = R"(
+		String frag_src = R"(
 			#version 330 core
 			out vec2 FragColor;
 
@@ -2093,7 +2093,7 @@ namespace cm
 	{
 		Assert(!created);
 		Assert(kernel_size <= 1000); // @REASON: Making sure things don't get out of hand.
-		std::string vert_src = R"(
+		String vert_src = R"(
 			#version 330 core
 			layout (location = 0) in vec3 vpos;
 			layout (location = 1) in vec3 vnormal;
@@ -2108,7 +2108,7 @@ namespace cm
 			}			
 		)";
 
-		std::string frag_src = R"(
+		String frag_src = R"(
 			#version 330 core
 			out vec4 out_colour;
 
@@ -2225,7 +2225,7 @@ namespace cm
 		Assert(kernel_size <= 20 && kernel_size >= 1);			// @REASON: This the make in shader. Just making sure things do not get out of hand
 		Assert(downsample_mul >= 0.1 && downsample_mul <= 1);	// @REASON: Just making sure things do not get out of hand
 		Assert(iterations <= 4 && iterations >= 1);				// @REASON: Just making sure things do not get out of hand
-		std::string horizontal_vert_src = R"(
+		String horizontal_vert_src = R"(
 			#version 330 core
 			layout (location = 0) in vec3 vpos;
 			layout (location = 1) in vec3 vnormal;
@@ -2245,7 +2245,7 @@ namespace cm
 			}			
 		)";
 
-		std::string vertical_vert_src = R"(
+		String vertical_vert_src = R"(
 			#version 330 core
 			layout (location = 0) in vec3 vpos;
 			layout (location = 1) in vec3 vnormal;
@@ -2265,7 +2265,7 @@ namespace cm
 			}			
 		)";
 
-		std::string frag_src = R"(
+		String frag_src = R"(
 			#version 330 core
 			out vec4 g_colour;
 
@@ -2293,7 +2293,7 @@ namespace cm
 			}		
 		)";
 
-		std::string upsample_vert_src = R"(
+		String upsample_vert_src = R"(
 			#version 330 core
 			layout (location = 0) in vec3 vpos;
 			layout (location = 1) in vec3 vnormal;
@@ -2308,7 +2308,7 @@ namespace cm
 			}			
 		)";
 
-		std::string upsample_frag_src = R"(
+		String upsample_frag_src = R"(
 			#version 330 core
 			out vec4 out_colour;
 
@@ -2503,7 +2503,7 @@ namespace cm
 		Assert(!created);
 		Assert(src_width != 0);
 		Assert(src_height != 0);
-		std::string vert_src = R"(
+		String vert_src = R"(
 			#version 330 core
 			layout (location = 0) in vec3 vpos;
 			layout (location = 1) in vec3 vnormal;
@@ -2518,7 +2518,7 @@ namespace cm
 			}			
 		)";
 
-		std::string frag_src = R"(
+		String frag_src = R"(
 			#version 330 core
 			out vec4 out_colour;
 

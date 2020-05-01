@@ -14,7 +14,7 @@ namespace cm
 	}
 
 
-	bool BitmapExport::Write(const std::string &filename) {
+	bool BitmapExport::Write(const String &filename) {
 
 		BitmapFileHeader fileHeader;
 		BitmapInfoHeader infoHeader;
@@ -94,7 +94,7 @@ namespace cm
 		created = true;
 	}
 
-	void MeshExport::Write(const std::string &file_name)
+	void MeshExport::Write(const String &file_name)
 	{
 		std::ofstream file;
 		file.open(file_name, std::ios::out);
@@ -110,7 +110,7 @@ namespace cm
 				file << std::endl;
 			}
 			real32 vert = vertex_data[i];
-			std::string svert = std::to_string(vert);
+			String svert = std::to_string(vert);
 			file << svert << ", ";
 		}
 
@@ -122,7 +122,7 @@ namespace cm
 				file << std::endl;
 			}
 			real32 ind = static_cast<real32>(index_data[i]);
-			std::string sind = std::to_string(ind);
+			String sind = std::to_string(ind);
 			file << sind << ", ";
 		}
 

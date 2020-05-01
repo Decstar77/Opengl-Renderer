@@ -209,6 +209,7 @@ int main()
 	transform_widget_shader.config.src_frag = ReadFile("res/engine/shaders/editor_widget_frag.glsl");
 	CreateShader(&transform_widget_shader);
 
+
 	//************************************
 	// Load mesh assets
 	//************************************
@@ -221,6 +222,7 @@ int main()
 	model_importer.model_paths.push_back("res/models/sphere.obj");
 	model_importer.model_paths.push_back("res/engine/meshes/translation_widget.dae");
 	model_importer.model_paths.push_back("res/engine/meshes/rotation_widget.dae");
+	model_importer.model_paths.push_back("res/engine/meshes/scalling_widget.dae");
 	model_importer.Load();
 	StandardMeshes::sphere = model_importer.resulting_meshes[1].CreateMesh(true);
 	
@@ -229,11 +231,14 @@ int main()
 
 	RotationWidget rotation_widget;
 	rotation_widget.Create(model_importer.resulting_meshes[3].CreateMesh());
-	
+
+	ScalingWidget scaling_widget;
+	scaling_widget.Create(model_importer.resulting_meshes[4].CreateMesh());
+
 	//************************************
 	// Load texture assets
 	//************************************
-
+#if 0
 	TextureImportMultiThread texture_importer_multi;
 	texture_importer_multi.SetTexturePath("res/botdemo/textures/Sky.jpg");
 	texture_importer_multi.Load();
@@ -241,7 +246,7 @@ int main()
 	Texture demo_sky_box;
 	demo_sky_box.config = *texture_importer_multi.GetConfig();	
 	CreateTexture(&demo_sky_box, texture_importer_multi.GetData()->data());
-
+#endif
 
 	// @TODO: Free is FAR down the file
 	TextureImport texture_importer_float;
@@ -274,7 +279,6 @@ int main()
 	demo_floor_orm_map.config.mipmaps = true;
 	CreateTexture(&demo_floor_orm_map, texture_importer_float.texture_data[2].data());
 
-	Texture demo_skybox;
 		
 	//************************************
 	// Initialize imported meshes 
@@ -614,12 +618,12 @@ int main()
 	RenderSettings render_settings;
 	
 	EditorConsole console;
-	console.Log("*****WELCOME TO A BAD RENDERER*****");
-	console.Log("General Stats");
-	console.Log("Vendor: " + opengl_stats.vendor);
-	console.Log("Renderer: " + opengl_stats.renderer);
-	console.Log("Version: " + opengl_stats.version);
-	console.Log("Shader lang: " + opengl_stats.shading_lang);
+	console.LogInfo("*****WELCOME TO A BAD RENDERER*****");
+	console.LogInfo("General Stats");
+	console.LogInfo("Vendor: " + opengl_stats.vendor);
+	console.LogInfo("Renderer: " + opengl_stats.renderer);
+	console.LogInfo("Version: " + opengl_stats.version);
+	console.LogInfo("Shader lang: " + opengl_stats.shading_lang);
 
 	EditorRenderSettingsWindow editor_render_window;
 	editor_render_window.delta_time = 0;
@@ -707,14 +711,8 @@ int main()
 
 		editor_worldobject_spawner.UpdateAndDraw();
 		
-		editor_world_object_inspector.world_object = selected_world_object;
-		editor_world_object_inspector.UpdateAndDraw();
-		if (selected_world_object)
-		{
-			rotation_widget.SetTransform(*selected_world_object->GetTransform());
-			translation_widget.SetTransform(*selected_world_object->GetTransform());
-		}
-		
+		editor_world_object_inspector.SetWorldObject(selected_world_object);
+		editor_world_object_inspector.UpdateAndDraw();	
 		
 		EditorEndFrame();
 
@@ -731,10 +729,48 @@ int main()
 		// @NOTE: Clear all the buffers
 		ClearAllBuffers();
 #endif
-
+	
 		//************************************
 		// Process Custom Events
 		//************************************		
+
+		// @NOTE: Update the 3D control wigets. 
+		if (selected_world_object)
+		{
+			scaling_widget.SetTransform(*selected_world_object->GetTransform());
+			rotation_widget.SetTransform(*selected_world_object->GetTransform());
+			translation_widget.SetTransform(*selected_world_object->GetTransform());
+
+			if (Input::GetKeyJustDown(GLFW_KEY_T))
+			{
+				current_widget = (current_widget == &translation_widget) ? nullptr : &translation_widget;
+			}
+
+			if (Input::GetKeyJustDown(GLFW_KEY_R))
+			{
+				current_widget = (current_widget == &rotation_widget) ? nullptr : &rotation_widget;
+			}
+
+			if (Input::GetKeyJustDown(GLFW_KEY_F))
+			{
+				current_widget = (current_widget == &scaling_widget) ? nullptr : &scaling_widget;
+			}
+
+			if (Input::GetKeyJustDown(GLFW_KEY_GRAVE_ACCENT))
+			{
+				if (current_widget) {
+					if (current_widget->IsObjectAligning()) {
+						current_widget->WorldAlign();
+					}
+					else {
+						current_widget->ObjectAlign();
+					}
+				}
+			}
+		}
+
+
+
 
 		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_F5))
 		{
@@ -808,7 +844,6 @@ int main()
 						Transform *transform = selected_world_object->GetTransform();
 						GeometricCollider *collider = selected_world_object->GetCollider();
 						current_widget->Update(cam_ray, transform);
-
 						if (collider)
 						{
 							collider->Update(transform);
@@ -823,39 +858,8 @@ int main()
 			}
 		}
 
-		if (Input::GetKeyJustDown(GLFW_KEY_GRAVE_ACCENT))
-		{
-			if (translation_widget.IsObjectAligning()) {
-				translation_widget.WorldAlign();
-			}
-			else {
-				translation_widget.ObjectAlign();
-			}
-			
-			if (rotation_widget.IsObjectAligning()) {
-				rotation_widget.WorldAlign();
-			}
-			else {
-				rotation_widget.ObjectAlign();
-			}
-		}
 
-		if (Input::GetKeyJustDown(GLFW_KEY_T))
-		{			
-			if (selected_world_object)
-			{				
-				current_widget = (current_widget == &translation_widget) ? nullptr : &translation_widget;
-			}
-		}
 
-		if (Input::GetKeyJustDown(GLFW_KEY_R))
-		{	
-			if (selected_world_object)
-			{
-				current_widget = (current_widget == &rotation_widget) ? nullptr : &rotation_widget;
-			}			
-		}
-		
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
 		{
 
@@ -1258,13 +1262,14 @@ int main()
 		// @NOTE: Because we disable the depth buffer when drawing the screen space quad. We can now draw anything with depth on top of it
 		//		: for debug reasons
 		
+			   
 		if (selected_world_object)
 		{		
 			BindShader(transform_widget_shader);
 			if (current_widget)
 			{
 				ShaderSetMat4(&transform_widget_shader, "model", current_widget->GetTransform()->CalcTransformMatrix().arr);
-				RenderMesh(transform_widget_shader, current_widget->GetMeshForRender());
+				RenderMesh(transform_widget_shader, current_widget->GetMeshForRender());			
 			}
 
 			GeometricCollider* collider = selected_world_object->GetCollider();
@@ -1293,8 +1298,9 @@ int main()
 			}
 		}
 
-		Debug::Update(camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix);
-		
+
+
+		Debug::Update(camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix);		
 		Debug::DrawLines();
 		
 		////////////////////

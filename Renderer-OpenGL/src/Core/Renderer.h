@@ -11,16 +11,16 @@ namespace cm
 	class Informer
 	{
 	public:		
-		std::unordered_map<std::string, int32> ubo_data;
+		std::unordered_map<String, int32> ubo_data;
 		std::vector<UniformBuffer> ubos;
 	public:
 		Informer();
 		~Informer();
 		
-		void CreateUBO(const std::string &name, const LayoutBuffer &lbo, int32 binding_location);
-		void LinkShader(const std::string &name, Shader shader);
+		void CreateUBO(const String &name, const LayoutBuffer &lbo, int32 binding_location);
+		void LinkShader(const String &name, Shader shader);
 		template<typename T>
-		void UpdateUBO(const std::string &name, std::vector<T> data) 
+		void UpdateUBO(const String &name, std::vector<T> data) 
 		{ WriteBufferData(&ubos[ubo_data.at(name)], data, 0); }
 
 	};

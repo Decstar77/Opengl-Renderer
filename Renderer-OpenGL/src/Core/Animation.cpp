@@ -4,7 +4,7 @@
 
 namespace cm
 {	   	 
-	void AnimationController::Play(const std::string &name)
+	void AnimationController::Play(const String &name)
 	{
 		for (uint32 i = 0; i < animations.size(); i++)
 		{
@@ -65,7 +65,7 @@ namespace cm
 
 	void Animation::AnimateBones(const real &animation_time, Bone *bone, const Mat4 &parent_transform)
 	{
-		std::string bone_name = bone->name;
+		String bone_name = bone->name;
 		Mat4 node_transform = bone->node_transform_matrix;
 
 		// @NOTE: Returns -1 if nothing is found
@@ -99,7 +99,7 @@ namespace cm
 		}
 	}
 
-	int32 Animation::GetAnimationChannel(const std::string &bone_name)
+	int32 Animation::GetAnimationChannel(const String &bone_name)
 	{
 		for (uint32 i = 0; i < frames.size(); i++)
 		{

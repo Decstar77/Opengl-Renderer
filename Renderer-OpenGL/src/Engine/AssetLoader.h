@@ -50,7 +50,7 @@ namespace cm
 
 		std::vector<EditableMesh> resulting_meshes;
 		std::vector<AnimationController> resulting_animation_controllers;
-		std::vector<std::string> model_paths;
+		std::vector<String> model_paths;
 
 	public:
 		bool Load();		
@@ -67,7 +67,7 @@ namespace cm
 
 		std::vector<TextureConfig> texture_configs;
 		std::vector<std::vector<real32>> texture_data;
-		std::vector<std::string> texture_paths;
+		std::vector<String> texture_paths;
 
 	public:
 		bool Load();	
@@ -94,7 +94,7 @@ namespace cm
 		bool Free();
 		bool IsLoaded();
 		bool IsWorking();
-		bool SetTexturePath( const std::string &path );
+		bool SetTexturePath( const String &path );
 		
 		TextureConfig *GetConfig();
 		std::vector<uint8> *GetData();
@@ -102,9 +102,9 @@ namespace cm
 
 
 
-	std::string ReadFile(const std::string &file_directory);
+	String ReadFile(const String &file_directory);
 	
-	bool LoadTexture(std::vector<uint8> *storage, TextureConfig *config, const std::string &file_directory);
+	bool LoadTexture(std::vector<uint8> *storage, TextureConfig *config, const String &file_directory);
 
 
 	

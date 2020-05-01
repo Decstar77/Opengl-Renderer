@@ -88,7 +88,7 @@ namespace cm
 			data.push_back(vert.texture_coord.y);
 		}
 		
-		CreateGLMesh(&mesh, l, data.data(), data.size() * sizeof(real32), indices.data(), indices.size() * sizeof(uint32));
+		CreateGLMesh(&mesh, l, data.data(), (uint32)data.size() * sizeof(real32), indices.data(), (uint32)indices.size() * sizeof(uint32));
 		return mesh;
 	}
 

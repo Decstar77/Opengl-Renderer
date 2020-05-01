@@ -90,7 +90,7 @@ namespace cm
 		std::vector<Vertex> vertices;
 		std::vector<uint32> indices;
 
-		std::string name;		
+		String name;		
 		bool has_positions = false;
 		bool has_normals = false;
 		bool has_texture_coords = false;
