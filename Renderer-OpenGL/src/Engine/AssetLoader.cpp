@@ -16,11 +16,12 @@ namespace cm
 		return ss.str();
 	}
 
-	bool LoadTexture(std::vector<uint8> *storage, TextureConfig *config, const String &file_directory)
+	bool LoadTexture(std::vector<uint8> *storage, TextureConfig *config, const String &file_directory, const bool &flip)
 	{
 		int32 width = 0;
 		int32 height = 0;
 		int32 nrChannels = 0;
+		stbi_set_flip_vertically_on_load(flip);
 		uint8 *data = stbi_load(file_directory.c_str(), &width, &height, &nrChannels, 0);
 		
 		if (data != nullptr)
@@ -60,7 +61,7 @@ namespace cm
 	{
 		done.store(false);
 		working.store(true);
-		LoadTexture(&texture_data, &texture_config, texture_path);
+		LoadTexture(&texture_data, &texture_config, texture_path, flip_image);
 		working.store(false);
 		done.store(true);
 	}

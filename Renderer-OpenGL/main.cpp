@@ -29,11 +29,7 @@ static float delta_time = 0;
 static bool DRAW_LIGHT_POSITIONS = false;
 static bool move_camera = false;
 
-// @TODO: Make a context strct
-ControlWidget selected_widget_mode = ControlWidget::none;
-WorldObject *selected_world_object = nullptr;
-Widget3D *current_widget = nullptr;
-
+EditorContext currnet_context;
 
 void MousePositionCallBack(GLFWwindow *widow, double xpos, double ypos)
 {
@@ -240,14 +236,28 @@ int main()
 	//************************************
 #if 0
 	TextureImportMultiThread texture_importer_multi;
+	texture_importer_multi.flip_image = true;
 	texture_importer_multi.SetTexturePath("res/botdemo/textures/Sky.jpg");
 	texture_importer_multi.Load();
 	
-	Texture demo_sky_box;
-	demo_sky_box.config = *texture_importer_multi.GetConfig();	
-	CreateTexture(&demo_sky_box, texture_importer_multi.GetData()->data());
-#endif
+	Texture demo_skybox_eqi;
+	demo_skybox_eqi.config = *texture_importer_multi.GetConfig();	
+	CreateTexture(&demo_skybox_eqi, texture_importer_multi.GetData()->data());
+	
+	CubeMap demo_skybox;
+	demo_skybox.config.width = 512;
+	demo_skybox.config.height = 512;
+	CreateCubeMap(&demo_skybox, nullptr);
+	
+	CubeMapGenerator cubemap_generator;	
+	cubemap_generator.Create();
+	cubemap_generator.Convert(demo_skybox_eqi, &demo_skybox);
+	cubemap_generator.Free();
 
+	FreeTexture(&demo_skybox_eqi);
+
+#endif
+#if 0
 	// @TODO: Free is FAR down the file
 	TextureImport texture_importer_float;
 	texture_importer_float.flip = false;	
@@ -279,6 +289,8 @@ int main()
 	demo_floor_orm_map.config.mipmaps = true;
 	CreateTexture(&demo_floor_orm_map, texture_importer_float.texture_data[2].data());
 
+	texture_importer_float.Free();
+#endif
 		
 	//************************************
 	// Initialize imported meshes 
@@ -575,7 +587,7 @@ int main()
 	//blurer.shader = testing_blur_shader;
 	//blurer.Create(post_processing.colour0_texture_attachment.config.width, post_processing.colour0_texture_attachment.config.height, 5);
 
-	texture_importer_float.Free();
+
 
 	World main_world;
 
@@ -655,7 +667,8 @@ int main()
 	bool toggel = false;
 
 	bool mouse_input_for_editor_window = false;
-	selected_world_object = &test_cube_guy;
+	currnet_context.selected_world_object = &test_cube_guy;
+
 	while (!glfwWindowShouldClose(window))
 	{
 		//************************************
@@ -711,7 +724,7 @@ int main()
 
 		editor_worldobject_spawner.UpdateAndDraw();
 		
-		editor_world_object_inspector.SetWorldObject(selected_world_object);
+		editor_world_object_inspector.SetWorldObject(currnet_context.selected_world_object);
 		editor_world_object_inspector.UpdateAndDraw();	
 		
 		EditorEndFrame();
@@ -735,35 +748,35 @@ int main()
 		//************************************		
 
 		// @NOTE: Update the 3D control wigets. 
-		if (selected_world_object)
+		if (currnet_context.selected_world_object)
 		{
-			scaling_widget.SetTransform(*selected_world_object->GetTransform());
-			rotation_widget.SetTransform(*selected_world_object->GetTransform());
-			translation_widget.SetTransform(*selected_world_object->GetTransform());
+			scaling_widget.SetTransform(*currnet_context.selected_world_object->GetTransform());
+			rotation_widget.SetTransform(*currnet_context.selected_world_object->GetTransform());
+			translation_widget.SetTransform(*currnet_context.selected_world_object->GetTransform());
 
 			if (Input::GetKeyJustDown(GLFW_KEY_T))
 			{
-				current_widget = (current_widget == &translation_widget) ? nullptr : &translation_widget;
+				currnet_context.current_widget = (currnet_context.current_widget == &translation_widget) ? nullptr : &translation_widget;
 			}
 
 			if (Input::GetKeyJustDown(GLFW_KEY_R))
 			{
-				current_widget = (current_widget == &rotation_widget) ? nullptr : &rotation_widget;
+				currnet_context.current_widget = (currnet_context.current_widget == &rotation_widget) ? nullptr : &rotation_widget;
 			}
 
 			if (Input::GetKeyJustDown(GLFW_KEY_F))
 			{
-				current_widget = (current_widget == &scaling_widget) ? nullptr : &scaling_widget;
+				currnet_context.current_widget = (currnet_context.current_widget == &scaling_widget) ? nullptr : &scaling_widget;
 			}
 
 			if (Input::GetKeyJustDown(GLFW_KEY_GRAVE_ACCENT))
 			{
-				if (current_widget) {
-					if (current_widget->IsObjectAligning()) {
-						current_widget->WorldAlign();
+				if (currnet_context.current_widget) {
+					if (currnet_context.current_widget->IsObjectAligning()) {
+						currnet_context.current_widget->WorldAlign();
 					}
 					else {
-						current_widget->ObjectAlign();
+						currnet_context.current_widget->ObjectAlign();
 					}
 				}
 			}
@@ -786,18 +799,18 @@ int main()
 			{
 				// @NOTE: Do we hit a control widget
 				bool using_widget = false;
-				if (selected_world_object)
+				if (currnet_context.selected_world_object)
 				{
-					if (current_widget)
+					if (currnet_context.current_widget)
 					{
-						Transform transform = *selected_world_object->GetTransform();
-						using_widget = current_widget->Select(cam_ray, transform);			
+						Transform transform = *currnet_context.selected_world_object->GetTransform();
+						using_widget = currnet_context.current_widget->Select(cam_ray, transform);
 					}				
 				}
 				if (!using_widget)
 				{
 					// @NOTE: Assume we miss everything
-					selected_world_object = nullptr;
+					currnet_context.selected_world_object = nullptr;
 					for (int32 i = 0; i < main_world.objects.size(); i++)
 					{
 						WorldObject *current = main_world.objects[i];
@@ -811,13 +824,13 @@ int main()
 						if (collider->CheckCollision(cam_ray))
 						{
 							// @NOTE: Select our new object
-							selected_world_object = current;
+							currnet_context.selected_world_object = current;
 
 							// @NOTE: Snap the controll widgets to the newly selected object
-							if (current_widget)
+							if (currnet_context.current_widget)
 							{
-								Transform transform = *selected_world_object->GetTransform();
-								current_widget->SetTransform(transform);
+								Transform transform = *currnet_context.selected_world_object->GetTransform();
+								currnet_context.current_widget->SetTransform(transform);
 							}
 
 							// @NOTE: Leave the loop as we've found our new object
@@ -837,13 +850,13 @@ int main()
 				fh += 0.4f * delta_time;
 				//point_light.light_position.x += 4 * delta_time;
 
-				if (selected_world_object)
+				if (currnet_context.selected_world_object)
 				{
-					if (current_widget)
+					if (currnet_context.current_widget)
 					{
-						Transform *transform = selected_world_object->GetTransform();
-						GeometricCollider *collider = selected_world_object->GetCollider();
-						current_widget->Update(cam_ray, transform);
+						Transform *transform = currnet_context.selected_world_object->GetTransform();
+						GeometricCollider *collider = currnet_context.selected_world_object->GetCollider();
+						currnet_context.current_widget->Update(cam_ray, transform);
 						if (collider)
 						{
 							collider->Update(transform);
@@ -971,37 +984,27 @@ int main()
 			Transform transform = *obj->GetTransform();
 			Material mat		= *obj->GetMaterial();
 			Mat4 transform_matrix = obj->GetTransformMatrix();
-					   
-			if (mat.diffuse_texture != nullptr)
+				
+			
+			// @TODO: Some sort of sorting (TextureSet) ?? For this non instanced draw call
+			if (mat.HasTextures())
 			{
-				ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_colour_map, 0, "colour_map");
+				// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
 				ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", Vec3(1).arr);
-			}
-			else
-			{
-				ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 0, "colour_map");
-				ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", mat.diffuse.arr);
-			}
-
-			if (mat.normal_texture != nullptr)
-			{
-				ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_normal_map, 1, "normal_map");
 				ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 1);
-			}
-			else
-			{
-				ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 0);
-			}
-
-			if (mat.occlusion_roughness_metallic != nullptr)
-			{
-				ShaderBindTexture(worldspace_gbuffer_shader, demo_floor_orm_map, 2, "orme_map");
 				ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1).arr);
+
+
+				mat.SetTextures(&worldspace_gbuffer_shader);
 			}
 			else
 			{
+				// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
+				ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 0, "colour_map");
 				ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 2, "orme_map");
-				ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1, mat.roughness, mat.metalness).arr);
+				ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 0);
+				
+				mat.SetValues(&worldspace_gbuffer_shader);
 			}
 
 			ShaderSetMat4(&worldspace_gbuffer_shader, "model", transform_matrix.arr);
@@ -1014,9 +1017,9 @@ int main()
 #if 1
 		BindShader(worldspace_gbuffer_anim_shader);
 
-		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "colour_set", Vec3(0.7).arr);
+		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "colour_set", test_cube_guy.material.diffuse.arr);
 		ShaderSetInt32(&worldspace_gbuffer_anim_shader, "normal_set", 0);
-		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "orm_set", Vec3(1, 0.5, 0.1).arr);
+		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "orm_set", Vec3(1, test_cube_guy.material.roughness, test_cube_guy.material.metalness).arr);
 
 		test_cube_guy.animation_controller.Play(0);
 		test_cube_guy.animation_controller.Update(delta_time);
@@ -1050,36 +1053,24 @@ int main()
 			Material mat = *obj->GetMaterial();
 			Mat4 transform_matrix = obj->GetTransformMatrix();
 
-			if (mat.diffuse_texture != nullptr)
+			if (mat.HasTextures())
 			{
-				ShaderBindTexture(viewspace_gbuffer_shader, demo_floor_colour_map, 0, "colour_map");
+				// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
 				ShaderSetVec3(&viewspace_gbuffer_shader, "colour_set", Vec3(1).arr);
-			}
-			else
-			{
-				ShaderBindTexture(viewspace_gbuffer_shader, StandardTextures::GetOneTexture(), 0, "colour_map");
-				ShaderSetVec3(&viewspace_gbuffer_shader, "colour_set", mat.diffuse.arr);
-			}
-
-			if (mat.normal_texture != nullptr)
-			{
-				ShaderBindTexture(viewspace_gbuffer_shader, demo_floor_normal_map, 1, "normal_map");
 				ShaderSetInt32(&viewspace_gbuffer_shader, "normal_set", 1);
-			}
-			else
-			{
-				ShaderSetInt32(&viewspace_gbuffer_shader, "normal_set", 0);
-			}
-			
-			if (mat.occlusion_roughness_metallic != nullptr)
-			{
-				ShaderBindTexture(viewspace_gbuffer_shader, demo_floor_orm_map, 2, "orme_map");
 				ShaderSetVec3(&viewspace_gbuffer_shader, "orm_set", Vec3(1).arr);
+
+
+				mat.SetTextures(&viewspace_gbuffer_shader);
 			}
 			else
 			{
+				// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
+				ShaderBindTexture(viewspace_gbuffer_shader, StandardTextures::GetOneTexture(), 0, "colour_map");
 				ShaderBindTexture(viewspace_gbuffer_shader, StandardTextures::GetOneTexture(), 2, "orme_map");
-				ShaderSetVec3(&viewspace_gbuffer_shader, "orm_set", Vec3(1, mat.roughness, mat.metalness).arr);			
+				ShaderSetInt32(&viewspace_gbuffer_shader, "normal_set", 0);
+
+				mat.SetValues(&viewspace_gbuffer_shader);
 			}
 
 
@@ -1181,20 +1172,20 @@ int main()
 		// Forward pass
 		//************************************
 			   
-		FrameBufferCopyDepth(worldspace_gbuffer, &post_processing_buffer);
-		BindFrameBuffer(post_processing_buffer);
+		//FrameBufferCopyDepth(worldspace_gbuffer, &post_processing_buffer);
+		//BindFrameBuffer(post_processing_buffer);
 
-		BindShader(cubemap_shader);
+		//BindShader(cubemap_shader);
 
-		ShaderSetMat4(&cubemap_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
-		ShaderSetMat4(&cubemap_shader, "view", camera_controller.main_camera.view_matrix.arr);
+		//ShaderSetMat4(&cubemap_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
+		//ShaderSetMat4(&cubemap_shader, "view", camera_controller.main_camera.view_matrix.arr);
+		//ShaderBindCubeMap(&cubemap_shader, demo_skybox, 0, "environmentMap");
 
-		//ShaderBindTexture(camera_controller, demo_sky_box, 0, "environmentMap");
-		DisableFaceCulling();
-		RenderMesh(cubemap_shader, StandardMeshes::Cube());
-		EnableFaceCulling();
-			   
-		UnbindFrameBuffer();
+		//DisableFaceCulling();
+		//RenderMesh(cubemap_shader, StandardMeshes::Cube());
+		//EnableFaceCulling();
+		//	   
+		//UnbindFrameBuffer();
 		//************************************
 		// Post processing pass
 		//************************************
@@ -1263,16 +1254,16 @@ int main()
 		//		: for debug reasons
 		
 			   
-		if (selected_world_object)
+		if (currnet_context.selected_world_object)
 		{		
 			BindShader(transform_widget_shader);
-			if (current_widget)
+			if (currnet_context.current_widget)
 			{
-				ShaderSetMat4(&transform_widget_shader, "model", current_widget->GetTransform()->CalcTransformMatrix().arr);
-				RenderMesh(transform_widget_shader, current_widget->GetMeshForRender());			
+				ShaderSetMat4(&transform_widget_shader, "model", currnet_context.current_widget->GetTransform()->CalcTransformMatrix().arr);
+				RenderMesh(transform_widget_shader, currnet_context.current_widget->GetMeshForRender());
 			}
 
-			GeometricCollider* collider = selected_world_object->GetCollider();
+			GeometricCollider* collider = currnet_context.selected_world_object->GetCollider();
 			if (collider)
 			{
 				switch (collider->GetColliderType())
@@ -1367,9 +1358,9 @@ int main()
 		
 		float time = static_cast<float> (elapsedTime.count());
 		delta_time = time * 0.001f * 0.001f;		
-
 		run_time += delta_time;
 
+		//LOG(delta_time);
 	}
 
 

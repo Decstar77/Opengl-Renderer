@@ -31,14 +31,6 @@ namespace cm
 		z_axis = 3
 	};
 
-	enum class ControlWidget
-	{
-		none = 0,
-		translation = 1,
-		rotation = 2,
-		scaling
-	};
-
 	class Widget3D
 	{
 	public:
@@ -138,6 +130,17 @@ namespace cm
 
 	private:
 		virtual void CalculateBoundingBoxes() override;
+	};
+
+	
+	// @NOTE: I think we have mutlible instances for undos ???
+	class EditorContext
+	{
+	public:
+		WorldObject *selected_world_object = nullptr;
+		Widget3D *current_widget = nullptr;
+
+
 	};
 
 

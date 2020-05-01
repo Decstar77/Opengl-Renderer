@@ -14,17 +14,15 @@ namespace cm
 		real metalness = 0;
 		real roughness = 0;
 
-		
-		// @TODO: These should be more like handels. But for my case I'm just assuming we never free any textures
 		Texture *diffuse_texture = nullptr;
 		Texture *normal_texture = nullptr;
 		Texture *occlusion_roughness_metallic = nullptr;
 		Texture *emssive_texture = nullptr;
-
-		Shader *forward_shader	= nullptr;
-		Shader *gbuffer_shader	= nullptr;
-		Shader *shadow_shader = nullptr;
-		Shader *instance_shader = nullptr;
+	
+	public:
+		bool HasTextures() const;
+		void SetTextures(Shader *shader);
+		void SetValues(Shader *shader);
 	};
 
 	struct PointLight 

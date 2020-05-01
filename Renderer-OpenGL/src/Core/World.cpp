@@ -77,4 +77,26 @@ namespace cm
 		return plane;
 	}
 
+	bool Material::HasTextures() const
+	{
+		return (diffuse_texture != nullptr) || (normal_texture != nullptr) || (occlusion_roughness_metallic != nullptr);
+	}
+
+	void Material::SetTextures(Shader *shader)
+	{
+		Assert(diffuse_texture != nullptr);
+		Assert(normal_texture!= nullptr);
+		Assert(occlusion_roughness_metallic != nullptr);
+		// @TODO: Texture storage look-up
+		ShaderBindTexture(*shader, *diffuse_texture, 0, "colour_map");
+		ShaderBindTexture(*shader, *normal_texture, 1, "normal_map");
+		ShaderBindTexture(*shader, *occlusion_roughness_metallic, 2, "orme_map");
+	}
+
+	void Material::SetValues(Shader *shader)
+	{		
+		ShaderSetVec3(shader, "colour_set", diffuse.arr);		
+		ShaderSetVec3(shader, "orm_set", Vec3(1, roughness, metalness).arr);
+	}
+
 }

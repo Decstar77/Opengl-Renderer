@@ -1232,22 +1232,34 @@ namespace cm
 		ImGui::Begin("Inspector");
 		if (world_object)
 		{
-			Transform *transform = world_object->GetTransform();
-			ImGui::Text("Object space transform");
-			value_changed = value_changed | ImGui::DragFloat3("Position", transform->position.arr, 0.1f);
-			value_changed = value_changed | ImGui::DragFloat3("Rotation", euler_angles.arr, 0.5f);
-			value_changed = value_changed | ImGui::DragFloat3("Scale", transform->scale.arr, 0.01f);
-			
-			// @NOTE: Apply the rotation
-			quat_angle = EulerToQuat(euler_angles);
-			transform->rotation = quat_angle;
-			
-			GeometricCollider *collider = world_object->GetCollider();
-			if (collider)
+			if (ImGui::TreeNode("Object transform"))
 			{
-				collider->Update(transform);
+				Transform *transform = world_object->GetTransform();
+				ImGui::Text("");
+				value_changed = value_changed | ImGui::DragFloat3("Position", transform->position.arr, 0.1f);
+				value_changed = value_changed | ImGui::DragFloat3("Rotation", euler_angles.arr, 0.5f);
+				value_changed = value_changed | ImGui::DragFloat3("Scale", transform->scale.arr, 0.01f);
+
+				// @NOTE: Apply the rotation
+				quat_angle = EulerToQuat(euler_angles);
+				transform->rotation = quat_angle;
+
+				GeometricCollider *collider = world_object->GetCollider();
+				if (collider) {
+					collider->Update(transform);
+				}
+				ImGui::TreePop();
+			}
+			if (ImGui::TreeNode("Material"))
+			{
+				Material *mat = world_object->GetMaterial();
+				ImGui::ColorPicker3("Diffuse", mat->diffuse.arr);
+				ImGui::DragFloat("Roughness", &mat->roughness, 0.02, 0.0, 1.0);
+				ImGui::DragFloat("Metalness", &mat->metalness, 0.02, 0.0, 1.0);
+				ImGui::TreePop();
 			}
 		}
+
 		ImGui::End();
 
 		return value_changed;

@@ -89,12 +89,16 @@ namespace cm
 		TextureConfig texture_config;
 		std::vector<uint8> texture_data;
 
+		
+
 	public:
 		void Load();
 		bool Free();
 		bool IsLoaded();
 		bool IsWorking();
 		bool SetTexturePath( const String &path );
+		
+		bool flip_image = false;
 		
 		TextureConfig *GetConfig();
 		std::vector<uint8> *GetData();

@@ -39,9 +39,8 @@
 					  printf(" Line: %d ", __LINE__); \
 					  printf(str, __VA_ARGS__); printf(" \n");
 #else
-	#define LOG(...)
-	#define LOGC(str)
-	#define LOGC(str, ...)
+#define LOG(...)
+#define LOGC(str, ...)
 #endif
 
 #define PNT_VBO_LAYOUT LayoutBuffer(std::vector<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2 }))
