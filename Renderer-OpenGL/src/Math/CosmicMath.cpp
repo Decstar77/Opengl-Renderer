@@ -84,14 +84,14 @@ namespace cm
 
 	std::string ToString(const Vec3 &a)
 	{
-		std::stringstream ss;
+		StringStream ss;
 		ss << '(' << a.x << ", " << a.y << ", " << a.z << ')';
 		return ss.str();
 	}
 
 	std::string ToString(const Mat3 &a)
 	{
-		std::stringstream ss;
+		StringStream ss;
 		std::string space = "            ";
 		ss << "| " << a.arr[0] << space << a.arr[1] << space << a.arr[2] << " |" << '\n';
 		ss << "| " << a.arr[3] << space << a.arr[4] << space << a.arr[5] << " |" << '\n';
@@ -127,7 +127,7 @@ namespace cm
 
 	std::string ToString(const Vec4 &a)
 	{
-		std::stringstream ss;
+		StringStream ss;
 		ss << '(' << a.x << ", " << a.y << ", " << a.z << ", " << a.w << ')';
 		return ss.str();
 
@@ -285,7 +285,7 @@ namespace cm
 
 	std::string ToString(const Mat4 &a)
 	{
-		std::stringstream ss;
+		StringStream ss;
 		std::string space = "            ";
 		ss << "| " << a.arr[0] << space << a.arr[1] << space << a.arr[2] << space << a.arr[3] << " |" << '\n';
 		ss << "| " << a.arr[4] << space << a.arr[5] << space << a.arr[6] << space << a.arr[7] << " |" << '\n';
@@ -914,7 +914,7 @@ namespace cm
 
 	std::string ToString(const Quat & a)
 	{
-		std::stringstream ss;
+		StringStream ss;
 		ss << '(' << '{' << a.x << ", " << a.y << ", " << a.z << '}' << ' ' << a.w << ')';
 		return ss.str();
 	}

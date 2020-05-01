@@ -33,15 +33,16 @@ DEMO:
 	MIRROR <---
 	UI <---
 
-	FFXA (DONE)
 	BLENDING <---
 	SHADOW <---
-	SSAO
 	INSTANCE RENDERING
+	SSAO (DONE)
+	FFXA (DONE)
 	BLOOM (DONE)
 	TONE MAPPING (DONE)
 	ANIMATION (DONE)
 	PBR (DONE)
+	WIDGETS (DONE)
 
 	
 RECAP:
@@ -63,24 +64,29 @@ Performace:
 TODO:
 	HIGH PRIO:
 		Inverse(mat3);
-		Mat4ToQuat();
 		Sort out shader mayhem !		
 		Rewrite EdiableMesh class.
 		Figure out how to write to gpu animation data nicely
 		Platform window needs abstraction
-		Finish bloom editor properties
+		Finish bloom editor (KERNEL)
 
-	MED PRIO:
-		RenderWorld function needs to go.
-				
+	MED PRIO:				
 		Implement array class. Im not sure if it worth it though... (HARRRRD)
 		Math lib need formating like opengl.h, const &&& (GARETH)
 
 	LOW PRIO:
-		OpenGL layout class		
-
-
-		Rotate point about another poitn
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	Rotate point about another poitn
 			Vec3 p = Vec3(0, 0, 1);
 	Vec3 f = Vec3(1, 1, 1);
 

@@ -444,13 +444,15 @@ namespace cm
 
 	void CreateFrameBuffer(FrameBuffer *fbo);
 
+	void FrameBufferCopyDepth(const FrameBuffer &src, FrameBuffer *dst);
+
 	void FrameBufferBindColourAttachtments(FrameBuffer *buffer);
 
 	void FrameBufferBindDepthAttachment(FrameBuffer *buffer);
 
 	void FrameBufferBindRenderAttachtment(FrameBuffer *buffer);
 
-	bool CheckFrameBuffer(const FrameBuffer &buffer); // Returns true if FrameBuffer is good 
+	bool CheckFrameBuffer(const FrameBuffer &buffer); 
 
 	//************************************
 	// Render Functions

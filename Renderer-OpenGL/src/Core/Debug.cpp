@@ -1,7 +1,7 @@
 #include "Debug.h"
 namespace cm
 {
-	std::stringstream Debug::logging_stream;
+	StringStream Debug::logging_stream;
 
 	cm::DebugQueue Debug::debug_queue;
 

@@ -7,7 +7,7 @@
 
 namespace cm
 {
-#pragma pack(2)
+#pragma pack(push, 1)
 	struct BitmapInfoHeader {
 		int32 headerSize{ 40 };
 		int32 width;
@@ -21,15 +21,16 @@ namespace cm
 		int32 colors{ 0 };
 		int32 importantColors{ 0 };
 	};
+#pragma pack(pop)
 
-#pragma pack(2)
+#pragma pack(push, 1)
 	struct BitmapFileHeader {
 		char header[2]{ 'B', 'M' };
 		int32_t fileSize;
 		int32_t reserved{ 0 };
 		int32_t dataOffset;
 	};
-
+#pragma pack(pop)
 
 	// @NOTE: Trying not to std::vector
 	// NOTE: This is more the editable mesh but for textures. Maybe we have something like Creators.h ??? Editables.h ?

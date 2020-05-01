@@ -14,7 +14,6 @@ layout (std140, binding = 0) uniform WorldMatrices
 
 out VS_OUT 
 {
-
 	vec3 transformed_position;
 	vec3 transformed_normal;
 	vec2 texture_coords;

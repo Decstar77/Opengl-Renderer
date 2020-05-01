@@ -1,16 +1,13 @@
 #include <glew.h>
 #include <GLFW/glfw3.h>
-#include <chrono>
 #include "src/Core.h"
 #include "src/OpenGL/RenderCommands.h"
 #include "src/Math/CosmicPhysics.h"
 #include "src/Math/CosmicNoise.h"
 #include "src/OpenGL/OpenGL.h"
-
 #include "src/Core/EditableMesh.h"
 #include "src/Core/Renderer.h"
 #include "src/Core/Editor.h"
-#include "Tutorials.h"
 #include "src/Core/Debug.h"
 #include "src/Engine/AssetLoader.h"
 #include "src/Engine/Input.h"
@@ -116,7 +113,6 @@ GLFWwindow* CreateRenderingWindow()
 	return window;
 }
 
-
 int main()
 {
 	window = CreateRenderingWindow();
@@ -214,23 +210,6 @@ int main()
 	CreateShader(&transform_widget_shader);
 
 	//************************************
-	// Load texture assets
-	//************************************
-	
-	// @TODO: Free is FAR down the file
-	TextureImport texture_importer;
-	texture_importer.flip = false;
-	texture_importer.texture_paths.push_back("res/textures/studio_small_03_2k.hdr");
-	texture_importer.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor2/Floor_BaseFloor_BaseColor.png");
-	texture_importer.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor2/Floor_BaseFloor_Normal.png");
-	texture_importer.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor2/Floor_BaseFloor_OcclusionRoughnessMetallic.png");
-	//texture_importer.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_BaseColor.png");
-	//texture_importer.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_Normal.png");
-	//texture_importer.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_OcclusionRoughnessMetallic.png");	
-
-	texture_importer.Load();
-
-	//************************************
 	// Load mesh assets
 	//************************************
 
@@ -240,45 +219,63 @@ int main()
 	model_importer.import_vertex_binorms_tangents = true;
 	model_importer.model_paths.push_back("res/botdemo/FloorSet/Floor.fbx");
 	model_importer.model_paths.push_back("res/models/sphere.obj");
+	model_importer.model_paths.push_back("res/engine/meshes/translation_widget.dae");
+	model_importer.model_paths.push_back("res/engine/meshes/rotation_widget.dae");
 	model_importer.Load();
 	StandardMeshes::sphere = model_importer.resulting_meshes[1].CreateMesh(true);
-
-
-	ModelImport editor_mesh_importer;
-	editor_mesh_importer.import_animations = true;
-	editor_mesh_importer.import_vertex_binorms_tangents = true;
-	editor_mesh_importer.model_paths.push_back("res/engine/meshes/translation_widget.dae");
-	editor_mesh_importer.model_paths.push_back("res/engine/meshes/rotation_widget.dae");
-	editor_mesh_importer.Load();
 	
-
 	TranslationWidget translation_widget;
-	translation_widget.Create(editor_mesh_importer.resulting_meshes[0].CreateMesh());
+	translation_widget.Create(model_importer.resulting_meshes[2].CreateMesh());
 
 	RotationWidget rotation_widget;
-	rotation_widget.Create(editor_mesh_importer.resulting_meshes[1].CreateMesh());
+	rotation_widget.Create(model_importer.resulting_meshes[3].CreateMesh());
 	
-	editor_mesh_importer.Free();
+	//************************************
+	// Load texture assets
+	//************************************
+
+	TextureImportMultiThread texture_importer_multi;
+	texture_importer_multi.SetTexturePath("res/botdemo/textures/Sky.jpg");
+	texture_importer_multi.Load();
+	
+	Texture demo_sky_box;
+	demo_sky_box.config = *texture_importer_multi.GetConfig();	
+	CreateTexture(&demo_sky_box, texture_importer_multi.GetData()->data());
+
+
+	// @TODO: Free is FAR down the file
+	TextureImport texture_importer_float;
+	texture_importer_float.flip = false;	
+	texture_importer_float.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor2/Floor_BaseFloor_BaseColor.png");
+	texture_importer_float.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor2/Floor_BaseFloor_Normal.png");
+	texture_importer_float.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor2/Floor_BaseFloor_OcclusionRoughnessMetallic.png");
+	//texture_importer.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_BaseColor.png");
+	//texture_importer.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_Normal.png");
+	//texture_importer.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_OcclusionRoughnessMetallic.png");	
+
+	texture_importer_float.Load();
 
 	//************************************
 	// Initialize imported textures
 	//************************************
 	
 	Texture demo_floor_colour_map;
-	demo_floor_colour_map.config = texture_importer.texture_configs[1];
+	demo_floor_colour_map.config = texture_importer_float.texture_configs[0];
 	demo_floor_colour_map.config.mipmaps = true;
-	CreateTexture(&demo_floor_colour_map, texture_importer.texture_data[1].data());
+	CreateTexture(&demo_floor_colour_map, texture_importer_float.texture_data[0].data());
 
 	Texture demo_floor_normal_map;
-	demo_floor_normal_map.config = texture_importer.texture_configs[2];
+	demo_floor_normal_map.config = texture_importer_float.texture_configs[1];
 	demo_floor_normal_map.config.mipmaps = true;
-	CreateTexture(&demo_floor_normal_map, texture_importer.texture_data[2].data());
+	CreateTexture(&demo_floor_normal_map, texture_importer_float.texture_data[1].data());
 
 	Texture demo_floor_orm_map;
-	demo_floor_orm_map.config = texture_importer.texture_configs[3];
+	demo_floor_orm_map.config = texture_importer_float.texture_configs[2];
 	demo_floor_orm_map.config.mipmaps = true;
-	CreateTexture(&demo_floor_orm_map, texture_importer.texture_data[3].data());
+	CreateTexture(&demo_floor_orm_map, texture_importer_float.texture_data[2].data());
 
+	Texture demo_skybox;
+		
 	//************************************
 	// Initialize imported meshes 
 	//************************************
@@ -574,7 +571,7 @@ int main()
 	//blurer.shader = testing_blur_shader;
 	//blurer.Create(post_processing.colour0_texture_attachment.config.width, post_processing.colour0_texture_attachment.config.height, 5);
 
-	texture_importer.Free();
+	texture_importer_float.Free();
 
 	World main_world;
 
@@ -893,6 +890,12 @@ int main()
 		}
 
 		//************************************
+		// Update GPU textures
+		//************************************
+
+
+
+		//************************************
 		// Update GPU Buffers
 		//************************************
 
@@ -913,10 +916,11 @@ int main()
 		std::vector<Mat4> mats;
 
 
+
+#pragma region RenderingLogic
 		//************************************
 		// Render The Current Frame
 		//************************************
-#pragma region RenderingLogic
 
 		//************************************
 		// Render depth buffers 
@@ -942,15 +946,20 @@ int main()
 
 			RenderMesh(depth_shader, obj->GetMeshForRender());
 		}
+
+		//************************************
+		// Bind and clear the gbuffer 
+		//************************************
+		BindFrameBuffer(worldspace_gbuffer);
+
+		ClearColourBuffer();
+		ClearDepthBuffer();
+
 		//************************************
 		// World gbuffer pass for static objects
 		//************************************
 
-		BindFrameBuffer(worldspace_gbuffer);
 		BindShader(worldspace_gbuffer_shader);
-
-		ClearColourBuffer();
-		ClearDepthBuffer();		
 		
 		for (int32 i = 0; i < main_world.objects.size(); i++)
 		{
@@ -1010,7 +1019,7 @@ int main()
 
 		for (int32 i = 1; i < test_cube_guy.animation_controller.bones.size(); i++)
 		{
-			std::stringstream ss;
+			StringStream ss;
 			ss << "gBones[" << (i - 1) << "]";
 			ShaderSetMat4(&worldspace_gbuffer_anim_shader, ss.str(), test_cube_guy.animation_controller.bones.at(i).current_transform.arr);
 		}
@@ -1159,6 +1168,7 @@ int main()
 		ShaderBindTexture(demo_01_deffered_pbr_shader, worldspace_gbuffer.colour1_texture_attachment, 1, "g_normal");
 		ShaderBindTexture(demo_01_deffered_pbr_shader, worldspace_gbuffer.colour2_texture_attachment, 2, "g_colour");
 		ShaderBindTexture(demo_01_deffered_pbr_shader, render_settings.ssao ? ssao_map : StandardTextures::GetOneTexture(), 3, "g_ssao");
+		
 		RenderMesh(demo_01_deffered_pbr_shader, StandardMeshes::quad);
 
 		UnbindFrameBuffer();
@@ -1166,8 +1176,21 @@ int main()
 		//************************************
 		// Forward pass
 		//************************************
-		
+			   
+		FrameBufferCopyDepth(worldspace_gbuffer, &post_processing_buffer);
+		BindFrameBuffer(post_processing_buffer);
 
+		BindShader(cubemap_shader);
+
+		ShaderSetMat4(&cubemap_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
+		ShaderSetMat4(&cubemap_shader, "view", camera_controller.main_camera.view_matrix.arr);
+
+		//ShaderBindTexture(camera_controller, demo_sky_box, 0, "environmentMap");
+		DisableFaceCulling();
+		RenderMesh(cubemap_shader, StandardMeshes::Cube());
+		EnableFaceCulling();
+			   
+		UnbindFrameBuffer();
 		//************************************
 		// Post processing pass
 		//************************************
@@ -1227,6 +1250,7 @@ int main()
 		EnableDepthBuffer();
 #pragma endregion
 		
+	
 		//************************************
 		// DBUGING pass
 		//************************************	
@@ -1300,7 +1324,7 @@ int main()
 
 		//BindShader(debug_mesh_shader);
 		glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
-		Debug::DrawTexture(viewspace_gbuffer.colour1_texture_attachment);
+		Debug::DrawTexture(worldspace_gbuffer.colour0_texture_attachment);
 		//ShaderBindTexture(debug_mesh_shader, ssr_frame.colour0_texture_attachment, 0, "mesh_texture");
 		//ShaderSetMat4(&debug_mesh_shader, "model", Mat4(1).arr);
 		//RenderMesh(debug_mesh_shader, StandardMeshes::quad);

@@ -9,7 +9,7 @@ namespace cm
 		file.open(file_directory);
 		Assert(file.is_open());
 
-		std::stringstream ss;
+		StringStream ss;
 		ss << file.rdbuf();
 		file.close();
 
@@ -21,7 +21,6 @@ namespace cm
 		int32 width = 0;
 		int32 height = 0;
 		int32 nrChannels = 0;
-		
 		uint8 *data = stbi_load(file_directory.c_str(), &width, &height, &nrChannels, 0);
 		
 		if (data != nullptr)
@@ -57,19 +56,91 @@ namespace cm
 		}		
 	}
 
+	void TextureImportMultiThread::DoLoad()
+	{
+		done.store(false);
+		working.store(true);
+		LoadTexture(&texture_data, &texture_config, texture_path);
+		working.store(false);
+		done.store(true);
+	}
+
+	void TextureImportMultiThread::Load()
+	{
+		std::thread thread = std::thread(&TextureImportMultiThread::DoLoad, this);
+		thread.join();
+	}
+
+	bool TextureImportMultiThread::Free()
+	{
+		if (IsLoaded())
+		{
+			texture_data.clear();
+			return true;
+		}
+		return false;
+	}
+
+	bool TextureImportMultiThread::IsLoaded()
+	{
+		return done.load();
+	}
+
+	bool TextureImportMultiThread::IsWorking()
+	{
+		return working.load();
+	}
+
+	bool TextureImportMultiThread::SetTexturePath(const std::string &path)
+	{
+		if (!IsWorking())
+		{
+			this->texture_path = path;
+			return true;
+		}
+		return false;
+	}
+
+	cm::TextureConfig *TextureImportMultiThread::GetConfig()
+	{
+		if (IsLoaded())
+		{
+			return &texture_config;
+		}
+		return nullptr;
+	}
+
+	std::vector<uint8> * TextureImportMultiThread::GetData()
+	{
+		if (IsLoaded())
+		{
+			return &texture_data;
+		}
+		return nullptr;
+	}
+
 	bool TextureImport::Load()
 	{
 		bool result = true;
+		Assert(!multi_thread);
 		for (int32 i = 0; i < texture_paths.size(); i++)
 		{
+			std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
+
 			int32 width = 0;
 			int32 height = 0;
 			int32 nrChannels = 0;
 			
 			const std::string &path = texture_paths[i];
 			stbi_set_flip_vertically_on_load(flip);
+			//real32 *data = stbi_loadf(path.c_str(), &width, &height, &nrChannels, 0);
 			real32 *data = stbi_loadf(path.c_str(), &width, &height, &nrChannels, 0);
 
+			std::chrono::time_point<std::chrono::steady_clock> endTime = std::chrono::steady_clock::now();
+			std::chrono::microseconds elapsedTime(std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime));
+			float time = static_cast<float> (elapsedTime.count());
+			LOG(time * 0.001f * 0.001f);
+			LOG(width * height * nrChannels * 4);
 			if (data)
 			{
 				TextureConfig texture_config;
@@ -109,8 +180,6 @@ namespace cm
 		}
 		return result;
 	}
-
-
 
 	bool TextureImport::Free()
 	{

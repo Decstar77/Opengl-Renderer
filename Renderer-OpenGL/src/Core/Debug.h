@@ -29,7 +29,7 @@ namespace cm
 	public:
 		static uint32 window_height;
 		static uint32 window_width; 		
-		static std::stringstream logging_stream;
+		static StringStream logging_stream;
 		static DebugQueue debug_queue;
 
 	public:

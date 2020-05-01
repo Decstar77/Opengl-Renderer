@@ -475,6 +475,40 @@ namespace cm
 
 	Mat4 LookAt(const Vec3 &position, const Vec3 &target, const Vec3 &up);
 
+
+	//************************************
+	// Templated boyos
+	//************************************
+
+	template<typename T>
+	inline constexpr T Min(const T &f)
+	{
+		return f;
+	}
+
+	template<typename T, typename... Args>
+	inline constexpr T Min(const T &f, const Args&... args)
+	{
+		T min = Min(args...);
+		return (f < min) ? f : min;
+	}
+
+	template<typename T>
+	inline constexpr T Max(const T &f)
+	{
+		return f;
+	}
+
+	template<typename T, typename... Args>
+	inline constexpr T Max(const T &f, const Args&... args)
+	{
+		T max = Max(args...);
+		return (f > max) ? f : max;
+	}
+
+
+
+
 	//************************************
 	// Usefull classes for everything
 	//************************************

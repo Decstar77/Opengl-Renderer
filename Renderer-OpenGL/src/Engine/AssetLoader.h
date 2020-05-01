@@ -1,7 +1,7 @@
 #pragma once
 #include "Core.h"
-#include <fstream>
-#include <unordered_map>
+
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -62,15 +62,44 @@ namespace cm
 	{
 	public:
 		bool flip = false;
+		bool multi_thread = false;
+	
+
 		std::vector<TextureConfig> texture_configs;
 		std::vector<std::vector<real32>> texture_data;
 		std::vector<std::string> texture_paths;
 
 	public:
-		bool Load();
-		bool Free();
+		bool Load();	
+		bool Free();		
 
+	private:
+	
 	};
+
+	class TextureImportMultiThread
+	{
+	private:
+		void DoLoad();
+		
+		AtomicBool done = false;
+		AtomicBool working = false;
+
+		String texture_path;
+		TextureConfig texture_config;
+		std::vector<uint8> texture_data;
+
+	public:
+		void Load();
+		bool Free();
+		bool IsLoaded();
+		bool IsWorking();
+		bool SetTexturePath( const std::string &path );
+		
+		TextureConfig *GetConfig();
+		std::vector<uint8> *GetData();
+	};
+
 
 
 	std::string ReadFile(const std::string &file_directory);

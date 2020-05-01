@@ -937,6 +937,29 @@ namespace cm
 		glGenFramebuffers(1, &fbo->object);
 	}
 
+	void FrameBufferCopyDepth(const FrameBuffer &src, FrameBuffer *dst)
+	{
+		Assert(src.object != 0);
+		Assert(src.depthstencil_attchment.object != 0);
+		Assert(dst->object != 0);
+		Assert(dst->depthstencil_attchment.object != 0);
+		Assert(src.depthstencil_attchment.width == dst->depthstencil_attchment.width);
+		Assert(src.depthstencil_attchment.height == dst->depthstencil_attchment.height);
+
+		// @NOTE The read buffer
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, src.object);
+
+		// @NOTE: The write buffer
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dst->object); 
+
+		glBlitFramebuffer(0, 0, src.depthstencil_attchment.width, src.depthstencil_attchment.height,			
+						  0, 0, dst->depthstencil_attchment.width, dst->depthstencil_attchment.height,
+						 GL_DEPTH_BUFFER_BIT, GL_NEAREST
+		);
+		
+		
+	}
+
 	void FrameBufferBindColourAttachtments(FrameBuffer *buffer)
 	{
 		Assert(buffer->object != 0);
@@ -1206,7 +1229,8 @@ namespace cm
 	void InitializeOpenGl(uint32 window_width, uint32 window_height)
 	{		
 		glewExperimental = GL_TRUE;
-		Assert(glewInit() == GLEW_OK);
+		uint32 res = glewInit();
+		Assert(res == GLEW_OK);
 
 		StandardMeshes::Initilize();
 		StandardTextures::Initilize();

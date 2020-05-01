@@ -137,9 +137,9 @@ namespace cm
 
 	private:
 		char input_buffer[256];
-		std::stringstream commands;
-		std::stringstream current;
-		std::stringstream history;
+		StringStream commands;
+		StringStream current;
+		StringStream history;
 
 
 		ImGuiTextFilter	Filter;

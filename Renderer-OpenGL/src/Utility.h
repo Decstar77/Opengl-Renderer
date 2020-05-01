@@ -1,139 +1,109 @@
 #pragma once
 #include "Core.h"
-#include <vector>
-#include <array>
-#include <unordered_map>
-#include <algorithm>
-#include <memory>
 
 namespace cm
 {
-	
-	/* @NOTES:
-			1) The equal and copy functions are shallow clones
-			2) Expects you to manually free the memory
-			3) When you resize the array, all the old data is copied into the new buffer.
-			   If the resize is smaller than the current size all the data that doesn't fit into
-			   the new buffer will be lost.
-			4) 
-	*/
-#if 0
 	template<typename T>
 	class Array
-	{		
-	public:
+	{
+	private:
 		uint32 count = 0;
 		T *data = nullptr;
-		
-	public:
-		void Resize(uint32 count);
-		void Free();
-
-		T Get(uint32 index) const;
-		void Set(uint32 index, const T &t);
-
-		void ShallowClone(const Array<T> &src);
-		void DeepClone(const Array<T> &src);
 
 	public:
-		Array();
-		Array(const uint32 &size_bytes);
-		~Array();
-		// @TODO: Overload operators
-		void operator = (const Array<T> &d) {
-			DeepClone(d);
+		inline constexpr uint32 Count() const { 
+			return count; 
 		}
+
+		inline constexpr T* Data() const { 
+			return data; 
+		}
+		
+		inline constexpr T* Get(const uint32 &index) { 
+			Assert(index >= 0 && index < count); 
+			return this->data[index]; 
+		}
+		inline constexpr void Set(const T &data, const uint32 &index) { 
+			Assert(index >= 0 && index < count); 
+			this->data[index] = data; 
+		}
+
+		void Free()
+		{
+			if (data)
+			{
+				delete[] data;
+				count = 0;
+				data = nullptr;
+			}
+		}
+
+		void Resize(const uint32 &count)
+		{
+			uint32 copycount = this->count < count ? count : this->count;
+			T *newdata = new T[copycount];
+			if (data)
+			{
+				for (uint32 i = 0; i < copycount; i++)
+				{
+					newdata[i] = data[i];
+				}
+			}
+			Free();
+			this->data = newdata;
+			this->count = count;
+		}
+
+		Array<T> Clone() const
+		{
+			Array newarr;
+			if (data)
+			{
+				newarr.data = new T[this->count];
+				newarr.count = this->count;
+				for (uint32 i = 0; i < this->count; i++)
+				{
+					newarr.data[i] = this->data[i];
+				}
+			}
+			return newarr;
+		}
+
+		T& operator[](uint32 index)
+		{
+			Assert(index >= 0 && index < count);
+			return data[index];
+		}
+
+		bool operator ==(const Array<T> &arr)
+		{
+			return (this->data == arr.data && this->count == arr.count);
+		}
+
+		void operator = (const Array<T> &arr) {
+			this->data = arr.data;
+			this->count = arr.count;
+		}
+
+	public:
+		Array() {}
+
+		Array(const Array<T> &arr) {
+			this->data = arr.data;
+			this->count = arr.count;
+		}
+
+		Array(T *data, const uint32 &count) {
+
+			this->data = data;
+			this->count = count;
+		};
+
+		Array(const uint32 &count) {
+			Resize(count);
+		};
+
+		~Array() {}
 	};
 
-
-	//////////////////////
-	// Array
-	//////////////////////
-	   	 
-	template<typename T>
-	cm::Array<T>::Array(const uint32 &size_bytes)
-	{
-		Resize(size_bytes);
-	}
-
-	template<typename T>
-	cm::Array<T>::Array()
-	{
-
-	}
-
-	template<typename T>
-	cm::Array<T>::~Array()
-	{
-		Free();
-	}
-
-
-	template<typename T>
-	void cm::Array<T>::DeepClone(const Array<T> &src)
-	{
-		Free(); 
-		Resize(src.count);
-		for (uint32 i = 0; i < src.count; i++)
-		{
-			this->data[i] = src.data[i];
-		}
-		this->count = src.count;
-	}
-
-	template<typename T>
-	void cm::Array<T>::ShallowClone(const Array<T> &src)
-	{
-		Free();
-		this->data = src.data;
-		this->count = src.count;
-	}
-
-	template<typename T>
-	void cm::Array<T>::Set(uint32 index, const T &t)
-	{
-		Assert(index < count);
-		//memcpy((void *)(&data[index]), (const void *)(&t), sizeof(T));
-		data[index] = t;
-	}
-
-	template<typename T>
-	T cm::Array<T>::Get(uint32 index) const
-	{
-		Assert(index < count);
-		return data[index];
-	}
-
-	template<typename T>
-	void cm::Array<T>::Free()
-	{		
-		if (data)
-		{
-			count = 0;			
-			delete data;
-			data = nullptr;
-		}		
-	}
-
-	template<typename T>
-	void cm::Array<T>::Resize(uint32 count)
-	{		
-		uint32 size = count * sizeof(T);
-		
-		T* new_data = new T[count];	
-		
-		uint32 copy_count = this->count <= count ? this->count : count;
-	
-		for (uint32 i = 0; i < copy_count; i++)
-		{			
-			new_data[i] = data[i];
-		}
-
-
-		
-		Free();
-		data = new_data;
-		this->count = count;
-	}
-#endif
 }

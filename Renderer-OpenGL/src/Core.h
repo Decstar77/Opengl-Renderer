@@ -1,19 +1,33 @@
 #pragma once
 #include <cstdint>
+
+// @NOTE: Strings
 #include <string>
 #include <sstream>
-#include <fstream>
 #include <iostream>
+
+// @NOTE: File stuff
+#include <fstream>
+
+// @NOTE: Data structers
+#include <map>
+#include <array>
 #include <vector>
-#include <unordered_map>
 #include <algorithm>
+#include <unordered_map>
+
+// @NOTE: Threading and time
+#include <thread>
+#include <atomic>
+#include <chrono>
+
 
 // TODO: Make this a pch
 
 #ifdef _DEBUG
 #define Assert(Value) if (!(Value)) {*(int *)0 = 0;}
 #else
-#define Assert()
+#define Assert(Value)
 #endif
 #ifdef _DEBUG
 
@@ -54,11 +68,20 @@ typedef uint16_t	uint16;
 typedef uint32_t	uint32;
 typedef uint64_t	uint64;
 
-typedef int8_t int8;
+typedef int8_t	int8;
 typedef int16_t int16;
 typedef int32_t int32;
 typedef int64_t int64;
 
-typedef float real;
-typedef float real32;
-typedef double real64;
+typedef float	real;
+typedef float	real32;
+typedef double	real64;
+
+typedef std::string			String;
+typedef std::thread			Thread;
+typedef std::stringstream	StringStream;
+typedef std::atomic<bool>	AtomicBool;
+typedef std::atomic<int32>	AtomicInt32;
+typedef std::atomic<int64>	AtomicInt64;
+typedef std::atomic<real32> AtomicReal32;
+typedef std::atomic<real64> AtomicReal64;

@@ -1,6 +1,6 @@
 #version 330 core
 layout (location = 0) out vec4 FragColour;
-layout (location = 1) out vec4 BrightColor;
+
 
 in vec3 WorldPos;
 
@@ -57,6 +57,5 @@ void main()
 	FragColour = vec4(colour, 1);
 
 
-	//Don't write to the bright buffer;
-	BrightColor = vec4(0);
+	
 }
