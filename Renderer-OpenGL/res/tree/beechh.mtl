@@ -1,0 +1,18 @@
+newmtl bark01
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+map_Kd bark01.png
+
+newmtl beech leaf
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+map_Kd beech leaf.png
+
+newmtl no texture
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+map_Kd no texture.png
+

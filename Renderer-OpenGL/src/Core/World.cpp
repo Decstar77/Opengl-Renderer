@@ -19,21 +19,16 @@ namespace cm
 
 	cm::GeometricCollider *StaticWorldObject::GetCollider()
 	{
-		if (obb.extents == Vec3(0))
+		if (obb.GetExtents() == Vec3(0))
 		{
 			return nullptr;
 		}
 		return &obb;
 	}
 
-	const cm::Mat4 StaticWorldObject::GetTransformMatrix() const
+	uint32 StaticWorldObject::GetRenderFlags() const
 	{
-		return transform.CalcTransformMatrix();
-	}
-
-	const uint32 StaticWorldObject::GetRenderFlags() const
-	{
-		return 0;
+		return render_flags;
 	}
 
 	void World::RegisterWorldObject(WorldObject *object)

@@ -780,6 +780,13 @@ namespace cm
 		}
 	}
 
+	void ShaderSetBool(Shader *shader, const String &uniform_name, const bool &b)
+	{
+		uint32 loc = GetUniformLocation(shader, uniform_name);
+		CHECK("INT32", loc);
+		glUniform1i(loc, b);
+	}
+
 	void ShaderSetInt32(Shader *shader, const String &uniform_name, int x)
 	{
 		uint32 loc = GetUniformLocation(shader, uniform_name);

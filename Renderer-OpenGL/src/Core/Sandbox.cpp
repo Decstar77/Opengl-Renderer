@@ -21,12 +21,7 @@ namespace cm
 		return nullptr;
 	}
 
-	const cm::Mat4 AnimatedActor::GetTransformMatrix() const
-	{
-		return transform.CalcTransformMatrix();
-	}
-
-	const uint32 AnimatedActor::GetRenderFlags() const
+	uint32 AnimatedActor::GetRenderFlags() const
 	{
 		return 0;
 	}

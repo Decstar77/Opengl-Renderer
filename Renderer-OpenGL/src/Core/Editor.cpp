@@ -2,10 +2,6 @@
 
 namespace cm
 {
-	
-
-
-
 	cm::Transform * Widget3D::GetTransform()
 	{
 		return &transform;
@@ -1232,7 +1228,7 @@ namespace cm
 		ImGui::Begin("Inspector");
 		if (world_object)
 		{
-			if (ImGui::TreeNode("Object transform"))
+			if (ImGui::TreeNode("Transform"))
 			{
 				Transform *transform = world_object->GetTransform();
 				ImGui::Text("");
@@ -1253,7 +1249,7 @@ namespace cm
 			if (ImGui::TreeNode("Material"))
 			{
 				Material *mat = world_object->GetMaterial();
-				ImGui::ColorPicker3("Diffuse", mat->diffuse.arr);
+				ImGui::ColorEdit3("Diffuse", mat->diffuse.arr);
 				ImGui::DragFloat("Roughness", &mat->roughness, 0.02, 0.0, 1.0);
 				ImGui::DragFloat("Metalness", &mat->metalness, 0.02, 0.0, 1.0);
 				ImGui::TreePop();

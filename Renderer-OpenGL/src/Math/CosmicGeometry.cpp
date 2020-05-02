@@ -220,11 +220,23 @@ namespace cm
 		this->origin = origin;
 		this->extents = extents;
 		this->basis = basis;
+		this->scale_extent_offset = 1.0f / this->extents;
 	}
 
 	OBB::~OBB()
 	{
 
+	}
+
+	cm::Vec3 OBB::GetExtents() const
+	{
+		return extents;
+	}
+
+	void OBB::SetExtents(const Vec3 &extents)
+	{
+		this->extents = extents;
+		this->scale_extent_offset = 1.0f / this->extents;
 	}
 
 	cm::GeometricColliderType OBB::GetColliderType() const
@@ -322,14 +334,18 @@ namespace cm
 
 	void OBB::Update(const Transform &t)
 	{
+		Assert(scale_extent_offset != Vec3(0));
 		this->origin = t.position;
 		this->basis = Basis(QuatToMat3( Conjugate(t.rotation) ));
+		this->extents = t.scale / scale_extent_offset;
 	}
 
 	void OBB::Update(const Transform *t)
 	{
+		Assert(scale_extent_offset != Vec3(0));
 		this->origin = t->position;
 		this->basis = Basis(QuatToMat3(Conjugate(t->rotation)));
+		this->extents = t->scale / scale_extent_offset;
 	}
 
 	//void BoundingVolume::UpdateAABB(const mat4 &transform, const vec3 &pos)

@@ -100,11 +100,14 @@ namespace cm
 	class OBB : public GeometricCollider
 	{
 	public:
-		Vec3 origin = Vec3(0);
-		Vec3 extents = Vec3(0);
 		Basis basis;
+		Vec3 origin = Vec3(0);
 
 	public:
+		
+		Vec3 GetExtents() const;
+		void SetExtents(const Vec3 &extents);
+		
 		virtual GeometricColliderType GetColliderType() const override;
 
 		virtual bool CheckCollision(const Ray &r) const override;
@@ -112,11 +115,18 @@ namespace cm
 
 		virtual void Update(const Transform &t) override;
 		virtual void Update(const Transform *t) override;
-
+				
 	public:
 		OBB();
 		OBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis);
 		~OBB();
+
+
+	private:
+		Vec3 extents = Vec3(0);
+		Vec3 scale_extent_offset = Vec3(0);
+		
+
 
 	};
 

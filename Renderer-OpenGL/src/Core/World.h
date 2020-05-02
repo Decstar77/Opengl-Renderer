@@ -95,8 +95,8 @@ namespace cm
 		TonemapMethod tonemapping = TonemapMethod::Reinhard;
 		real32 post_processing_exposure = 1.0;
 	};
-	   
 
+#define RENDERFLAG_NOTHING 0
 #define RENDERFLAG_CAST_SHADOWS BIT(1)
 #define RENDERFLAG_HAS_ANIMATION BIT(2)
 #define RENDERFLAG_HAS_BLENDING BIT(3)
@@ -141,13 +141,22 @@ namespace cm
 		//************************************
 		virtual GeometricCollider *GetCollider() { return nullptr; }
 
+		//************************************
+		// Method:    GetRenderFlags
+		// FullName:  cm::WorldObject::GetRenderFlags
+		// Access:    virtual public 
+		// Returns:   const uint32
+		// Qualifier: const
+		//************************************
+		virtual RenderFlags GetRenderFlags() const = 0;
 
-
-		virtual const Mat4 GetTransformMatrix() const = 0;
-		virtual const uint32 GetRenderFlags() const = 0;
-		
-		
-
+		//************************************
+		// Method:    ~WorldObject
+		// FullName:  cm::WorldObject::~WorldObject
+		// Access:    virtual public 
+		// Returns:   
+		// Qualifier:
+		//************************************
 		virtual ~WorldObject() {};
 	};
 	
@@ -155,18 +164,19 @@ namespace cm
 	class StaticWorldObject : public WorldObject
 	{
 	public:
+		uint32 render_flags = 0;
+
 		Transform transform;
 		Material material;
 		GLMesh mesh;
 		OBB obb;
-		uint32 render_flags = RENDERFLAG_CAST_SHADOWS;
 
+	public:
 		virtual GLMesh *GetMeshForRender() override;
 		virtual Material *GetMaterial() override;
 		virtual Transform *GetTransform() override;
 		virtual GeometricCollider *GetCollider() override;
-		virtual const Mat4 GetTransformMatrix() const override;
-		virtual const uint32 GetRenderFlags() const override;
+		virtual RenderFlags GetRenderFlags() const override;
 	};
 
 	//class DynamicWorldObject : public WorldObject

@@ -400,7 +400,6 @@ namespace cm
 	// @TODO: Complete
 	//Shader CreateBatchShaderFromShader(String vertex_source, String fragment_source);
 
-
 	void FreeShader(Shader *shader);
 
 	void BindShader(const Shader &shader);
@@ -408,6 +407,8 @@ namespace cm
 	void UnbindShader();
 
 	uint32 GetUniformLocation(Shader *shader, const String &uniform_name);
+
+	void ShaderSetBool(Shader *shader, const String &uniform_name, const bool &b);
 
 	void ShaderSetInt32(Shader *shader, const String &uniform_name, int x);
 
@@ -780,7 +781,7 @@ namespace cm
 	{
 		glEnable(cmd);
 	}
-
+	
 	static inline void EnableStencilBuffer()
 	{
 		glEnable(GL_STENCIL_TEST);
@@ -892,6 +893,10 @@ namespace cm
 	static inline void EnableBlending()
 	{
 		glEnable(GL_BLEND);
+	}
+
+	static inline void BlendFunctionOneMinusSrcAlpha()
+	{
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 

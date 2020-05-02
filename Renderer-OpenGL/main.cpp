@@ -19,6 +19,9 @@ using namespace cm;
 // @TODO: Make platform thingy. Check SSAO shader and Imgui frame they have hardcoded values
 static const uint32 WINDOW_WIDTH = 1280;
 static const uint32 WINDOW_HEIGHT = 720;
+//static const uint32 WINDOW_WIDTH = 1920;
+//static const uint32 WINDOW_HEIGHT = 1080;
+
 static const float MOUSE_SENSITIVITY = 0.08f;
 
 static CameraController camera_controller = {};
@@ -29,7 +32,7 @@ static float delta_time = 0;
 static bool DRAW_LIGHT_POSITIONS = false;
 static bool move_camera = false;
 
-EditorContext currnet_context;
+EditorContext current_context;
 
 void MousePositionCallBack(GLFWwindow *widow, double xpos, double ypos)
 {
@@ -148,8 +151,7 @@ int main()
 		std::cout << "MAX ANTI  " << a << std::endl;
 	}
 
-	Shader cubemap_shader = CreateShader(ReadFile("shaders/skybox_vert.glsl"), ReadFile("shaders/skybox_frag.glsl"));
-	cubemap_shader.name = "cubemap_shader";
+
 
 	Shader ssr_shader = CreateShader(ReadFile("shaders/ssr_vert.glsl"), ReadFile("shaders/ssr_frag.glsl"));
 	ssr_shader.name = "ssr_shader ";
@@ -188,17 +190,30 @@ int main()
 	depth_shader.name = "depth shader";
 	CreateShader(&depth_shader);
 
-	Shader demo_01_deffered_pbr_shader;
-	demo_01_deffered_pbr_shader.config.src_vert = ReadFile("res/botdemo/shaders/pbr_deffered_vert.glsl");
-	demo_01_deffered_pbr_shader.config.src_frag = ReadFile("res/botdemo/shaders/pbr_deffered_frag.glsl");
-	demo_01_deffered_pbr_shader.name = "demo_01_deffered_pbr_shader";
-	CreateShader(&demo_01_deffered_pbr_shader);
+	Shader pbr_deffered_shader;
+	pbr_deffered_shader.config.src_vert = ReadFile("res/botdemo/shaders/pbr_deffered_vert.glsl");
+	pbr_deffered_shader.config.src_frag = ReadFile("res/botdemo/shaders/pbr_deffered_frag.glsl");
+	pbr_deffered_shader.name = "demo_01_deffered_pbr_shader";
+	CreateShader(&pbr_deffered_shader);
 
-	Shader demo_01_postprocessing_shader;
-	demo_01_postprocessing_shader.config.src_vert = ReadFile("res/botdemo/shaders/postprocessing_vert.glsl");
-	demo_01_postprocessing_shader.config.src_frag = ReadFile("res/botdemo/shaders/postprocessing_frag.glsl");
-	demo_01_postprocessing_shader.name = "demo_01_postprocessing_shader";
-	CreateShader(&demo_01_postprocessing_shader);
+	Shader pbr_forward_shader;
+	pbr_forward_shader.config.src_vert = ReadFile("res/botdemo/shaders/pbr_forward_vert.glsl");
+	pbr_forward_shader.config.src_frag = ReadFile("res/botdemo/shaders/pbr_forward_frag.glsl");
+	pbr_forward_shader.name = "pbr_forward_shader";
+	CreateShader(&pbr_forward_shader);
+
+	Shader postprocessing_shader;
+	postprocessing_shader.config.src_vert = ReadFile("res/botdemo/shaders/postprocessing_vert.glsl");
+	postprocessing_shader.config.src_frag = ReadFile("res/botdemo/shaders/postprocessing_frag.glsl");
+	postprocessing_shader.name = "demo_01_postprocessing_shader";
+	CreateShader(&postprocessing_shader);
+	
+	Shader skybox_shader;
+	skybox_shader.config.src_vert = ReadFile("res/botdemo/shaders/skybox_vert.glsl");
+	skybox_shader.config.src_frag = ReadFile("res/botdemo/shaders/skybox_frag.glsl");
+	skybox_shader.name = "cubemap_shader";
+	CreateShader(&skybox_shader);
+
 	
 	Shader transform_widget_shader;
 	transform_widget_shader.config.src_vert = ReadFile("res/engine/shaders/editor_widget_vert.glsl");
@@ -211,25 +226,24 @@ int main()
 	//************************************
 
 	// @TODO: Remove
-	ModelImport model_importer;
-	model_importer.import_animations = true;
-	model_importer.import_vertex_binorms_tangents = true;
-	model_importer.model_paths.push_back("res/botdemo/FloorSet/Floor.fbx");
-	model_importer.model_paths.push_back("res/models/sphere.obj");
-	model_importer.model_paths.push_back("res/engine/meshes/translation_widget.dae");
-	model_importer.model_paths.push_back("res/engine/meshes/rotation_widget.dae");
-	model_importer.model_paths.push_back("res/engine/meshes/scalling_widget.dae");
-	model_importer.Load();
-	StandardMeshes::sphere = model_importer.resulting_meshes[1].CreateMesh(true);
+	ModelImport model_import_engine;
+	model_import_engine.import_animations = true;
+	model_import_engine.import_vertex_binorms_tangents = true;
+	model_import_engine.model_paths.push_back("res/engine/meshes/sphere.obj");
+	model_import_engine.model_paths.push_back("res/engine/meshes/translation_widget.dae");
+	model_import_engine.model_paths.push_back("res/engine/meshes/rotation_widget.dae");
+	model_import_engine.model_paths.push_back("res/engine/meshes/scalling_widget.dae");
+	model_import_engine.Load();
+	StandardMeshes::sphere = model_import_engine.resulting_meshes[0].CreateMesh(true);
 	
 	TranslationWidget translation_widget;
-	translation_widget.Create(model_importer.resulting_meshes[2].CreateMesh());
+	translation_widget.Create(model_import_engine.resulting_meshes[1].CreateMesh());
 
 	RotationWidget rotation_widget;
-	rotation_widget.Create(model_importer.resulting_meshes[3].CreateMesh());
+	rotation_widget.Create(model_import_engine.resulting_meshes[2].CreateMesh());
 
 	ScalingWidget scaling_widget;
-	scaling_widget.Create(model_importer.resulting_meshes[4].CreateMesh());
+	scaling_widget.Create(model_import_engine.resulting_meshes[3].CreateMesh());
 
 	//************************************
 	// Load texture assets
@@ -257,37 +271,22 @@ int main()
 	FreeTexture(&demo_skybox_eqi);
 
 #endif
-#if 0
+#if 1
 	// @TODO: Free is FAR down the file
 	TextureImport texture_importer_float;
 	texture_importer_float.flip = false;	
-	texture_importer_float.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor2/Floor_BaseFloor_BaseColor.png");
-	texture_importer_float.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor2/Floor_BaseFloor_Normal.png");
-	texture_importer_float.texture_paths.push_back("res/botdemo/FloorSet/Textures/Floor2/Floor_BaseFloor_OcclusionRoughnessMetallic.png");
-	//texture_importer.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_BaseColor.png");
-	//texture_importer.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_Normal.png");
-	//texture_importer.texture_paths.push_back("res/textures/bot1_rig_v01_Scene_Material_OcclusionRoughnessMetallic.png");	
-
+	texture_importer_float.texture_paths.push_back("res/botdemo/textures/flower/flower.png");
 	texture_importer_float.Load();
 
 	//************************************
 	// Initialize imported textures
 	//************************************
 	
-	Texture demo_floor_colour_map;
-	demo_floor_colour_map.config = texture_importer_float.texture_configs[0];
-	demo_floor_colour_map.config.mipmaps = true;
-	CreateTexture(&demo_floor_colour_map, texture_importer_float.texture_data[0].data());
+	Texture test_blend_texture;
+	test_blend_texture.config = texture_importer_float.texture_configs[0];
+	test_blend_texture.config.mipmaps = true;
+	CreateTexture(&test_blend_texture, texture_importer_float.texture_data[0].data());
 
-	Texture demo_floor_normal_map;
-	demo_floor_normal_map.config = texture_importer_float.texture_configs[1];
-	demo_floor_normal_map.config.mipmaps = true;
-	CreateTexture(&demo_floor_normal_map, texture_importer_float.texture_data[1].data());
-
-	Texture demo_floor_orm_map;
-	demo_floor_orm_map.config = texture_importer_float.texture_configs[2];
-	demo_floor_orm_map.config.mipmaps = true;
-	CreateTexture(&demo_floor_orm_map, texture_importer_float.texture_data[2].data());
 
 	texture_importer_float.Free();
 #endif
@@ -295,40 +294,6 @@ int main()
 	//************************************
 	// Initialize imported meshes 
 	//************************************
-
-	StaticWorldObject floor_test;	
-	floor_test.mesh = model_importer.resulting_meshes[0].CreateMesh(true);
-	floor_test.transform.scale = Vec3(0.05);
-	floor_test.material.diffuse = Vec3(0.86);
-	floor_test.material.metalness = 0.6;
-	floor_test.material.roughness = 0;
-	
-	StaticWorldObject left_wall;
-	left_wall.mesh = floor_test.mesh;
-	left_wall.transform.scale = Vec3(0.05);
-	left_wall.transform.rotation = EulerToQuat(Vec3(0, 0, 90));
-	left_wall.transform.position = Vec3(-10, 10, 0);
-	left_wall.material.diffuse = Vec3(0.2);
-	left_wall.material.metalness = 0.2;
-	left_wall.material.roughness = 1;
-
-	StaticWorldObject right_wall;
-	right_wall.mesh = floor_test.mesh;
-	right_wall.transform.scale = Vec3(0.01);
-	right_wall.transform.rotation = EulerToQuat(Vec3(0, 0, -90));
-	right_wall.transform.position = Vec3(2, 2, 0);
-	right_wall.material.diffuse = Vec3(0.2);
-	right_wall.material.metalness = 0.2;
-	right_wall.material.roughness = 1;
-
-	StaticWorldObject back_wall;
-	back_wall.mesh = floor_test.mesh;
-	back_wall.transform.scale = Vec3(0.01);
-	back_wall.transform.rotation = EulerToQuat(Vec3(-90, 0, 0));
-	back_wall.transform.position = Vec3(0, 2, -2);
-	back_wall.material.diffuse = Vec3(0.2);
-	back_wall.material.metalness = 0.2;
-	back_wall.material.roughness = 1;
 
 
 	//************************************
@@ -504,38 +469,6 @@ int main()
 	Assert(CheckFrameBuffer(post_processing_buffer));
 	UnbindFrameBuffer();
 	
-
-	ModelImport pbr_model;
-	pbr_model.model_paths.push_back("res/models/claud_bot.obj");
-	pbr_model.import_vertex_binorms_tangents = true;
-	pbr_model.Load();
-
-	StaticWorldObject pbr_gun;
-	pbr_gun.mesh = pbr_model.resulting_meshes[0].CreateMesh(true);
-	pbr_gun.transform.rotation = EulerToQuat(Vec3(0, 90, 0));
-	pbr_gun.transform.position = Vec3(0, 1, 1);
-	pbr_gun.transform.scale = Vec3(1);
-
-	pbr_model.Free();
-
-
-	ModelImport model_import;
-	model_import.import_vertex_binorms_tangents = true;
-	model_import.model_paths.push_back("res/models/Idle.dae");
-	model_import.Load();
-	
-	AnimatedActor test_cube_guy;	
-	EditableMesh emesh = model_import.resulting_meshes[0];
-	test_cube_guy.mesh = emesh.CreateAnimMesh();
-	test_cube_guy.animation_controller = model_import.resulting_animation_controllers[0];	
-	test_cube_guy.transform.scale = Vec3(1);
-	test_cube_guy.transform.rotation = EulerToQuat(Vec3(0, 0, 0));
-	test_cube_guy.transform.position = Vec3(0, 0, 0);
-
-	model_import.Free();
-
-
-
 	FrameBuffer ssr_frame;
 
 	ssr_frame.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
@@ -557,8 +490,7 @@ int main()
 	uint32 drawing_width = post_processing_buffer.colour0_texture_attachment.config.width;
 	uint32 drawing_height = post_processing_buffer.colour0_texture_attachment.config.height;
 
-	GaussianTextureBlur gblur;
-	gblur.Create(drawing_width, drawing_height, 11, 1.0/2.0, 1);
+
 	
 	LuminanceFilter lumin_filter;
 	lumin_filter.Create(drawing_width, drawing_height, 1);
@@ -566,9 +498,11 @@ int main()
 	HemisphereKernel hemisphere_kernel;
 	hemisphere_kernel.Create(32, 4);
 
+	GaussianTextureBlur gblur;
+	gblur.Create(drawing_width, drawing_height, 11, 1.0 / 2.0, 1);
+
 	SimpleTextureBlur sblur;
 	sblur.Create(drawing_width, drawing_height, 2);
-
 
 	Texture ssao_map;
 	ssao_map.config = post_processing_buffer.colour0_texture_attachment.config;
@@ -577,40 +511,37 @@ int main()
 	Texture bloom_map;
 	bloom_map.config = post_processing_buffer.colour0_texture_attachment.config;
 	CreateTexture(&bloom_map, nullptr);
+	   
 
-	//Shader testing_blur_shader;
-	//testing_blur_shader.config.src_vert = ReadFile("shaders/downsampling_vert.glsl");
-	//testing_blur_shader.config.src_frag = ReadFile("shaders/downsampling_frag.glsl");
-	//CreateShader(&testing_blur_shader);
-	//
-	//SampleTextureBlur blurer;
-	//blurer.shader = testing_blur_shader;
-	//blurer.Create(post_processing.colour0_texture_attachment.config.width, post_processing.colour0_texture_attachment.config.height, 5);
-
-
-
-	World main_world;
-
-
-	main_world.objects.push_back(&pbr_gun);
-	main_world.objects.push_back(&floor_test);
-	main_world.objects.push_back(&left_wall);
-	main_world.objects.push_back(&right_wall);
-	main_world.objects.push_back(&back_wall);
+	//************************************
+	// Set opengl state
+	//************************************
 
 	SetViewPort(WINDOW_WIDTH, WINDOW_WIDTH);
+	
 	EnableFaceCulling();
 	CullBackFace();
+	
 	EnableDepthBuffer();
-	EnableCubeMapSeamless();
 	DepthBufferFunction(GL_LEQUAL);
 	
+	EnableCubeMapSeamless();
+
+	EnableBlending();
+	BlendFunctionOneMinusSrcAlpha();
+	DisableBlending();
+
 #if EDITOR_WINDOW
 	EnableStencilBuffer();
 	StencilDiscardOnOne();
 	StencilOperationKKR();
 #endif
 	SetViewPort(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+
+
+	World main_world;
+
 
 	camera_controller.main_camera.projection_matrix = Perspective(40, ((float)WINDOW_WIDTH) / WINDOW_HEIGHT, 0.1f, 250.0f);
 	camera_controller.main_camera.target = Vec3(0);
@@ -624,7 +555,7 @@ int main()
 		ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4), 1);
 
 	informer.LinkShader("WorldMatrices", worldspace_gbuffer_shader);
-	informer.LinkShader("LightingData", demo_01_deffered_pbr_shader);
+	informer.LinkShader("LightingData", pbr_deffered_shader);
 	
 
 	RenderSettings render_settings;
@@ -654,20 +585,60 @@ int main()
 	point_light.light_colour = Vec3(23.47, 21.31, 20.79);
 	point_light.light_position = Vec3(0, 2, -1);
 
+	
+	StaticWorldObject *floor = CreateWorldObjectPlane();
+	floor->transform.rotation = EulerToQuat(Vec3(90, 0, 0));
+	floor->transform.scale = Vec3(10);
+	floor->GetCollider()->Update(floor->transform);
+
+
+	for (int32 k = 0; k < 4; k++)
+	{
+		for (int32 i = 1; i < 3; i++)
+		{
+			StaticWorldObject *flower = CreateWorldObjectPlane();
+			flower->render_flags = RENDERFLAG_HAS_BLENDING;
+			flower->material.diffuse_texture = &test_blend_texture;
+
+			int32 dir = (i % 2) ? -1 : 1;
+			flower->transform.rotation = EulerToQuat(Vec3(0, 45.0f * dir, 0));
+			flower->transform.scale = Vec3(0.2);
+			
+
+			flower->transform.position = Vec3((real32)k * 0.5f, 0.2, 0);
+			flower->GetCollider()->Update(flower->transform);
+			main_world.RegisterWorldObject(flower);
+		}
+	}
+	
+	ModelImport model_import_static;
+	model_import_static.model_paths.push_back("");
+
+	ModelImport model_import_animation;
+	model_import_animation.import_vertex_binorms_tangents = true;
+	model_import_animation.model_paths.push_back("res/models/Idle.dae");
+	model_import_animation.Load();
+
+
+	AnimatedActor test_cube_guy;
+	EditableMesh emesh = model_import_animation.resulting_meshes[0];
+	test_cube_guy.mesh = emesh.CreateAnimMesh();
+	test_cube_guy.animation_controller = model_import_animation.resulting_animation_controllers[0];
+	test_cube_guy.transform.scale = Vec3(1);
+	test_cube_guy.transform.rotation = EulerToQuat(Vec3(0, 0, 0));
+	test_cube_guy.transform.position = Vec3(0, 0, 0);
+
+	model_import_animation.Free();
+
+
+	main_world.RegisterWorldObject(floor);
 
 	float fh = 1;
-	//DebugAddPersistentPoint(Vec3(0.0));
-	float z = 0.5;
-
-	
-
-	
-
 	float run_time = 1;
 	bool toggel = false;
-
+	// @TODO: put in context 
 	bool mouse_input_for_editor_window = false;
-	currnet_context.selected_world_object = &test_cube_guy;
+	current_context.selected_world_object = &test_cube_guy;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -724,7 +695,7 @@ int main()
 
 		editor_worldobject_spawner.UpdateAndDraw();
 		
-		editor_world_object_inspector.SetWorldObject(currnet_context.selected_world_object);
+		editor_world_object_inspector.SetWorldObject(current_context.selected_world_object);
 		editor_world_object_inspector.UpdateAndDraw();	
 		
 		EditorEndFrame();
@@ -748,35 +719,35 @@ int main()
 		//************************************		
 
 		// @NOTE: Update the 3D control wigets. 
-		if (currnet_context.selected_world_object)
+		if (current_context.selected_world_object)
 		{
-			scaling_widget.SetTransform(*currnet_context.selected_world_object->GetTransform());
-			rotation_widget.SetTransform(*currnet_context.selected_world_object->GetTransform());
-			translation_widget.SetTransform(*currnet_context.selected_world_object->GetTransform());
+			scaling_widget.SetTransform(*current_context.selected_world_object->GetTransform());
+			rotation_widget.SetTransform(*current_context.selected_world_object->GetTransform());
+			translation_widget.SetTransform(*current_context.selected_world_object->GetTransform());
 
 			if (Input::GetKeyJustDown(GLFW_KEY_T))
 			{
-				currnet_context.current_widget = (currnet_context.current_widget == &translation_widget) ? nullptr : &translation_widget;
+				current_context.current_widget = (current_context.current_widget == &translation_widget) ? nullptr : &translation_widget;
 			}
 
 			if (Input::GetKeyJustDown(GLFW_KEY_R))
 			{
-				currnet_context.current_widget = (currnet_context.current_widget == &rotation_widget) ? nullptr : &rotation_widget;
+				current_context.current_widget = (current_context.current_widget == &rotation_widget) ? nullptr : &rotation_widget;
 			}
 
 			if (Input::GetKeyJustDown(GLFW_KEY_F))
 			{
-				currnet_context.current_widget = (currnet_context.current_widget == &scaling_widget) ? nullptr : &scaling_widget;
+				current_context.current_widget = (current_context.current_widget == &scaling_widget) ? nullptr : &scaling_widget;
 			}
 
 			if (Input::GetKeyJustDown(GLFW_KEY_GRAVE_ACCENT))
 			{
-				if (currnet_context.current_widget) {
-					if (currnet_context.current_widget->IsObjectAligning()) {
-						currnet_context.current_widget->WorldAlign();
+				if (current_context.current_widget) {
+					if (current_context.current_widget->IsObjectAligning()) {
+						current_context.current_widget->WorldAlign();
 					}
 					else {
-						currnet_context.current_widget->ObjectAlign();
+						current_context.current_widget->ObjectAlign();
 					}
 				}
 			}
@@ -799,42 +770,46 @@ int main()
 			{
 				// @NOTE: Do we hit a control widget
 				bool using_widget = false;
-				if (currnet_context.selected_world_object)
+				if (current_context.selected_world_object)
 				{
-					if (currnet_context.current_widget)
+					if (current_context.current_widget)
 					{
-						Transform transform = *currnet_context.selected_world_object->GetTransform();
-						using_widget = currnet_context.current_widget->Select(cam_ray, transform);
+						Transform transform = *current_context.selected_world_object->GetTransform();
+						using_widget = current_context.current_widget->Select(cam_ray, transform);
 					}				
 				}
 				if (!using_widget)
 				{
 					// @NOTE: Assume we miss everything
-					currnet_context.selected_world_object = nullptr;
+					current_context.selected_world_object = nullptr;
+					
+					real32 closest_dist = 9999999;
 					for (int32 i = 0; i < main_world.objects.size(); i++)
 					{
 						WorldObject *current = main_world.objects[i];
 						GeometricCollider *collider = current->GetCollider();
+						CollisionInfo collision_info;
+
 						if (collider == nullptr)
 						{
 							continue;
 						}
-
-						// TODO: Sorting 
-						if (collider->CheckCollision(cam_ray))
+						
+						if (collider->CheckCollision(cam_ray, &collision_info))
 						{
-							// @NOTE: Select our new object
-							currnet_context.selected_world_object = current;
+							if (collision_info.dist < closest_dist)
+							{						
+								closest_dist = collision_info.dist;
+								// @NOTE: Select our new object
+								current_context.selected_world_object = current;
 
-							// @NOTE: Snap the controll widgets to the newly selected object
-							if (currnet_context.current_widget)
-							{
-								Transform transform = *currnet_context.selected_world_object->GetTransform();
-								currnet_context.current_widget->SetTransform(transform);
+								// @NOTE: Snap the controll widgets to the newly selected object
+								if (current_context.current_widget)
+								{
+									Transform transform = *current_context.selected_world_object->GetTransform();
+									current_context.current_widget->SetTransform(transform);
+								}
 							}
-
-							// @NOTE: Leave the loop as we've found our new object
-							break;
 						}
 					}					
 				}
@@ -845,18 +820,22 @@ int main()
 			}
 			if (Input::IsMouseHeldDown(MOUSE_BUTTON_1))
 			{
-				double x, y;
-				glfwGetCursorPos(window, &x, &y);
-				fh += 0.4f * delta_time;
-				//point_light.light_position.x += 4 * delta_time;
-
-				if (currnet_context.selected_world_object)
+				if (current_context.selected_world_object)
 				{
-					if (currnet_context.current_widget)
+					if (current_context.current_widget)
 					{
-						Transform *transform = currnet_context.selected_world_object->GetTransform();
-						GeometricCollider *collider = currnet_context.selected_world_object->GetCollider();
-						currnet_context.current_widget->Update(cam_ray, transform);
+						if (Input::GetKeyHeldDown(GLFW_KEY_LEFT_CONTROL))
+						{
+							current_context.current_widget->SetSnappingAmount(15);
+						}
+						else
+						{
+							current_context.current_widget->SetSnappingAmount(0);
+						}
+
+						Transform *transform = current_context.selected_world_object->GetTransform();
+						GeometricCollider *collider = current_context.selected_world_object->GetCollider();
+						current_context.current_widget->Update(cam_ray, transform);
 						if (collider)
 						{
 							collider->Update(transform);
@@ -867,12 +846,10 @@ int main()
 			else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
 			{
 
-
 			}
 		}
 
-
-
+		
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2))
 		{
 
@@ -957,7 +934,7 @@ int main()
 			WorldObject *obj	= main_world.objects[i];
 			Transform transform = *obj->GetTransform();
 			Material mat		= *obj->GetMaterial();
-			Mat4 transform_matrix = obj->GetTransformMatrix();
+			Mat4 transform_matrix = transform.CalcTransformMatrix();
 
 			ShaderSetMat4(&depth_shader, "model", transform_matrix.arr);
 
@@ -983,36 +960,39 @@ int main()
 			WorldObject *obj	= main_world.objects[i];
 			Transform transform = *obj->GetTransform();
 			Material mat		= *obj->GetMaterial();
-			Mat4 transform_matrix = obj->GetTransformMatrix();
+			RenderFlags flags	= obj->GetRenderFlags();
+			Mat4 transform_matrix = transform.CalcTransformMatrix();
 				
-			
-			// @TODO: Some sort of sorting (TextureSet) ?? For this non instanced draw call
-			if (mat.HasTextures())
+			if (flags == RENDERFLAG_NOTHING)
 			{
-				// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
-				ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", Vec3(1).arr);
-				ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 1);
-				ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1).arr);
+				// @TODO: Some sort of sorting (TextureSet) ?? For this non instanced draw call
+				if (mat.HasTextures())
+				{
+					// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
+					ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", Vec3(1).arr);
+					ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 1);
+					ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1).arr);
 
 
-				mat.SetTextures(&worldspace_gbuffer_shader);
+					mat.SetTextures(&worldspace_gbuffer_shader);
+				}
+				else
+				{
+					// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
+					ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 0, "colour_map");
+					ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 2, "orme_map");
+					ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 0);
+
+					mat.SetValues(&worldspace_gbuffer_shader);
+				}
+
+				ShaderSetMat4(&worldspace_gbuffer_shader, "model", transform_matrix.arr);
+				RenderMesh(worldspace_gbuffer_shader, obj->GetMeshForRender());
 			}
-			else
-			{
-				// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
-				ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 0, "colour_map");
-				ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 2, "orme_map");
-				ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 0);
-				
-				mat.SetValues(&worldspace_gbuffer_shader);
-			}
-
-			ShaderSetMat4(&worldspace_gbuffer_shader, "model", transform_matrix.arr);
-			RenderMesh(worldspace_gbuffer_shader, obj->GetMeshForRender());
 		}
 
 		//************************************
-		// Gbuffer pass for animated objects
+		// World gbuffer pass for animated objects
 		//************************************
 #if 1
 		BindShader(worldspace_gbuffer_anim_shader);
@@ -1051,31 +1031,35 @@ int main()
 			WorldObject *obj = main_world.objects[i];
 			Transform transform = *obj->GetTransform();
 			Material mat = *obj->GetMaterial();
-			Mat4 transform_matrix = obj->GetTransformMatrix();
+			Mat4 transform_matrix = transform.CalcTransformMatrix();
+			RenderFlags flags = obj->GetRenderFlags();
 
-			if (mat.HasTextures())
+			if (flags == RENDERFLAG_NOTHING)
 			{
-				// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
-				ShaderSetVec3(&viewspace_gbuffer_shader, "colour_set", Vec3(1).arr);
-				ShaderSetInt32(&viewspace_gbuffer_shader, "normal_set", 1);
-				ShaderSetVec3(&viewspace_gbuffer_shader, "orm_set", Vec3(1).arr);
+				if (mat.HasTextures())
+				{
+					// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
+					ShaderSetVec3(&viewspace_gbuffer_shader, "colour_set", Vec3(1).arr);
+					ShaderSetInt32(&viewspace_gbuffer_shader, "normal_set", 1);
+					ShaderSetVec3(&viewspace_gbuffer_shader, "orm_set", Vec3(1).arr);
 
 
-				mat.SetTextures(&viewspace_gbuffer_shader);
+					mat.SetTextures(&viewspace_gbuffer_shader);
+				}
+				else
+				{
+					// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
+					ShaderBindTexture(viewspace_gbuffer_shader, StandardTextures::GetOneTexture(), 0, "colour_map");
+					ShaderBindTexture(viewspace_gbuffer_shader, StandardTextures::GetOneTexture(), 2, "orme_map");
+					ShaderSetInt32(&viewspace_gbuffer_shader, "normal_set", 0);
+
+					mat.SetValues(&viewspace_gbuffer_shader);
+				}
+
+
+				ShaderSetMat4(&viewspace_gbuffer_shader, "model", transform_matrix.arr);
+				RenderMesh(viewspace_gbuffer_shader, obj->GetMeshForRender());
 			}
-			else
-			{
-				// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
-				ShaderBindTexture(viewspace_gbuffer_shader, StandardTextures::GetOneTexture(), 0, "colour_map");
-				ShaderBindTexture(viewspace_gbuffer_shader, StandardTextures::GetOneTexture(), 2, "orme_map");
-				ShaderSetInt32(&viewspace_gbuffer_shader, "normal_set", 0);
-
-				mat.SetValues(&viewspace_gbuffer_shader);
-			}
-
-
-			ShaderSetMat4(&viewspace_gbuffer_shader, "model", transform_matrix.arr);
-			RenderMesh(viewspace_gbuffer_shader, obj->GetMeshForRender());
 		}
 
 		UnbindFrameBuffer();
@@ -1157,14 +1141,14 @@ int main()
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
 
-		BindShader(demo_01_deffered_pbr_shader);
+		BindShader(pbr_deffered_shader);
 
-		ShaderBindTexture(demo_01_deffered_pbr_shader, worldspace_gbuffer.colour0_texture_attachment, 0, "g_position");
-		ShaderBindTexture(demo_01_deffered_pbr_shader, worldspace_gbuffer.colour1_texture_attachment, 1, "g_normal");
-		ShaderBindTexture(demo_01_deffered_pbr_shader, worldspace_gbuffer.colour2_texture_attachment, 2, "g_colour");
-		ShaderBindTexture(demo_01_deffered_pbr_shader, render_settings.ssao ? ssao_map : StandardTextures::GetOneTexture(), 3, "g_ssao");
+		ShaderBindTexture(pbr_deffered_shader, worldspace_gbuffer.colour0_texture_attachment, 0, "g_position");
+		ShaderBindTexture(pbr_deffered_shader, worldspace_gbuffer.colour1_texture_attachment, 1, "g_normal");
+		ShaderBindTexture(pbr_deffered_shader, worldspace_gbuffer.colour2_texture_attachment, 2, "g_colour");
+		ShaderBindTexture(pbr_deffered_shader, render_settings.ssao ? ssao_map : StandardTextures::GetOneTexture(), 3, "g_ssao");
 		
-		RenderMesh(demo_01_deffered_pbr_shader, StandardMeshes::quad);
+		RenderMesh(pbr_deffered_shader, StandardMeshes::quad);
 
 		UnbindFrameBuffer();
 
@@ -1172,20 +1156,48 @@ int main()
 		// Forward pass
 		//************************************
 			   
-		//FrameBufferCopyDepth(worldspace_gbuffer, &post_processing_buffer);
-		//BindFrameBuffer(post_processing_buffer);
+		FrameBufferCopyDepth(worldspace_gbuffer, &post_processing_buffer);
+		BindFrameBuffer(post_processing_buffer);
+		
+		DisableFaceCulling();
 
-		//BindShader(cubemap_shader);
+		BindShader(skybox_shader);
 
-		//ShaderSetMat4(&cubemap_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
-		//ShaderSetMat4(&cubemap_shader, "view", camera_controller.main_camera.view_matrix.arr);
-		//ShaderBindCubeMap(&cubemap_shader, demo_skybox, 0, "environmentMap");
+		ShaderSetMat4(&skybox_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
+		ShaderSetMat4(&skybox_shader, "view", camera_controller.main_camera.view_matrix.arr);
+		ShaderSetBool(&skybox_shader, "has_skybox", false);
+		//ShaderBindCubeMap(&skybox_shader, demo_skybox, 0, "environmentMap");
+		
+		RenderMesh(skybox_shader, StandardMeshes::Cube());
 
-		//DisableFaceCulling();
-		//RenderMesh(cubemap_shader, StandardMeshes::Cube());
-		//EnableFaceCulling();
-		//	   
-		//UnbindFrameBuffer();
+		EnableBlending();
+
+		BindShader(pbr_forward_shader);
+
+		for (int32 i = 0; i < main_world.objects.size(); i++)
+		{
+			WorldObject *obj = main_world.objects[i];
+			RenderFlags flags = obj->GetRenderFlags();
+			if (flags == RENDERFLAG_HAS_BLENDING)
+			{
+				Transform transform = *obj->GetTransform();
+				Material mat = *obj->GetMaterial();
+				Mat4 transform_matrix = transform.CalcTransformMatrix();
+
+				ShaderBindTexture(pbr_forward_shader, test_blend_texture, 0, "test_texture");
+				ShaderSetMat4(&pbr_forward_shader, "model", transform_matrix.arr);
+				RenderMesh(pbr_forward_shader, obj->GetMeshForRender());
+			}
+		}
+
+		
+		DisableBlending();
+
+		EnableFaceCulling();
+		
+		UnbindFrameBuffer();
+
+
 		//************************************
 		// Post processing pass
 		//************************************
@@ -1221,26 +1233,26 @@ int main()
 		StencilDiscardOnOne();
 #endif
 		DisableDepthBuffer();
-		BindShader(demo_01_postprocessing_shader);
+		BindShader(postprocessing_shader);
 
-		ShaderBindTexture(demo_01_postprocessing_shader, post_processing_buffer.colour0_texture_attachment, 0, "scene_texture");
-		ShaderBindTexture(demo_01_postprocessing_shader, bloom_map, 1, "bloom_texture");
+		ShaderBindTexture(postprocessing_shader, post_processing_buffer.colour0_texture_attachment, 0, "scene_texture");
+		ShaderBindTexture(postprocessing_shader, bloom_map, 1, "bloom_texture");
 
-		ShaderSetInt32(&demo_01_postprocessing_shader, "FXAA", render_settings.fxaa);
-		ShaderSetFloat(&demo_01_postprocessing_shader, "FXAA_SPAN_MAX", render_settings.fxaa_span_max);
-		ShaderSetFloat(&demo_01_postprocessing_shader, "FXAA_DIR_MIN", render_settings.fxaa_dir_min);
-		ShaderSetFloat(&demo_01_postprocessing_shader, "FXAA_DIR_REDUC", render_settings.fxaa_dir_reduc);
+		ShaderSetInt32(&postprocessing_shader, "FXAA", render_settings.fxaa);
+		ShaderSetFloat(&postprocessing_shader, "FXAA_SPAN_MAX", render_settings.fxaa_span_max);
+		ShaderSetFloat(&postprocessing_shader, "FXAA_DIR_MIN", render_settings.fxaa_dir_min);
+		ShaderSetFloat(&postprocessing_shader, "FXAA_DIR_REDUC", render_settings.fxaa_dir_reduc);
 		
-		ShaderSetInt32(&demo_01_postprocessing_shader, "bloom", render_settings.bloom);
+		ShaderSetInt32(&postprocessing_shader, "bloom", render_settings.bloom);
 
-		ShaderSetFloat(&demo_01_postprocessing_shader, "vigentte_outer_radius", render_settings.vigentte_outer_raduis * render_settings.vigentte);
-		ShaderSetFloat(&demo_01_postprocessing_shader, "vigentte_inner_radius", render_settings.vigentte_inner_raduis * render_settings.vigentte);
-		ShaderSetFloat(&demo_01_postprocessing_shader, "vignette_intensity", render_settings.vigentte_intensity * render_settings.vigentte);
+		ShaderSetFloat(&postprocessing_shader, "vigentte_outer_radius", render_settings.vigentte_outer_raduis * render_settings.vigentte);
+		ShaderSetFloat(&postprocessing_shader, "vigentte_inner_radius", render_settings.vigentte_inner_raduis * render_settings.vigentte);
+		ShaderSetFloat(&postprocessing_shader, "vignette_intensity", render_settings.vigentte_intensity * render_settings.vigentte);
 
-		ShaderSetFloat(&demo_01_postprocessing_shader, "exposure", render_settings.post_processing_exposure);
-		ShaderSetInt32(&demo_01_postprocessing_shader, "tonemapping_method", static_cast<uint32>(render_settings.tonemapping));
+		ShaderSetFloat(&postprocessing_shader, "exposure", render_settings.post_processing_exposure);
+		ShaderSetInt32(&postprocessing_shader, "tonemapping_method", static_cast<uint32>(render_settings.tonemapping));
 			   
-		RenderMesh(demo_01_postprocessing_shader, StandardMeshes::quad);
+		RenderMesh(postprocessing_shader, StandardMeshes::quad);
 		
 		EnableDepthBuffer();
 #pragma endregion
@@ -1254,16 +1266,16 @@ int main()
 		//		: for debug reasons
 		
 			   
-		if (currnet_context.selected_world_object)
+		if (current_context.selected_world_object)
 		{		
 			BindShader(transform_widget_shader);
-			if (currnet_context.current_widget)
+			if (current_context.current_widget)
 			{
-				ShaderSetMat4(&transform_widget_shader, "model", currnet_context.current_widget->GetTransform()->CalcTransformMatrix().arr);
-				RenderMesh(transform_widget_shader, currnet_context.current_widget->GetMeshForRender());
+				ShaderSetMat4(&transform_widget_shader, "model", current_context.current_widget->GetTransform()->CalcTransformMatrix().arr);
+				RenderMesh(transform_widget_shader, current_context.current_widget->GetMeshForRender());
 			}
 
-			GeometricCollider* collider = currnet_context.selected_world_object->GetCollider();
+			GeometricCollider* collider = current_context.selected_world_object->GetCollider();
 			if (collider)
 			{
 				switch (collider->GetColliderType())
@@ -1280,7 +1292,7 @@ int main()
 				}
 				case cm::GeometricColliderType::object_bounding_box: {
 					OBB *obb = reinterpret_cast<OBB*>(collider);
-					Debug::AddIrresoluteOBB(obb->origin, obb->extents, obb->basis);
+					Debug::AddIrresoluteOBB(obb->origin, obb->GetExtents(), obb->basis);
 					break;
 				}
 				default:

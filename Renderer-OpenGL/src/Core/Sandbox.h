@@ -20,8 +20,7 @@ namespace cm
 		virtual Transform *GetTransform() override;
 		virtual GLMesh *GetMeshForRender() override;
 		virtual GeometricCollider *GetCollider() override;
-		virtual const Mat4 GetTransformMatrix() const override;
-		virtual const uint32 GetRenderFlags() const override;
+		virtual uint32 GetRenderFlags() const override;
 	};
 
 

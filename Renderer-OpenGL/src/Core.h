@@ -84,3 +84,5 @@ typedef std::atomic<int32>	AtomicInt32;
 typedef std::atomic<int64>	AtomicInt64;
 typedef std::atomic<real32> AtomicReal32;
 typedef std::atomic<real64> AtomicReal64;
+
+typedef uint32 RenderFlags;
