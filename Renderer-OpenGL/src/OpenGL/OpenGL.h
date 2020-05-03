@@ -2,7 +2,7 @@
 #include "Core.h"
 #include "glew.h"
 #include "Math/CosmicMath.h"
-
+#include "Utility.h"
 namespace cm
 {
 	//===============================================================//
@@ -98,6 +98,9 @@ namespace cm
 	struct UniformBuffer
 	{
 		uint32 object = 0;
+		uint32 binding_point = 0;
+		Array<real32> data;
+
 		uint32 size_bytes = 0;
 		LayoutBuffer lbo;
 		BufferType type = BufferType::Uniform_buffer;

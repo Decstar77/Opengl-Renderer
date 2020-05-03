@@ -22,6 +22,11 @@ Notes:
 		https://github.com/ImanolFotia/Epsilon-Engine/blob/master/bin/Release/shaders/SSR.frag
 		https://github.com/godotengine/godot/blob/6a38ce1b318cc71c285c11f5b52f04a681c309fd/servers/rendering/rasterizer_rd/shaders/screen_space_reflection.glsl#L132
 
+
+	Deffered Rendering Problems:
+		Anti anialising
+
+
 Problems:
 	Writing GPU data -- Animation data, texture data.
 	Interaction bettween transform and bounding mesh and ??? collision mesh ???

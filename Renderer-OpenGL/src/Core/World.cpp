@@ -2,6 +2,35 @@
 
 namespace cm
 {
+	bool Material::HasTextures() const
+	{
+		return (diffuse_texture != nullptr) || (normal_texture != nullptr) || (occlusion_roughness_metallic != nullptr);
+	}
+
+	void Material::SetTextures(Shader *shader)
+	{
+		Assert(diffuse_texture != nullptr);
+		Assert(normal_texture != nullptr);
+		Assert(occlusion_roughness_metallic != nullptr);
+		// @TODO: Texture storage look-up
+		ShaderBindTexture(*shader, *diffuse_texture, 0, "colour_map");
+		ShaderBindTexture(*shader, *normal_texture, 1, "normal_map");
+		ShaderBindTexture(*shader, *occlusion_roughness_metallic, 2, "orme_map");
+	}
+
+	void Material::SetValues(Shader *shader)
+	{
+		ShaderSetVec3(shader, "colour_set", diffuse.arr);
+		ShaderSetVec3(shader, "orm_set", Vec3(1, roughness, metalness).arr);
+	}
+
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+
 	cm::GLMesh *StaticWorldObject::GetMeshForRender()
 	{
 		return &mesh;
@@ -31,12 +60,75 @@ namespace cm
 		return render_flags;
 	}
 
+
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	
+	World::World()
+	{
+		defferd_objects.Resize(50);
+		forward_objects.Resize(50);
+	}
+
+	World::~World()
+	{
+		forward_objects.Free();
+		defferd_objects.Free();
+	}
+
 	void World::RegisterWorldObject(WorldObject *object)
 	{
-		// @NOTE: This will get more complex later
 		Assert(object != nullptr);
+
+		RenderFlags flags = object->GetRenderFlags();
+
+		RenderFlags deffered_flags = RENDERFLAG_NOTHING;
+
+		RenderFlags forward_flags = RENDERFLAG_HAS_BLENDING;
+		
+		bool deffer = flags & deffered_flags;
+		bool forward = flags & forward_flags;
+
+		// @REASON: We could not dertermine (from the flags) wheather this object
+		//		  : is for deffered or forward rendering. Either both were valid, or none were.
+		Assert(deffer != forward); 
+
+		if (deffer)
+		{
+			if (defferd_next < defferd_objects.Size())
+			{
+				this->defferd_objects[defferd_next++] = object;
+			}
+			else
+			{
+				Assert(0); // @TODO: Resize ?
+			}
+		}
+		else if (forward)
+		{
+			if (forward_next < forward_objects.Size())
+			{
+				this->forward_objects[forward_next++] = object;
+			}
+			else
+			{
+				Assert(0); // @TODO: Resize ?
+			}
+		}
+		
 		this->objects.push_back(object);
 	}
+
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
+	//---------------------------------------------------------------
 
 	cm::StaticWorldObject* CreateWorldObjectCube()
 	{
@@ -72,26 +164,6 @@ namespace cm
 		return plane;
 	}
 
-	bool Material::HasTextures() const
-	{
-		return (diffuse_texture != nullptr) || (normal_texture != nullptr) || (occlusion_roughness_metallic != nullptr);
-	}
 
-	void Material::SetTextures(Shader *shader)
-	{
-		Assert(diffuse_texture != nullptr);
-		Assert(normal_texture!= nullptr);
-		Assert(occlusion_roughness_metallic != nullptr);
-		// @TODO: Texture storage look-up
-		ShaderBindTexture(*shader, *diffuse_texture, 0, "colour_map");
-		ShaderBindTexture(*shader, *normal_texture, 1, "normal_map");
-		ShaderBindTexture(*shader, *occlusion_roughness_metallic, 2, "orme_map");
-	}
-
-	void Material::SetValues(Shader *shader)
-	{		
-		ShaderSetVec3(shader, "colour_set", diffuse.arr);		
-		ShaderSetVec3(shader, "orm_set", Vec3(1, roughness, metalness).arr);
-	}
 
 }

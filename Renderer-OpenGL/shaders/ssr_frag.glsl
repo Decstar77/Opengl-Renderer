@@ -55,13 +55,13 @@ void main()
     vec3 end_view = vp + (r * max_dist);
     vec2 end_uv = ppe.xy * 0.5  + vec2(0.5);
     vec2 end_pix = end_uv * uv_to_pixel;
+
+
+
+
     // @NOTE: Resulting uv
     vec2 uv = vec2(0);
 
-
-    //end_pix = clamp(end_pix, vec2(0), vec2(texel_size.x, texel_size.y));
-
-    // @NOTE: Get params for the march, ie step length
 
     vec2 current_pix  = start_pix;
     uv = current_pix * pixel_to_uv;
@@ -70,13 +70,14 @@ void main()
     float deltaY    = end_pix.y - start_pix.y;
 
     float use_x = abs(deltaX) >= abs(deltaY) ? 1.0 : 0.0;
-    float delta = mix(abs(deltaY), abs(deltaX), use_x) * clamp(0.03, 0, 1);
+    float delta = mix(abs(deltaY), abs(deltaX), use_x) * clamp(0.2, 0, 1);
 
-    //delta = clamp(delta, -texel_size.x, texel_size.x);
+    //int steps = int(delta);
 
     // @NOTE: This is the step length in pixels
     vec2 march_inc = vec2(deltaX, deltaY) / max(delta, 0.001);
 
+    delta = clamp(delta, 0, 30);
     // @NOTE: The distance of the current point in view_space from the camera
     float view_dist = vp.z - 0;
     float depth_delta = tollerance;
@@ -87,15 +88,22 @@ void main()
     float hit0 = 0;
     float hit1 = 0;
 
-    // @NOTE: Begin ray marching
-    for (int i = 0; i <0; ++i) 
-    {
 
+    int steps =int(delta);
+    
+    // @NOTE: Begin ray marching
+    for (int i = 0; i < steps; ++i) 
+    {
         // @NOTE: Move along the ray
-        current_pix += march_inc;   
+        current_pix += march_inc * 10;   
 
         // @NOTE: Store the current uv at the point along the ray
         uv = current_pix * pixel_to_uv;
+
+        if (uv.x > 1 || uv.x < 0 || uv.y > 1 || uv.y < 0)
+        {
+            break;
+        }
 
         // @NOTE: Now we look up a new view pos from the SCENE given the new uv
         to_pos = texture(view_position_map, uv).xyz;
@@ -104,7 +112,7 @@ void main()
         search1 = mix ((current_pix.y - end_pix.y) / deltaY , (current_pix.x - start_pix.x) / deltaX, use_x);
         search1 = clamp(search1, 0, 1);
 
-        // @NOTE: Store the current view space pos along the ray
+        // @NOTE: Store the current view space pos along the ray, perspective-correct interpolation.
         view_dist = (start_view.z * end_view.z) / mix(end_view.z, start_view.z, search1);
 
         depth_delta = view_dist - to_pos.z;
@@ -120,9 +128,18 @@ void main()
         }
     }
 
-    //FragColor = vec4(delta);
+    FragColor = vec4(delta);
     FragColor = vec4(start_pix, end_pix);
-
+    #if 1
+    if (hit0 == 1)
+    {
+        FragColor = vec4(uv.xy * uv_to_pixel, 0.5, 1);
+    }
+    else
+    {
+        FragColor = vec4(texture_coords.xy, 0, 1);
+    }
+    #endif
 #endif
     #if 1
     vec3 view_pos = texture(view_position_map, texture_coords).xyz;
@@ -140,25 +157,23 @@ void main()
 
     if (-view_pos.z <= 0.01 || roughness > 0.9)
     {            
-       FragColor = vec4(0, 0, 1, 1);
+        FragColor = vec4(0, 0, 1, 1);
         return;
     }
 
 
     vec2 uv = RayMarch(ray_dir, view_pos);
 
-    if (uv.x > 0)
+    if (uv.x <= 1 && uv.x >= 0 && uv.y <= 1 || uv.y >= 0)
     {
         float vis = 1;
         vis *= 1 - max(dot(ray_dir, -to_view_pos), 0.0);
         vis *= (uv.x < 0 || uv.x > 1) ? 0 : 1;
         vis *= (uv.y < 0 || uv.y > 1) ? 0 : 1;
-       
-        colour = mix(texture(view_colour_map, texture_coords).rgb, texture(view_colour_map, uv).rgb, vis);
+       colour = vec3(1) * vis;
     }
     else{
         uv = texture_coords;
-        colour = texture(view_colour_map, texture_coords).rgb;
     }
 
     FragColor = vec4(colour, 1);
@@ -180,6 +195,8 @@ vec2 RayMarch(vec3 ray_dir, vec3 ray_origin)
     vec3 prev_point = ray_origin;
     vec2 found_uv = vec2(-1);
 
+    int hit_count = 0;
+
     for (int i = 0; i < max_dist; i++)
     {
         current_point = ray_origin + step_length *  (ray_dir * (i + 1));
@@ -190,6 +207,11 @@ vec2 RayMarch(vec3 ray_dir, vec3 ray_origin)
 
         vec2 uv = curr_proj.xy * 0.5 + vec2(0.5);
 
+        if (uv.x > 1 || uv.x < 0 || uv.y > 1 || uv.y < 0)
+        {
+          //  break;
+        }
+
         vec3 sample_point = texture(view_position_map, uv).xyz;
 
 
@@ -197,19 +219,26 @@ vec2 RayMarch(vec3 ray_dir, vec3 ray_origin)
         float current_depth = current_point.z;
         
 
-        uv = (-sample_depth <= 0.01) ? vec2(-1) : uv;
+        if (-sample_depth <= 0.01)
+        {
+          //  break;
+        }
 
         float delta_depth = current_depth - sample_depth;
 
 
-
-        if (ray_dir.z - delta_depth < 0.4)
+        if (ray_dir.z - delta_depth < 0.02)
         {        
-            if (delta_depth <= 0)
-            {
-                found_uv = uv;
-                break;           
+            if (delta_depth <= (0 - .25))
+            {            
+                hit_count++;
             }
+        }
+
+        if (hit_count >= 2)
+        {
+            found_uv = uv;
+            break;
         }
 
         prev_point = current_point;

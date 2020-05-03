@@ -391,6 +391,7 @@ namespace cm
 
 			void main()
 			{
+				//vec3 col = pow(texture(src_texture, texture_coords).rgb, vec3(2.2));
 				vec3 col = texture(src_texture, texture_coords).rgb;
 				g_colour = vec4(vec3(col), 1.0);
     

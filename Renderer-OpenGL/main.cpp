@@ -153,8 +153,7 @@ int main()
 
 
 
-	Shader ssr_shader = CreateShader(ReadFile("shaders/ssr_vert.glsl"), ReadFile("shaders/ssr_frag.glsl"));
-	ssr_shader.name = "ssr_shader ";
+
 
 	//************************************
 	// Load shaders
@@ -214,6 +213,11 @@ int main()
 	skybox_shader.name = "cubemap_shader";
 	CreateShader(&skybox_shader);
 
+	Shader ssr_shader;
+	ssr_shader.config.src_vert = ReadFile("shaders/ssr_vert.glsl");
+	ssr_shader.config.src_frag = ReadFile("shaders/ssr_frag.glsl");
+	ssr_shader.name = "ssr_shader ";
+	CreateShader(&ssr_shader);
 	
 	Shader transform_widget_shader;
 	transform_widget_shader.config.src_vert = ReadFile("res/engine/shaders/editor_widget_vert.glsl");
@@ -272,21 +276,31 @@ int main()
 
 #endif
 #if 1
-	// @TODO: Free is FAR down the file
 	TextureImport texture_importer_float;
-	texture_importer_float.flip = false;	
-	texture_importer_float.texture_paths.push_back("res/botdemo/textures/flower/flower.png");
 	texture_importer_float.Load();
 
 	//************************************
 	// Initialize imported textures
 	//************************************
-	
-	Texture test_blend_texture;
-	test_blend_texture.config = texture_importer_float.texture_configs[0];
-	test_blend_texture.config.mipmaps = true;
-	CreateTexture(&test_blend_texture, texture_importer_float.texture_data[0].data());
 
+	Texture lady_colour_texture;
+	std::vector<uint8> lady_texture_data;
+	LoadTexture(&lady_texture_data, &lady_colour_texture.config, "res/botdemo/textures/lady/Arissa_DIFF_diffuse.png", false);
+	lady_colour_texture.config.mipmaps = false;
+	CreateTexture(&lady_colour_texture, lady_texture_data.data());
+	lady_texture_data.clear();
+
+	Texture lady_normal_texture;
+	LoadTexture(&lady_texture_data, &lady_normal_texture.config, "res/botdemo/textures/lady/Arissa_NM_normal.png", false);
+	lady_normal_texture.config.mipmaps = false;
+	CreateTexture(&lady_normal_texture, lady_texture_data.data());
+	lady_texture_data.clear();
+
+	Texture lady_orme_texture;
+	LoadTexture(&lady_texture_data, &lady_orme_texture.config, "res/botdemo/textures/lady/Arissa_SPEC_specular.png", false);
+	lady_orme_texture.config.mipmaps = false;
+	CreateTexture(&lady_orme_texture, lady_texture_data.data());
+	lady_texture_data.clear();
 
 	texture_importer_float.Free();
 #endif
@@ -526,11 +540,7 @@ int main()
 	DepthBufferFunction(GL_LEQUAL);
 	
 	EnableCubeMapSeamless();
-
-	EnableBlending();
-	BlendFunctionOneMinusSrcAlpha();
-	DisableBlending();
-
+	
 #if EDITOR_WINDOW
 	EnableStencilBuffer();
 	StencilDiscardOnOne();
@@ -557,6 +567,10 @@ int main()
 	informer.LinkShader("WorldMatrices", worldspace_gbuffer_shader);
 	informer.LinkShader("LightingData", pbr_deffered_shader);
 	
+	UniformBuffer global_uniforms;
+	CreateUniformBuffer(&global_uniforms);
+	UniformBufferSetBindPoint(global_uniforms, 0);
+
 
 	RenderSettings render_settings;
 	
@@ -591,28 +605,6 @@ int main()
 	floor->transform.scale = Vec3(10);
 	floor->GetCollider()->Update(floor->transform);
 
-
-	for (int32 k = 0; k < 4; k++)
-	{
-		for (int32 i = 1; i < 3; i++)
-		{
-			StaticWorldObject *flower = CreateWorldObjectPlane();
-			flower->render_flags = RENDERFLAG_HAS_BLENDING;
-			flower->material.diffuse_texture = &test_blend_texture;
-
-			int32 dir = (i % 2) ? -1 : 1;
-			flower->transform.rotation = EulerToQuat(Vec3(0, 45.0f * dir, 0));
-			flower->transform.scale = Vec3(0.2);
-			
-
-			flower->transform.position = Vec3((real32)k * 0.5f, 0.2, 0);
-			flower->GetCollider()->Update(flower->transform);
-			main_world.RegisterWorldObject(flower);
-		}
-	}
-	
-	ModelImport model_import_static;
-	model_import_static.model_paths.push_back("");
 
 	ModelImport model_import_animation;
 	model_import_animation.import_vertex_binorms_tangents = true;
@@ -698,8 +690,20 @@ int main()
 		editor_world_object_inspector.SetWorldObject(current_context.selected_world_object);
 		editor_world_object_inspector.UpdateAndDraw();	
 		
-		EditorEndFrame();
 
+		ImGui::Begin("Spawner");
+		if (ImGui::Button("Shader reset"))
+		{
+			FreeShader(&ssr_shader);
+			ssr_shader.config.src_vert = ReadFile("shaders/ssr_vert.glsl");
+			ssr_shader.config.src_frag = ReadFile("shaders/ssr_frag.glsl");
+			CreateShader(&ssr_shader);
+		}
+		ImGui::End();
+
+		EditorEndFrame();	
+
+		
 		
 		// @NOTE: Get any input that was for one of the editor windows	
 		mouse_input_for_editor_window = *ImGui::GetIO().MouseDownOwned;
@@ -909,6 +913,8 @@ int main()
 
 		std::vector<Mat4> mats;
 
+		
+
 
 
 #pragma region RenderingLogic
@@ -954,52 +960,56 @@ int main()
 		//************************************
 
 		BindShader(worldspace_gbuffer_shader);
-		
-		for (int32 i = 0; i < main_world.objects.size(); i++)
+
+		// @DANGER: This loop is not safe, we assume next is the last element
+		for (uint32 i = 0; i < main_world.defferd_next; i++)
 		{
-			WorldObject *obj	= main_world.objects[i];
+			WorldObject *obj	= main_world.defferd_objects[i];
 			Transform transform = *obj->GetTransform();
 			Material mat		= *obj->GetMaterial();
-			RenderFlags flags	= obj->GetRenderFlags();
 			Mat4 transform_matrix = transform.CalcTransformMatrix();
 				
-			if (flags == RENDERFLAG_NOTHING)
+			// @TODO: Some sort of sorting (TextureSet) ?? For this non instanced draw call
+			if (mat.HasTextures())
 			{
-				// @TODO: Some sort of sorting (TextureSet) ?? For this non instanced draw call
-				if (mat.HasTextures())
-				{
-					// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
-					ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", Vec3(1).arr);
-					ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 1);
-					ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1).arr);
+				// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
+				ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", Vec3(1).arr);
+				ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 1);
+				ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1).arr);
 
 
-					mat.SetTextures(&worldspace_gbuffer_shader);
-				}
-				else
-				{
-					// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
-					ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 0, "colour_map");
-					ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 2, "orme_map");
-					ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 0);
-
-					mat.SetValues(&worldspace_gbuffer_shader);
-				}
-
-				ShaderSetMat4(&worldspace_gbuffer_shader, "model", transform_matrix.arr);
-				RenderMesh(worldspace_gbuffer_shader, obj->GetMeshForRender());
+				mat.SetTextures(&worldspace_gbuffer_shader);
 			}
+			else
+			{
+				// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
+				ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 0, "colour_map");
+				ShaderBindTexture(worldspace_gbuffer_shader, StandardTextures::GetOneTexture(), 2, "orme_map");
+				ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 0);
+
+				mat.SetValues(&worldspace_gbuffer_shader);
+			}
+
+			ShaderSetMat4(&worldspace_gbuffer_shader, "model", transform_matrix.arr);
+			RenderMesh(worldspace_gbuffer_shader, obj->GetMeshForRender());
 		}
 
 		//************************************
 		// World gbuffer pass for animated objects
 		//************************************
-#if 1
+#if 0
 		BindShader(worldspace_gbuffer_anim_shader);
 
-		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "colour_set", test_cube_guy.material.diffuse.arr);
-		ShaderSetInt32(&worldspace_gbuffer_anim_shader, "normal_set", 0);
-		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "orm_set", Vec3(1, test_cube_guy.material.roughness, test_cube_guy.material.metalness).arr);
+		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "colour_set", Vec3(1).arr);
+		ShaderSetInt32(&worldspace_gbuffer_anim_shader, "normal_set", 1);
+		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "orm_set", Vec3(1).arr);
+		
+		ShaderBindTexture(worldspace_gbuffer_anim_shader, lady_colour_texture, 0, "colour_map");
+		ShaderBindTexture(worldspace_gbuffer_anim_shader, lady_normal_texture, 1, "normal_map");
+		ShaderBindTexture(worldspace_gbuffer_anim_shader, lady_orme_texture, 2, "orme_map");
+
+
+
 
 		test_cube_guy.animation_controller.Play(0);
 		test_cube_guy.animation_controller.Update(delta_time);
@@ -1025,10 +1035,11 @@ int main()
 
 		RenderCommands::ClearColourBuffer();
 		RenderCommands::ClearDepthBuffer();
-			   
-		for (int32 i = 0; i < main_world.objects.size(); i++)
+			  
+		// @DANGER: This loop is not safe, we assume next is the last element
+		for (uint32 i = 0; i < main_world.defferd_next; i++)
 		{
-			WorldObject *obj = main_world.objects[i];
+			WorldObject *obj = main_world.defferd_objects[i];
 			Transform transform = *obj->GetTransform();
 			Material mat = *obj->GetMaterial();
 			Mat4 transform_matrix = transform.CalcTransformMatrix();
@@ -1073,7 +1084,7 @@ int main()
 		//************************************
 
 		// @NOTE: Not working currently, in development, ie still learning cause I suck
-#if 0
+#if 1
 		BindFrameBuffer(ssr_frame);
 		BindShader(ssr_shader);
 
@@ -1082,7 +1093,7 @@ int main()
 
 		ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour0_texture_attachment, 0, "view_position_map");
 		ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour1_texture_attachment, 1, "view_normal_map");
-		ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour2_texture_attachment, 2, "view_colour_map");
+		//ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour2_texture_attachment, 2, "view_colour_map");
 		ShaderSetMat4(&ssr_shader, "proj", camera_controller.main_camera.projection_matrix.arr);
 		RenderMesh(ssr_shader, StandardMeshes::quad);
 
@@ -1170,28 +1181,6 @@ int main()
 		
 		RenderMesh(skybox_shader, StandardMeshes::Cube());
 
-		EnableBlending();
-
-		BindShader(pbr_forward_shader);
-
-		for (int32 i = 0; i < main_world.objects.size(); i++)
-		{
-			WorldObject *obj = main_world.objects[i];
-			RenderFlags flags = obj->GetRenderFlags();
-			if (flags == RENDERFLAG_HAS_BLENDING)
-			{
-				Transform transform = *obj->GetTransform();
-				Material mat = *obj->GetMaterial();
-				Mat4 transform_matrix = transform.CalcTransformMatrix();
-
-				ShaderBindTexture(pbr_forward_shader, test_blend_texture, 0, "test_texture");
-				ShaderSetMat4(&pbr_forward_shader, "model", transform_matrix.arr);
-				RenderMesh(pbr_forward_shader, obj->GetMeshForRender());
-			}
-		}
-
-		
-		DisableBlending();
 
 		EnableFaceCulling();
 		
@@ -1333,11 +1322,13 @@ int main()
 
 		//BindShader(debug_mesh_shader);
 		glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
-		Debug::DrawTexture(worldspace_gbuffer.colour0_texture_attachment);
-		//ShaderBindTexture(debug_mesh_shader, ssr_frame.colour0_texture_attachment, 0, "mesh_texture");
-		//ShaderSetMat4(&debug_mesh_shader, "model", Mat4(1).arr);
-		//RenderMesh(debug_mesh_shader, StandardMeshes::quad);
+		Debug::DrawTexture(ssr_frame.colour0_texture_attachment);
+		
+		//glViewport(WINDOW_WIDTH/4, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
+		//Debug::DrawTexture(viewspace_gbuffer.colour1_texture_attachment);		
 		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+
 
 		//// @TODO: Debug Draw Quad
 		//// @NOTE: Draw bloom buffer;

@@ -1,5 +1,6 @@
 #pragma once
 #include "Core.h"
+#include "Utility.h"
 #include "OpenGL/OpenGl.h"
 #include "Math/CosmicMath.h"
 #include "Math/CosmicGeometry.h"
@@ -96,10 +97,13 @@ namespace cm
 		real32 post_processing_exposure = 1.0;
 	};
 
-#define RENDERFLAG_NOTHING 0
-#define RENDERFLAG_CAST_SHADOWS BIT(1)
-#define RENDERFLAG_HAS_ANIMATION BIT(2)
-#define RENDERFLAG_HAS_BLENDING BIT(3)
+#define RENDERFLAG_NOTHING			BIT(0)
+#define RENDERFLAG_HAS_BLENDING		BIT(1)
+#define RENDERFLAG_HAS_ANIMATION	BIT(2)
+#define RENDERFLAG_CAST_SHADOWS		BIT(3)
+#define RENDERFLAG_RECEIVE_SHADOWS	BIT(4)
+
+
 
 	class WorldObject
 	{
@@ -164,7 +168,7 @@ namespace cm
 	class StaticWorldObject : public WorldObject
 	{
 	public:
-		uint32 render_flags = 0;
+		uint32 render_flags = RENDERFLAG_NOTHING;
 
 		Transform transform;
 		Material material;
@@ -192,10 +196,18 @@ namespace cm
 	class World 
 	{
 	private:
-		std::vector<WorldObject*> animated_objects;
-		std::vector<WorldObject*> static_objects;
+
 
 	public:
+
+		World();
+		~World();
+
+		uint32 defferd_next = 0;
+		Array<WorldObject*> defferd_objects;
+		uint32 forward_next = 0;
+		Array<WorldObject*> forward_objects;
+
 		RenderSettings render_settings;
 		std::vector<WorldObject*> objects;
 		

@@ -20,9 +20,14 @@ namespace cm
 		void CreateUBO(const String &name, const LayoutBuffer &lbo, int32 binding_location);
 		void LinkShader(const String &name, Shader shader);
 		template<typename T>
-		void UpdateUBO(const String &name, std::vector<T> data) 
-		{ WriteBufferData(&ubos[ubo_data.at(name)], data, 0); }
+		void UpdateUBO(const String &name, std::vector<T> data);
 
 	};
+
+	template<typename T>
+	void cm::Informer::UpdateUBO(const String &name, std::vector<T> data)
+	{
+		WriteBufferData(&ubos[ubo_data.at(name)], data, 0);
+	}
 
 }

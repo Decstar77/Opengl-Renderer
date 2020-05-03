@@ -108,7 +108,7 @@ namespace cm
 
 	String ReadFile(const String &file_directory);
 	
-	bool LoadTexture(std::vector<uint8> *storage, TextureConfig *config, const String &file_directory);
+	bool LoadTexture(std::vector<uint8> *storage, TextureConfig *config, const String &file_directory, const bool &flip);
 
 
 	

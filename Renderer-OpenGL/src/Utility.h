@@ -7,12 +7,12 @@ namespace cm
 	class Array
 	{
 	private:
-		uint32 count = 0;
+		uint32 size = 0;
 		T *data = nullptr;
 
 	public:
-		inline constexpr uint32 Count() const { 
-			return count; 
+		inline constexpr uint32 Size() const { 
+			return size; 
 		}
 
 		inline constexpr T* Data() const { 
@@ -20,11 +20,11 @@ namespace cm
 		}
 		
 		inline constexpr T* Get(const uint32 &index) { 
-			Assert(index >= 0 && index < count); 
+			Assert(index >= 0 && index < size); 
 			return this->data[index]; 
 		}
 		inline constexpr void Set(const T &data, const uint32 &index) { 
-			Assert(index >= 0 && index < count); 
+			Assert(index >= 0 && index < size); 
 			this->data[index] = data; 
 		}
 
@@ -33,14 +33,14 @@ namespace cm
 			if (data)
 			{
 				delete[] data;
-				count = 0;
+				size = 0;
 				data = nullptr;
 			}
 		}
 
-		void Resize(const uint32 &count)
+		void Resize(const uint32 &size)
 		{
-			uint32 copycount = this->count < count ? count : this->count;
+			uint32 copycount = this->size < size ? size : this->size;
 			T *newdata = new T[copycount];
 			if (data)
 			{
@@ -51,7 +51,7 @@ namespace cm
 			}
 			Free();
 			this->data = newdata;
-			this->count = count;
+			this->size = size;
 		}
 
 		Array<T> Clone() const
@@ -59,9 +59,9 @@ namespace cm
 			Array newarr;
 			if (data)
 			{
-				newarr.data = new T[this->count];
-				newarr.count = this->count;
-				for (uint32 i = 0; i < this->count; i++)
+				newarr.data = new T[this->size];
+				newarr.size = this->size;
+				for (uint32 i = 0; i < this->size; i++)
 				{
 					newarr.data[i] = this->data[i];
 				}
@@ -71,18 +71,18 @@ namespace cm
 
 		T& operator[](uint32 index)
 		{
-			Assert(index >= 0 && index < count);
+			Assert(index >= 0 && index < size);
 			return data[index];
 		}
 
 		bool operator ==(const Array<T> &arr)
 		{
-			return (this->data == arr.data && this->count == arr.count);
+			return (this->data == arr.data && this->size == arr.count);
 		}
 
 		void operator = (const Array<T> &arr) {
 			this->data = arr.data;
-			this->count = arr.count;
+			this->size = arr.count;
 		}
 
 	public:
@@ -90,17 +90,17 @@ namespace cm
 
 		Array(const Array<T> &arr) {
 			this->data = arr.data;
-			this->count = arr.count;
+			this->size = arr.size;
 		}
 
-		Array(T *data, const uint32 &count) {
+		Array(T *data, const uint32 &size) {
 
 			this->data = data;
-			this->count = count;
+			this->size = size;
 		};
 
-		Array(const uint32 &count) {
-			Resize(count);
+		Array(const uint32 &size) {
+			Resize(size);
 		};
 
 		~Array() {}
