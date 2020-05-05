@@ -64,8 +64,14 @@ namespace cm
 
 		bool shadow_pass = true;
 		bool defferd_pass = true;
-		bool ssr = true;
 
+
+		// @NOTE: SSR
+		bool ssr = false;
+		real32 ssr_ray_step_length = 0.1;
+		real32 ssr_ray_max_distance = 100.0;
+		real32 ssr_ray_hit_tollerance = 3;
+		
 		// @NOTE: SSAO
 		bool ssao = false;
 		bool ssao_changed = false;

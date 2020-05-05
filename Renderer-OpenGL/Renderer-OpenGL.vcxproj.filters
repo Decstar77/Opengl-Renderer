@@ -54,9 +54,6 @@
     <ClCompile Include="src\OpenGL\OpenGL.cpp">
       <Filter>src\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\Renderer.cpp">
-      <Filter>src\Core</Filter>
-    </ClCompile>
     <ClCompile Include="src\Core\World.cpp">
       <Filter>src\Core</Filter>
     </ClCompile>
@@ -127,9 +124,6 @@
     </ClInclude>
     <ClInclude Include="src\Engine\Input.h">
       <Filter>src\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Core\Renderer.h">
-      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\World.h">
       <Filter>src\Core</Filter>

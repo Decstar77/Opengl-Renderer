@@ -139,7 +139,7 @@ namespace cm
 	public:
 		WorldObject *selected_world_object = nullptr;
 		Widget3D *current_widget = nullptr;
-
+		bool draw_editor = true;
 
 	};
 

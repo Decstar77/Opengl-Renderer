@@ -21,7 +21,7 @@ Notes:
 		https://github.com/lettier/3d-game-shaders-for-beginners/blob/master/demonstration/shaders/fragment/screen-space-reflection.frag
 		https://github.com/ImanolFotia/Epsilon-Engine/blob/master/bin/Release/shaders/SSR.frag
 		https://github.com/godotengine/godot/blob/6a38ce1b318cc71c285c11f5b52f04a681c309fd/servers/rendering/rasterizer_rd/shaders/screen_space_reflection.glsl#L132
-
+		https://github.com/IanLilleyT/Real-Time-Reflections-OpenGL/blob/master/data/shaders/ReflectionFrag.frag
 
 	Deffered Rendering Problems:
 		Anti anialising

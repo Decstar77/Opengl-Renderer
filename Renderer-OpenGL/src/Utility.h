@@ -54,6 +54,15 @@ namespace cm
 			this->size = size;
 		}
 
+		void Copy(T *data, const uint32 &size)
+		{
+			Assert(size <= this->size);
+			for (uint32 i = 0; i < size; i++)
+			{
+				this->data[i] = data[i];
+			}
+		}
+
 		Array<T> Clone() const
 		{
 			Array newarr;
@@ -77,12 +86,12 @@ namespace cm
 
 		bool operator ==(const Array<T> &arr)
 		{
-			return (this->data == arr.data && this->size == arr.count);
+			return (this->data == arr.data && this->size == arr.size);
 		}
 
 		void operator = (const Array<T> &arr) {
 			this->data = arr.data;
-			this->size = arr.count;
+			this->size = arr.size;
 		}
 
 	public:

@@ -24,6 +24,8 @@ namespace cm
 
 	cm::Texture StandardTextures::one_texture;
 
+	cm::Texture StandardTextures::invalid_texture;
+
 	bool StandardTextures::created = false;
 
 	bool StandardMeshes::created = false;
@@ -66,6 +68,25 @@ namespace cm
 		
 		CreateTexture(&one_texture, (void*)&one_data[0]);
 
+
+		invalid_texture.config.texture_format = GL_RGBA32F;
+		invalid_texture.config.pixel_format = GL_RGBA;
+		invalid_texture.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+		invalid_texture.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+		invalid_texture.config.min_filter = GL_LINEAR;
+		invalid_texture.config.mag_filter = GL_LINEAR;
+		invalid_texture.config.width = 2;
+		invalid_texture.config.height = 2;
+		real32 invalid_texture_data[] = {
+			1.0, 0.0, 1.0, 1.0,
+			1.0, 0.0, 1.0, 1.0,
+			1.0, 0.0, 1.0, 1.0,
+			1.0, 0.0, 1.0, 1.0
+		};
+
+		CreateTexture(&invalid_texture, (void*)&invalid_texture_data[0]);
+
+		
 		created = true;
 	}
 
@@ -294,8 +315,10 @@ namespace cm
 	{
 		Assert(vbo->object == 0);
 		Assert(vbo->size_bytes > 0);
+		
 		uint32 object;
 		uint32 type = static_cast<uint32>(BufferType::Array_buffer);
+
 		glGenBuffers(1, &object);
 		glBindBuffer(type, object);
 
@@ -380,15 +403,14 @@ namespace cm
 		uint32 buff;
 		glGenBuffers(1, &buff);
 		glBindBuffer(GL_UNIFORM_BUFFER, buff);
-			   		
-		uint32 size_bytes = buffer->lbo.GetTotalSize();
+		
+		uint32 size_bytes = buffer->size_bytes;
 
 		glBufferStorage(GL_UNIFORM_BUFFER, size_bytes, NULL, static_cast<uint32>(VertexFlags::READ_WRITE));
 
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 		buffer->object = buff;
-		buffer->size_bytes = size_bytes;
 	}
 
 	void UniformBufferSetBindPoint(const UniformBuffer &ubo, uint32 binding_point)
@@ -832,10 +854,6 @@ namespace cm
 	{
 		uint32 loc = -1;
 		String name = uniform_name;
-		if (uniform_name == "")
-		{
-			name = texture.config.uniform_name;
-		}
 		loc = GetUniformLocation(&shader, name);
 		if (loc == -1)
 		{

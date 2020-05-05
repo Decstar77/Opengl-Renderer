@@ -1065,12 +1065,16 @@ namespace cm
 			}
 			if (ImGui::TreeNode("SSR Pass"))
 			{
-				ImGui::Text("On the todo: When I'm smart enough");
+				ImGui::Checkbox("SSR", &render_settings->ssr);
+				ImGui::DragFloat("Step length", &render_settings->ssr_ray_step_length, 0.001, 0.0, 2.0);
+				ImGui::DragFloat("Max dist", &render_settings->ssr_ray_max_distance, 1.0, 0.0, 1000.0);
+				ImGui::DragFloat("Hits required", &render_settings->ssr_ray_hit_tollerance, 1.0, 0.0, 10.0);
+
 				ImGui::TreePop();
 			}
 			if (ImGui::TreeNode("SSAO Pass"))
 			{
-				render_settings->ssao_changed = render_settings->ssao_changed | ImGui::Checkbox("SSAO Pass", &render_settings->ssao);
+				render_settings->ssao_changed = render_settings->ssao_changed | ImGui::Checkbox("SSAO", &render_settings->ssao);
 				render_settings->ssao_changed = render_settings->ssao_changed | ImGui::SliderFloat("Radius", &render_settings->ssao_radius, 0.1, 5.0);
 				render_settings->ssao_changed = render_settings->ssao_changed | ImGui::SliderFloat("Strength", &render_settings->ssao_strength, 0.1, 5.0);
 				render_settings->ssao_changed = render_settings->ssao_changed | ImGui::SliderFloat("Bias", &render_settings->ssao_bias, 0.1, 0.001);

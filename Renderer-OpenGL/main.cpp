@@ -6,13 +6,13 @@
 #include "src/Math/CosmicNoise.h"
 #include "src/OpenGL/OpenGL.h"
 #include "src/Core/EditableMesh.h"
-#include "src/Core/Renderer.h"
 #include "src/Core/Editor.h"
 #include "src/Core/Debug.h"
 #include "src/Engine/AssetLoader.h"
 #include "src/Engine/Input.h"
 #include "src/Core/Sandbox.h"
 #include "src/Core/Serialization.h"
+#include "src/Core/Camera.h"
 using namespace cm;
 
 
@@ -118,7 +118,8 @@ int main()
 	InitializeOpenGl(WINDOW_WIDTH, WINDOW_HEIGHT);
 	InitializeDebug(WINDOW_WIDTH, WINDOW_HEIGHT, 5000);
 	InitializeEditor(window);
-
+	
+	TextureBank::Initialize();
 
 	OpenGLStatistics opengl_stats;
 	GetOpenglStatistics(&opengl_stats);
@@ -214,8 +215,8 @@ int main()
 	CreateShader(&skybox_shader);
 
 	Shader ssr_shader;
-	ssr_shader.config.src_vert = ReadFile("shaders/ssr_vert.glsl");
-	ssr_shader.config.src_frag = ReadFile("shaders/ssr_frag.glsl");
+	ssr_shader.config.src_vert = ReadFile("res/botdemo/shaders/screenspace_reflections_vert.glsl");
+	ssr_shader.config.src_frag = ReadFile("res/botdemo/shaders/screenspace_reflections_frag.glsl");
 	ssr_shader.name = "ssr_shader ";
 	CreateShader(&ssr_shader);
 	
@@ -229,7 +230,6 @@ int main()
 	// Load mesh assets
 	//************************************
 
-	// @TODO: Remove
 	ModelImport model_import_engine;
 	model_import_engine.import_animations = true;
 	model_import_engine.import_vertex_binorms_tangents = true;
@@ -252,10 +252,12 @@ int main()
 	//************************************
 	// Load texture assets
 	//************************************
+
+
 #if 0
 	TextureImportMultiThread texture_importer_multi;
 	texture_importer_multi.flip_image = true;
-	texture_importer_multi.SetTexturePath("res/botdemo/textures/Sky.jpg");
+	texture_importer_multi.SetTexturePath("res/botdemo/textures/skyboxes/Sky.jpg");
 	texture_importer_multi.Load();
 	
 	Texture demo_skybox_eqi;
@@ -276,33 +278,13 @@ int main()
 
 #endif
 #if 1
-	TextureImport texture_importer_float;
-	texture_importer_float.Load();
-
 	//************************************
 	// Initialize imported textures
 	//************************************
 
-	Texture lady_colour_texture;
-	std::vector<uint8> lady_texture_data;
-	LoadTexture(&lady_texture_data, &lady_colour_texture.config, "res/botdemo/textures/lady/Arissa_DIFF_diffuse.png", false);
-	lady_colour_texture.config.mipmaps = false;
-	CreateTexture(&lady_colour_texture, lady_texture_data.data());
-	lady_texture_data.clear();
+	TextureImportFolder texture_import_folder;
+	texture_import_folder.Load("res/botdemo/textures/lady");
 
-	Texture lady_normal_texture;
-	LoadTexture(&lady_texture_data, &lady_normal_texture.config, "res/botdemo/textures/lady/Arissa_NM_normal.png", false);
-	lady_normal_texture.config.mipmaps = false;
-	CreateTexture(&lady_normal_texture, lady_texture_data.data());
-	lady_texture_data.clear();
-
-	Texture lady_orme_texture;
-	LoadTexture(&lady_texture_data, &lady_orme_texture.config, "res/botdemo/textures/lady/Arissa_SPEC_specular.png", false);
-	lady_orme_texture.config.mipmaps = false;
-	CreateTexture(&lady_orme_texture, lady_texture_data.data());
-	lady_texture_data.clear();
-
-	texture_importer_float.Free();
 #endif
 		
 	//************************************
@@ -558,18 +540,19 @@ int main()
 	camera_controller.main_camera.transform.position = Vec3(0, 4, 5);
 	camera_controller.main_camera.view_matrix = LookAt(camera_controller.main_camera.transform.position, camera_controller.main_camera.target, Vec3(0, 1, 0));
 	
-
-	Informer informer;
-	informer.CreateUBO("WorldMatrices", BUFFER_LAYOUT(ShaderDataType::Mat4, ShaderDataType::Mat4,  ShaderDataType::Mat4), 0);
-	informer.CreateUBO("LightingData", BUFFER_LAYOUT(ShaderDataType::Float4, ShaderDataType::Float4, ShaderDataType::Float4,
-		ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4, ShaderDataType::Mat4), 1);
-
-	informer.LinkShader("WorldMatrices", worldspace_gbuffer_shader);
-	informer.LinkShader("LightingData", pbr_deffered_shader);
 	
 	UniformBuffer global_uniforms;
+	global_uniforms.size_bytes = sizeof(Mat4) * 3;
 	CreateUniformBuffer(&global_uniforms);
 	UniformBufferSetBindPoint(global_uniforms, 0);
+
+	UniformBuffer render_uniforms;
+	render_uniforms.size_bytes = sizeof(Vec4) * 23;
+	CreateUniformBuffer(&render_uniforms);
+	UniformBufferSetBindPoint(render_uniforms, 1);
+
+	ShaderBindUniformBuffer(worldspace_gbuffer_shader, 0, "WorldMatrices");
+	ShaderBindUniformBuffer(pbr_deffered_shader, 1, "LightingData");
 
 
 	RenderSettings render_settings;
@@ -622,7 +605,6 @@ int main()
 
 	model_import_animation.Free();
 
-
 	main_world.RegisterWorldObject(floor);
 
 	float fh = 1;
@@ -646,73 +628,81 @@ int main()
 		// Draw and update the editor 
 		//************************************			
 #if EDITOR_WINDOW
-		// @NOTE: Unbind any shader that was set.
-		UnbindShader();
-
-		// @NOTE: Set the clear colour to black for stencil errors
-		SetClearColour(Vec4(0, 0, 0, 1));
-
-		// @NOTE: Configure the stencil buffer to write 1's where the editor draws
-		StencilWriteOnes();
-		
-		// @NOTE: Clear all the buffers
-		ClearAllBuffers();
-
-		// @NOTE: Render the current editor frame
-		EditorBeginFrame();
-
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-		ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImVec2 pos = viewport->GetWorkPos();
-		pos.x += WINDOW_WIDTH - 350;
-		ImGui::SetNextWindowPos(pos);
-		ImGui::SetNextWindowSize(ImVec2(350, 720));
-		ImGui::SetNextWindowViewport(viewport->ID);
-
-		bool p_open;
-		ImGui::Begin("DockSpace Demo", &p_open, window_flags);
-
-		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-		ImGui::DockSpace(dockspace_id);
-
-		ImGui::End();
-
-		console.UpdateAndDraw();
-
-		editor_render_window.delta_time = delta_time;
-		editor_render_window.UpdateAndDraw();
-
-		editor_worldobject_spawner.UpdateAndDraw();
-		
-		editor_world_object_inspector.SetWorldObject(current_context.selected_world_object);
-		editor_world_object_inspector.UpdateAndDraw();	
-		
-
-		ImGui::Begin("Spawner");
-		if (ImGui::Button("Shader reset"))
+		if (current_context.draw_editor)
 		{
-			FreeShader(&ssr_shader);
-			ssr_shader.config.src_vert = ReadFile("shaders/ssr_vert.glsl");
-			ssr_shader.config.src_frag = ReadFile("shaders/ssr_frag.glsl");
-			CreateShader(&ssr_shader);
+			// @NOTE: Unbind any shader that was set.
+			UnbindShader();
+
+			// @NOTE: Set the clear colour to black for stencil errors
+			SetClearColour(Vec4(0, 0, 0, 1));
+
+			// @NOTE: Configure the stencil buffer to write 1's where the editor draws
+			StencilWriteOnes();
+
+			// @NOTE: Clear all the buffers
+			ClearAllBuffers();
+
+			// @NOTE: Render the current editor frame
+			EditorBeginFrame();
+
+			ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+			window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+			ImGuiViewport* viewport = ImGui::GetMainViewport();
+			ImVec2 pos = viewport->GetWorkPos();
+			pos.x += WINDOW_WIDTH - 350;
+			ImGui::SetNextWindowPos(pos);
+			ImGui::SetNextWindowSize(ImVec2(350, 720));
+			ImGui::SetNextWindowViewport(viewport->ID);
+
+			bool p_open;
+			ImGui::Begin("DockSpace Demo", &p_open, window_flags);
+
+			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+			ImGui::DockSpace(dockspace_id);
+
+			ImGui::End();
+
+			console.UpdateAndDraw();
+
+			editor_render_window.delta_time = delta_time;
+			editor_render_window.UpdateAndDraw();
+
+			editor_worldobject_spawner.UpdateAndDraw();
+
+			editor_world_object_inspector.SetWorldObject(current_context.selected_world_object);
+			editor_world_object_inspector.UpdateAndDraw();
+
+
+			ImGui::Begin("Spawner");
+			if (ImGui::Button("Shader reset"))
+			{
+				FreeShader(&ssr_shader);
+				ssr_shader.config.src_vert = ReadFile("res/botdemo/shaders/screenspace_reflections_vert.glsl");
+				ssr_shader.config.src_frag = ReadFile("res/botdemo/shaders/screenspace_reflections_frag.glsl");
+				CreateShader(&ssr_shader);
+			}
+			ImGui::End();
+
+			EditorEndFrame();
+
+
+
+			// @NOTE: Get any input that was for one of the editor windows	
+			mouse_input_for_editor_window = *ImGui::GetIO().MouseDownOwned;
+
+			// @NOTE: Disable writing to the stencil buffer
+			StencilZeroMask();
+
+			// @NOTE: Reset the clear colour to a noticable
+			SetClearColour(Vec4(0, 1, 0, 1));
 		}
-		ImGui::End();
-
-		EditorEndFrame();	
-
-		
-		
-		// @NOTE: Get any input that was for one of the editor windows	
-		mouse_input_for_editor_window = *ImGui::GetIO().MouseDownOwned;
-	
-		// @NOTE: Disable writing to the stencil buffer
-		StencilZeroMask();
-
-		// @NOTE: Reset the clear colour to a noticable
-		SetClearColour(Vec4(0, 1, 0, 1));
+		else
+		{
+			StencilWriteOnes();
+			ClearAllBuffers();		
+		}
 #else 
 		// @NOTE: Clear all the buffers
 		ClearAllBuffers();
@@ -757,13 +747,12 @@ int main()
 			}
 		}
 
-
-
-
-		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_F5))
+		if (Input::GetKeyHeldDown(GLFW_KEY_LEFT_SHIFT) && Input::GetKeyJustDown(GLFW_KEY_B))
 		{
-
+			current_context.draw_editor = !current_context.draw_editor;
+			mouse_input_for_editor_window = false;
 		}
+
 		if (!(mouse_input_for_editor_window)) 
 		{
 			Vec2 curr = Input::GetMousePosition();
@@ -873,8 +862,6 @@ int main()
 			glfwSetWindowShouldClose(window, 1);
 		}
 
-
-
 		if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE))
 		{
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -892,6 +879,14 @@ int main()
 		//************************************
 
 
+		if (TextureBank::LockStagingArea())
+		{
+			while (TextureBank::PopTextureOnStagingArea())
+			{
+
+			}
+			TextureBank::UnlockStagingArea();
+		}
 
 		//************************************
 		// Update GPU Buffers
@@ -908,11 +903,9 @@ int main()
 		Vec4(point_light.light_colour, 0), Vec4(1), Vec4(1), Vec4(1)
 		};
 
-		informer.UpdateUBO("WorldMatrices", camera_data);
-		informer.UpdateUBO("LightingData", lighting_data);
-
-		std::vector<Mat4> mats;
-
+		
+		WriteBufferData(&global_uniforms, camera_data, 0);
+		WriteBufferData(&render_uniforms, lighting_data, 0);
 		
 
 
@@ -997,19 +990,24 @@ int main()
 		//************************************
 		// World gbuffer pass for animated objects
 		//************************************
-#if 0
+#if 1
 		BindShader(worldspace_gbuffer_anim_shader);
 
 		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "colour_set", Vec3(1).arr);
 		ShaderSetInt32(&worldspace_gbuffer_anim_shader, "normal_set", 1);
 		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "orm_set", Vec3(1).arr);
-		
-		ShaderBindTexture(worldspace_gbuffer_anim_shader, lady_colour_texture, 0, "colour_map");
-		ShaderBindTexture(worldspace_gbuffer_anim_shader, lady_normal_texture, 1, "normal_map");
-		ShaderBindTexture(worldspace_gbuffer_anim_shader, lady_orme_texture, 2, "orme_map");
+	
+		Texture lady_diffuse;
+		Texture lady_normal;
+		Texture lady_orme;
 
+		TextureBank::Get("Arissa_DIFF_diffuse", &lady_diffuse);
+		TextureBank::Get("Arissa_NM_normal", &lady_normal);
+		TextureBank::Get("Arissa_SPEC_specular", &lady_orme);
 
-
+		ShaderBindTexture(worldspace_gbuffer_anim_shader, lady_diffuse, 0, "colour_map");
+		ShaderBindTexture(worldspace_gbuffer_anim_shader, lady_normal, 1, "normal_map");
+		ShaderBindTexture(worldspace_gbuffer_anim_shader, lady_orme, 2, "orme_map");
 
 		test_cube_guy.animation_controller.Play(0);
 		test_cube_guy.animation_controller.Update(delta_time);
@@ -1084,21 +1082,30 @@ int main()
 		//************************************
 
 		// @NOTE: Not working currently, in development, ie still learning cause I suck
-#if 1
-		BindFrameBuffer(ssr_frame);
-		BindShader(ssr_shader);
+		if (render_settings.ssr)
+		{
+			BindFrameBuffer(ssr_frame);
+			BindShader(ssr_shader);
 
-		RenderCommands::ClearColourBuffer();
-		RenderCommands::ClearDepthBuffer();
+			RenderCommands::ClearColourBuffer();
+			RenderCommands::ClearDepthBuffer();
 
-		ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour0_texture_attachment, 0, "view_position_map");
-		ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour1_texture_attachment, 1, "view_normal_map");
-		//ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour2_texture_attachment, 2, "view_colour_map");
-		ShaderSetMat4(&ssr_shader, "proj", camera_controller.main_camera.projection_matrix.arr);
-		RenderMesh(ssr_shader, StandardMeshes::quad);
+			ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour0_texture_attachment, 0, "view_position_map");
+			ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour1_texture_attachment, 1, "view_normal_map");
+			ShaderBindTexture(ssr_shader, viewspace_gbuffer.colour2_texture_attachment, 2, "view_colour_map");
+			ShaderBindTexture(ssr_shader, post_processing_buffer.colour0_texture_attachment, 3, "last_frame_map");
 
-		UnbindFrameBuffer();
-#endif
+			ShaderSetFloat(&ssr_shader, "ray_step_length", render_settings.ssr_ray_step_length);
+			ShaderSetFloat(&ssr_shader, "ray_max_distance", render_settings.ssr_ray_max_distance);
+			ShaderSetFloat(&ssr_shader, "ray_hit_tollerance", render_settings.ssr_ray_hit_tollerance);
+
+			ShaderSetMat4(&ssr_shader, "proj", camera_controller.main_camera.projection_matrix.arr);
+			RenderMesh(ssr_shader, StandardMeshes::quad);
+
+			UnbindFrameBuffer();
+
+			gblur.Blur(ssr_frame.colour0_texture_attachment, &ssr_frame.colour0_texture_attachment);
+		}
 
 		//************************************
 		// Screen space ambient occulsion (SSAO)
@@ -1177,7 +1184,7 @@ int main()
 		ShaderSetMat4(&skybox_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
 		ShaderSetMat4(&skybox_shader, "view", camera_controller.main_camera.view_matrix.arr);
 		ShaderSetBool(&skybox_shader, "has_skybox", false);
-		//ShaderBindCubeMap(&skybox_shader, demo_skybox, 0, "environmentMap");
+		//ShaderBindCubeMap(&skybox_shader, demo_skybox, 0, "skybox");
 		
 		RenderMesh(skybox_shader, StandardMeshes::Cube());
 
@@ -1320,7 +1327,6 @@ int main()
 		}
 
 
-		//BindShader(debug_mesh_shader);
 		glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
 		Debug::DrawTexture(ssr_frame.colour0_texture_attachment);
 		

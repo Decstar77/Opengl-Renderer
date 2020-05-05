@@ -18,7 +18,6 @@
     <ClCompile Include="src\Core\Sandbox.cpp" />
     <ClCompile Include="src\Core\Serialization.cpp" />
     <ClCompile Include="src\Core\Editor.cpp" />
-    <ClCompile Include="src\Core\Renderer.cpp" />
     <ClCompile Include="src\Core\World.cpp" />
     <ClCompile Include="src\Engine\AssetLoader.cpp" />
     <ClCompile Include="src\Engine\Input.cpp" />
@@ -46,7 +45,6 @@
     <ClInclude Include="src\Core\World.h" />
     <ClInclude Include="src\Engine\AssetLoader.h" />
     <ClInclude Include="src\Core.h" />
-    <ClInclude Include="src\Core\Renderer.h" />
     <ClInclude Include="src\Engine\Input.h" />
     <ClInclude Include="src\Math\CosmicGeometry.h" />
     <ClInclude Include="src\Math\CosmicMath.h" />

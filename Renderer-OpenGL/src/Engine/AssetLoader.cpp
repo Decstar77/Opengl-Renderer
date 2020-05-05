@@ -57,13 +57,57 @@ namespace cm
 		}		
 	}
 
+	bool LoadTexture(Array<uint8> *storage, TextureConfig *config, const String &file_directory, const bool &flip)
+	{
+		int32 width = 0;
+		int32 height = 0;
+		int32 nrChannels = 0;
+		stbi_set_flip_vertically_on_load(flip);
+		uint8 *data = stbi_load(file_directory.c_str(), &width, &height, &nrChannels, 0);
+
+		if (data != nullptr)
+		{
+
+			config->height = height;
+			config->width = width;
+			config->data_type = GL_UNSIGNED_BYTE;
+			if (nrChannels == 4)
+			{
+				config->texture_format = GL_RGBA;
+				config->pixel_format = GL_RGBA;
+			}
+			else if (nrChannels == 3)
+			{
+				config->texture_format = GL_RGB;
+				config->pixel_format = GL_RGB;
+			}
+			else
+			{
+				Assert(0); // @REASON: We have no support channel count
+			}
+
+			uint32 size = width * height * nrChannels;
+
+			storage->Resize(size);
+			storage->Copy(data, size);
+
+			stbi_image_free(data);
+			return true;
+		}
+		else
+		{
+			std::cout << "ERROR::STBIMG:: -> Could not load image" << std::endl;
+			return false;
+		}
+	}
+
 	void TextureImportMultiThread::DoLoad()
 	{
 		done.store(false);
 		working.store(true);
 		LoadTexture(&texture_data, &texture_config, texture_path, flip_image);
 		working.store(false);
-		done.store(true);
+		done.store(true);		
 	}
 
 	void TextureImportMultiThread::Load()
@@ -119,76 +163,9 @@ namespace cm
 		}
 		return nullptr;
 	}
+		   
+	
 
-	bool TextureImport::Load()
-	{
-		bool result = true;
-		Assert(!multi_thread);
-		for (int32 i = 0; i < texture_paths.size(); i++)
-		{
-			std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
-
-			int32 width = 0;
-			int32 height = 0;
-			int32 nrChannels = 0;
-			
-			const String &path = texture_paths[i];
-			stbi_set_flip_vertically_on_load(flip);
-			//real32 *data = stbi_loadf(path.c_str(), &width, &height, &nrChannels, 0);
-			real32 *data = stbi_loadf(path.c_str(), &width, &height, &nrChannels, 0);
-
-			std::chrono::time_point<std::chrono::steady_clock> endTime = std::chrono::steady_clock::now();
-			std::chrono::microseconds elapsedTime(std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime));
-			float time = static_cast<float> (elapsedTime.count());
-			LOG(time * 0.001f * 0.001f);
-			LOG(width * height * nrChannels * 4);
-			if (data)
-			{
-				TextureConfig texture_config;
-				texture_config.height = height;
-				texture_config.width = width;
-
-				if (nrChannels == 4)
-				{
-					texture_config.texture_format = GL_RGBA32F;
-					texture_config.pixel_format = GL_RGBA;
-				}
-				else if (nrChannels == 3)
-				{
-					texture_config.texture_format = GL_RGB32F;
-					texture_config.pixel_format = GL_RGB;
-				}
-				else
-				{
-					Assert(0); // @REASON: We have no support channel count
-				}
-
-				texture_configs.push_back(texture_config);
-
-				uint32 size = width * height * nrChannels;
-				
-				texture_data.push_back({});
-				texture_data.back().insert(texture_data.back().end(), &data[0], &data[size]);
-				
-				stbi_image_free(data);		
-				data = nullptr;
-			}
-			else
-			{
-				result = false;
-				LOG("Could not load: " << path);
-			}			
-		}
-		return result;
-	}
-
-	bool TextureImport::Free()
-	{
-		texture_configs.clear();
-		texture_data.clear();
-		texture_paths.clear();
-		return true;
-	}
 
 	Mat4 ModelImport::ToMatrix4f(const aiMatrix4x4 *ai_mat)
 	{
@@ -708,14 +685,189 @@ namespace cm
 	//		ProcessError(import.GetErrorString());
 	//	}
 
+
+
 	//	import.FreeScene();
 	//	return result;
 	//}
 
 	
-
-
-
-
+	void TextureImportFolder::Load(const String &folder_directory)
+	{
+		// @TODOs: Make sure we don't even call this multiple times !!!
+		worker_thread = Thread(&TextureImportFolder::DoLoad, this, folder_directory);
+		worker_thread.detach();
 	}
+	   
+	void TextureImportFolder::DoLoad(const String &folder_directory)
+	{
+		std::filesystem::recursive_directory_iterator recursive_directory_iterator;
+
+		uint32 next = 0;
+		// @HACK: Just guess we won't be more than 50
+
+		this->texture_data.Resize(50);
+		this->texture_config.Resize(50);
+
+		for (const std::filesystem::directory_entry& dirEntry : std::filesystem::recursive_directory_iterator(folder_directory))
+		{
+			if (!dirEntry.is_directory())
+			{
+				std::filesystem::path path = dirEntry.path();
+				String filename = path.stem().string();
+				String fullpath = std::filesystem::absolute(path).string();
+
+				Array<uint8> t_data;
+				TextureConfig t_config;
+				t_config.name = filename;
+
+				LoadTexture(&t_data, &t_config, fullpath, false);
+
+				this->texture_data[next] = t_data;
+				this->texture_config[next] = t_config;
+				next++;
+			}
+		}
+
+		// @HACK: We're just spin locking the thread until we get time on the staging area, FIX
+		while (!TextureBank::LockStagingArea())
+		{
+		}
+
+		for (uint32 i = 0; i < next; i++)
+		{
+			TextureBank::PushTextureToStagingArea(this->texture_data[i], this->texture_config[i]);
+		}
+
+		TextureBank::UnlockStagingArea();
+	}
+
+	AtomicBool TextureBank::staging_area_locked;
+
+	std::unordered_map<uint32, Texture> TextureBank::current_textures;
+
+	uint32 TextureBank::staging_config_next = 0;
+
+	cm::Array<cm::TextureConfig> TextureBank::staging_configs;
+
+	uint32 TextureBank::staging_data_next = 0;
+
+	cm::Array<cm::Array<uint8>> TextureBank::staging_data;
+		   	  
+	bool TextureBank::LockStagingArea()
+	{
+		bool locked = staging_area_locked.load();
+		if (locked)
+		{
+			return false;
+		}
+		else
+		{
+			staging_area_locked.store(true);
+			return true;
+		}		
+	}
+
+	bool TextureBank::UnlockStagingArea()
+	{
+		staging_area_locked.store(false);
+		return true;
+	}
+
+	bool TextureBank::IsStagingAreaLocked()
+	{
+		bool locked = staging_area_locked.load();
+		return locked;
+	}
+
+	void TextureBank::PushTextureToStagingArea(Array<uint8> data, const TextureConfig &config)
+	{
+		Assert(IsStagingAreaLocked());		
+		Assert(config.name != "");
+
+		staging_data[staging_data_next++] = data;
+		staging_configs[staging_config_next++] = config;
+	}
+
+	bool TextureBank::PopTextureOnStagingArea()
+	{
+		Assert(IsStagingAreaLocked());
+		Assert(staging_data_next == staging_config_next);
+		if (staging_data_next >= 1)
+		{
+			// @NOTE: Move to the texture and reset the next
+			staging_config_next--;
+			staging_data_next--;
+			
+			Texture new_texture;
+			new_texture.config = staging_configs[staging_config_next];
+			CreateTexture(&new_texture, staging_data[staging_data_next].Data());
+
+			current_textures[new_texture.object] = new_texture;
+			
+			// @NOTE: Make sure to free the data!!
+			staging_configs[staging_config_next] = TextureConfig();
+			staging_data[staging_data_next].Free();
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	bool TextureBank::Free(const uint32 &id)
+	{
+		Assert(0);
+		return false;
+	}
+
+	bool TextureBank::Free(const String name)
+	{
+		Assert(0);
+		return false;
+	}
+
+	bool TextureBank::Get(const uint32 &id, Texture *texture)
+	{
+		if (current_textures.find(id) != current_textures.end())
+		{			
+			*texture = current_textures[id];
+			return true;
+		}
+		else
+		{
+			*texture = StandardTextures::GetInvalidTexture();
+			return false;
+		}
+	}
+
+	bool TextureBank::Get(const String &name, Texture *texture)
+	{
+		for (const std::pair<uint32, Texture> &t : current_textures)
+		{
+			if (t.second.config.name == name)
+			{
+				*texture = current_textures[t.first];
+				return true;
+			}
+		}
+
+		*texture = StandardTextures::GetInvalidTexture();
+		return false;
+	}
+
+	void TextureBank::Initialize()
+	{
+		// @HACK: Just saying we won't have more that 50 textures at once
+
+		staging_area_locked.store(false);
+		current_textures.reserve(50);
+
+		staging_configs.Resize(50);
+		staging_data.Resize(50);
+	}
+
+}
 

@@ -1,15 +1,2 @@
 ﻿  main.cpp
-  Animation.cpp
-  Debug.cpp
-  Sandbox.cpp
-  Serialization.cpp
-  Editor.cpp
-  Renderer.cpp
-  World.cpp
-  AssetLoader.cpp
-  CosmicNoise.cpp
-  EditableMesh.cpp
-  OpenGL.cpp
-  Utility.cpp
-  Generating Code...
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

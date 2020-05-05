@@ -33,7 +33,6 @@ uniform sampler2D g_position;
 uniform sampler2D g_normal;
 uniform sampler2D g_colour;
 uniform sampler2D g_ssao;
-
 // @NOTE: Defines
 
 #define pi 3.14159
@@ -57,7 +56,7 @@ void main()
     vec3 view_direction = normalize(camera_world_position.xyz - world_pos);
 
     // @NOTE: Get material details, now artist make albedo in sRGB so we corrects it
-    vec3 albedo = pow (texture(g_colour, texture_coords).rgb, vec3(2.2));
+    vec3 albedo = pow (texture(g_colour, texture_coords).rgb, vec3(2.2));	
     float ao = clamp(texture(g_position, texture_coords).a, 0.01, 1.0);
     float roughness = clamp(texture(g_normal, texture_coords).a, 0.01, 1.0);
     float metallic = clamp(texture(g_colour, texture_coords).a, 0.01, 1.0);
@@ -115,6 +114,8 @@ void main()
 
 		lo += brdf * radiance * ndotwi;
     }
+
+
     vec3 ambient = vec3(0.03) * albedo * ao * ssao;
     colour = ambient + lo;
 

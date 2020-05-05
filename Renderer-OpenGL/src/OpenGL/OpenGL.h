@@ -98,11 +98,8 @@ namespace cm
 	struct UniformBuffer
 	{
 		uint32 object = 0;
-		uint32 binding_point = 0;
-		Array<real32> data;
-
+		uint32 binding_point = 0;		
 		uint32 size_bytes = 0;
-		LayoutBuffer lbo;
 		BufferType type = BufferType::Uniform_buffer;
 	};
 
@@ -145,7 +142,7 @@ namespace cm
 		uint32 width = 0;
 		uint32 height = 0;
 		bool mipmaps = false;
-		String uniform_name = "";
+		String name = "";
 	};
 
 	struct CubeMapConfig
@@ -520,11 +517,13 @@ namespace cm
 	private:
 		static Texture zero_texture;
 		static Texture one_texture;
+		static Texture invalid_texture;
 		static bool created;
 
 	public:
 		static inline const Texture GetZeroTexture() { Assert(created); return zero_texture; }
 		static inline const Texture GetOneTexture() { Assert(created); return one_texture; }
+		static inline const Texture GetInvalidTexture() { Assert(created); return invalid_texture; }
 		static void Initilize();
 	};
 
@@ -788,6 +787,11 @@ namespace cm
 	static inline void EnableStencilBuffer()
 	{
 		glEnable(GL_STENCIL_TEST);
+	}
+
+	static inline void DisableStencilBuffer()
+	{
+		glDisable(GL_STENCIL_TEST);
 	}
 
 	static inline void StencilOperationKKR()
