@@ -73,7 +73,6 @@ namespace cm
 	Vec3 Normalize(const Vec3 &a)
 	{
 		real32 magA = Mag(a);
-		//Assert(magA != 0);
 		__m128 div = _mm_div_ps(a.data, _mm_set1_ps(magA));
 		return Vec3(div);
 	}
@@ -102,9 +101,9 @@ namespace cm
 	{
 		StringStream ss;
 		String space = "            ";
-		ss << "| " << a.arr[0] << space << a.arr[1] << space << a.arr[2] << " |" << '\n';
-		ss << "| " << a.arr[3] << space << a.arr[4] << space << a.arr[5] << " |" << '\n';
-		ss << "| " << a.arr[6] << space << a.arr[7] << space << a.arr[8] << " |" << '\n';
+		ss << "| " << a.ptr[0] << space << a.ptr[1] << space << a.ptr[2] << " |" << '\n';
+		ss << "| " << a.ptr[4] << space << a.ptr[5] << space << a.ptr[6] << " |" << '\n';
+		ss << "| " << a.ptr[8] << space << a.ptr[9] << space << a.ptr[10] << " |" << '\n';
 		return ss.str();
 	}
 
@@ -144,9 +143,10 @@ namespace cm
 
 	real32 Det(const Mat3 &a)
 	{
-		real32 f = a.arr[0] * (a.arr[4] * a.arr[8] - a.arr[7] * a.arr[5]);
-		real32 b = a.arr[1] * (a.arr[3] * a.arr[8] - a.arr[6] * a.arr[5]);
-		real32 c = a.arr[2] * (a.arr[3] * a.arr[7] - a.arr[6] * a.arr[4]);
+		real32 f = a.ptr[0] * (a.ptr[5] * a.ptr[10] - a.ptr[9] * a.ptr[6]);
+		real32 b = a.ptr[1] * (a.ptr[4] * a.ptr[10] - a.ptr[8] * a.ptr[6]);
+		real32 c = a.ptr[2] * (a.ptr[4] * a.ptr[9] - a.ptr[8] * a.ptr[5]);
+
 		return f - b + c;
 	}
 
@@ -269,8 +269,7 @@ namespace cm
 
 	real32 GetMatrixElement(const Mat3 &a, const int32 &row, const int32 &col)
 	{
-		// @NOTE: This is 4 * because of the padding byte
-		return a.arr[4 * row + col];
+		return a.ptr[4 * row + col];
 	}
 
 	Vec4 GetColumn(const Mat4 &a, const uint32 &col)
@@ -286,9 +285,9 @@ namespace cm
 	Vec3 GetColumn(const Mat3 &a, const uint32 &col)
 	{
 		Vec3 column(0, 0, 0);
-		column.x = a.arr[4 * 0 + col];
-		column.y = a.arr[4 * 1 + col];
-		column.z = a.arr[4 * 2 + col];
+		column.x = a.ptr[4 * 0 + col];
+		column.y = a.ptr[4 * 1 + col];
+		column.z = a.ptr[4 * 2 + col];
 		return column;
 	}
 
@@ -308,7 +307,7 @@ namespace cm
 
 		for (int32 i = 0; i < 3; i++)
 		{
-			result.data[i] = a.data[i] / scale.arr[i];
+			result[i] = a[i] / scale[i];
 		}
 
 		return result;
@@ -328,16 +327,26 @@ namespace cm
 	Mat3 Adjoint(const Mat4 &a, const int32 &row, const int32 &col)
 	{
 		Mat3 result(1);
-		int index = 0;
+		int32 index = 0;
+		// @SPEEDS: To many branches
 		for (int32 r = 0; r < 4; r++)
 		{
 			if (row == r)
+			{
 				continue;
+			}
 			for (int32 c = 0; c < 4; c++)
 			{
 				if (c == col || c == col + 4 || c == col + 8 || c == col + 12)
+				{
 					continue;
-				result.arr[index++] = GetMatrixElement(a, r, c);
+				}
+				// @NOTE: REMEMBER THE PADDING BYTE!!
+				if (index == 3 || index == 7)
+				{
+					index++;
+				}
+				result.ptr[index++] = GetMatrixElement(a, r, c);	
 			}
 		}
 		return result;
@@ -734,10 +743,10 @@ namespace cm
 				Vec3 col(0, 0, 0);
 				for (int32 x = 0; x < 3; x++)
 				{
-					col.arr[x] = GetMatrixElement(b, x, y);
+					col[x] = GetMatrixElement(b, x, y);
 				}
 				// @NOTE: Adds to result
-				result.arr[4 * i + y] = Dot(col, a.data[i]);
+				result.ptr[4 * i + y] = Dot(col, a[i]);
 			}
 		}
 		return result;
@@ -749,7 +758,7 @@ namespace cm
 		for (uint32 i = 0; i < 3; i++)
 		{
 			Vec3 col = GetColumn(b, i);
-			result.arr[i] = Dot(col, a);
+			result[i] = Dot(col, a);
 		}
 		return result;
 	}
@@ -776,7 +785,7 @@ namespace cm
 				Vec4 col(0, 0, 0, 0);
 				for (int32 x = 0; x < 4; x++)
 				{
-					col.arr[x] = GetMatrixElement(b, x, y);
+					col[x] = GetMatrixElement(b, x, y);
 				}
 				// @NOTE: Adds to result
 				// @NOTE: This is 4 * because of the padding byte
@@ -802,7 +811,7 @@ namespace cm
 		for (uint32 i = 0; i < 4; i++)
 		{
 			Vec4 col = GetColumn(b, i);
-			result.arr[i] = Dot(col, a);
+			result[i] = Dot(col, a);
 		}
 		return result;
 	}
@@ -938,7 +947,7 @@ namespace cm
 		Quat pp = Quat(point, 0);
 
 		Quat res = (r * pp) * rc;
-		return res.vec;
+		return Vec3(res.x, res.y, res.z);
 	}
 
 	Vec3 Rotate(const Quat &r, const Vec3 &point)
@@ -947,7 +956,7 @@ namespace cm
 		Quat rc = Conjugate(Normalize(r));
 		Quat pp = Quat(point, 0);
 		Quat res = (r * pp) * rc;
-		return res.vec;
+		return Vec3(res.x, res.y, res.z);
 	}
 
 	Quat Conjugate(const Quat &a)

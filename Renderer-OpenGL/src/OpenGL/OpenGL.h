@@ -166,9 +166,9 @@ namespace cm
 	{
 		ShaderType type;
 		String name;
-		String src_vert;	// NOTE: Gets freed and set to Linked when sucessfully created else emptry string
-		String src_frag;	// NOTE: Gets freed and set to Linked when sucessfully created else emptry string
-		String src_geom;	// NOTE: Gets freed and set to Linked when sucessfully created else emptry string		
+		String src_vert;	// NOTE: Gets freed and set to "Linked" when sucessfully created else emptry string
+		String src_frag;	// NOTE: Gets freed and set to "Linked" when sucessfully created else emptry string
+		String src_geom;	// NOTE: Gets freed and set to "Linked" when sucessfully created else emptry string		
 	};
 
 	struct Texture

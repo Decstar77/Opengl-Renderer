@@ -71,7 +71,6 @@ Performace:
 
 TODO:
 		Inverse(mat3);
-		Sort out shader mayhem !		
 		Rewrite EdiableMesh class.
 		Figure out how to write to gpu animation data nicely
 		Platform window needs abstraction

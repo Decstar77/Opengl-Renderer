@@ -176,12 +176,12 @@ namespace cm
 		Vec3 old_radius = this->radius;
 		for (int32 i = 0; i < 3; i++)
 		{
-			this->center.arr[i] = t.position.arr[i];
-			this->radius.arr[i] = 0;
+			this->center[i] = t.position[i];
+			this->radius[i] = 0;
 			for (int32 j = 0; j < 3; j++)
 			{
-				this->center.arr[i] += transform_matrix.data[j].arr[i] * old_center.arr[j];
-				this->radius.arr[i] += abs(transform_matrix.data[j].arr[i]) *old_radius.arr[j];
+				this->center[i] += transform_matrix.data[j][i] * old_center[j];
+				this->radius[i] += abs(transform_matrix.data[j][i]) *old_radius[j];
 			}
 		}
 		this->min = this->center - this->radius;
@@ -196,12 +196,12 @@ namespace cm
 		Vec3 old_radius = this->radius;
 		for (int32 i = 0; i < 3; i++)
 		{
-			this->center.arr[i] = t->position.arr[i];
-			this->radius.arr[i] = 0;
+			this->center[i] = t->position[i];
+			this->radius[i] = 0;
 			for (int32 j = 0; j < 3; j++)
 			{
-				this->center.arr[i] += transform_matrix.data[j].arr[i] * old_center.arr[j];
-				this->radius.arr[i] += abs(transform_matrix.data[j].arr[i]) *old_radius.arr[j];
+				this->center[i] += transform_matrix.data[j][i] * old_center[j];
+				this->radius[i] += abs(transform_matrix.data[j][i]) *old_radius[j];
 			}
 		}
 		this->min = this->center - this->radius;
@@ -251,25 +251,25 @@ namespace cm
 
 		for (int32 i = 0; i < 3; i++)
 		{
-			real32 demon = Dot(r.direction, basis.mat.data[i]);
+			real32 demon = Dot(r.direction, basis.mat[i]);
 			if (Abs(demon) < 0.001)
 			{
 				// @NOTE: Ray parallel to a plane
 				Vec3 to_origin = origin - r.origin;
-				real32 r = Dot(basis.mat.data[i], to_origin);
-				if (-r - extents.arr[i] > 0 || -r + extents.arr[i] > 0)
+				real32 r = Dot(basis.mat[i], to_origin);
+				if (-r - extents[i] > 0 || -r + extents[i] > 0)
 				{
 					return false;
 				}
 			}
 
 			Vec3 to_origin = origin - r.origin;
-			real32 q = Dot(basis.mat.data[i], to_origin);
-			real32 s = Dot(basis.mat.data[i], r.direction);
+			real32 q = Dot(basis.mat[i], to_origin);
+			real32 s = Dot(basis.mat[i], r.direction);
 
 
-			real32 t0 = (q + extents.arr[i]) / s;
-			real32 t1 = (q - extents.arr[i]) / s;
+			real32 t0 = (q + extents[i]) / s;
+			real32 t1 = (q - extents[i]) / s;
 
 			if (t0 > t1) { ::std::swap(t0, t1); }
 			if (t0 > tmin) { tmin = t0; }
@@ -291,25 +291,25 @@ namespace cm
 
 		for (int32 i = 0; i < 3; i++)
 		{
-			real32 demon = Dot(r.direction, basis.mat.data[i]);
+			real32 demon = Dot(r.direction, basis.mat[i]);
 			if (Abs(demon) < 0.001)
 			{
 				// @NOTE: Ray parallel to a plane
 				Vec3 to_origin = origin - r.origin;
-				real32 r = Dot(basis.mat.data[i], to_origin);
-				if (-r - extents.arr[i] > 0 || -r + extents.arr[i] > 0)
+				real32 r = Dot(basis.mat[i], to_origin);
+				if (-r - extents[i] > 0 || -r + extents[i] > 0)
 				{
 					return false;
 				}
 			}
 
 			Vec3 to_origin = origin - r.origin;
-			real32 q = Dot(basis.mat.data[i], to_origin);
-			real32 s = Dot(basis.mat.data[i], r.direction);
+			real32 q = Dot(basis.mat[i], to_origin);
+			real32 s = Dot(basis.mat[i], r.direction);
 
 
-			real32 t0 = (q + extents.arr[i]) / s;
-			real32 t1 = (q - extents.arr[i]) / s;
+			real32 t0 = (q + extents[i]) / s;
+			real32 t1 = (q - extents[i]) / s;
 
 			if (t0 > t1) { ::std::swap(t0, t1); }
 			if (t0 > tmin) { tmin = t0; }

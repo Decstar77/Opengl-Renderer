@@ -610,10 +610,12 @@ int main()
 	float fh = 1;
 	float run_time = 1;
 	bool toggel = false;
-	// @TODO: put in context 
-	bool mouse_input_for_editor_window = false;
-	current_context.selected_world_object = &test_cube_guy;
+	
+	Mat3 rr = Mat3(Vec3(1, 2, 3), Vec3(4, 5, 6), Vec3(7, 8, 9));
+	LOG(ToString(rr));
+	LOG(Det(rr));
 
+	current_context.selected_world_object = &test_cube_guy;
 	while (!glfwWindowShouldClose(window))
 	{
 		//************************************
@@ -690,7 +692,7 @@ int main()
 
 
 			// @NOTE: Get any input that was for one of the editor windows	
-			mouse_input_for_editor_window = *ImGui::GetIO().MouseDownOwned;
+			current_context.mouse_input_for_editor_window = *ImGui::GetIO().MouseDownOwned;
 
 			// @NOTE: Disable writing to the stencil buffer
 			StencilZeroMask();
@@ -750,10 +752,10 @@ int main()
 		if (Input::GetKeyHeldDown(GLFW_KEY_LEFT_SHIFT) && Input::GetKeyJustDown(GLFW_KEY_B))
 		{
 			current_context.draw_editor = !current_context.draw_editor;
-			mouse_input_for_editor_window = false;
+			current_context.mouse_input_for_editor_window = false;
 		}
 
-		if (!(mouse_input_for_editor_window)) 
+		if (!(current_context.mouse_input_for_editor_window)) 
 		{
 			Vec2 curr = Input::GetMousePosition();
 			Vec2 last = Input::GetMouseLastPosition();
@@ -883,7 +885,7 @@ int main()
 		{
 			while (TextureBank::PopTextureOnStagingArea())
 			{
-
+				LOG("Poping textures");
 			}
 			TextureBank::UnlockStagingArea();
 		}
@@ -966,9 +968,9 @@ int main()
 			if (mat.HasTextures())
 			{
 				// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
-				ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", Vec3(1).arr);
+				ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", Vec3(1).ptr);
 				ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 1);
-				ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1).arr);
+				ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1).ptr);
 
 
 				mat.SetTextures(&worldspace_gbuffer_shader);
@@ -993,9 +995,9 @@ int main()
 #if 1
 		BindShader(worldspace_gbuffer_anim_shader);
 
-		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "colour_set", Vec3(1).arr);
+		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "colour_set", Vec3(1).ptr);
 		ShaderSetInt32(&worldspace_gbuffer_anim_shader, "normal_set", 1);
-		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "orm_set", Vec3(1).arr);
+		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "orm_set", Vec3(1).ptr);
 	
 		Texture lady_diffuse;
 		Texture lady_normal;
@@ -1048,9 +1050,9 @@ int main()
 				if (mat.HasTextures())
 				{
 					// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
-					ShaderSetVec3(&viewspace_gbuffer_shader, "colour_set", Vec3(1).arr);
+					ShaderSetVec3(&viewspace_gbuffer_shader, "colour_set", Vec3(1).ptr);
 					ShaderSetInt32(&viewspace_gbuffer_shader, "normal_set", 1);
-					ShaderSetVec3(&viewspace_gbuffer_shader, "orm_set", Vec3(1).arr);
+					ShaderSetVec3(&viewspace_gbuffer_shader, "orm_set", Vec3(1).ptr);
 
 
 					mat.SetTextures(&viewspace_gbuffer_shader);
@@ -1135,7 +1137,7 @@ int main()
 				
 				for (uint32 i = 0; i < hemisphere_kernel.GetKernelSize(); i++)
 				{
-					ShaderSetVec3(&ssao_shader, "samples[" + std::to_string(i) + "]", hemisphere_kernel.GetKernelSample(i).arr);
+					ShaderSetVec3(&ssao_shader, "samples[" + std::to_string(i) + "]", hemisphere_kernel.GetKernelSample(i).ptr);
 				}
 
 				ShaderSetInt32(&ssao_shader, "kernel_size", hemisphere_kernel.GetKernelSize());
@@ -1187,8 +1189,7 @@ int main()
 		//ShaderBindCubeMap(&skybox_shader, demo_skybox, 0, "skybox");
 		
 		RenderMesh(skybox_shader, StandardMeshes::Cube());
-
-
+		
 		EnableFaceCulling();
 		
 		UnbindFrameBuffer();

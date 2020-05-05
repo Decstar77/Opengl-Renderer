@@ -101,8 +101,8 @@ namespace cm
 		for (uint32 i = 0; i < vert_size; i++)
 		{
 			Vertex vert = vertices[i];
-			data->insert(data->end(), &vert.position.arr[0], &vert.position.arr[3 * sizeof(float) / sizeof(float)]);
-			data->insert(data->end(), &vert.normal.arr[0], &vert.normal.arr[3 * sizeof(float) / sizeof(float)]);
+			data->insert(data->end(), &vert.position.ptr[0], &vert.position.ptr[3 * sizeof(float) / sizeof(float)]);
+			data->insert(data->end(), &vert.normal.ptr[0], &vert.normal.ptr[3 * sizeof(float) / sizeof(float)]);
 			data->push_back(vert.texture_coord.x);
 			data->push_back(vert.texture_coord.y);
 		}
@@ -119,12 +119,12 @@ namespace cm
 		for (uint32 i = 0; i < vert_size; i++)
 		{
 			Vertex vert = vertices[i];
-			data->insert(data->end(), &vert.position.arr[0], &vert.position.arr[3 * sizeof(float) / sizeof(float)]);
-			data->insert(data->end(), &vert.normal.arr[0], &vert.normal.arr[3 * sizeof(float) / sizeof(float)]);
+			data->insert(data->end(), &vert.position.ptr[0], &vert.position.ptr[3 * sizeof(float) / sizeof(float)]);
+			data->insert(data->end(), &vert.normal.ptr[0], &vert.normal.ptr[3 * sizeof(float) / sizeof(float)]);
 			data->push_back(vert.texture_coord.x);
 			data->push_back(vert.texture_coord.y);
-			data->insert(data->end(), &vert.tangent.arr[0], &vert.tangent.arr[3 * sizeof(float) / sizeof(float)]);
-			data->insert(data->end(), &vert.bitangent.arr[0], &vert.bitangent.arr[3 * sizeof(float) / sizeof(float)]);
+			data->insert(data->end(), &vert.tangent.ptr[0], &vert.tangent.ptr[3 * sizeof(float) / sizeof(float)]);
+			data->insert(data->end(), &vert.bitangent.ptr[0], &vert.bitangent.ptr[3 * sizeof(float) / sizeof(float)]);
 
 		}
 	}

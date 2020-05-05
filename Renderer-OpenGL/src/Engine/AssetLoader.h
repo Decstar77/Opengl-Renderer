@@ -11,6 +11,90 @@
 
 namespace cm
 {
+	String ReadFile(const String &file_directory);
+
+	bool LoadTexture(std::vector<uint8> *storage, TextureConfig *config, const String &file_directory, const bool &flip);
+
+	bool LoadTexture(Array<uint8> *storage, TextureConfig *config, const String &file_directory, const bool &flip);
+	
+	class TextureImportMultiThread
+	{
+	private:
+		void DoLoad();
+
+		AtomicBool done = false;
+		AtomicBool working = false;
+
+		String texture_path;
+		TextureConfig texture_config;
+		std::vector<uint8> texture_data;
+
+
+
+	public:
+		void Load();
+		bool Free();
+		bool IsLoaded();
+		bool IsWorking();
+		bool SetTexturePath(const String &path);
+
+		bool flip_image = false;
+
+		TextureConfig *GetConfig();
+		std::vector<uint8> *GetData();
+	};
+
+
+	class TextureImportFolder
+	{
+	private:
+		Thread worker_thread;
+		Array<Array<uint8>> texture_data;
+		Array<TextureConfig> texture_config;
+
+	private:
+		void DoLoad(const String &folder_directory);
+
+	public:
+
+		void Load(const String &folder_directory);
+	};
+
+
+	class TextureBank
+	{
+	private:
+		static AtomicBool staging_area_locked;
+		static std::unordered_map<uint32, Texture> current_textures;
+
+		static uint32 staging_config_next;
+		static Array<TextureConfig> staging_configs;
+
+		static uint32 staging_data_next;
+		static Array<Array<uint8>> staging_data;
+
+	public:
+		static bool LockStagingArea();
+		static bool UnlockStagingArea();
+		static bool IsStagingAreaLocked();
+
+		static void PushTextureToStagingArea(Array<uint8> data, const TextureConfig &config);
+		static bool PopTextureOnStagingArea();
+
+		static bool Free(const uint32 &id);
+		static bool Free(const String name);
+
+		static bool Get(const uint32 &id, Texture *texture);
+		static bool Get(const String &name, Texture *texture);
+
+
+		// @NOTE: Hard coded sizes
+		static void Initialize();
+
+	public:
+		TextureBank() = delete;
+	};
+
 	class ModelImport
 	{	
 	private:
@@ -60,90 +144,9 @@ namespace cm
 
 
 
-	class TextureImportMultiThread
-	{
-	private:
-		void DoLoad();
-		
-		AtomicBool done = false;
-		AtomicBool working = false;
-
-		String texture_path;
-		TextureConfig texture_config;
-		std::vector<uint8> texture_data;
-
-		
-
-	public:
-		void Load();
-		bool Free();
-		bool IsLoaded();
-		bool IsWorking();
-		bool SetTexturePath( const String &path );
-		
-		bool flip_image = false;
-		
-		TextureConfig *GetConfig();
-		std::vector<uint8> *GetData();
-	};
 
 
-	class TextureImportFolder
-	{
-	private:
-		Thread worker_thread;
-		Array<Array<uint8>> texture_data;
-		Array<TextureConfig> texture_config;
 
-	private:
-		void DoLoad(const String &folder_directory);
-
-	public:
-		
-		void Load(const String &folder_directory);
-	};
-
-
-	class TextureBank
-	{
-	private:
-		static AtomicBool staging_area_locked;
-		static std::unordered_map<uint32, Texture> current_textures;
-
-		static uint32 staging_config_next;
-		static Array<TextureConfig> staging_configs;
-
-		static uint32 staging_data_next;
-		static Array<Array<uint8>> staging_data;
-
-	public:
-		static bool LockStagingArea();
-		static bool UnlockStagingArea();
-		static bool IsStagingAreaLocked();
-
-		static void PushTextureToStagingArea(Array<uint8> data, const TextureConfig &config);
-		static bool PopTextureOnStagingArea();
-			  
-		static bool Free(const uint32 &id);
-		static bool Free(const String name);
-
-		static bool Get(const uint32 &id, Texture *texture);
-		static bool Get(const String &name, Texture *texture);
-
-
-		// @NOTE: Hard coded sizes
-		static void Initialize();
-
-	public:
-		TextureBank() = delete;
-	};
-
-
-	String ReadFile(const String &file_directory);
-	
-	bool LoadTexture(std::vector<uint8> *storage, TextureConfig *config, const String &file_directory, const bool &flip);
-	
-	bool LoadTexture(Array<uint8> *storage, TextureConfig *config, const String &file_directory, const bool &flip);
 
 }
 

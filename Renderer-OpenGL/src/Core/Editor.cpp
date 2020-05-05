@@ -1236,9 +1236,9 @@ namespace cm
 			{
 				Transform *transform = world_object->GetTransform();
 				ImGui::Text("");
-				value_changed = value_changed | ImGui::DragFloat3("Position", transform->position.arr, 0.1f);
-				value_changed = value_changed | ImGui::DragFloat3("Rotation", euler_angles.arr, 0.5f);
-				value_changed = value_changed | ImGui::DragFloat3("Scale", transform->scale.arr, 0.01f);
+				value_changed = value_changed | ImGui::DragFloat3("Position", transform->position.ptr, 0.1f);
+				value_changed = value_changed | ImGui::DragFloat3("Rotation", euler_angles.ptr, 0.5f);
+				value_changed = value_changed | ImGui::DragFloat3("Scale", transform->scale.ptr, 0.01f);
 
 				// @NOTE: Apply the rotation
 				quat_angle = EulerToQuat(euler_angles);
@@ -1253,7 +1253,7 @@ namespace cm
 			if (ImGui::TreeNode("Material"))
 			{
 				Material *mat = world_object->GetMaterial();
-				ImGui::ColorEdit3("Diffuse", mat->diffuse.arr);
+				ImGui::ColorEdit3("Diffuse", mat->diffuse.ptr);
 				ImGui::DragFloat("Roughness", &mat->roughness, 0.02, 0.0, 1.0);
 				ImGui::DragFloat("Metalness", &mat->metalness, 0.02, 0.0, 1.0);
 				ImGui::TreePop();

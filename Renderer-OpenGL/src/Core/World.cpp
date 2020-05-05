@@ -20,8 +20,8 @@ namespace cm
 
 	void Material::SetValues(Shader *shader)
 	{
-		ShaderSetVec3(shader, "colour_set", diffuse.arr);
-		ShaderSetVec3(shader, "orm_set", Vec3(1, roughness, metalness).arr);
+		ShaderSetVec3(shader, "colour_set", diffuse.ptr);
+		ShaderSetVec3(shader, "orm_set", Vec3(1, roughness, metalness).ptr);
 	}
 
 	//---------------------------------------------------------------

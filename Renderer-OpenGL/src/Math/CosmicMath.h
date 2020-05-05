@@ -9,10 +9,7 @@
 
 //TODO all matrices and vectors are floats/real32
 //TODO check_orthogonal could be faster
-//TODO nothing is tested
-//TODO Nomalize/trapsose have SIMD operators, case 
 //TODO SIMD more ??
-//TODO Single header file full of operators ?!?!?
 //TODO Vectors still contain more data than need (vec2)
 //============     Constants     ============//
 
@@ -48,27 +45,35 @@ namespace cm
 
 	struct  Vec2
 	{
-		union
-		{
-			real32 arr[2];
-			struct
-			{
-				real32 x;
-				real32 y;
-			};
-		};
+		real32 x;
+		real32 y;
+
 		Vec2()
 		{
 			x = 0; y = 0;
 		}
-		Vec2(real32 x, real32 y)
+		
+		Vec2(const real32 &x, const real32 &y)
 		{
 			this->x = x; this->y = y;
 		}
-		Vec2(real32 all)
+		
+		Vec2(const real32 &all)
 		{
 			x = all;
 			y = all;
+		}
+
+		real32& operator[](const int32 &index)
+		{
+			Assert(index >= 0 && index < 2);
+			return (&x)[index];
+		}
+
+		real32 operator[](const int32 &index) const
+		{
+			Assert(index >= 0 && index < 2);
+			return (&x)[index];
 		}
 	};
 
@@ -77,30 +82,62 @@ namespace cm
 		union
 		{
 			__m128 data;
-			real32 arr[4];
+			real32 ptr[4];
 			struct
 			{
-				real32 x;
-				real32 y;
-				real32 z;
-				real32 pad;
+				union
+				{
+					real32 x;
+					real32 r;
+				};
+				union
+				{
+					real32 y;
+					real32 g;
+				};
+				union
+				{
+					real32 z;
+					real32 b;
+				};
+				union
+				{
+					real32 pad0;
+					real32 pad1;
+				};
 			};
 		};
+
 		Vec3()
 		{
 			data = _mm_set_ps(0, 0, 0, 0);
 		}
-		Vec3(real32 x, real32 y, real32 z)
+
+		Vec3(const real32 &x, const real32 &y, const real32 &z)
 		{
 			data = _mm_set_ps(0, z, y, x);
 		}
-		Vec3(real32 all)
+
+		Vec3(const real32 &all)
 		{
 			data = _mm_set_ps(0, all, all, all);
 		}
+
 		Vec3(__m128 _data)
 		{
 			data = _data;
+		}
+
+		real32& operator[](const int32 &index)
+		{
+			Assert(index >= 0 && index < 3);
+			return (&x)[index];
+		}
+
+		real32 operator[](const int32 &index) const
+		{
+			Assert(index >= 0 && index < 3);
+			return (&x)[index];
 		}
 	};
 
@@ -109,7 +146,7 @@ namespace cm
 		union
 		{
 			__m128 data;
-			real32 arr[4];
+			real32 ptr[4];
 			struct
 			{
 				union
@@ -134,37 +171,54 @@ namespace cm
 				};
 			};
 		};
+
 		Vec4()
 		{
 			data = _mm_set_ps(0, 0, 0, 0);
 		}
-		Vec4(real32 x, real32 y, real32 z, real32 w)
+		
+		Vec4(const real32 &x, const real32 &y, const real32 &z, const real32 &w)
 		{
 			data = _mm_set_ps(w, z, y, x);
 		}
-		Vec4(real32 all)
+		
+		Vec4(const real32 &all)
 		{
 			data = _mm_set_ps(all, all, all, all);
 		}
-		Vec4(Vec3 xyz, real32 _w)
+		
+		Vec4(const Vec3 &xyz, const real32 &_w)
 		{
 			x = xyz.x;
 			y = xyz.y;
 			z = xyz.z;
 			w = _w;
 		}
+		
 		Vec4(__m128 _data)
 		{
 			data = _data;
 		}
+
+		real32& operator[](const int32 &index)
+		{
+			Assert(index >= 0 && index < 4);
+			return (&x)[index];
+		}
+
+		real32 operator[](const int32 &index) const
+		{
+			Assert(index >= 0 && index < 4);
+			return (&x)[index];
+		}
 	};
+
 	struct Quat
 	{
 		union
 		{
-			Vec3 vec;
 			__m128 data;
-			real32 arr[4];
+			real32 ptr[4];
 			struct
 			{
 				real32 x;
@@ -179,12 +233,12 @@ namespace cm
 			data = _mm_set_ps(1, 0, 0, 0);
 		}
 
-		Quat(real32 x, real32 y, real32 z, real32 w)
+		Quat(const real32 &x, const real32 &y, const real32 &z, const real32 &w)
 		{
 			data = _mm_set_ps(w, z, y, x);
 		}
 
-		Quat(Vec3 xyz, real32 _w)
+		Quat(const Vec3 &xyz, const real32 &_w)
 		{
 			x = xyz.x;
 			y = xyz.y;
@@ -196,15 +250,25 @@ namespace cm
 		{
 			data = _data;
 		}
+
+		real32& operator[](const int32 &index)
+		{
+			Assert(index >= 0 && index < 4);
+			return (&x)[index];
+		}
+
+		real32 operator[](const int32 &index) const
+		{
+			Assert(index >= 0 && index < 4);
+			return (&x)[index];
+		}
 	};
 
-	//Matrices
 	struct  Mat3
 	{
 		union
 		{
-			real32 arr[9];
-			Vec3 data[3];
+			real32 ptr[12]; // @NOTE: 12 because padding byte
 			struct
 			{
 				Vec3 row0;
@@ -219,17 +283,29 @@ namespace cm
 			row2 = Vec3(0, 0, 1);
 		}
 
-		Mat3(real32 a)
+		Mat3(const real32 &a)
 		{
 			row0 = Vec3(a, 0, 0);
 			row1 = Vec3(0, a, 0);
 			row2 = Vec3(0, 0, a);
 		}
-		Mat3(Vec3 _row0, Vec3 _row1, Vec3 _row2)
+		Mat3(const Vec3 &_row0, const Vec3 &_row1, const Vec3 &_row2)
 		{
 			row0 = _row0;
 			row1 = _row1;
 			row2 = _row2;
+		}
+
+		Vec3& operator[](const int32 &index)
+		{
+			Assert(index >= 0 && index < 3);
+			return (&row0)[index];
+		}
+
+		Vec3 operator[](const int32 &index) const
+		{
+			Assert(index >= 0 && index < 3);
+			return (&row0)[index];
 		}
 	};
 
@@ -520,10 +596,7 @@ namespace cm
 		T max = Max(args...);
 		return (f > max) ? f : max;
 	}
-
-
-
-
+	   	 
 	//************************************
 	// Usefull classes for everything
 	//************************************
@@ -838,9 +911,9 @@ namespace cm
 	inline Mat3 operator /(const Mat3 &a, const real32 &b)
 	{
 		Mat3 result;
-		for (int32 i = 0; i < 9; i++)
+		for (int32 i = 0; i < 12; i++)
 		{
-			result.arr[i] = a.arr[i] / b;
+			result.ptr[i] = a.ptr[i] / b;
 		}
 		return result;
 	}
@@ -848,9 +921,9 @@ namespace cm
 	inline Mat3 operator /(const real32 &a, const Mat3 &b)
 	{
 		Mat3 result;
-		for (int32 i = 0; i < 9; i++)
+		for (int32 i = 0; i < 12; i++)
 		{
-			result.arr[i] = b.arr[i] / a;
+			result.ptr[i] = b.ptr[i] / a;
 		}
 		return result;
 	}

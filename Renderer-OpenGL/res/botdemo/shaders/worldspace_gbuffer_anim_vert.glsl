@@ -38,9 +38,9 @@ void main()
     bone_transform     += gBones[int(vboneindex[2])] * vbonewieght[2];
     bone_transform     += gBones[int(vboneindex[3])] * vbonewieght[3];
 
-	vec3 b = normalize(vec3(model * vec4(vbitan, 0.0)));
-	vec3 n = normalize(vec3(model * vec4(vnormal, 0.0)));
-	vec3 t = normalize(vec3(model * vec4(vtan, 0.0)));
+	vec3 b = normalize(vec3(model * bone_transform * vec4(vbitan, 0.0)));
+	vec3 n = normalize(vec3(model * bone_transform * vec4(vnormal, 0.0)));
+	vec3 t = normalize(vec3(model * bone_transform * vec4(vtan, 0.0)));
 	vs_out.tbn_matrix  = mat3(t, b, n);
 
 	vec4 local_pos = bone_transform * vec4(vpos, 1.0);

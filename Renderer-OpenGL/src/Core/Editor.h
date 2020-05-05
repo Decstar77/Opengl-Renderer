@@ -140,7 +140,7 @@ namespace cm
 		WorldObject *selected_world_object = nullptr;
 		Widget3D *current_widget = nullptr;
 		bool draw_editor = true;
-
+		bool mouse_input_for_editor_window = false;
 	};
 
 
