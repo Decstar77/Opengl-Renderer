@@ -101,6 +101,7 @@ namespace cm
 		}
 	}
 
+
 	void TextureImportMultiThread::DoLoad()
 	{
 		done.store(false);
@@ -729,9 +730,9 @@ namespace cm
 			}
 		}
 
-		// @HACK: We're just spin locking the thread until we get time on the staging area, FIX
 		while (!TextureBank::LockStagingArea())
 		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(3));
 		}
 
 		for (uint32 i = 0; i < next; i++)

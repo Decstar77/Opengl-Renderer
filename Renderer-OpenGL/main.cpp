@@ -611,10 +611,6 @@ int main()
 	float run_time = 1;
 	bool toggel = false;
 	
-	Mat3 rr = Mat3(Vec3(1, 2, 3), Vec3(4, 5, 6), Vec3(7, 8, 9));
-	LOG(ToString(rr));
-	LOG(Det(rr));
-
 	current_context.selected_world_object = &test_cube_guy;
 	while (!glfwWindowShouldClose(window))
 	{
@@ -927,8 +923,8 @@ int main()
 		ClearColourBuffer();
 		ClearDepthBuffer();
 
-		ShaderSetMat4(&depth_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
-		ShaderSetMat4(&depth_shader, "view", camera_controller.main_camera.view_matrix.arr);
+		ShaderSetMat4(&depth_shader, "projection", camera_controller.main_camera.projection_matrix.ptr);
+		ShaderSetMat4(&depth_shader, "view", camera_controller.main_camera.view_matrix.ptr);
 
 		for (int32 i = 0; i < main_world.objects.size(); i++)
 		{
@@ -937,7 +933,7 @@ int main()
 			Material mat		= *obj->GetMaterial();
 			Mat4 transform_matrix = transform.CalcTransformMatrix();
 
-			ShaderSetMat4(&depth_shader, "model", transform_matrix.arr);
+			ShaderSetMat4(&depth_shader, "model", transform_matrix.ptr);
 
 			RenderMesh(depth_shader, obj->GetMeshForRender());
 		}
@@ -985,7 +981,7 @@ int main()
 				mat.SetValues(&worldspace_gbuffer_shader);
 			}
 
-			ShaderSetMat4(&worldspace_gbuffer_shader, "model", transform_matrix.arr);
+			ShaderSetMat4(&worldspace_gbuffer_shader, "model", transform_matrix.ptr);
 			RenderMesh(worldspace_gbuffer_shader, obj->GetMeshForRender());
 		}
 
@@ -1018,9 +1014,9 @@ int main()
 		{
 			StringStream ss;
 			ss << "gBones[" << (i - 1) << "]";
-			ShaderSetMat4(&worldspace_gbuffer_anim_shader, ss.str(), test_cube_guy.animation_controller.bones.at(i).current_transform.arr);
+			ShaderSetMat4(&worldspace_gbuffer_anim_shader, ss.str(), test_cube_guy.animation_controller.bones.at(i).current_transform.ptr);
 		}
-		ShaderSetMat4(&worldspace_gbuffer_anim_shader, "model", test_cube_guy.transform.CalcTransformMatrix().arr);
+		ShaderSetMat4(&worldspace_gbuffer_anim_shader, "model", test_cube_guy.transform.CalcTransformMatrix().ptr);
 		
 		RenderMesh(worldspace_gbuffer_anim_shader, test_cube_guy.GetMeshForRender());
 				
@@ -1068,7 +1064,7 @@ int main()
 				}
 
 
-				ShaderSetMat4(&viewspace_gbuffer_shader, "model", transform_matrix.arr);
+				ShaderSetMat4(&viewspace_gbuffer_shader, "model", transform_matrix.ptr);
 				RenderMesh(viewspace_gbuffer_shader, obj->GetMeshForRender());
 			}
 		}
@@ -1101,7 +1097,7 @@ int main()
 			ShaderSetFloat(&ssr_shader, "ray_max_distance", render_settings.ssr_ray_max_distance);
 			ShaderSetFloat(&ssr_shader, "ray_hit_tollerance", render_settings.ssr_ray_hit_tollerance);
 
-			ShaderSetMat4(&ssr_shader, "proj", camera_controller.main_camera.projection_matrix.arr);
+			ShaderSetMat4(&ssr_shader, "proj", camera_controller.main_camera.projection_matrix.ptr);
 			RenderMesh(ssr_shader, StandardMeshes::quad);
 
 			UnbindFrameBuffer();
@@ -1127,7 +1123,7 @@ int main()
 			if (render_settings.ssao_changed)
 			{
 				// @TODO: Remove !
-				ShaderSetMat4(&ssao_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
+				ShaderSetMat4(&ssao_shader, "projection", camera_controller.main_camera.projection_matrix.ptr);
 				
 				ShaderSetFloat(&ssao_shader, "strength", render_settings.ssao_strength);
 				ShaderSetFloat(&ssao_shader, "radius", render_settings.ssao_radius);
@@ -1183,8 +1179,8 @@ int main()
 
 		BindShader(skybox_shader);
 
-		ShaderSetMat4(&skybox_shader, "projection", camera_controller.main_camera.projection_matrix.arr);
-		ShaderSetMat4(&skybox_shader, "view", camera_controller.main_camera.view_matrix.arr);
+		ShaderSetMat4(&skybox_shader, "projection", camera_controller.main_camera.projection_matrix.ptr);
+		ShaderSetMat4(&skybox_shader, "view", camera_controller.main_camera.view_matrix.ptr);
 		ShaderSetBool(&skybox_shader, "has_skybox", false);
 		//ShaderBindCubeMap(&skybox_shader, demo_skybox, 0, "skybox");
 		
@@ -1268,7 +1264,7 @@ int main()
 			BindShader(transform_widget_shader);
 			if (current_context.current_widget)
 			{
-				ShaderSetMat4(&transform_widget_shader, "model", current_context.current_widget->GetTransform()->CalcTransformMatrix().arr);
+				ShaderSetMat4(&transform_widget_shader, "model", current_context.current_widget->GetTransform()->CalcTransformMatrix().ptr);
 				RenderMesh(transform_widget_shader, current_context.current_widget->GetMeshForRender());
 			}
 

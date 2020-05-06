@@ -299,8 +299,8 @@ namespace cm
 		WriteBufferData(&debug_queue.persistent_vao.vertex_buffers[0], debug_queue.persistent_vertices, 0);
 
 		BindShader(line_shader);
-		ShaderSetMat4(&line_shader, "projection", projection.arr);
-		ShaderSetMat4(&line_shader, "view", view.arr);
+		ShaderSetMat4(&line_shader, "projection", projection.ptr);
+		ShaderSetMat4(&line_shader, "view", view.ptr);
 
 		BindVertexArray(debug_queue.persistent_vao);
 

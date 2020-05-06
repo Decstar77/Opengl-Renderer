@@ -313,8 +313,7 @@ namespace cm
 	{
 		union
 		{
-			real32 arr[16];
-			Vec4 data[4];
+			real32 ptr[16];			
 			struct
 			{
 				Vec4 row0;
@@ -332,7 +331,7 @@ namespace cm
 			row3 = Vec4(0, 0, 0, 1);
 		}
 
-		Mat4(real32 a)
+		Mat4(const real32 &a)
 		{
 			row0 = Vec4(a, 0, 0, 0);
 			row1 = Vec4(0, a, 0, 0);
@@ -340,7 +339,7 @@ namespace cm
 			row3 = Vec4(0, 0, 0, a);
 		}
 
-		Mat4(Vec4 _row0, Vec4 _row1, Vec4 _row2, Vec4 _row3)
+		Mat4(const Vec4 &_row0, const Vec4 &_row1, const Vec4 &_row2, const Vec4 &_row3)
 		{
 			row0 = _row0;
 			row1 = _row1;
@@ -354,6 +353,18 @@ namespace cm
 			row1 = Vec4(a.row1, 0);
 			row2 = Vec4(a.row2, 0);
 			row3 = Vec4(translation, 1);
+		}
+
+		Vec4 & operator[](const int32 &index)
+		{
+			Assert(index >= 0 && index < 4);
+			return (&row0)[index];
+		}
+
+		Vec4 operator[](const int32 &index) const
+		{
+			Assert(index >= 0 && index < 4);
+			return (&row0)[index];
 		}
 	};
 
@@ -764,7 +775,7 @@ namespace cm
 		return a * (1 - t) + b * t;
 	}
 	
-	inline Vec3 Lerp(Vec3 a, Vec3 b, float t)
+	inline Vec3 Lerp(const Vec3 &a, const Vec3 &b, const real32 &t)
 	{
 		Vec3 r = Vec3(
 			a.x + t * (b.x - a.x),

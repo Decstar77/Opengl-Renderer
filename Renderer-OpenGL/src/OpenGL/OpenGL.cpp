@@ -1356,7 +1356,7 @@ namespace cm
 		BindShader(shader);
 		BindFrameBuffer(frame);
 
-		ShaderSetMat4(&shader, "projection", CubeMapMatrices::projection.arr);
+		ShaderSetMat4(&shader, "projection", CubeMapMatrices::projection.ptr);
 		ShaderBindTexture(shader, src, 0, "equirectangularMap");
 
 		uint32 old_width = OpenGlState::current_viewport_width;
@@ -1366,7 +1366,7 @@ namespace cm
 
 		for (uint32 i = 0; i < 6; ++i)
 		{
-			ShaderSetMat4(&shader, "view", CubeMapMatrices::views[i].arr);
+			ShaderSetMat4(&shader, "view", CubeMapMatrices::views[i].ptr);
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, dst->object, 0);			
 
@@ -1588,14 +1588,14 @@ namespace cm
 		BindShader(shader);
 		BindFrameBuffer(frame);
 
-		ShaderSetMat4(&shader, "projection", CubeMapMatrices::projection.arr);
+		ShaderSetMat4(&shader, "projection", CubeMapMatrices::projection.ptr);
 		ShaderBindCubeMap(&shader, src, 0, "environmentMap");
 
 		SetViewPort(0, 0, dst->config.width, dst->config.height);
 
 		for (uint32 i = 0; i < 6; ++i)
 		{
-			ShaderSetMat4(&shader, "view", CubeMapMatrices::views[i].arr);
+			ShaderSetMat4(&shader, "view", CubeMapMatrices::views[i].ptr);
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, dst->object, 0);
 
@@ -1782,7 +1782,7 @@ namespace cm
 		BindShader(shader);
 		BindFrameBuffer(frame);
 
-		ShaderSetMat4(&shader, "projection", CubeMapMatrices::projection.arr);
+		ShaderSetMat4(&shader, "projection", CubeMapMatrices::projection.ptr);
 		ShaderBindCubeMap(&shader, src, 0, "environmentMap");
 
 		const uint32 mip_levels = 5;
@@ -1796,7 +1796,7 @@ namespace cm
 			ShaderSetFloat(&shader, "roughness", roughness);
 			for (uint32 i = 0; i < 6; i++)
 			{
-				ShaderSetMat4(&shader, "view", CubeMapMatrices::views[i].arr);
+				ShaderSetMat4(&shader, "view", CubeMapMatrices::views[i].ptr);
 
 				frame.colour0_texture_attachment.object = dst->object;
 				frame.colour0_texture_attachment.config.type = GL_TEXTURE_CUBE_MAP_POSITIVE_X + i;

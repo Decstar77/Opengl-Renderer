@@ -1,2 +1,4 @@
-﻿  CosmicMath.cpp
+﻿  main.cpp
+  AssetLoader.cpp
+  Generating Code...
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

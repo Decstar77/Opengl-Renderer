@@ -252,7 +252,7 @@ namespace cm
 	{
 		for (int32 i = 0; i < 16; i++)
 		{
-			std::cout << m.arr[i] << " ";
+			std::cout << m.ptr[i] << " ";
 		}
 		std::cout << std::endl;
 	}
@@ -264,7 +264,7 @@ namespace cm
 
 	real32 GetMatrixElement(const Mat4 &a, const int32 &row, const int32 &col)
 	{
-		return a.arr[4 * row + col];
+		return a.ptr[4 * row + col];
 	}
 
 	real32 GetMatrixElement(const Mat3 &a, const int32 &row, const int32 &col)
@@ -275,10 +275,10 @@ namespace cm
 	Vec4 GetColumn(const Mat4 &a, const uint32 &col)
 	{
 		Vec4 column(0, 0, 0, 0);
-		column.x = a.arr[4 * 0 + col];
-		column.y = a.arr[4 * 1 + col];
-		column.z = a.arr[4 * 2 + col];
-		column.w = a.arr[4 * 3 + col];
+		column.x = a.ptr[4 * 0 + col];
+		column.y = a.ptr[4 * 1 + col];
+		column.z = a.ptr[4 * 2 + col];
+		column.w = a.ptr[4 * 3 + col];
 		return column;
 	}
 
@@ -317,10 +317,10 @@ namespace cm
 	{
 		StringStream ss;
 		String space = "            ";
-		ss << "| " << a.arr[0] << space << a.arr[1] << space << a.arr[2] << space << a.arr[3] << " |" << '\n';
-		ss << "| " << a.arr[4] << space << a.arr[5] << space << a.arr[6] << space << a.arr[7] << " |" << '\n';
-		ss << "| " << a.arr[8] << space << a.arr[9] << space << a.arr[10] << space << a.arr[11] << " |" << '\n';
-		ss << "| " << a.arr[12] << space << a.arr[13] << space << a.arr[14] << space << a.arr[15] << " |" << '\n';
+		ss << "| " << a.ptr[0] << space << a.ptr[1] << space << a.ptr[2] << space << a.ptr[3] << " |" << '\n';
+		ss << "| " << a.ptr[4] << space << a.ptr[5] << space << a.ptr[6] << space << a.ptr[7] << " |" << '\n';
+		ss << "| " << a.ptr[8] << space << a.ptr[9] << space << a.ptr[10] << space << a.ptr[11] << " |" << '\n';
+		ss << "| " << a.ptr[12] << space << a.ptr[13] << space << a.ptr[14] << space << a.ptr[15] << " |" << '\n';
 		return ss.str();
 	}
 
@@ -354,25 +354,25 @@ namespace cm
 
 	real32 Det(const Mat4 &a)
 	{
-		real32 f = a.arr[0] * (
-			a.arr[5] * (a.arr[10] * a.arr[15] - a.arr[11] * a.arr[14]) +
-			a.arr[6] * (a.arr[11] * a.arr[13] - a.arr[9] * a.arr[15]) +
-			a.arr[7] * (a.arr[9] * a.arr[14] - a.arr[10] * a.arr[13]));
+		real32 f = a.ptr[0] * (
+			a.ptr[5] * (a.ptr[10] * a.ptr[15] - a.ptr[11] * a.ptr[14]) +
+			a.ptr[6] * (a.ptr[11] * a.ptr[13] - a.ptr[9] * a.ptr[15]) +
+			a.ptr[7] * (a.ptr[9] * a.ptr[14] - a.ptr[10] * a.ptr[13]));
 
-		real32 b = a.arr[1] * (
-			a.arr[4] * (a.arr[10] * a.arr[15] - a.arr[11] * a.arr[14]) +
-			a.arr[6] * (a.arr[11] * a.arr[12] - a.arr[8] * a.arr[15]) +
-			a.arr[7] * (a.arr[8] * a.arr[14] - a.arr[10] * a.arr[12]));
+		real32 b = a.ptr[1] * (
+			a.ptr[4] * (a.ptr[10] * a.ptr[15] - a.ptr[11] * a.ptr[14]) +
+			a.ptr[6] * (a.ptr[11] * a.ptr[12] - a.ptr[8] * a.ptr[15]) +
+			a.ptr[7] * (a.ptr[8] * a.ptr[14] - a.ptr[10] * a.ptr[12]));
 
-		real32 c = a.arr[2] * (
-			a.arr[4] * (a.arr[9] * a.arr[15] - a.arr[11] * a.arr[13]) +
-			a.arr[5] * (a.arr[11] * a.arr[12] - a.arr[8] * a.arr[15]) +
-			a.arr[7] * (a.arr[8] * a.arr[13] - a.arr[9] * a.arr[12]));
+		real32 c = a.ptr[2] * (
+			a.ptr[4] * (a.ptr[9] * a.ptr[15] - a.ptr[11] * a.ptr[13]) +
+			a.ptr[5] * (a.ptr[11] * a.ptr[12] - a.ptr[8] * a.ptr[15]) +
+			a.ptr[7] * (a.ptr[8] * a.ptr[13] - a.ptr[9] * a.ptr[12]));
 
-		real32 d = a.arr[3] * (
-			a.arr[4] * (a.arr[9] * a.arr[14] - a.arr[10] * a.arr[13]) +
-			a.arr[5] * (a.arr[10] * a.arr[12] - a.arr[8] * a.arr[14]) +
-			a.arr[6] * (a.arr[8] * a.arr[13] - a.arr[9] * a.arr[12]));
+		real32 d = a.ptr[3] * (
+			a.ptr[4] * (a.ptr[9] * a.ptr[14] - a.ptr[10] * a.ptr[13]) +
+			a.ptr[5] * (a.ptr[10] * a.ptr[12] - a.ptr[8] * a.ptr[14]) +
+			a.ptr[6] * (a.ptr[8] * a.ptr[13] - a.ptr[9] * a.ptr[12]));
 
 		return f - b + c - d;
 	}
@@ -392,7 +392,7 @@ namespace cm
 		Mat4 result = a * Transpose(a);
 		for (int32 i = 0; i < 4; i++)
 		{
-			if (abs(1 - abs(result.arr[i * 5])) > tolerance) {
+			if (abs(1 - abs(result.ptr[i * 5])) > tolerance) {
 				return false;
 			}
 		}
@@ -422,13 +422,13 @@ namespace cm
 				{
 					ad = Adjoint(a, row, col);
 					real32 i = -Det(ad);
-					result.arr[index++] = i;
+					result.ptr[index++] = i;
 				}
 				else
 				{
 					ad = Adjoint(a, row, col);
 					real32 i = Det(ad);
-					result.arr[index++] = i;
+					result.ptr[index++] = i;
 				}
 			}
 		}
@@ -789,7 +789,7 @@ namespace cm
 				}
 				// @NOTE: Adds to result
 				// @NOTE: This is 4 * because of the padding byte
-				result.arr[4 * i + y] = Dot(col, a.data[i]);
+				result.ptr[4 * i + y] = Dot(col, a[i]);
 			}
 		}
 		return result;

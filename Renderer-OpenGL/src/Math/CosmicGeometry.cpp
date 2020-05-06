@@ -180,8 +180,8 @@ namespace cm
 			this->radius[i] = 0;
 			for (int32 j = 0; j < 3; j++)
 			{
-				this->center[i] += transform_matrix.data[j][i] * old_center[j];
-				this->radius[i] += abs(transform_matrix.data[j][i]) *old_radius[j];
+				this->center[i] += transform_matrix[j][i] * old_center[j];
+				this->radius[i] += abs(transform_matrix[j][i]) *old_radius[j];
 			}
 		}
 		this->min = this->center - this->radius;
@@ -200,8 +200,8 @@ namespace cm
 			this->radius[i] = 0;
 			for (int32 j = 0; j < 3; j++)
 			{
-				this->center[i] += transform_matrix.data[j][i] * old_center[j];
-				this->radius[i] += abs(transform_matrix.data[j][i]) *old_radius[j];
+				this->center[i] += transform_matrix[j][i] * old_center[j];
+				this->radius[i] += abs(transform_matrix[j][i]) *old_radius[j];
 			}
 		}
 		this->min = this->center - this->radius;
