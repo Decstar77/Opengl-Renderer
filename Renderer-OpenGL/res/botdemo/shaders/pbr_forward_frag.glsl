@@ -1,13 +1,15 @@
 #version 420 core
 layout (location = 0) out vec4 g_colour;
 
-in vec2 texture_coords;
-in vec3 world_normal;
-in mat3 tbn;
 
-layout (std140, binding = 1) uniform LightingData
+
+layout (std140, binding = 0) uniform WorldState
 {
-    // @NOTE: We pack the lighting as follows
+	mat4 projection;
+	mat4 view;
+	mat4 light_space_matrix;
+
+	// @NOTE: We pack the lighting as follows
     //      : x = PointLightCount, y = DirectionalLightCount, z = SpotLightCount
 	vec4 size_data; 
 
@@ -27,16 +29,22 @@ layout (std140, binding = 1) uniform LightingData
 	vec4 spot_light_colours[4];
 };
 
+in VS_OUT 
+{
+    vec2 texture_coords;
+    vec3 world_normal;
+    mat3 tbn;
+} vs_in;
+
 uniform sampler2D colour_map;
 uniform sampler2D normal_map;
 uniform sampler2D orme_map;
-
 
 void main()
 {	
 	vec4 colour = vec4(0);
 
-    colour = texture(colour_map, texture_coords).rgba;
+    colour = texture(colour_map, vs_in.texture_coords).rgba;
     colour.a *= 2;
     if (colour.a < 0.9)
         discard;
@@ -45,8 +53,8 @@ void main()
     vec3 light_colour = point_light_colour[0].rgb;
 
     vec3 dir = normalize( light_pos - camera_world_position.xyz );    
-    vec3 normal = 2.0 * texture(normal_map, texture_coords).rgb - 1.0;
-    normal = normalize( tbn * normal );
+    vec3 normal = 2.0 * texture(normal_map, vs_in.texture_coords).rgb - 1.0;
+    normal = normalize( vs_in.tbn * normal );
 
     float diff = abs( dot( dir, normal ) ) + 0.1f;
 

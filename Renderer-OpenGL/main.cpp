@@ -119,8 +119,7 @@ int main()
 	InitializeDebug(WINDOW_WIDTH, WINDOW_HEIGHT, 5000);
 	InitializeEditor(window);
 	
-	TextureBank::Initialize();
-
+	
 	OpenGLStatistics opengl_stats;
 	GetOpenglStatistics(&opengl_stats);
 	PrintOpenglStatistics(opengl_stats);
@@ -161,73 +160,70 @@ int main()
 	//************************************
 
 	Shader worldspace_gbuffer_shader;
-	worldspace_gbuffer_shader.config.src_vert = ReadFile("res/botdemo/shaders/worldspace_gbuffer_vert.glsl");
-	worldspace_gbuffer_shader.config.src_frag = ReadFile("res/botdemo/shaders/worldspace_gbuffer_frag.glsl");
+	worldspace_gbuffer_shader.config.src_vert = ReadTextFile("res/botdemo/shaders/worldspace_gbuffer_vert.glsl");
+	worldspace_gbuffer_shader.config.src_frag = ReadTextFile("res/botdemo/shaders/worldspace_gbuffer_frag.glsl");
 	worldspace_gbuffer_shader.name = "demo_bot_gbuffer_shader";
 	CreateShader(&worldspace_gbuffer_shader);
 
 	Shader worldspace_gbuffer_anim_shader;
-	worldspace_gbuffer_anim_shader.config.src_vert = ReadFile("res/botdemo/shaders/worldspace_gbuffer_anim_vert.glsl");
-	worldspace_gbuffer_anim_shader.config.src_frag = ReadFile("res/botdemo/shaders/worldspace_gbuffer_frag.glsl");
+	worldspace_gbuffer_anim_shader.config.src_vert = ReadTextFile("res/botdemo/shaders/worldspace_gbuffer_anim_vert.glsl");
+	worldspace_gbuffer_anim_shader.config.src_frag = ReadTextFile("res/botdemo/shaders/worldspace_gbuffer_frag.glsl");
 	worldspace_gbuffer_anim_shader.name = "demo_bot_gbuffer_anim_shader";
 	CreateShader(&worldspace_gbuffer_anim_shader);
 
 	Shader viewspace_gbuffer_shader;
-	viewspace_gbuffer_shader.config.src_vert = ReadFile("res/botdemo/shaders/viewspace_gbuffer_vert.glsl");
-	viewspace_gbuffer_shader.config.src_frag = ReadFile("res/botdemo/shaders/viewspace_gbuffer_frag.glsl");
+	viewspace_gbuffer_shader.config.src_vert = ReadTextFile("res/botdemo/shaders/viewspace_gbuffer_vert.glsl");
+	viewspace_gbuffer_shader.config.src_frag = ReadTextFile("res/botdemo/shaders/viewspace_gbuffer_frag.glsl");
 	viewspace_gbuffer_shader.name = "viewspace_gbuffer_shader";
 	CreateShader(&viewspace_gbuffer_shader);
 
 	Shader ssao_shader;
-	ssao_shader.config.src_vert = ReadFile("res/botdemo/shaders/screenspace_ambient_occlusion_vert.glsl");
-	ssao_shader.config.src_frag = ReadFile("res/botdemo/shaders/screenspace_ambient_occlusion_frag.glsl");
+	ssao_shader.config.src_vert = ReadTextFile("res/botdemo/shaders/screenspace_ambient_occlusion_vert.glsl");
+	ssao_shader.config.src_frag = ReadTextFile("res/botdemo/shaders/screenspace_ambient_occlusion_frag.glsl");
 	ssao_shader.name = "screenspace_ambient_occlusion";
 	CreateShader(&ssao_shader);
 
 	Shader depth_shader;
-	depth_shader.config.src_vert = ReadFile("res/botdemo/shaders/depth_vert.glsl");
-	depth_shader.config.src_frag = ReadFile("res/botdemo/shaders/depth_frag.glsl");
+	depth_shader.config.src_vert = ReadTextFile("res/botdemo/shaders/depth_vert.glsl");
+	depth_shader.config.src_frag = ReadTextFile("res/botdemo/shaders/depth_frag.glsl");
 	depth_shader.name = "depth shader";
 	CreateShader(&depth_shader);
 
 	Shader pbr_deffered_shader;
-	pbr_deffered_shader.config.src_vert = ReadFile("res/botdemo/shaders/pbr_deffered_vert.glsl");
-	pbr_deffered_shader.config.src_frag = ReadFile("res/botdemo/shaders/pbr_deffered_frag.glsl");
+	pbr_deffered_shader.config.src_vert = ReadTextFile("res/botdemo/shaders/pbr_deffered_vert.glsl");
+	pbr_deffered_shader.config.src_frag = ReadTextFile("res/botdemo/shaders/pbr_deffered_frag.glsl");
 	pbr_deffered_shader.name = "demo_01_deffered_pbr_shader";
 	CreateShader(&pbr_deffered_shader);
 
 	Shader pbr_forward_shader;
-	pbr_forward_shader.config.src_vert = ReadFile("res/botdemo/shaders/pbr_forward_vert.glsl");
-	pbr_forward_shader.config.src_frag = ReadFile("res/botdemo/shaders/pbr_forward_frag.glsl");
+	pbr_forward_shader.config.src_vert = ReadTextFile("res/botdemo/shaders/pbr_forward_vert.glsl");
+	pbr_forward_shader.config.src_frag = ReadTextFile("res/botdemo/shaders/pbr_forward_frag.glsl");
 	pbr_forward_shader.name = "pbr_forward_shader";
 	CreateShader(&pbr_forward_shader);
 
 	Shader postprocessing_shader;
-	postprocessing_shader.config.src_vert = ReadFile("res/botdemo/shaders/postprocessing_vert.glsl");
-	postprocessing_shader.config.src_frag = ReadFile("res/botdemo/shaders/postprocessing_frag.glsl");
+	postprocessing_shader.config.src_vert = ReadTextFile("res/botdemo/shaders/postprocessing_vert.glsl");
+	postprocessing_shader.config.src_frag = ReadTextFile("res/botdemo/shaders/postprocessing_frag.glsl");
 	postprocessing_shader.name = "demo_01_postprocessing_shader";
 	CreateShader(&postprocessing_shader);
 	
 	Shader skybox_shader;
-	skybox_shader.config.src_vert = ReadFile("res/botdemo/shaders/skybox_vert.glsl");
-	skybox_shader.config.src_frag = ReadFile("res/botdemo/shaders/skybox_frag.glsl");
+	skybox_shader.config.src_vert = ReadTextFile("res/botdemo/shaders/skybox_vert.glsl");
+	skybox_shader.config.src_frag = ReadTextFile("res/botdemo/shaders/skybox_frag.glsl");
 	skybox_shader.name = "cubemap_shader";
 	CreateShader(&skybox_shader);
 
 	Shader ssr_shader;
-	ssr_shader.config.src_vert = ReadFile("res/botdemo/shaders/screenspace_reflections_vert.glsl");
-	ssr_shader.config.src_frag = ReadFile("res/botdemo/shaders/screenspace_reflections_frag.glsl");
+	ssr_shader.config.src_vert = ReadTextFile("res/botdemo/shaders/screenspace_reflections_vert.glsl");
+	ssr_shader.config.src_frag = ReadTextFile("res/botdemo/shaders/screenspace_reflections_frag.glsl");
 	ssr_shader.name = "ssr_shader ";
 	CreateShader(&ssr_shader);
 	
-	Shader transform_widget_shader;
-	transform_widget_shader.config.src_vert = ReadFile("res/engine/shaders/editor_widget_vert.glsl");
-	transform_widget_shader.config.src_frag = ReadFile("res/engine/shaders/editor_widget_frag.glsl");
-	CreateShader(&transform_widget_shader);
+
 
 
 	//************************************
-	// Load mesh assets
+	// Load editor assets
 	//************************************
 
 	ModelImport model_import_engine;
@@ -249,10 +245,19 @@ int main()
 	ScalingWidget scaling_widget;
 	scaling_widget.Create(model_import_engine.resulting_meshes[3].CreateMesh());
 
+	Shader transform_widget_shader;
+	transform_widget_shader.config.src_vert = ReadTextFile("res/engine/shaders/editor_widget_vert.glsl");
+	transform_widget_shader.config.src_frag = ReadTextFile("res/engine/shaders/editor_widget_frag.glsl");
+	CreateShader(&transform_widget_shader);
+
+	Shader editor_light_shader;
+	editor_light_shader.config.src_vert = ReadTextFile("res/engine/shaders/editor_light_vert.glsl");
+	editor_light_shader.config.src_frag = ReadTextFile("res/engine/shaders/editor_light_frag.glsl");
+	CreateShader(&editor_light_shader);
+
 	//************************************
 	// Load texture assets
 	//************************************
-
 
 #if 0
 	TextureImportMultiThread texture_importer_multi;
@@ -275,15 +280,15 @@ int main()
 	cubemap_generator.Free();
 
 	FreeTexture(&demo_skybox_eqi);
-
 #endif
 #if 1
 	//************************************
 	// Initialize imported textures
 	//************************************
+	TextureBank texture_bank;
+	texture_bank.Create();
+	LoadTextureFolder(&texture_bank, "res/botdemo/textures/lady", false, true);
 
-	TextureImportFolder texture_import_folder;
-	texture_import_folder.Load("res/botdemo/textures/lady");
 
 #endif
 		
@@ -297,121 +302,24 @@ int main()
 	//************************************
 
 	FrameBuffer worldspace_gbuffer;
-
-	worldspace_gbuffer.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
-	worldspace_gbuffer.colour0_texture_attachment.config.width = WINDOW_WIDTH;
-	worldspace_gbuffer.colour0_texture_attachment.config.data_type = GL_FLOAT;
-	worldspace_gbuffer.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
-	worldspace_gbuffer.colour0_texture_attachment.config.pixel_format = GL_RGBA;
-	worldspace_gbuffer.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	worldspace_gbuffer.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	worldspace_gbuffer.colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
-
-	worldspace_gbuffer.colour1_texture_attachment.config.height = WINDOW_HEIGHT;
-	worldspace_gbuffer.colour1_texture_attachment.config.width = WINDOW_WIDTH;
-	worldspace_gbuffer.colour1_texture_attachment.config.data_type = GL_FLOAT;
-	worldspace_gbuffer.colour1_texture_attachment.config.texture_format = GL_RGBA16F;
-	worldspace_gbuffer.colour1_texture_attachment.config.pixel_format = GL_RGBA;
-	worldspace_gbuffer.colour1_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	worldspace_gbuffer.colour1_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	worldspace_gbuffer.colour1_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
-
-	worldspace_gbuffer.colour2_texture_attachment.config.height = WINDOW_HEIGHT;
-	worldspace_gbuffer.colour2_texture_attachment.config.width = WINDOW_WIDTH;
-	worldspace_gbuffer.colour2_texture_attachment.config.data_type = GL_FLOAT;
-	worldspace_gbuffer.colour2_texture_attachment.config.texture_format = GL_RGBA16F;
-	worldspace_gbuffer.colour2_texture_attachment.config.pixel_format = GL_RGBA;
-	worldspace_gbuffer.colour2_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	worldspace_gbuffer.colour2_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	worldspace_gbuffer.colour2_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
-
-	worldspace_gbuffer.depthstencil_attchment.width = WINDOW_WIDTH;
-	worldspace_gbuffer.depthstencil_attchment.height = WINDOW_HEIGHT;
-
-	CreateTexture(&worldspace_gbuffer.colour0_texture_attachment, nullptr);
-	CreateTexture(&worldspace_gbuffer.colour1_texture_attachment, nullptr);
-	CreateTexture(&worldspace_gbuffer.colour2_texture_attachment, nullptr);
-	CreateDepthStencilBuffer(&worldspace_gbuffer.depthstencil_attchment);
-	CreateFrameBuffer(&worldspace_gbuffer);
-
-	BindFrameBuffer(worldspace_gbuffer);
-
-	FrameBufferBindColourAttachtments(&worldspace_gbuffer);
-	FrameBufferBindRenderAttachtment(&worldspace_gbuffer);
-
-	Assert(CheckFrameBuffer(worldspace_gbuffer));
-	UnbindFrameBuffer();
-
+	CreateFrameBufferGBuffer(&worldspace_gbuffer, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	FrameBuffer viewspace_gbuffer;
+	CreateFrameBufferGBuffer(&viewspace_gbuffer, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	viewspace_gbuffer.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
-	viewspace_gbuffer.colour0_texture_attachment.config.width = WINDOW_WIDTH;
-	viewspace_gbuffer.colour0_texture_attachment.config.data_type = GL_FLOAT;
-	viewspace_gbuffer.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
-	viewspace_gbuffer.colour0_texture_attachment.config.pixel_format = GL_RGBA;
-	viewspace_gbuffer.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	viewspace_gbuffer.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	viewspace_gbuffer.colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+	FrameBuffer ssao_buffer;	
+	CreateFrameBufferColourOnly(&ssao_buffer, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	viewspace_gbuffer.colour1_texture_attachment.config.height = WINDOW_HEIGHT;
-	viewspace_gbuffer.colour1_texture_attachment.config.width = WINDOW_WIDTH;
-	viewspace_gbuffer.colour1_texture_attachment.config.data_type = GL_FLOAT;
-	viewspace_gbuffer.colour1_texture_attachment.config.texture_format = GL_RGBA16F;
-	viewspace_gbuffer.colour1_texture_attachment.config.pixel_format = GL_RGBA;
-	viewspace_gbuffer.colour1_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	viewspace_gbuffer.colour1_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	viewspace_gbuffer.colour1_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+	FrameBuffer ssr_frame;
+	CreateFrameBufferColourOnly(&ssr_frame, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	viewspace_gbuffer.colour2_texture_attachment.config.height = WINDOW_HEIGHT;
-	viewspace_gbuffer.colour2_texture_attachment.config.width = WINDOW_WIDTH;
-	viewspace_gbuffer.colour2_texture_attachment.config.data_type = GL_FLOAT;
-	viewspace_gbuffer.colour2_texture_attachment.config.texture_format = GL_RGBA16F;
-	viewspace_gbuffer.colour2_texture_attachment.config.pixel_format = GL_RGBA;
-	viewspace_gbuffer.colour2_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	viewspace_gbuffer.colour2_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	viewspace_gbuffer.colour2_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+	FrameBuffer post_processing_buffer;
+	CreateFrameBufferColourDepth(&post_processing_buffer, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	viewspace_gbuffer.depthstencil_attchment.width = WINDOW_WIDTH;
-	viewspace_gbuffer.depthstencil_attchment.height = WINDOW_HEIGHT;
-
-	CreateTexture(&viewspace_gbuffer.colour0_texture_attachment, nullptr);
-	CreateTexture(&viewspace_gbuffer.colour1_texture_attachment, nullptr);
-	CreateTexture(&viewspace_gbuffer.colour2_texture_attachment, nullptr);
-	CreateDepthStencilBuffer(&viewspace_gbuffer.depthstencil_attchment);
-	CreateFrameBuffer(&viewspace_gbuffer);
-
-	BindFrameBuffer(viewspace_gbuffer);
-
-	FrameBufferBindColourAttachtments(&viewspace_gbuffer);
-	FrameBufferBindRenderAttachtment(&viewspace_gbuffer);
-
-	Assert(CheckFrameBuffer(viewspace_gbuffer));
-	UnbindFrameBuffer();
-
-	FrameBuffer ssao_buffer;
-	
-	ssao_buffer.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
-	ssao_buffer.colour0_texture_attachment.config.width = WINDOW_WIDTH;
-	ssao_buffer.colour0_texture_attachment.config.data_type = GL_FLOAT;
-	ssao_buffer.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
-	ssao_buffer.colour1_texture_attachment.config.pixel_format = GL_RGBA;
-	ssao_buffer.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	ssao_buffer.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	ssao_buffer.colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
-
-	CreateTexture(&ssao_buffer.colour0_texture_attachment, nullptr);
-	CreateFrameBuffer(&ssao_buffer);
-	
-	BindFrameBuffer(ssao_buffer);
-
-	FrameBufferBindColourAttachtments(&ssao_buffer);
-
-	Assert(CheckFrameBuffer(ssao_buffer));
-	UnbindFrameBuffer();
-
+	FrameBuffer final_buffer;
+	CreateFrameBufferColourDepth(&final_buffer, WINDOW_WIDTH, WINDOW_HEIGHT);
+	   	
 	FrameBuffer depth_buffer;
-
 	depth_buffer.colour0_texture_attachment.config.width = WINDOW_WIDTH;
 	depth_buffer.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
 	depth_buffer.colour0_texture_attachment.config.texture_format = GL_RG32F;
@@ -421,7 +329,7 @@ int main()
 	depth_buffer.colour0_texture_attachment.config.mag_filter = GL_LINEAR;
 	depth_buffer.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
 	depth_buffer.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	
+
 	depth_buffer.depthstencil_attchment.width = WINDOW_WIDTH;
 	depth_buffer.depthstencil_attchment.height = WINDOW_HEIGHT;
 	depth_buffer.depthstencil_attchment.render_buffer_format = GL_DEPTH_COMPONENT32;
@@ -439,54 +347,11 @@ int main()
 	Assert(CheckFrameBuffer(depth_buffer));
 	UnbindFrameBuffer();
 
-	FrameBuffer post_processing_buffer;
 
-	post_processing_buffer.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
-	post_processing_buffer.colour0_texture_attachment.config.width = WINDOW_WIDTH;
-	post_processing_buffer.colour0_texture_attachment.config.data_type = GL_FLOAT;
-	post_processing_buffer.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
-	post_processing_buffer.colour1_texture_attachment.config.pixel_format = GL_RGBA;
-	post_processing_buffer.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	post_processing_buffer.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	post_processing_buffer.colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
 
-	post_processing_buffer.depthstencil_attchment.width = WINDOW_WIDTH;
-	post_processing_buffer.depthstencil_attchment.height = WINDOW_HEIGHT;
-
-	CreateTexture(&post_processing_buffer.colour0_texture_attachment, nullptr);
-	CreateDepthStencilBuffer(&post_processing_buffer.depthstencil_attchment);
-	CreateFrameBuffer(&post_processing_buffer);
-
-	BindFrameBuffer(post_processing_buffer);
-
-	FrameBufferBindColourAttachtments(&post_processing_buffer);
-	FrameBufferBindRenderAttachtment(&post_processing_buffer);
-	
-	Assert(CheckFrameBuffer(post_processing_buffer));
-	UnbindFrameBuffer();
-	
-	FrameBuffer ssr_frame;
-
-	ssr_frame.colour0_texture_attachment.config.texture_format = GL_RGBA16F;
-	ssr_frame.colour0_texture_attachment.config.pixel_format = GL_RGBA;
-	ssr_frame.colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
-	ssr_frame.colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
-	ssr_frame.colour0_texture_attachment.config.min_filter = GL_LINEAR;
-	ssr_frame.colour0_texture_attachment.config.mag_filter = GL_LINEAR;
-	ssr_frame.colour0_texture_attachment.config.width = WINDOW_WIDTH;
-	ssr_frame.colour0_texture_attachment.config.height = WINDOW_HEIGHT;
-
-	CreateFrameBuffer(&ssr_frame);
-	CreateTexture(&ssr_frame.colour0_texture_attachment, nullptr);
-	
-	FrameBufferBindColourAttachtments(&ssr_frame);
-
-	Assert(CheckFrameBuffer(ssr_frame));
 
 	uint32 drawing_width = post_processing_buffer.colour0_texture_attachment.config.width;
 	uint32 drawing_height = post_processing_buffer.colour0_texture_attachment.config.height;
-
-
 	
 	LuminanceFilter lumin_filter;
 	lumin_filter.Create(drawing_width, drawing_height, 1);
@@ -542,17 +407,10 @@ int main()
 	
 	
 	UniformBuffer global_uniforms;
-	global_uniforms.size_bytes = sizeof(Mat4) * 3;
+	global_uniforms.size_bytes = sizeof(Mat4) * 3 + sizeof(Vec4) * 23;
 	CreateUniformBuffer(&global_uniforms);
 	UniformBufferSetBindPoint(global_uniforms, 0);
-
-	UniformBuffer render_uniforms;
-	render_uniforms.size_bytes = sizeof(Vec4) * 23;
-	CreateUniformBuffer(&render_uniforms);
-	UniformBufferSetBindPoint(render_uniforms, 1);
-
-	ShaderBindUniformBuffer(worldspace_gbuffer_shader, 0, "WorldMatrices");
-	ShaderBindUniformBuffer(pbr_deffered_shader, 1, "LightingData");
+	ShaderBindUniformBuffer(worldspace_gbuffer_shader, 0, "WorldState");
 
 
 	RenderSettings render_settings;
@@ -677,8 +535,8 @@ int main()
 			if (ImGui::Button("Shader reset"))
 			{
 				FreeShader(&ssr_shader);
-				ssr_shader.config.src_vert = ReadFile("res/botdemo/shaders/screenspace_reflections_vert.glsl");
-				ssr_shader.config.src_frag = ReadFile("res/botdemo/shaders/screenspace_reflections_frag.glsl");
+				ssr_shader.config.src_vert = ReadTextFile("res/botdemo/shaders/screenspace_reflections_vert.glsl");
+				ssr_shader.config.src_frag = ReadTextFile("res/botdemo/shaders/screenspace_reflections_frag.glsl");
 				CreateShader(&ssr_shader);
 			}
 			ImGui::End();
@@ -877,36 +735,39 @@ int main()
 		//************************************
 
 
-		if (TextureBank::LockStagingArea())
+		if (texture_bank.LockStagingArea())
 		{
-			while (TextureBank::PopTextureOnStagingArea())
+			while (texture_bank.PopTextureOnStagingArea())
 			{
 				LOG("Poping textures");
 			}
-			TextureBank::UnlockStagingArea();
+			texture_bank.UnlockStagingArea();
 		}
 
 		//************************************
 		// Update GPU Buffers
 		//************************************
 
-		std::vector<Mat4> camera_data = { camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix,
-										Mat4(1)};
+		std::vector<Mat4> camera_data = { 
+			camera_controller.main_camera.projection_matrix, 
+			camera_controller.main_camera.view_matrix, 
+			Mat4(1)
+		};
 
 		std::vector<Vec4> lighting_data = {
-		Vec4(1,  1, 0, 0), 
-		Vec4(camera_controller.main_camera.transform.position, 0),
-		Vec4(sun_light.direction, 0),
-		Vec4(point_light.light_position, 0), Vec4(1), Vec4(1), Vec4(1),
-		Vec4(point_light.light_colour, 0), Vec4(1), Vec4(1), Vec4(1)
+			Vec4(1,  1, 0, 0), 
+			Vec4(camera_controller.main_camera.transform.position, 0),
+			Vec4(sun_light.direction, 0),
+			Vec4(point_light.light_position, 0), Vec4(1), Vec4(1), Vec4(1),
+			Vec4(point_light.light_colour, 0), Vec4(1), Vec4(1), Vec4(1)
 		};
 
 		
 		WriteBufferData(&global_uniforms, camera_data, 0);
-		WriteBufferData(&render_uniforms, lighting_data, 0);
-		
+		// @HACK: Should write in one go, defeats the purpose !
+		WriteBufferData(&global_uniforms, lighting_data, sizeof(Mat4) * 3);
 
-
+		Debug::Update(camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix);
 
 #pragma region RenderingLogic
 		//************************************
@@ -998,10 +859,10 @@ int main()
 		Texture lady_diffuse;
 		Texture lady_normal;
 		Texture lady_orme;
-
-		TextureBank::Get("Arissa_DIFF_diffuse", &lady_diffuse);
-		TextureBank::Get("Arissa_NM_normal", &lady_normal);
-		TextureBank::Get("Arissa_SPEC_specular", &lady_orme);
+		
+		texture_bank.Get("Arissa_DIFF_diffuse", &lady_diffuse);
+		texture_bank.Get("Arissa_NM_normal", &lady_normal);
+		texture_bank.Get("Arissa_SPEC_specular", &lady_orme);
 
 		ShaderBindTexture(worldspace_gbuffer_anim_shader, lady_diffuse, 0, "colour_map");
 		ShaderBindTexture(worldspace_gbuffer_anim_shader, lady_normal, 1, "normal_map");
@@ -1192,7 +1053,7 @@ int main()
 
 
 		//************************************
-		// Post processing pass
+		// Post processing setup
 		//************************************
 
 		if (render_settings.bloom)
@@ -1221,11 +1082,13 @@ int main()
 		// Final render pass
 		//************************************
 
-#if EDITOR_WINDOW
-		// @NOTE: Setup stencil buffer such that we discard any pixels that were drawn by the editor
-		StencilDiscardOnOne();
-#endif
+		BindFrameBuffer(final_buffer);
+
+		ClearColourBuffer();
+		ClearDepthBuffer();
+
 		DisableDepthBuffer();
+
 		BindShader(postprocessing_shader);
 
 		ShaderBindTexture(postprocessing_shader, post_processing_buffer.colour0_texture_attachment, 0, "scene_texture");
@@ -1248,26 +1111,40 @@ int main()
 		RenderMesh(postprocessing_shader, StandardMeshes::quad);
 		
 		EnableDepthBuffer();
+				
 #pragma endregion
 		
 	
 		//************************************
-		// DBUGING pass
+		// Editor/Debug pass
 		//************************************	
 	
-		// @NOTE: Because we disable the depth buffer when drawing the screen space quad. We can now draw anything with depth on top of it
-		//		: for debug reasons
-		
-			   
+#if EDITOR_WINDOW
+
 		if (current_context.selected_world_object)
-		{		
-			BindShader(transform_widget_shader);
+		{
 			if (current_context.current_widget)
 			{
+				BindShader(transform_widget_shader);
+
 				ShaderSetMat4(&transform_widget_shader, "model", current_context.current_widget->GetTransform()->CalcTransformMatrix().ptr);
 				RenderMesh(transform_widget_shader, current_context.current_widget->GetMeshForRender());
 			}
+		}
 
+		UnbindFrameBuffer();
+
+		FrameBufferCopyDepth(post_processing_buffer, &final_buffer);
+			   
+		BindFrameBuffer(final_buffer);
+
+		BindShader(editor_light_shader);
+		RenderMesh(editor_light_shader, StandardMeshes::Cube());		
+
+		if (current_context.selected_world_object)
+		{		
+
+			
 			GeometricCollider* collider = current_context.selected_world_object->GetCollider();
 			if (collider)
 			{
@@ -1292,62 +1169,36 @@ int main()
 					break;
 				}
 			}
-		}
-
-
-
-		Debug::Update(camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix);		
+		}		
+		
 		Debug::DrawLines();
 		
-		////////////////////
-		// Post Debug Drawing
-		////////////////////
-		
-		if (toggel)
-		{
-			//DebugDrawTexture(&debug_mesh_shader, brdf_lookup_texture);
-			//DebugDrawTexture(&debug_mesh_shader, map_to_eqi);
-			//DebugDrawTexture(&debug_mesh_shader, demo_gbuffer.colour1_texture_attachment);
-			//DebugDrawTexture(&debug_mesh_shader, blurer.sampling_textures[0]);
-			//DebugDrawTexture(&debug_mesh_shader, testing_blur_down01);
-			//DebugDrawTexture(&debug_mesh_shader, worldspace_gbuffer.colour2_texture_attachment);
-		
-			//Debug::DrawTexture(&debug_mesh_shader, bloom_map);
-			//Debug::DrawTexture(&debug_mesh_shader, depth_buffer.colour0_texture_attachment);
-			//DebugDrawTexture(&debug_mesh_shader, test_renderer.frame_ssao_blured.colour0_texture_attachment);
-			//DebugDrawTexture(&debug_mesh_shader, ssao_buffer.colour0_texture_attachment); 
-			//DebugDrawTexture(&debug_mesh_shader, gblur.vertical_frame.colour0_texture_attachment);
-		}
-		else
-		{
-			//DebugDrawTexture(&debug_mesh_shader, renderer.frame_g_buffer.colour1_texture_attachment);
-		}
+		UnbindFrameBuffer();
 
+		// @NOTE: Setup stencil buffer such that we discard any pixels that were drawn by the editor
+		StencilDiscardOnOne();
+#endif
 
-		glViewport(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
-		Debug::DrawTexture(ssr_frame.colour0_texture_attachment);
-		
-		//glViewport(WINDOW_WIDTH/4, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
-		//Debug::DrawTexture(viewspace_gbuffer.colour1_texture_attachment);		
-		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+		// @NOTE: This disables the final buffer in the event we don't build with the editor
+		UnbindFrameBuffer();
 
+		BindShader(Debug::texture_shader);
 
+		ShaderBindTexture(Debug::texture_shader, final_buffer.colour0_texture_attachment, 0, "src_texture");
+		RenderMesh(Debug::texture_shader, StandardMeshes::quad);
 
-		//// @TODO: Debug Draw Quad
-		//// @NOTE: Draw bloom buffer;
-		//glViewport(0, 0, WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
-		//ShaderSetFloat(post_processing_shader, "exposure", 1.0f);
-		//ShaderBindTexture(post_processing_shader, *bloom_blur.texture_to_blur, 0, "scene_texture");
-		//RenderMesh(post_processing_shader, standard_meshes.quad);
-		//glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT); 
+#if EDITOR_WINDOW
 
+		SetViewPort(0, 0, WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4);
+		Debug::DrawTexture(ssr_frame.colour0_texture_attachment);		
+		SetViewPort(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+#endif
 		//************************************
 		// Process update input state
 		//************************************
 
 		Input::Update();
-
 
 		//************************************
 		// Swap the buffer into the screen
@@ -1362,11 +1213,9 @@ int main()
 		std::chrono::time_point<std::chrono::steady_clock> endTime = std::chrono::steady_clock::now();
 		std::chrono::microseconds elapsedTime(std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime));
 		
-		float time = static_cast<float> (elapsedTime.count());
+		real32 time = static_cast<real32> (elapsedTime.count());
 		delta_time = time * 0.001f * 0.001f;		
 		run_time += delta_time;
-
-		//LOG(delta_time);
 	}
 
 

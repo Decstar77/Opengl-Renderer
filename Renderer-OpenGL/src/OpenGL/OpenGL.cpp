@@ -12,6 +12,8 @@ namespace cm
 
 	cm::GLMesh StandardMeshes::cone;
 
+	bool32 OpenGlState::is_initilized = false;
+
 	uint32 OpenGlState::current_viewport_width;
 
 	uint32 OpenGlState::current_viewport_height;
@@ -844,6 +846,12 @@ namespace cm
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo.object);
 	}
 
+	void BindFrameBuffer(const FrameBuffer *fbo)
+	{
+		Assert(fbo->object != 0) // @NOTE: Open-GL reserves 0 for the defualt framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo->object);
+	}
+
 	void UnbindFrameBuffer()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -1198,6 +1206,114 @@ namespace cm
 		mesh->ibo = ibo;		
 	}
 
+	void CreateFrameBufferGBuffer(FrameBuffer *g_buffer, const uint32 &width, const uint32 &height)
+	{
+		Assert(OpenGlState::is_initilized);
+		Assert(width != 0);
+		Assert(height != 0);
+		
+		g_buffer->colour0_texture_attachment.config.width = width;
+		g_buffer->colour0_texture_attachment.config.height = height;
+		g_buffer->colour0_texture_attachment.config.data_type = GL_FLOAT;
+		g_buffer->colour0_texture_attachment.config.texture_format = GL_RGBA16F;
+		g_buffer->colour0_texture_attachment.config.pixel_format = GL_RGBA;
+		g_buffer->colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+		g_buffer->colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+		g_buffer->colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+
+		g_buffer->colour1_texture_attachment.config.width = width;
+		g_buffer->colour1_texture_attachment.config.height = height;
+		g_buffer->colour1_texture_attachment.config.data_type = GL_FLOAT;
+		g_buffer->colour1_texture_attachment.config.texture_format = GL_RGBA16F;
+		g_buffer->colour1_texture_attachment.config.pixel_format = GL_RGBA;
+		g_buffer->colour1_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+		g_buffer->colour1_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+		g_buffer->colour1_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+
+		g_buffer->colour2_texture_attachment.config.width = width;
+		g_buffer->colour2_texture_attachment.config.height = height;
+		g_buffer->colour2_texture_attachment.config.data_type = GL_FLOAT;
+		g_buffer->colour2_texture_attachment.config.texture_format = GL_RGBA16F;
+		g_buffer->colour2_texture_attachment.config.pixel_format = GL_RGBA;
+		g_buffer->colour2_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+		g_buffer->colour2_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+		g_buffer->colour2_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+
+		g_buffer->depthstencil_attchment.width = width;
+		g_buffer->depthstencil_attchment.height = height;
+
+		CreateTexture(&g_buffer->colour0_texture_attachment, nullptr);
+		CreateTexture(&g_buffer->colour1_texture_attachment, nullptr);
+		CreateTexture(&g_buffer->colour2_texture_attachment, nullptr);
+		CreateDepthStencilBuffer(&g_buffer->depthstencil_attchment);
+		CreateFrameBuffer(g_buffer);
+
+		BindFrameBuffer(g_buffer);
+
+		FrameBufferBindColourAttachtments(g_buffer);
+		FrameBufferBindRenderAttachtment(g_buffer);
+
+		Assert(CheckFrameBuffer(*g_buffer));
+		UnbindFrameBuffer();
+	}
+
+	void CreateFrameBufferColourOnly(FrameBuffer *c_buffer, const uint32 &width, const uint32 &height)
+	{
+		Assert(OpenGlState::is_initilized);
+		Assert(width != 0);
+		Assert(height != 0);
+
+		c_buffer->colour0_texture_attachment.config.width = width;
+		c_buffer->colour0_texture_attachment.config.height = height;
+		c_buffer->colour0_texture_attachment.config.data_type = GL_FLOAT;
+		c_buffer->colour0_texture_attachment.config.texture_format = GL_RGBA16F;
+		c_buffer->colour0_texture_attachment.config.pixel_format = GL_RGBA;
+		c_buffer->colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+		c_buffer->colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+		c_buffer->colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+
+		CreateTexture(&c_buffer->colour0_texture_attachment, nullptr);
+		CreateFrameBuffer(c_buffer);
+
+		BindFrameBuffer(c_buffer);
+
+		FrameBufferBindColourAttachtments(c_buffer);
+
+		Assert(CheckFrameBuffer(*c_buffer));
+		UnbindFrameBuffer();
+	}
+
+	void CreateFrameBufferColourDepth(FrameBuffer *cd_buffer, const uint32 &width, const uint32 &height)
+	{
+		Assert(OpenGlState::is_initilized);
+		Assert(width != 0);
+		Assert(height != 0);
+
+		cd_buffer->colour0_texture_attachment.config.width = width;
+		cd_buffer->colour0_texture_attachment.config.height = height;
+		cd_buffer->colour0_texture_attachment.config.data_type = GL_FLOAT;
+		cd_buffer->colour0_texture_attachment.config.texture_format = GL_RGBA16F;
+		cd_buffer->colour0_texture_attachment.config.pixel_format = GL_RGBA;
+		cd_buffer->colour0_texture_attachment.config.wrap_s_mode = GL_CLAMP_TO_EDGE;
+		cd_buffer->colour0_texture_attachment.config.wrap_t_mode = GL_CLAMP_TO_EDGE;
+		cd_buffer->colour0_texture_attachment.config.wrap_r_mode = GL_CLAMP_TO_EDGE;
+
+		cd_buffer->depthstencil_attchment.width = width;
+		cd_buffer->depthstencil_attchment.height = height;
+
+		CreateTexture(&cd_buffer->colour0_texture_attachment, nullptr);
+		CreateDepthStencilBuffer(&cd_buffer->depthstencil_attchment);
+		CreateFrameBuffer(cd_buffer);
+
+		BindFrameBuffer(cd_buffer);
+
+		FrameBufferBindColourAttachtments(cd_buffer);
+		FrameBufferBindRenderAttachtment(cd_buffer);
+
+		Assert(CheckFrameBuffer(*cd_buffer));
+		UnbindFrameBuffer();
+	}
+
 	void InitializeOpenGl(uint32 window_width, uint32 window_height)
 	{		
 		glewExperimental = GL_TRUE;
@@ -1211,7 +1327,7 @@ namespace cm
 		OpenGlState::window_height = window_height;
 		OpenGlState::current_viewport_width = window_width;
 		OpenGlState::current_viewport_height = window_height;
-
+		OpenGlState::is_initilized = true;
 	}
 
 	cm::Mat4 CubeMapMatrices::projection = Perspective(90.0f, 1.0f, 0.1f, 10.0f);

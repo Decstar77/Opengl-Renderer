@@ -70,9 +70,8 @@ namespace cm
 		}
 
 		inline static Vec2 GetMousePosition() { return mouse_data.position; }
+
 		inline static Vec2 GetMouseLastPosition() { return mouse_data.prev_mouse_position; }
-
-
 
 		inline static void Update()
 		{

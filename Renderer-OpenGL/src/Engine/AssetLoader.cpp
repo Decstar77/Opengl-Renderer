@@ -3,7 +3,7 @@
 #include "../vendor/std_image.h"
 namespace cm
 {
-	String ReadFile(const String &file_directory)
+	String ReadTextFile(const String &file_directory)
 	{
 		std::ifstream file;
 		file.open(file_directory);
@@ -57,49 +57,9 @@ namespace cm
 		}		
 	}
 
-	bool LoadTexture(Array<uint8> *storage, TextureConfig *config, const String &file_directory, const bool &flip)
-	{
-		int32 width = 0;
-		int32 height = 0;
-		int32 nrChannels = 0;
-		stbi_set_flip_vertically_on_load(flip);
-		uint8 *data = stbi_load(file_directory.c_str(), &width, &height, &nrChannels, 0);
 
-		if (data != nullptr)
-		{
 
-			config->height = height;
-			config->width = width;
-			config->data_type = GL_UNSIGNED_BYTE;
-			if (nrChannels == 4)
-			{
-				config->texture_format = GL_RGBA;
-				config->pixel_format = GL_RGBA;
-			}
-			else if (nrChannels == 3)
-			{
-				config->texture_format = GL_RGB;
-				config->pixel_format = GL_RGB;
-			}
-			else
-			{
-				Assert(0); // @REASON: We have no support channel count
-			}
 
-			uint32 size = width * height * nrChannels;
-
-			storage->Resize(size);
-			storage->Copy(data, size);
-
-			stbi_image_free(data);
-			return true;
-		}
-		else
-		{
-			std::cout << "ERROR::STBIMG:: -> Could not load image" << std::endl;
-			return false;
-		}
-	}
 
 
 	void TextureImportMultiThread::DoLoad()
@@ -692,23 +652,193 @@ namespace cm
 	//	return result;
 	//}
 
-	
-	void TextureImportFolder::Load(const String &folder_directory)
+	void ProcessMesh(const aiMesh *ai_mesh, InterMesh *mesh)
 	{
-		// @TODOs: Make sure we don't even call this multiple times !!!
-		worker_thread = Thread(&TextureImportFolder::DoLoad, this, folder_directory);
-		worker_thread.detach();
+		bool32 positions =				ai_mesh->HasPositions();
+		bool32 normals =				ai_mesh->HasNormals();
+		bool32 texture_coords =			ai_mesh->HasTextureCoords(0);
+		bool32 tanget_bitangets =		ai_mesh->HasTangentsAndBitangents();
+		bool32 colours =				ai_mesh->HasVertexColors(0);
+		bool32 faces =					ai_mesh->HasFaces();
+		bool32 bones =					ai_mesh->HasBones();
+		
+		uint32 vertex_count = ai_mesh->mNumVertices;
+		uint32 faces_count	= ai_mesh->mNumFaces;
+		uint32 face_count	= 3;
+		uint32 index_count	= face_count * faces_count;
+		
+		mesh->vertices.Resize(vertex_count);
+		mesh->indices.Resize(index_count);
+
+		for (uint32 i = 0; i < vertex_count; i++)
+		{
+			Vertex vertex = {};
+
+			// Positions
+			if (positions)
+			{
+				vertex.position.x = ai_mesh->mVertices[i].x;
+				vertex.position.y = ai_mesh->mVertices[i].y;
+				vertex.position.z = ai_mesh->mVertices[i].z;
+			}
+
+			// Normals
+			if (normals && mesh->config.normals)
+			{
+				vertex.normal.x = ai_mesh->mNormals[i].x;
+				vertex.normal.y = ai_mesh->mNormals[i].y;
+				vertex.normal.z = ai_mesh->mNormals[i].z;
+			}
+
+			// Texture coordinates			
+			if (texture_coords && mesh->config.texture_coords)
+			{
+				vertex.texture_coord.x = ai_mesh->mTextureCoords[0][i].x;
+				vertex.texture_coord.y = ai_mesh->mTextureCoords[0][i].y;
+			}
+
+			// Tangent and bitangents
+			if (tanget_bitangets && mesh->config.tanget_bitangets)
+			{
+				vertex.tangent.x = ai_mesh->mTangents[i].x;
+				vertex.tangent.y = ai_mesh->mTangents[i].y;
+				vertex.tangent.z = ai_mesh->mTangents[i].z;
+
+				vertex.bitangent.x = ai_mesh->mBitangents[i].x;
+				vertex.bitangent.y = ai_mesh->mBitangents[i].y;
+				vertex.bitangent.z = ai_mesh->mBitangents[i].z;
+			}
+
+			// Vertex Colours
+			if (colours && mesh->config.colours)
+			{
+				vertex.colour.x = ai_mesh->mColors[0]->r;
+				vertex.colour.y = ai_mesh->mColors[0]->g;
+				vertex.colour.z = ai_mesh->mColors[0]->b;
+			}
+			mesh->vertices[i] = vertex;
+		}
+		
+		if (faces)
+		{
+			for (uint32 i = 0; i < ai_mesh->mNumFaces; i++)
+			{
+				aiFace face = ai_mesh->mFaces[i];
+				for (uint32 j = 0; j < face.mNumIndices; j++)
+				{
+					Assert(face.mNumIndices == face_count); // @REASON: We trianglulated the mesh ????
+					uint32 index = face.mIndices[j];
+					mesh->indices[i] = index;
+				}
+			}
+		}
+
+		mesh->config.normals =				mesh->config.normals || normals;
+		mesh->config.texture_coords =		mesh->config.texture_coords || texture_coords;
+		mesh->config.tanget_bitangets =		mesh->config.tanget_bitangets || tanget_bitangets;
+		mesh->config.colours =				mesh->config.colours || colours;
+		mesh->config.faces =				mesh->config.faces || faces;
+		mesh->config.bones =				mesh->config.bones || bones;
 	}
-	   
-	void TextureImportFolder::DoLoad(const String &folder_directory)
+
+	void TraverseScene(const aiScene *scene, const aiNode *node, InterMesh *mesh)
 	{
-		std::filesystem::recursive_directory_iterator recursive_directory_iterator;
+		for (uint32 i = 0; i < node->mNumMeshes; i++)
+		{
+			aiMesh* ai_mesh = scene->mMeshes[node->mMeshes[i]];
+			ProcessMesh(ai_mesh, mesh);
+		}
+
+		for (uint32 i = 0; i < node->mNumChildren; i++)
+		{
+			TraverseScene(scene, node->mChildren[i], mesh);
+		}
+	}
+
+	void LoadMesh(InterMesh *mesh, const String &file_directory, const bool mutli_thread /*= false*/)
+	{
+		Assimp::Importer import;
+		uint32 flags = aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_CalcTangentSpace;
+
+		const aiScene *scene = import.ReadFile(file_directory, flags);
+
+		bool32 result = scene || !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || scene->mRootNode;
+				
+		
+		if (result)
+		{
+			TraverseScene(scene, scene->mRootNode, mesh);
+		}
+		else
+		{
+			ProcessError(import.GetErrorString());
+		}
+		
+		import.FreeScene();		
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////
+
+	bool LoadTexture(Array<uint8> *storage, TextureConfig *config, const String &file_directory, const bool &flip)
+	{
+		int32 width = 0;
+		int32 height = 0;
+		int32 nrChannels = 0;
+		stbi_set_flip_vertically_on_load(flip);
+		uint8 *data = stbi_load(file_directory.c_str(), &width, &height, &nrChannels, 0);
+
+		if (data != nullptr)
+		{
+
+			config->height = height;
+			config->width = width;
+			config->data_type = GL_UNSIGNED_BYTE;
+			if (nrChannels == 4)
+			{
+				config->texture_format = GL_RGBA;
+				config->pixel_format = GL_RGBA;
+			}
+			else if (nrChannels == 3)
+			{
+				config->texture_format = GL_RGB;
+				config->pixel_format = GL_RGB;
+			}
+			else
+			{
+				Assert(0); // @REASON: We have no support channel count
+			}
+
+			uint32 size = width * height * nrChannels;
+
+			storage->Resize(size);
+			storage->Copy(data, size);
+
+			stbi_image_free(data);
+			return true;
+		}
+		else
+		{
+			std::cout << "ERROR::STBIMG:: -> Could not load image" << std::endl;
+			return false;
+		}
+	}
+
+	void DoLoadTextureFolder(TextureBank *texture_bank, const String &folder_directory, const bool &flip)
+	{		
+		// @HACK: Just saying we won't have more that 50 textures at once
+		// @NOTE: We dont free these array as copying an array is just moving the pointer. Thus Pop on texture bank will free it
+		Array<Array<uint8>> texture_data(50);
+		Array<TextureConfig> texture_config(50);
 
 		uint32 next = 0;
-		// @HACK: Just guess we won't be more than 50
-
-		this->texture_data.Resize(50);
-		this->texture_config.Resize(50);
+		std::filesystem::recursive_directory_iterator recursive_directory_iterator;
 
 		for (const std::filesystem::directory_entry& dirEntry : std::filesystem::recursive_directory_iterator(folder_directory))
 		{
@@ -724,37 +854,39 @@ namespace cm
 
 				LoadTexture(&t_data, &t_config, fullpath, false);
 
-				this->texture_data[next] = t_data;
-				this->texture_config[next] = t_config;
+				texture_data[next] = t_data;
+				texture_config[next] = t_config;
 				next++;
 			}
 		}
 
-		while (!TextureBank::LockStagingArea())
+		while (!texture_bank->LockStagingArea())
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(3));
 		}
 
 		for (uint32 i = 0; i < next; i++)
 		{
-			TextureBank::PushTextureToStagingArea(this->texture_data[i], this->texture_config[i]);
+			texture_bank->PushTextureToStagingArea(texture_data[i], texture_config[i]);
 		}
 
-		TextureBank::UnlockStagingArea();
+		texture_bank->UnlockStagingArea();		
 	}
 
-	AtomicBool TextureBank::staging_area_locked;
-
-	std::unordered_map<uint32, Texture> TextureBank::current_textures;
-
-	uint32 TextureBank::staging_config_next = 0;
-
-	cm::Array<cm::TextureConfig> TextureBank::staging_configs;
-
-	uint32 TextureBank::staging_data_next = 0;
-
-	cm::Array<cm::Array<uint8>> TextureBank::staging_data;
-		   	  
+	
+	void LoadTextureFolder(TextureBank *texture_bank, const String &folder_directory, const bool &flip, const bool &multi_thread /*= false*/)
+	{
+		if (multi_thread)
+		{
+			Thread worker_thread = Thread(&DoLoadTextureFolder, texture_bank, folder_directory, flip);
+			worker_thread.detach();
+		}
+		else
+		{
+			DoLoadTextureFolder(texture_bank, folder_directory, flip);
+		}				
+	}
+	   	  
 	bool TextureBank::LockStagingArea()
 	{
 		bool locked = staging_area_locked.load();
@@ -859,10 +991,9 @@ namespace cm
 		return false;
 	}
 
-	void TextureBank::Initialize()
+	void TextureBank::Create()
 	{
 		// @HACK: Just saying we won't have more that 50 textures at once
-
 		staging_area_locked.store(false);
 		current_textures.reserve(50);
 

@@ -7,7 +7,7 @@ layout (location = 4) in vec3 vbitan;
 layout (location = 5) in vec4 vboneindex;
 layout (location = 6) in vec4 vbonewieght;
 
-layout (std140, binding = 0) uniform WorldMatrices 
+layout (std140, binding = 0) uniform WorldState
 {
 	mat4 projection;
 	mat4 view;

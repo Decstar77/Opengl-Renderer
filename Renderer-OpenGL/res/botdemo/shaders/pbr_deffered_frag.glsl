@@ -2,9 +2,13 @@
 layout (location = 0) out vec4 out_colour;
 
 
-layout (std140, binding = 1) uniform LightingData
+layout (std140, binding = 0) uniform WorldState
 {
-    // @NOTE: We pack the lighting as follows
+	mat4 projection;
+	mat4 view;
+	mat4 light_space_matrix;
+
+	// @NOTE: We pack the lighting as follows
     //      : x = PointLightCount, y = DirectionalLightCount, z = SpotLightCount
 	vec4 size_data; 
 

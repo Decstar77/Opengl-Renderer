@@ -20,7 +20,7 @@ namespace cm
 	{
 		// @TODO: Clean up memory when terminating
 		// @TODO: More cleanup
-	private:
+	public:
 		static bool created;
 		static Shader line_shader;
 		static Shader texture_shader;

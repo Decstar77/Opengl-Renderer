@@ -16,8 +16,29 @@ namespace cm
 		Vec3 texture_coord = Vec3(0);
 		uint32 next = 0;		
 		uint32 bone_index[MAX_VERTEX_BONE_COUNT] = { 0, 0, 0, 0 };
-		float bone_weights[MAX_VERTEX_BONE_COUNT] = { 0, 0, 0, 0 };
+		real32 bone_weights[MAX_VERTEX_BONE_COUNT] = { 0, 0, 0, 0 };
 	};
+	   	  
+	struct InterMeshConfig
+	{
+		bool32 normals = true;
+		bool32 texture_coords = true;
+		bool32 tanget_bitangets = true;
+		bool32 colours = false;
+		bool32 faces = false;
+		bool32 bones = false;
+	};
+
+	struct InterMesh
+	{
+		Array<Vertex> vertices;
+		Array<uint32> indices;
+		InterMeshConfig config;
+		String name;
+	};
+	
+	void CreateGlMesh(InterMesh *mesh, GLMesh *glmesh, bool free = false);
+
 
 	struct Edge
 	{
@@ -108,5 +129,9 @@ namespace cm
 		void ConvertToOther(std::vector<float> *data, std::vector<uint32> *index) const; //<-- Just for testing purposes
 
 	};
+
+	
+
+
 
 }

@@ -43,13 +43,11 @@
 #define LOGC(str, ...)
 #endif
 
-#define PNT_VBO_LAYOUT LayoutBuffer(Array<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2 }))
-#define PNTTB_VBO_LAYOUT LayoutBuffer(Array<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float3, ShaderDataType::Float3 }))
-#define BUFFER_LAYOUT(...) LayoutBuffer(Array<ShaderDataType>({__VA_ARGS__}))
+#define PNT_VBO_LAYOUT		LayoutBuffer(Array<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2 }))
+#define PNTTB_VBO_LAYOUT	LayoutBuffer(Array<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float3, ShaderDataType::Float3 }))
+#define BUFFER_LAYOUT(...)	LayoutBuffer(Array<ShaderDataType>({__VA_ARGS__}))
 
 #define IDENTITY_TEXTURE 0
-
-
 
 #define BYTES_TO_MEGABYTES 0.000001f
 #define BIT(x) (1 << x)
@@ -72,14 +70,15 @@ typedef int16_t int16;
 typedef int32_t int32;
 typedef int64_t int64;
 
-typedef float	real;
+typedef bool	bool32;
+typedef float	real; // @TODO: Remove
 typedef float	real32;
 typedef double	real64;
 
 typedef std::string			String;
 typedef std::thread			Thread;
 typedef std::stringstream	StringStream;
-typedef std::atomic<bool>	AtomicBool;
+typedef std::atomic<bool32>	AtomicBool;
 typedef std::atomic<int32>	AtomicInt32;
 typedef std::atomic<int64>	AtomicInt64;
 typedef std::atomic<real32> AtomicReal32;

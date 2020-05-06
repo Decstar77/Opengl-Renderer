@@ -9,6 +9,8 @@ namespace cm
 	/*
 		@NOTE: The depthstencil sturct is acutally an opengl render buffer
 			 : just named it so because for clarity
+
+		@TODO: Make every function assert that open is initilized!
 	*/
 	//===============================================================//
 
@@ -121,7 +123,7 @@ namespace cm
 		uint32 wrap_r_mode = GL_REPEAT;
 		uint32 width = 0;
 		uint32 height = 0;
-		bool mipmaps = false;
+		bool32 mipmaps = false;
 		String name = "";
 	};
 
@@ -138,7 +140,7 @@ namespace cm
 		uint32 wrap_r_mode = GL_CLAMP_TO_EDGE;
 		uint32 width = 0;
 		uint32 height = 0;
-		bool mipmaps = false;
+		bool32 mipmaps = false;
 		String uniform_name = "";
 	};
 
@@ -146,11 +148,22 @@ namespace cm
 	{
 		ShaderType type;
 		String name = "";
-		String src_vert = "";	// NOTE: Gets freed and set to "Linked" when sucessfully created else emptry string
-		String src_frag = "";	// NOTE: Gets freed and set to "Linked" when sucessfully created else emptry string
-		String src_geom = "";	// NOTE: Gets freed and set to "Linked" when sucessfully created else emptry string		
+		String src_vert = "";	// NOTE: Gets freed and set to "Linked" when sucessfully created else empty string
+		String src_frag = "";	// NOTE: Gets freed and set to "Linked" when sucessfully created else empty string
+		String src_geom = "";	// NOTE: Gets freed and set to "Linked" when sucessfully created else empty string		
 	};
 
+	struct GLMeshConfig
+	{
+		uint32 size_bytes = 0;		
+		bool32 normals = true;
+		bool32 texture_coords = true;
+		bool32 tangent = true;
+		bool32 bitanget = true;
+		bool32 vertex_colour = false;
+		bool32 vertex_bones = false;		
+	};
+	
 	struct Texture
 	{
 		uint32 object = 0;
@@ -199,6 +212,7 @@ namespace cm
 
 	struct GLMesh
 	{
+		GLMeshConfig config;
 		VertexArray vao;
 		IndexBuffer ibo;
 	};
@@ -442,6 +456,8 @@ namespace cm
 
 	void BindFrameBuffer(const FrameBuffer &fbo);
 
+	void BindFrameBuffer(const FrameBuffer *fbo);
+
 	void UnbindFrameBuffer();
 
 	void FreeFrameBuffer(FrameBuffer *fbo, bool attachments);
@@ -494,8 +510,20 @@ namespace cm
 
 	void InitializeOpenGl(uint32 window_width, uint32 window_height);
 
+	//************************************
+	// Common use functions
+	//************************************
+	
 	void CreateGLMesh(GLMesh *mesh, LayoutBuffer lbo, void *vertex_data, uint32 vertex_size_bytes, void *index_data, uint32 index_size_bytes);
 	
+	void CreateFrameBufferGBuffer(FrameBuffer *g_buffer, const uint32 &width, const uint32 &height);
+
+	void CreateFrameBufferColourOnly(FrameBuffer *c_buffer, const uint32 &width, const uint32 &height);
+
+	void CreateFrameBufferDepthOnly(FrameBuffer *d_buffer, const uint32 &width, const uint32 &height);
+
+	void CreateFrameBufferColourDepth(FrameBuffer *cd_buffer, const uint32 &width, const uint32 &height);
+
 	//************************************
 	// Usefull classes for rendering
 	//************************************
@@ -539,6 +567,7 @@ namespace cm
 		// NOTE: We could make getters for these to be safe, but I think it's a bit convaluted to do so
 		// TODO: Complete as needed
 	public:
+		static bool32 is_initilized;
 		static uint32 current_viewport_width;
 		static uint32 current_viewport_height;
 		static uint32 window_width;

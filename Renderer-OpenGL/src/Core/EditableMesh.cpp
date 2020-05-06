@@ -202,5 +202,9 @@ namespace cm
 		return mesh;
 	}
 
+	void InterMeshToGlMesh(InterMesh *mesh, GLMesh *glmesh, bool free /*= false*/)
+	{
+
+	}
 	
 }

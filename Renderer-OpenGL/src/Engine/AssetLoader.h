@@ -86,68 +86,62 @@ namespace cm
 	};
 
 
-	class TextureImportFolder
-	{
-	private:
-		Thread worker_thread;
-		Array<Array<uint8>> texture_data;
-		Array<TextureConfig> texture_config;
 
-	private:
-		void DoLoad(const String &folder_directory);
-
-	public:
-
-		void Load(const String &folder_directory);
-	};
 
 
 	class TextureBank
 	{
 	private:
-		static AtomicBool staging_area_locked;
-		static std::unordered_map<uint32, Texture> current_textures;
+		AtomicBool staging_area_locked = false;
+		std::unordered_map<uint32, Texture> current_textures;
 
-		static uint32 staging_config_next;
-		static Array<TextureConfig> staging_configs;
+		uint32 staging_config_next = 0;
+		Array<TextureConfig> staging_configs;
 
-		static uint32 staging_data_next;
-		static Array<Array<uint8>> staging_data;
+		uint32 staging_data_next = 0;
+		Array<Array<uint8>> staging_data;
 
 	public:
-		static bool LockStagingArea();
-		static bool UnlockStagingArea();
-		static bool IsStagingAreaLocked();
+		bool LockStagingArea();
+		bool UnlockStagingArea();
+		bool IsStagingAreaLocked();
 
-		static void PushTextureToStagingArea(Array<uint8> data, const TextureConfig &config);
-		static bool PopTextureOnStagingArea();
+		void PushTextureToStagingArea(Array<uint8> data, const TextureConfig &config);
+		bool PopTextureOnStagingArea();
 
-		static bool Free(const uint32 &id);
-		static bool Free(const String name);
+		bool Free(const uint32 &id);
+		bool Free(const String name);
 
-		static bool Get(const uint32 &id, Texture *texture);
-		static bool Get(const String &name, Texture *texture);
+		bool Get(const uint32 &id, Texture *texture);
+		bool Get(const String &name, Texture *texture);
 
 
 		// @NOTE: Hard coded sizes
-		static void Initialize();
+		void Create();
+	};
 
+	class GLMeshBank
+	{
+		AtomicBool staging_area_locked = false;
+		std::unordered_map<uint32, GLMesh> current_mesh;
+		
+		uint32 staging_vertex_data_next = 0;
+		Array<EditableMesh> staging_mesh_data;
 	};
 
 
 
 
-
-	String ReadFile(const String &file_directory);
+	String ReadTextFile(const String &file_directory);
 
 	bool LoadTexture(std::vector<uint8> *storage, TextureConfig *config, const String &file_directory, const bool &flip);
 
 	bool LoadTexture(Array<uint8> *storage, TextureConfig *config, const String &file_directory, const bool &flip);
 
-	bool LoadTextureFolder(TextureBank *texture_bank, const String &folder_directory, const bool &flip, const bool &multi_thread = false);
+	void LoadMesh(InterMesh *mesh, const String &file_directory, const bool mutli_thread = false);
 
-
-
+	void LoadTextureFolder(TextureBank *texture_bank, const String &folder_directory, const bool &flip, const bool &multi_thread = false);
+	
 }
 
 
