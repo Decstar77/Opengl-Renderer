@@ -7,8 +7,6 @@ namespace cm
 {
 	//===============================================================//
 	/*
-		I've taken a OOP approach in this section for exploritory purposes.
-		Ie, its see the advantages and disadvantages
 		@NOTE: The depthstencil sturct is acutally an opengl render buffer
 			 : just named it so because for clarity
 	*/
@@ -51,36 +49,18 @@ namespace cm
 	// Opengl structures
 	//************************************
 
-	class LayoutBuffer
+	struct LayoutBuffer
 	{
-		uint32 number_components;
-		uint32 stride;
+		uint32 stride = 0;
+		uint32 current_offset = 0;
+		uint32 current_next = 0;
+		uint32 attribute_divisor = 0;
 
-		std::vector<ShaderDataType> layout;
-		uint32 current_offset;
-		uint32 current_next;
-		uint32 attribute_divisor;
+		Array<ShaderDataType> layout;
 
-	public:
 		LayoutBuffer();
-		LayoutBuffer(std::vector<ShaderDataType> layout);
+		LayoutBuffer(Array<ShaderDataType> layout);
 		~LayoutBuffer();
-
-		void Reset();
-		void Next();
-		void SetAttributeDivisor(uint32 div);
-		uint32 Add(const LayoutBuffer &lbo);
-
-		ShaderDataType GetCurrentShaderType() const;
-		uint32 GetTotalAttributeCount() const;
-		uint32 GetCurrentOffSet() const;
-		uint32 GetCurrentSize() const;
-		uint32 GetCurrentComponentAttribCount() const;
-		uint32 GetComponentCount() const;
-		uint32 GetStride() const;
-		uint32 GetTotalSize() const;
-		uint32 GetSizeOf(uint32 index) const;
-		uint32 GetAttributeDivisor() const;
 	};
 
 	struct OpenGLStatistics
@@ -165,10 +145,10 @@ namespace cm
 	struct ShaderConfig
 	{
 		ShaderType type;
-		String name;
-		String src_vert;	// NOTE: Gets freed and set to "Linked" when sucessfully created else emptry string
-		String src_frag;	// NOTE: Gets freed and set to "Linked" when sucessfully created else emptry string
-		String src_geom;	// NOTE: Gets freed and set to "Linked" when sucessfully created else emptry string		
+		String name = "";
+		String src_vert = "";	// NOTE: Gets freed and set to "Linked" when sucessfully created else emptry string
+		String src_frag = "";	// NOTE: Gets freed and set to "Linked" when sucessfully created else emptry string
+		String src_geom = "";	// NOTE: Gets freed and set to "Linked" when sucessfully created else emptry string		
 	};
 
 	struct Texture
@@ -319,6 +299,36 @@ namespace cm
 	}
 
 	//************************************
+	// Layout Buffer Functions
+	//************************************
+
+	void LayoutBufferReset(LayoutBuffer *layout_buffer);
+	
+	void LayoutBufferNext(LayoutBuffer *layout_buffer);
+
+	void LayoutBufferSetAttributeDivisor(LayoutBuffer *layout_buffer, const uint32 &div);
+	
+	uint32 LayoutBufferGetTotalAttributeCount(const LayoutBuffer &layout_buffer);
+	
+	uint32 LayoutBufferGetCurrentOffSet(const LayoutBuffer &layout_buffer);
+	
+	uint32 LayoutBufferGetCurrentSize(const LayoutBuffer &layout_buffer);
+	
+	uint32 LayoutBufferGetCurrentComponentAttribCount(const LayoutBuffer &layout_buffer);
+	
+	uint32 LayoutBufferGetComponentCount(const LayoutBuffer &layout_buffer);
+	
+	uint32 LayoutBufferGetStride(const LayoutBuffer &layout_buffer);
+		
+	uint32 LayoutBufferGetTotalSize(const LayoutBuffer &layout_buffer);
+	
+	uint32 LayoutBufferGetSizeOf(const LayoutBuffer &layout_buffer, const uint32 &index);
+	
+	uint32 LayoutBufferGetAttributeDivisor(const LayoutBuffer &layout_buffer);
+	
+	ShaderDataType LayoutBufferGetCurrentShaderType(const LayoutBuffer &layout_buffer);
+
+	//************************************
 	// Vertex Buffer Functions
 	//************************************
 
@@ -389,17 +399,14 @@ namespace cm
 	//************************************
 
 	// @TODO: Prehaps we should store the source in the shader struct
-	// @TODO: ShaderUniforms should be const float *data
-	// @TODO: Make void, it's just here for function overloading
-	Shader CreateShader(Shader *shader);
-
-	Shader CreateShader(String vertex_source, String fragment_source);
-
-	Shader CreateComputeShader(String source);
-
+	
 	// @TODO: Complete
 	//Shader CreateBatchShaderFromShader(String vertex_source, String fragment_source);
-
+	
+	void CreateShader(Shader *shader);
+	
+	Shader CreateComputeShader(String source);
+	   
 	void FreeShader(Shader *shader);
 
 	void BindShader(const Shader &shader);
@@ -410,7 +417,7 @@ namespace cm
 
 	void ShaderSetBool(Shader *shader, const String &uniform_name, const bool &b);
 
-	void ShaderSetInt32(Shader *shader, const String &uniform_name, int x);
+	void ShaderSetInt32(Shader *shader, const String &uniform_name, int32 x);
 
 	void ShaderSetFloat(Shader *shader, const String &uniform_name, float x);
 

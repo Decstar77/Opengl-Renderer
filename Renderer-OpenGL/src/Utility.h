@@ -78,7 +78,13 @@ namespace cm
 			return newarr;
 		}
 
-		T& operator[](uint32 index)
+		T& operator[](const uint32 &index)
+		{
+			Assert(index >= 0 && index < size);
+			return data[index];
+		}
+
+		T operator[](const uint32 &index) const
 		{
 			Assert(index >= 0 && index < size);
 			return data[index];
@@ -97,20 +103,34 @@ namespace cm
 	public:
 		Array() {}
 
-		Array(const Array<T> &arr) {
+		Array(const Array<T> &arr) 
+		{
 			this->data = arr.data;
 			this->size = arr.size;
 		}
 
-		Array(T *data, const uint32 &size) {
+		Array(T *data, const uint32 &size) 
+		{
 
 			this->data = data;
 			this->size = size;
-		};
+		}
 
-		Array(const uint32 &size) {
+		Array(const uint32 &size) 
+		{
 			Resize(size);
-		};
+		}
+
+		Array(std::initializer_list<T> init_list) 
+		{
+			uint32 nsize = static_cast<uint32>(init_list.size());
+			Resize(nsize);
+			uint32 next = 0;
+			for (const T &t : init_list)
+			{
+				this->data[next++] = t;
+			}
+		}
 
 		~Array() {}
 	};

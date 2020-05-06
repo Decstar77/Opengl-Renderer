@@ -200,21 +200,19 @@ namespace cm
 		return 0;
 	}
 
-	LayoutBuffer::LayoutBuffer() : current_offset(0),
-		current_next(0), number_components(0), stride(0), attribute_divisor(0)
+	LayoutBuffer::LayoutBuffer()
 	{
 
 	}
 
-	LayoutBuffer::LayoutBuffer(std::vector<ShaderDataType> layout) : layout(layout), current_offset(0),
-		current_next(0), number_components((uint32)layout.size()), attribute_divisor(0)
-	{
-		stride = 0;
-
-		for (int i = 0; i < layout.size(); i++)
+	LayoutBuffer::LayoutBuffer(Array<ShaderDataType> layout) 
+	{		
+		for (uint32 i = 0; i < layout.Size(); i++)
 		{
-			stride += GetShaderDataTypeSize(layout.at(i));
+			stride += GetShaderDataTypeSize(layout[i]);
 		}
+		
+		this->layout = layout;
 	}
 
 	LayoutBuffer::~LayoutBuffer()
@@ -222,84 +220,78 @@ namespace cm
 
 	}
 
-	void LayoutBuffer::Next()
+	void LayoutBufferNext(LayoutBuffer *layout_buffer)
 	{
-		current_offset += GetShaderDataTypeSize(layout.at(current_next));
-		current_next++;
-		Assert(current_next <= layout.size());
+		layout_buffer->current_offset += GetShaderDataTypeSize(layout_buffer->layout[layout_buffer->current_next]);
+		layout_buffer->current_next++;
+		Assert(layout_buffer->current_next <= layout_buffer->layout.Size());
 	}
 
-	void LayoutBuffer::SetAttributeDivisor(uint32 div)
+	void LayoutBufferSetAttributeDivisor(LayoutBuffer *layout_buffer, const uint32 &div)
 	{
-		attribute_divisor = div;
+		layout_buffer->attribute_divisor = div;
+	}
+	
+	void LayoutBufferReset(LayoutBuffer *layout_buffer)
+	{
+		layout_buffer->current_next = layout_buffer->current_offset = 0;
 	}
 
-	uint32 LayoutBuffer::Add(const LayoutBuffer &lbo)
+	uint32 LayoutBufferGetCurrentOffSet(const LayoutBuffer &layout_buffer)
 	{
-		layout.insert(layout.end(), lbo.layout.begin(), lbo.layout.end());
-		return static_cast<uint32>(layout.size());
+		return layout_buffer.current_offset;
 	}
 
-	void LayoutBuffer::Reset()
+	uint32 LayoutBufferGetCurrentSize(const LayoutBuffer &layout_buffer)
 	{
-		current_next = current_offset = 0;
+		return GetShaderDataTypeSize(layout_buffer.layout[layout_buffer.current_next]);
 	}
 
-	uint32 LayoutBuffer::GetCurrentOffSet() const
+	uint32 LayoutBufferGetCurrentComponentAttribCount(const LayoutBuffer &layout_buffer)
 	{
-		return current_offset;
+		return GetShaderDataTypeComponentCount(layout_buffer.layout[layout_buffer.current_next]);
 	}
 
-	uint32 LayoutBuffer::GetCurrentSize() const
+	uint32 LayoutBufferGetComponentCount(const LayoutBuffer &layout_buffer)
 	{
-		return GetShaderDataTypeSize(layout.at(current_next));
+		return layout_buffer.layout.Size();
 	}
 
-	uint32 LayoutBuffer::GetCurrentComponentAttribCount() const
+	uint32 LayoutBufferGetStride(const LayoutBuffer &layout_buffer)
 	{
-		return GetShaderDataTypeComponentCount(layout.at(current_next));
+		return layout_buffer.stride;
 	}
 
-	uint32 LayoutBuffer::GetComponentCount() const
+	uint32 LayoutBufferGetTotalSize(const LayoutBuffer &layout_buffer)
 	{
-		return (uint32)layout.size();
+		return layout_buffer.stride;
 	}
 
-	uint32 LayoutBuffer::GetStride() const
+	uint32 LayoutBufferGetSizeOf(const LayoutBuffer &layout_buffer, const uint32 &index)
 	{
-		return stride;
+		return GetShaderDataTypeSize(layout_buffer.layout[index]);
 	}
 
-	uint32 LayoutBuffer::GetTotalSize() const
+	uint32 LayoutBufferGetAttributeDivisor(const LayoutBuffer &layout_buffer)
 	{
-		return stride;
+		return layout_buffer.attribute_divisor;
 	}
 
-	uint32 LayoutBuffer::GetSizeOf(uint32 index) const
+	ShaderDataType LayoutBufferGetCurrentShaderType(const LayoutBuffer &layout_buffer)
 	{
-		return GetShaderDataTypeSize(layout.at(index));
+		return layout_buffer.layout[layout_buffer.current_next];
 	}
 
-	uint32 LayoutBuffer::GetAttributeDivisor() const
-	{
-		return attribute_divisor;
-	}
-
-	ShaderDataType LayoutBuffer::GetCurrentShaderType() const
-	{
-		return layout.at(current_next);
-	}
-
-	uint32 LayoutBuffer::GetTotalAttributeCount() const
+	uint32 LayoutBufferGetTotalAttributeCount(const LayoutBuffer &layout_buffer)
 	{
 		uint32 count = 0;
-		for (int32 i = 0; i < layout.size(); i++)
+		for (uint32 i = 0; i < layout_buffer.layout.Size(); i++)
 		{
-			if (layout.at(i) == ShaderDataType::Mat4)
+			if (layout_buffer.layout[i] == ShaderDataType::Mat4)
 			{
 				count += 4;
 			}
-			else if (layout.at(i) == ShaderDataType::Mat3)
+			else if (layout_buffer.layout[i] == ShaderDataType::Mat3)
 			{
 				count += 3;
 			}
@@ -445,31 +437,31 @@ namespace cm
 			VertexBuffer current_vbo = vao->vertex_buffers[i];
 			LayoutBuffer lbo = current_vbo.lbo;
 			BindVertexBuffer(current_vbo);
-			current_vbo.lbo.Reset();
-			uint32 stride = lbo.GetStride();
-			for (uint32 i = 0; i < lbo.GetComponentCount(); i++)
+			LayoutBufferReset(&lbo);
+			uint32 stride = LayoutBufferGetStride(lbo);
+			for (uint32 i = 0; i < LayoutBufferGetComponentCount(lbo); i++)
 			{
-				uint64 offset = lbo.GetCurrentOffSet();
-				uint32 compCount = lbo.GetCurrentComponentAttribCount();
-				if (lbo.GetCurrentShaderType() == ShaderDataType::Mat4)
+				uint64 offset = LayoutBufferGetCurrentOffSet(lbo);
+				uint32 compCount = LayoutBufferGetCurrentComponentAttribCount(lbo);
+				if (LayoutBufferGetCurrentShaderType(lbo) == ShaderDataType::Mat4)
 				{
 					uint64 smol_offset = offset;
 					for (int32 ii = 0; ii < 4; ii++)
 					{
 						glEnableVertexAttribArray(attrib_counter);
 						glVertexAttribPointer(attrib_counter, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(smol_offset));
-						glVertexAttribDivisor(attrib_counter, lbo.GetAttributeDivisor());
+						glVertexAttribDivisor(attrib_counter, LayoutBufferGetAttributeDivisor(lbo));
 						attrib_counter++;
 						smol_offset += sizeof(Vec4);
 					}
 				}
-				else if (lbo.GetCurrentShaderType() == ShaderDataType::Mat3)
+				else if (LayoutBufferGetCurrentShaderType(lbo) == ShaderDataType::Mat3)
 				{
 					for (int32 ii = 0; ii < 3; ii++)
 					{
 						glEnableVertexAttribArray(attrib_counter);
 						glVertexAttribPointer(attrib_counter, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offset));
-						glVertexAttribDivisor(attrib_counter, lbo.GetAttributeDivisor());
+						glVertexAttribDivisor(attrib_counter, LayoutBufferGetAttributeDivisor(lbo));
 						attrib_counter++;
 					}
 				}
@@ -477,10 +469,10 @@ namespace cm
 				{
 					glEnableVertexAttribArray(attrib_counter);
 					glVertexAttribPointer(attrib_counter, compCount, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offset));
-					glVertexAttribDivisor(attrib_counter, lbo.GetAttributeDivisor());
+					glVertexAttribDivisor(attrib_counter, LayoutBufferGetAttributeDivisor(lbo));
 					attrib_counter++;
 				}
-				lbo.Next();
+				LayoutBufferNext(&lbo);
 			}
 		}
 		glBindVertexArray(0);
@@ -531,50 +523,7 @@ namespace cm
 #else
 #define CHECK(type, loc)
 #endif
-
-	Shader CreateShader(String vertex_source, String fragment_source)
-	{
-		String vertex_code_str = vertex_source;
-		String fragment_code_str = fragment_source;
-
-
-		const char* vertex_code = vertex_code_str.c_str();
-		const char * fShaderCode = fragment_code_str.c_str();
-
-		// 2. compile shaders
-		uint32 vertex;
-		uint32 fragment;
-		// vertex shader
-		vertex = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vertex, 1, &vertex_code, NULL);
-		glCompileShader(vertex);
-		// fragment Shader
-		fragment = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fragment, 1, &fShaderCode, NULL);
-		glCompileShader(fragment);
-
-		uint32 shader_program;
-		// shader Program		
-		shader_program = glCreateProgram();
-		glAttachShader(shader_program, vertex);
-		glAttachShader(shader_program, fragment);
-
-
-
-		glLinkProgram(shader_program);
-
-		glDeleteShader(vertex);
-		glDeleteShader(fragment);
-
-		Shader shader;
-		shader.type = ShaderType::Rasterization;
-		shader.name = "No name";
-		shader.shader_program = shader_program;
-		return shader;
-	}
-
-
-	Shader CreateShader(Shader *shader)
+	void CreateShader(Shader *shader)
 	{			   
 		Assert(shader->config.src_geom == ""); // REASON: We don't have geom support
 		const char* vertex_code = shader->config.src_vert.c_str();
@@ -602,10 +551,8 @@ namespace cm
 		glDeleteShader(vertex);
 		glDeleteShader(fragment);
 
-		shader->type = ShaderType::Compute;
+		shader->type = ShaderType::Rasterization;
 		shader->shader_program = shader_program;
-
-		return {};
 	}
 
 	Shader CreateComputeShader(String source)
@@ -620,7 +567,7 @@ namespace cm
 		glLinkProgram(shader_program);
 		glDeleteShader(ray_shader);
 		Shader shader;
-		shader.type = ShaderType::Rasterization;
+		shader.type = ShaderType::Compute;
 		shader.name = source;
 		shader.shader_program = shader_program;
 		return shader;
@@ -809,7 +756,7 @@ namespace cm
 		glUniform1i(loc, b);
 	}
 
-	void ShaderSetInt32(Shader *shader, const String &uniform_name, int x)
+	void ShaderSetInt32(Shader *shader, const String &uniform_name, int32 x)
 	{
 		uint32 loc = GetUniformLocation(shader, uniform_name);
 		CHECK("INT32", loc);
@@ -1088,7 +1035,7 @@ namespace cm
 		uint32 mat_count = (uint32)batch->transforms.size();
 		VertexBuffer mat_vbo;
 		mat_vbo.lbo = LayoutBuffer({ ShaderDataType::Mat4 });
-		mat_vbo.lbo.SetAttributeDivisor(1);
+		LayoutBufferSetAttributeDivisor(&mat_vbo.lbo, 1);
 		mat_vbo.size_bytes = mat_count * sizeof(Mat4);
 		mat_vbo.flags = VertexFlags::READ_WRITE;
 		CreateVertexBuffer(&mat_vbo);
@@ -1339,7 +1286,9 @@ namespace cm
 			}		
 		)";
 
-		shader = CreateShader(vert_src, frag_src);
+		shader.config.src_vert = vert_src;
+		shader.config.src_frag = frag_src;
+		CreateShader(&shader);
 
 		// @NOTE: The frame buffer will be invalid until we convert the cube map
 		CreateFrameBuffer(&frame);
@@ -1448,7 +1397,9 @@ namespace cm
 			}		
 		)";
 
-		shader = CreateShader(vert_src, frag_src);
+		shader.config.src_vert = vert_src;
+		shader.config.src_frag = frag_src;
+		CreateShader(&shader);
 
 		// @NOTE: The frame buffer will be invalid until we convert the cube map
 		CreateFrameBuffer(&frame);
@@ -1570,7 +1521,10 @@ namespace cm
 		}		
 		)";
 
-		shader = CreateShader(vert_src, frag_src);
+
+		shader.config.src_vert = vert_src;
+		shader.config.src_frag = frag_src;
+		CreateShader(&shader);
 
 		CreateFrameBuffer(&frame);
 		created = true;
@@ -1763,7 +1717,11 @@ namespace cm
 
 		)";
 
-		shader = CreateShader(vert_src, frag_src);
+
+		shader.config.src_vert = vert_src;
+		shader.config.src_frag = frag_src;
+		CreateShader(&shader);
+
 		CreateFrameBuffer(&frame);
 
 		created = true;
@@ -1980,7 +1938,10 @@ namespace cm
 		)";
 
 
-		shader = CreateShader(vert_src, frag_src);
+
+		shader.config.src_vert = vert_src;
+		shader.config.src_frag = frag_src;
+		CreateShader(&shader);
 
 		CreateFrameBuffer(&frame);
 

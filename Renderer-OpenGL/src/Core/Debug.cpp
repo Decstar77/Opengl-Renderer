@@ -314,7 +314,7 @@ namespace cm
 		if (amount > 0)
 		{
 			VertexBuffer irresolute_vbo;
-			irresolute_vbo.lbo = (std::vector<ShaderDataType> {ShaderDataType::Float4});// padding byte
+			irresolute_vbo.lbo = BUFFER_LAYOUT(ShaderDataType::Float4);// padding byte
 			irresolute_vbo.size_bytes = sizeof(Vec4) * amount;
 			irresolute_vbo.flags = VertexFlags::READ_WRITE;
 			CreateVertexBuffer(&irresolute_vbo);
@@ -489,7 +489,7 @@ namespace cm
 
 
 		VertexBuffer vbo;
-		vbo.lbo = (std::vector<ShaderDataType> {ShaderDataType::Float4}); // @NOTE: padding 
+		vbo.lbo = BUFFER_LAYOUT(ShaderDataType::Float4); // @NOTE: padding 
 		vbo.size_bytes = sizeof(Vec4) * vertex_allocation;
 		vbo.flags = VertexFlags::READ_WRITE;
 		CreateVertexBuffer(&vbo);

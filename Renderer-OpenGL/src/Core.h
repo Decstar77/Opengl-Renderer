@@ -43,9 +43,9 @@
 #define LOGC(str, ...)
 #endif
 
-#define PNT_VBO_LAYOUT LayoutBuffer(std::vector<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2 }))
-#define PNTTB_VBO_LAYOUT LayoutBuffer(std::vector<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float3, ShaderDataType::Float3 }))
-#define BUFFER_LAYOUT(...) LayoutBuffer(std::vector<ShaderDataType>({__VA_ARGS__}))
+#define PNT_VBO_LAYOUT LayoutBuffer(Array<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2 }))
+#define PNTTB_VBO_LAYOUT LayoutBuffer(Array<ShaderDataType>({ ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::Float3, ShaderDataType::Float3 }))
+#define BUFFER_LAYOUT(...) LayoutBuffer(Array<ShaderDataType>({__VA_ARGS__}))
 
 #define IDENTITY_TEXTURE 0
 
