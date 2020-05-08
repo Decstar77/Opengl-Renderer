@@ -2,23 +2,6 @@
 #include "CosmicMath.h"
 namespace cm
 {	   	 
-	real32 Mag(const Vec2 &a)
-	{
-		return sqrt(a.x*a.x + a.y*a.y);
-	}
-
-	Vec2 Normalize(const Vec2 &a)
-	{
-		real32 magA = Mag(a);
-		return a / magA;
-	}
-
-	bool Equal(const Vec2 &a1, const Vec2 a2, const real32 &epsilon /*= FLOATING_POINT_ERROR_PRESCION*/)
-	{
-		real32 dx = Abs(a1.x - a2.x);
-		real32 dy = Abs(a1.y - a2.y);
-		return (dx < epsilon && dy < epsilon);
-	}
 
 	bool Equal(const Quat &q1, const Quat &q2, const real32 &epsilon /*= FLOATING_POINT_ERROR_PRESCION*/)
 	{
@@ -834,11 +817,11 @@ namespace cm
 	{
 		// @HELP: Glm and Math book
 		Vec3 euler;
-		Vec2 sp;
+		Vec2f sp;
 		sp.x = 2.f * (q.y * q.z + q.w * q.x);
 		sp.y = q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z;
 				
-		if (Equal(Vec2(sp.x, sp.y), Vec2(0)))
+		if (Equal(Vec2f(sp.x, sp.y), Vec2f(0)))
 		{
 			euler.x = 2.0f * atan2(q.w, q.x);
 		}

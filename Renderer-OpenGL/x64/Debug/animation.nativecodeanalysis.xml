@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DEFECTS>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>f:\renderer-opengl\renderer-opengl\src\math</FILEPATH>
+      <FILENAME>cosmicmath.h</FILENAME>
+      <LINE>655</LINE>
+      <COLUMN>33</COLUMN>
+    </SFA>
+    <DEFECTCODE>26451</DEFECTCODE>
+    <DESCRIPTION>Arithmetic overflow: Using operator '*' on a 4 byte value and then casting the result to a 8 byte value. Cast the value to the wider type before calling operator '*' to avoid overflow (io.2).</DESCRIPTION>
+    <FUNCTION>cm::RadToDeg</FUNCTION>
+    <DECORATED>?RadToDeg@cm@@YAMM@Z</DECORATED>
+    <FUNCLINE>653</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>f:\renderer-opengl\renderer-opengl\src\math</FILEPATH>
+      <FILENAME>cosmicmath.h</FILENAME>
+      <LINE>737</LINE>
+      <COLUMN>23</COLUMN>
+    </SFA>
+    <DEFECTCODE>6290</DEFECTCODE>
+    <DESCRIPTION>Bitwise operation on logical result:  ! has higher precedence than &amp;.  Use &amp;&amp; or (!(x &amp; y)) instead.</DESCRIPTION>
+    <FUNCTION>cm::RadicalInverse</FUNCTION>
+    <DECORATED>?RadicalInverse@cm@@YAMI@Z</DECORATED>
+    <FUNCLINE>731</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>f:\renderer-opengl\renderer-opengl\src\core</FILEPATH>
+      <FILENAME>animation.cpp</FILENAME>
+      <LINE>197</LINE>
+      <COLUMN>41</COLUMN>
+    </SFA>
+    <DEFECTCODE>26451</DEFECTCODE>
+    <DESCRIPTION>Arithmetic overflow: Using operator '+' on a 4 byte value and then casting the result to a 8 byte value. Cast the value to the wider type before calling operator '+' to avoid overflow (io.2).</DESCRIPTION>
+    <FUNCTION>cm::Animation::FindPosition</FUNCTION>
+    <DECORATED>?FindPosition@Animation@cm@@AEAAHAEBMAEBH@Z</DECORATED>
+    <FUNCLINE>191</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>f:\renderer-opengl\renderer-opengl\src\core</FILEPATH>
+      <FILENAME>animation.cpp</FILENAME>
+      <LINE>213</LINE>
+      <COLUMN>41</COLUMN>
+    </SFA>
+    <DEFECTCODE>26451</DEFECTCODE>
+    <DESCRIPTION>Arithmetic overflow: Using operator '+' on a 4 byte value and then casting the result to a 8 byte value. Cast the value to the wider type before calling operator '+' to avoid overflow (io.2).</DESCRIPTION>
+    <FUNCTION>cm::Animation::FindRotation</FUNCTION>
+    <DECORATED>?FindRotation@Animation@cm@@AEAAHAEBMAEBH@Z</DECORATED>
+    <FUNCLINE>207</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>f:\renderer-opengl\renderer-opengl\src\core</FILEPATH>
+      <FILENAME>animation.cpp</FILENAME>
+      <LINE>229</LINE>
+      <COLUMN>41</COLUMN>
+    </SFA>
+    <DEFECTCODE>26451</DEFECTCODE>
+    <DESCRIPTION>Arithmetic overflow: Using operator '+' on a 4 byte value and then casting the result to a 8 byte value. Cast the value to the wider type before calling operator '+' to avoid overflow (io.2).</DESCRIPTION>
+    <FUNCTION>cm::Animation::FindScaling</FUNCTION>
+    <DECORATED>?FindScaling@Animation@cm@@AEAAHAEBMAEBH@Z</DECORATED>
+    <FUNCLINE>223</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+</DEFECTS>

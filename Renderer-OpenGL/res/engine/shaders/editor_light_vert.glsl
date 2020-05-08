@@ -29,18 +29,13 @@ layout (std140, binding = 0) uniform WorldState
 	vec4 spot_light_colours[4];
 };
 
-
+uniform vec3 light_position;
 
 void main()
 {
 	mat4 model = mat4(0);
 	
-	int point_light_count = int(size_data.x);
-	if (point_light_count >= 1)
-	{
-		vec3 point_light_pos = point_light_position[0].xyz;
-		model = mat4( vec4(0.05, 0, 0, 0), vec4(0, 0.05, 0, 0), vec4(0, 0, 0.05, 0), vec4(point_light_pos, 1));
-	}
+	model = mat4( vec4(0.05, 0, 0, 0), vec4(0, 0.05, 0, 0), vec4(0, 0, 0.05, 0), vec4(light_position, 1));
     
 	gl_Position =  projection * view * model * vec4(vpos, 1.0);
 }

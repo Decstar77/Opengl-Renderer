@@ -2759,12 +2759,12 @@ namespace cm
 		for (uint32 i = 0; i < kernel_size; i++)
 		{
 			Vec3 sample = Vec3(
-				RandomBillateral(),
-				RandomBillateral(),
-				RandomUnillateral()
+				RandomBillateral<real32>(),
+				RandomBillateral<real32> (),
+				RandomUnillateral<real32>()
 			);
 			sample = Normalize(sample);
-			sample = sample * RandomUnillateral();
+			sample = sample * RandomUnillateral< real32> ();
 
 			real32 scale = (real32)i / 64.0f;
 			scale = Lerp(0.1f, 1.0f, scale * scale);
@@ -2786,12 +2786,12 @@ namespace cm
 		for (uint32 i = 0; i < kernel_size; i++)
 		{
 			Vec3 sample = Vec3(
-				RandomBillateral(),
-				RandomBillateral(),
-				RandomUnillateral()
+				RandomBillateral<real32>(),
+				RandomBillateral<real32>(),
+				RandomUnillateral <real32> ()
 			);
 			sample = Normalize(sample);
-			sample = sample * RandomUnillateral();
+			sample = sample * RandomUnillateral<real32>();
 
 			real32 scale = (real32)i / 64.0f;
 			scale = Lerp(0.1f, 1.0f, scale * scale);
@@ -2805,8 +2805,8 @@ namespace cm
 		for (uint32 i = 0; i < noise_texture_size * noise_texture_size; i++)
 		{
 			Vec3 n(
-				RandomBillateral(),
-				RandomBillateral(),
+				RandomBillateral<real32>(),
+				RandomBillateral<real32>(),
 				0.0f);
 			noise[i] = n;
 		}

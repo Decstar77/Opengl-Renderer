@@ -39,43 +39,168 @@ namespace cm
 		None = 0, Object, World, View, Projection
 	};
 
+
+	template<typename T>
+	inline T Abs(const T &a)
+	{
+		return std::abs(a);
+	}
+
+	template<typename T>
+	inline T RandomUnillateral() // @NOTE: 0 to 1
+	{
+		T res = (T)rand() / (T)RAND_MAX;
+		return res;
+	}
+
+	template<typename T>
+	inline T RandomBillateral() // @NOTE: -1 to 1
+	{
+		T res = static_cast<T>(2.0) * RandomUnillateral<T>() - static_cast<T>(1.0);
+		return res;
+	}
+
+	template<typename T>
+	inline T RandomReal(const T &min, const T &max) // @NOTE: min to max - 1
+	{
+		T c = max - min;
+		return  c == 0 ? min : min + static_cast <T> (rand()) / (static_cast <T> (RAND_MAX / c));
+	}
+
+	template<typename T>
+	inline T RandomUInt(const T &min, const T &max) // @NOTE: min to max - 1
+	{
+		T c = max - min;
+		return c == 0 ? min : rand() % (max - min) + min;
+	}
+
+	template<typename T>
+	inline T Normalize(const T &value, const T &min, const T &max)
+	{
+		return (value - min) / (max - min);
+	}
+
+	template<typename T>
+	inline T Lerp(const T &a, const T &b, const T &t)
+	{
+		return a * (static_cast<T>(1.0) - t) + b * t;
+	}
+
+	template<typename T>
+	inline constexpr T Min(const T &f)
+	{
+		return f;
+	}
+
+	template<typename T, typename... Args>
+	inline constexpr T Min(const T &f, const Args&... args)
+	{
+		T min = Min(args...);
+		return (f < min) ? f : min;
+	}
+
+	template<typename T>
+	inline constexpr T Max(const T &f)
+	{
+		return f;
+	}
+
+	template<typename T, typename... Args>
+	inline constexpr T Max(const T &f, const Args&... args)
+	{
+		T max = Max(args...);
+		return (f > max) ? f : max;
+	}
+
 	//************************************
 	// Math structures
 	//************************************
 
+	template<typename T>
 	struct  Vec2
 	{
-		real32 x;
-		real32 y;
+		T x;
+		T y;
 
 		Vec2()
 		{
 			x = 0; y = 0;
 		}
 		
-		Vec2(const real32 &x, const real32 &y)
+		Vec2(const T &x, const T &y)
 		{
 			this->x = x; this->y = y;
 		}
 		
-		Vec2(const real32 &all)
+		Vec2(const T &all)
 		{
 			x = all;
 			y = all;
 		}
 
-		real32& operator[](const int32 &index)
+		T& operator[](const int32 &index)
 		{
 			Assert(index >= 0 && index < 2);
 			return (&x)[index];
 		}
 
-		real32 operator[](const int32 &index) const
+		T operator[](const int32 &index) const
 		{
 			Assert(index >= 0 && index < 2);
 			return (&x)[index];
 		}
 	};
+
+	template<typename T>
+	T Mag(const Vec2<T> &a)
+	{
+		return std::sqrt(a.x * a.x + a.y * a.y);
+	}
+
+	template<typename T>
+	T Normalize(const Vec2<T> &a)
+	{
+		T magA = Mag(a);
+		return a / magA;
+	}
+
+	template<typename T>
+	bool Equal(const Vec2<T> &a1, const Vec2<T> a2, const real32 &epsilon = FLOATING_POINT_ERROR_PRESCION)
+	{
+		T dx = Abs(a1.x - a2.x);
+		T dy = Abs(a1.y - a2.y);
+		return (dx < epsilon && dy < epsilon);
+	}
+
+	template<typename T>
+	inline Vec2<T> operator +(const Vec2<T> &a, const Vec2<T> &b)
+	{
+		return Vec2(a.x + b.x, a.y + b.y);
+	}
+	
+	template<typename T>
+	inline Vec2<T> operator -(const Vec2<T> &a, const Vec2<T> &b)
+	{
+		return Vec2(a.x - b.x, a.y - b.y);
+	}
+
+	template<typename T>
+	inline Vec2<T> operator /(const Vec2<T> &a, T b)
+	{
+		return Vec2(a.x / b, a.y / b);
+	}
+
+	template<typename T>
+	inline bool32 operator  ==(const Vec2<T> &a, const Vec2<T> &b)
+	{
+		return (a.x == b.x && a.y == b.y);
+	}
+
+	typedef Vec2<real32> Vec2f;
+
+
+
+
 
 	struct  Vec3
 	{
@@ -453,11 +578,7 @@ namespace cm
 	// Vector2 
 	//************************************
 
-	real32 Mag(const Vec2 &a);
 
-	Vec2 Normalize(const Vec2 &a);
-
-	bool Equal(const Vec2 &a1, const Vec2 a2, const real32 &epsilon = FLOATING_POINT_ERROR_PRESCION);
 
 	//************************************
 	// Vector3
@@ -582,31 +703,7 @@ namespace cm
 	// Templated boyos
 	//************************************
 
-	template<typename T>
-	inline constexpr T Min(const T &f)
-	{
-		return f;
-	}
 
-	template<typename T, typename... Args>
-	inline constexpr T Min(const T &f, const Args&... args)
-	{
-		T min = Min(args...);
-		return (f < min) ? f : min;
-	}
-
-	template<typename T>
-	inline constexpr T Max(const T &f)
-	{
-		return f;
-	}
-
-	template<typename T, typename... Args>
-	inline constexpr T Max(const T &f, const Args&... args)
-	{
-		T max = Max(args...);
-		return (f > max) ? f : max;
-	}
 	   	 
 	//************************************
 	// Usefull classes for everything
@@ -741,40 +838,7 @@ namespace cm
 		return x;
 	}
 
-	inline real32 RandomUnillateral() // @NOTE: 0 to 1
-	{
-		real32 res = (real32)rand() / (real32)RAND_MAX;
-		return res;
-	}
 
-	inline real32 RandomBillateral() // @NOTE: -1 to 1
-	{
-		real32 res = 2.0f * RandomUnillateral() - 1;
-		return res;
-	}
-
-	inline real32 RandomReal(const real32 &min, const real32 &max) // @NOTE: min to max - 1
-	{
-		real32 c = max - min;
-		return  c == 0 ? min : min + static_cast <real32> (rand()) / (static_cast <real32> (RAND_MAX / c));
-	}
-
-	inline uint32 RandomUInt(const uint32 &min, const uint32 &max) // @NOTE: min to max - 1
-	{
-		uint32 c = max - min;
-		return c == 0 ? min : rand() % (max - min) + min;
-	}
-
-	inline real32 Fit(const real32 &value, const real32 &min, const real32 &max)
-	{
-		return (value - min) / (max - min);
-	}
-
-	inline real32 Lerp(const real32 &a, const real32 &b, const real32 &t)
-	{
-		return a * (1 - t) + b * t;
-	}
-	
 	inline Vec3 Lerp(const Vec3 &a, const Vec3 &b, const real32 &t)
 	{
 		Vec3 r = Vec3(
@@ -783,11 +847,6 @@ namespace cm
 			a.z + t * (b.z - a.z)
 		);
 		return r;
-	}
-
-	inline real32 Abs(const real32 &a)
-	{
-		return std::abs(a);
 	}
 
 	inline Vec3 Abs(const Vec3 &a)
@@ -800,25 +859,7 @@ namespace cm
 	// Operator overloads for math structures
 	//************************************
 
-	inline  Vec2 operator  +(const Vec2 &a, const Vec2 &b)
-	{
-		return Vec2(a.x + b.x, a.y + b.y);
-	}
 
-	inline  Vec2 operator  -(const Vec2 &a, const Vec2 &b)
-	{
-		return Vec2(a.x - b.x, a.y- b.y);
-	}
-
-	inline  Vec2 operator  /(const Vec2 &a, float b)
-	{
-		return Vec2(a.x / b, a.y / b);
-	}
-
-	inline  bool operator  ==(const Vec2 &a, const Vec2 &b)
-	{
-		return (a.x == b.x && a.y == b.y);
-	}
 	
 	inline  Vec3 operator  +(const Vec3 &a, const Vec3 &b)
 	{

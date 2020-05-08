@@ -83,7 +83,7 @@ namespace cm
 		main_camera.transform.position = cameraPos;
 	}
 
-	Ray CameraController::RayFromCamera(const Vec2 &mouse_position, const Vec2 &window_dimenions)
+	Ray CameraController::RayFromCamera(const Vec2f &mouse_position, const Vec2f &window_dimenions)
 	{
 		Vec4 normal_coords = GetNormalisedDeviceCoordinates(window_dimenions.x, window_dimenions.y, mouse_position.x, mouse_position.y);
 		Vec4 view_coords = ToViewCoords(main_camera.projection_matrix, normal_coords);

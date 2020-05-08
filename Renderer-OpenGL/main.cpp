@@ -37,8 +37,8 @@ EditorContext current_context;
 void MousePositionCallBack(GLFWwindow *widow, double xpos, double ypos)
 {
 	// @NOTE: GetLastMouse is now actually 2 frames behind. Thats why we use GetMouse. 
-	Vec2 current_mouse = Vec2(static_cast<real>(xpos), static_cast<real>(ypos));
-	Vec2 last_mouse = Input::GetMousePosition();
+	Vec2f current_mouse = Vec2f(static_cast<real>(xpos), static_cast<real>(ypos));
+	Vec2f last_mouse = Input::GetMousePosition();
 
 	real xoffset = current_mouse.x - last_mouse.x;
 	real yoffset = last_mouse.y - current_mouse.y; 
@@ -611,9 +611,9 @@ int main()
 
 		if (!(current_context.mouse_input_for_editor_window)) 
 		{
-			Vec2 curr = Input::GetMousePosition();
-			Vec2 last = Input::GetMouseLastPosition();
-			Ray cam_ray = camera_controller.RayFromCamera(curr, Vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
+			Vec2f curr = Input::GetMousePosition();
+			Vec2f last = Input::GetMouseLastPosition();
+			Ray cam_ray = camera_controller.RayFromCamera(curr, Vec2f(WINDOW_WIDTH, WINDOW_HEIGHT));
 
 			if (Input::IsMouseJustDown(MOUSE_BUTTON_1))
 			{

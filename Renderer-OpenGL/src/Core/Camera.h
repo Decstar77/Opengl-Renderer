@@ -26,7 +26,7 @@ namespace cm
 		void CameraRotate(real delta_pitch, real delta_yaw);
 		void CameraMovement(real delta_time);
 		void UpdateCamera(float delta_time);
-		Ray RayFromCamera(const Vec2 &mouse_position, const Vec2 &window_dimenions);
+		Ray RayFromCamera(const Vec2f &mouse_position, const Vec2f &window_dimenions);
 	
 	public:
 		CameraController();

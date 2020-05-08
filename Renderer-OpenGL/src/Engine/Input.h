@@ -7,8 +7,8 @@ namespace cm
 {
 	struct MouseData
 	{
-		Vec2 prev_mouse_position = Vec2(0);
-		Vec2 position = Vec2(0);
+		Vec2f prev_mouse_position = Vec2f(0);
+		Vec2f position = Vec2f(0);
 		bool prev_mouse_codes[MOUSE_KEY_AMOUNT] = {};
 		bool mouse_codes[MOUSE_KEY_AMOUNT] = {};
 	};
@@ -69,9 +69,9 @@ namespace cm
 			return !mouse_data.mouse_codes[index];
 		}
 
-		inline static Vec2 GetMousePosition() { return mouse_data.position; }
+		inline static Vec2f GetMousePosition() { return mouse_data.position; }
 
-		inline static Vec2 GetMouseLastPosition() { return mouse_data.prev_mouse_position; }
+		inline static Vec2f GetMouseLastPosition() { return mouse_data.prev_mouse_position; }
 
 		inline static void Update()
 		{
