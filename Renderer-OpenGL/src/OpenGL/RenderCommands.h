@@ -29,7 +29,7 @@ namespace cm
 			glEnable(GL_MULTISAMPLE);
 		}
 
-		static inline void ClearLogger(Vec4 colour)
+		static inline void ClearLogger(Vec4f colour)
 		{
 			glClearColor(colour.x, colour.y, colour.z, colour.w);
 		}

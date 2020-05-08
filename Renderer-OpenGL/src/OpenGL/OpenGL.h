@@ -795,7 +795,7 @@ namespace cm
 		glEnable(GL_MULTISAMPLE);
 	}
 
-	static inline void SetClearColour(Vec4 colour)
+	static inline void SetClearColour(Vec4f colour)
 	{
 		glClearColor(colour.x, colour.y, colour.z, colour.w);
 	}

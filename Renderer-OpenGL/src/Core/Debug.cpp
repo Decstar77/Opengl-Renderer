@@ -51,7 +51,7 @@ namespace cm
 		log_info_stream << ToString(msg) << '\n';
 	}
 
-	void Debug::Log(const Vec4 &msg)
+	void Debug::Log(const Vec4f &msg)
 	{
 		log_info_stream << ToString(msg) << '\n';
 	}
@@ -102,7 +102,7 @@ namespace cm
 		log_info_stream << "WARNING: " << ToString(msg) << '\n';
 	}
 
-	void Debug::LogWarning(const Vec4 &msg)
+	void Debug::LogWarning(const Vec4f &msg)
 	{
 		log_info_stream << "WARNING: " << ToString(msg) << '\n';
 	}
@@ -222,30 +222,29 @@ namespace cm
 	{	
 		Mat4 mat(basis.mat, origin);
 
-		Vec4 v0 = Vec4(extents, 1) * mat;
-		Vec4 v1 = Vec4(extents * -1, 1) * mat;
+		Vec4f v0 = Vec4f(extents, 1) * mat;
+		Vec4f v1 = Vec4f(extents * -1, 1) * mat;
 		
-		Vec4 v2 = (Vec4(-extents.x,  extents.y, extents.z, 1)) * mat;
-		Vec4 v3 = (Vec4(extents.x, -extents.y, extents.z, 1)) * mat;
-		Vec4 v4 = (Vec4(extents.x, extents.y, -extents.z, 1)) * mat;
+		Vec4f v2 = (Vec4f(-extents.x,  extents.y, extents.z, 1)) * mat;
+		Vec4f v3 = (Vec4f(extents.x, -extents.y, extents.z, 1)) * mat;
+		Vec4f v4 = (Vec4f(extents.x, extents.y, -extents.z, 1)) * mat;
 
-		Vec4 v5 = (Vec4(-extents.x, -extents.y, extents.z, 1)) * mat;
-		Vec4 v6 = (Vec4(extents.x, -extents.y, -extents.z, 1)) * mat;
-		Vec4 v7 = (Vec4(-extents.x, extents.y, -extents.z, 1)) * mat;
+		Vec4f v5 = (Vec4f(-extents.x, -extents.y, extents.z, 1)) * mat;
+		Vec4f v6 = (Vec4f(extents.x, -extents.y, -extents.z, 1)) * mat;
+		Vec4f v7 = (Vec4f(-extents.x, extents.y, -extents.z, 1)) * mat;
 	
-		AddPersistentLine(Vec4ToVec3(v0), Vec4ToVec3(v2));
-		AddPersistentLine(Vec4ToVec3(v0), Vec4ToVec3(v4));
-		AddPersistentLine(Vec4ToVec3(v0), Vec4ToVec3(v3));
-
-		AddPersistentLine(Vec4ToVec3(v1), Vec4ToVec3(v5));
-		AddPersistentLine(Vec4ToVec3(v1), Vec4ToVec3(v7));
-		AddPersistentLine(Vec4ToVec3(v1), Vec4ToVec3(v6));
-		AddPersistentLine(Vec4ToVec3(v3), Vec4ToVec3(v6));
-		AddPersistentLine(Vec4ToVec3(v3), Vec4ToVec3(v5));
-		AddPersistentLine(Vec4ToVec3(v2), Vec4ToVec3(v5));
-		AddPersistentLine(Vec4ToVec3(v2), Vec4ToVec3(v7));
-		AddPersistentLine(Vec4ToVec3(v4), Vec4ToVec3(v7));
-		AddPersistentLine(Vec4ToVec3(v4), Vec4ToVec3(v6));
+		AddPersistentLine(Vec3f(v0), Vec3f(v2));
+		AddPersistentLine(Vec3f(v0), Vec3f(v4));
+		AddPersistentLine(Vec3f(v0), Vec3f(v3));
+		AddPersistentLine(Vec3f(v1), Vec3f(v5));
+		AddPersistentLine(Vec3f(v1), Vec3f(v7));
+		AddPersistentLine(Vec3f(v1), Vec3f(v6));
+		AddPersistentLine(Vec3f(v3), Vec3f(v6));
+		AddPersistentLine(Vec3f(v3), Vec3f(v5));
+		AddPersistentLine(Vec3f(v2), Vec3f(v5));
+		AddPersistentLine(Vec3f(v2), Vec3f(v7));
+		AddPersistentLine(Vec3f(v4), Vec3f(v7));
+		AddPersistentLine(Vec3f(v4), Vec3f(v6));
 
 		AddPersistentPoint(origin);
 	}
@@ -254,29 +253,29 @@ namespace cm
 	{
 		Mat4 mat(basis.mat, origin);
 
-		Vec4 v0 = Vec4(extents, 1) * mat;
-		Vec4 v1 = Vec4(extents * -1, 1) * mat;
+		Vec4f v0 = Vec4f(extents, 1) * mat;
+		Vec4f v1 = Vec4f(extents * -1, 1) * mat;
 
-		Vec4 v2 = (Vec4(-extents.x, extents.y, extents.z, 1)) * mat;
-		Vec4 v3 = (Vec4(extents.x, -extents.y, extents.z, 1)) * mat;
-		Vec4 v4 = (Vec4(extents.x, extents.y, -extents.z, 1)) * mat;
+		Vec4f v2 = (Vec4f(-extents.x, extents.y, extents.z, 1)) * mat;
+		Vec4f v3 = (Vec4f(extents.x, -extents.y, extents.z, 1)) * mat;
+		Vec4f v4 = (Vec4f(extents.x, extents.y, -extents.z, 1)) * mat;
 
-		Vec4 v5 = (Vec4(-extents.x, -extents.y, extents.z, 1)) * mat;
-		Vec4 v6 = (Vec4(extents.x, -extents.y, -extents.z, 1)) * mat;
-		Vec4 v7 = (Vec4(-extents.x, extents.y, -extents.z, 1)) * mat;
+		Vec4f v5 = (Vec4f(-extents.x, -extents.y, extents.z, 1)) * mat;
+		Vec4f v6 = (Vec4f(extents.x, -extents.y, -extents.z, 1)) * mat;
+		Vec4f v7 = (Vec4f(-extents.x, extents.y, -extents.z, 1)) * mat;
 
-		AddIrresoluteLine(Vec4ToVec3(v0), Vec4ToVec3(v2));
-		AddIrresoluteLine(Vec4ToVec3(v0), Vec4ToVec3(v4));
-		AddIrresoluteLine(Vec4ToVec3(v0), Vec4ToVec3(v3));
-		AddIrresoluteLine(Vec4ToVec3(v1), Vec4ToVec3(v5));
-		AddIrresoluteLine(Vec4ToVec3(v1), Vec4ToVec3(v7));
-		AddIrresoluteLine(Vec4ToVec3(v1), Vec4ToVec3(v6));
-		AddIrresoluteLine(Vec4ToVec3(v3), Vec4ToVec3(v6));
-		AddIrresoluteLine(Vec4ToVec3(v3), Vec4ToVec3(v5));
-		AddIrresoluteLine(Vec4ToVec3(v2), Vec4ToVec3(v5));
-		AddIrresoluteLine(Vec4ToVec3(v2), Vec4ToVec3(v7));
-		AddIrresoluteLine(Vec4ToVec3(v4), Vec4ToVec3(v7));
-		AddIrresoluteLine(Vec4ToVec3(v4), Vec4ToVec3(v6));
+		AddIrresoluteLine(Vec3f(v0), Vec3f(v2));
+		AddIrresoluteLine(Vec3f(v0), Vec3f(v4));
+		AddIrresoluteLine(Vec3f(v0), Vec3f(v3));
+		AddIrresoluteLine(Vec3f(v1), Vec3f(v5));
+		AddIrresoluteLine(Vec3f(v1), Vec3f(v7));
+		AddIrresoluteLine(Vec3f(v1), Vec3f(v6));
+		AddIrresoluteLine(Vec3f(v3), Vec3f(v6));
+		AddIrresoluteLine(Vec3f(v3), Vec3f(v5));
+		AddIrresoluteLine(Vec3f(v2), Vec3f(v5));
+		AddIrresoluteLine(Vec3f(v2), Vec3f(v7));
+		AddIrresoluteLine(Vec3f(v4), Vec3f(v7));
+		AddIrresoluteLine(Vec3f(v4), Vec3f(v6));
 
 		AddIrresolutePoint(origin);
 	}
@@ -315,7 +314,7 @@ namespace cm
 		{
 			VertexBuffer irresolute_vbo;
 			irresolute_vbo.lbo = BUFFER_LAYOUT(ShaderDataType::Float4);// padding byte
-			irresolute_vbo.size_bytes = sizeof(Vec4) * amount;
+			irresolute_vbo.size_bytes = sizeof(Vec4f) * amount;
 			irresolute_vbo.flags = VertexFlags::READ_WRITE;
 			CreateVertexBuffer(&irresolute_vbo);
 			WriteBufferData(&irresolute_vbo, debug_queue.irresolute_vertices, 0);
@@ -490,7 +489,7 @@ namespace cm
 
 		VertexBuffer vbo;
 		vbo.lbo = BUFFER_LAYOUT(ShaderDataType::Float4); // @NOTE: padding 
-		vbo.size_bytes = sizeof(Vec4) * vertex_allocation;
+		vbo.size_bytes = sizeof(Vec4f) * vertex_allocation;
 		vbo.flags = VertexFlags::READ_WRITE;
 		CreateVertexBuffer(&vbo);
 

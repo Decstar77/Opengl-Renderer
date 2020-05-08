@@ -454,7 +454,7 @@ namespace cm
 						glVertexAttribPointer(attrib_counter, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(smol_offset));
 						glVertexAttribDivisor(attrib_counter, LayoutBufferGetAttributeDivisor(lbo));
 						attrib_counter++;
-						smol_offset += sizeof(Vec4);
+						smol_offset += sizeof(Vec4f);
 					}
 				}
 				else if (LayoutBufferGetCurrentShaderType(lbo) == ShaderDataType::Mat3)

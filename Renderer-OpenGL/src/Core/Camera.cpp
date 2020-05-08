@@ -85,10 +85,10 @@ namespace cm
 
 	Ray CameraController::RayFromCamera(const Vec2f &mouse_position, const Vec2f &window_dimenions)
 	{
-		Vec4 normal_coords = GetNormalisedDeviceCoordinates(window_dimenions.x, window_dimenions.y, mouse_position.x, mouse_position.y);
-		Vec4 view_coords = ToViewCoords(main_camera.projection_matrix, normal_coords);
+		Vec4f normal_coords = GetNormalisedDeviceCoordinates(window_dimenions.x, window_dimenions.y, mouse_position.x, mouse_position.y);
+		Vec4f view_coords = ToViewCoords(main_camera.projection_matrix, normal_coords);
 		// This -1 ensure we a have something pointing in to the screen
-		view_coords = Vec4(view_coords.x, view_coords.y, -1, 0);
+		view_coords = Vec4f(view_coords.x, view_coords.y, -1, 0);
 		Vec3f world_coords = ToWorldCoords(main_camera.view_matrix, view_coords);
 
 		Ray ray;

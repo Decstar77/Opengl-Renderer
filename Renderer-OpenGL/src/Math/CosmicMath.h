@@ -16,14 +16,7 @@
 
 
 namespace cm
-{
-	//===============================================================//
-	/*
-		I've taken a OOP approach in this section for exploritory purposes.
-		Ie, its see the advantages and disadvantages
-	*/
-	//===============================================================//
-	
+{	
 	//************************************
 	// Constants
 	//************************************
@@ -39,14 +32,14 @@ namespace cm
 		None = 0, Object, World, View, Projection
 	};
 
-	inline uint32 SafeTruncateUint64(uint64 value)
+	inline constexpr uint32 SafeTruncateUint64(uint64 value)
 	{
 		Assert(value <= 0xFFFFFFFF);
 		uint32 result = static_cast<uint32>(value);
 		return result;
 	}
 
-	inline real32 SafeTruncateDouble(real64 value)
+	inline constexpr real32 SafeTruncateDouble(real64 value)
 	{
 		Assert(value <= 0xFFFFFFFF);
 		real32 result = static_cast<real32>(value);
@@ -54,53 +47,53 @@ namespace cm
 	}
 
 	template<typename T>
-	inline T Abs(const T &a)
+	inline constexpr T Abs(const T &a)
 	{
 		return std::abs(a);
 	}
 
 	template<typename T>
-	inline T RandomUnillateral() // @NOTE: 0 to 1
+	inline constexpr T RandomUnillateral() // @NOTE: 0 to 1
 	{
 		T res = (T)rand() / (T)RAND_MAX;
 		return res;
 	}
 
 	template<typename T>
-	inline T RandomBillateral() // @NOTE: -1 to 1
+	inline constexpr T RandomBillateral() // @NOTE: -1 to 1
 	{
 		T res = static_cast<T>(2.0) * RandomUnillateral<T>() - static_cast<T>(1.0);
 		return res;
 	}
 
 	template<typename T>
-	inline T RandomReal(const T &min, const T &max) // @NOTE: min to max - 1
+	inline constexpr T RandomReal(const T &min, const T &max) // @NOTE: min to max - 1
 	{
 		T c = max - min;
 		return  c == 0 ? min : min + static_cast <T> (rand()) / (static_cast <T> (RAND_MAX / c));
 	}
 
 	template<typename T>
-	inline T RandomUInt(const T &min, const T &max) // @NOTE: min to max - 1
+	inline constexpr T RandomUInt(const T &min, const T &max) // @NOTE: min to max - 1
 	{
 		T c = max - min;
 		return c == 0 ? min : rand() % (max - min) + min;
 	}
 
 	template<typename T>
-	inline T Normalize(const T &value, const T &min, const T &max)
+	inline constexpr T Normalize(const T &value, const T &min, const T &max)
 	{
 		return (value - min) / (max - min);
 	}
 
 	template<typename T>
-	inline T Lerp(const T &a, const T &b, const T &t)
+	inline constexpr T Lerp(const T &a, const T &b, const T &t)
 	{
 		return a * (static_cast<T>(1.0) - t) + b * t;
 	}
 	
 	template<typename T>
-	inline T DegToRad(T degrees)
+	inline constexpr T DegToRad(T degrees)
 	{
 		return (static_cast<T>(PI) * degrees) / static_cast<T>(180.0);
 	}
@@ -112,37 +105,37 @@ namespace cm
 	}
 
 	template<typename T>
-	inline T Round(T val)
+	inline constexpr T Round(T val)
 	{
 		return std::round(val * static_cast<T>(1000000.0)) / static_cast<T>(1000000.0f);
 	}
 
 	template<typename T>
-	inline T Floor(const T &val)
+	inline constexpr T Floor(const T &val)
 	{
 		return std::floor(val);
 	}
 
 	template<typename T>
-	inline T Ceil(const T &val)
+	inline constexpr T Ceil(const T &val)
 	{
 		return std::ceil(val);
 	}
 
 	template<typename T>
-	inline int32 Sign(const T &val)
+	inline constexpr int32 Sign(const T &val)
 	{
 		return (static_cast<T>(0.0) < val) - (val < static_cast<T>(0));
 	}
 
 	template<typename T>
-	inline T Sqrt(const T &val)
+	inline constexpr T Sqrt(const T &val)
 	{
 		return std::sqrt(val);
 	}
 
 	template<typename T>
-	inline void Swap(T *a1, T *a2)
+	inline constexpr void Swap(T *a1, T *a2)
 	{
 		T temp = *a1;
 		*a1 = *a2;
@@ -176,19 +169,19 @@ namespace cm
 	}
 
 	template<typename T>
-	inline T Clamp(const T &value, const T &lowerBound, const T &upperBound)
+	inline constexpr T Clamp(const T &value, const T &lowerBound, const T &upperBound)
 	{
 		return std::clamp(value, lowerBound, upperBound);
 	}
 
 	template<typename T>
-	inline bool32 Equal(const T &a, const T &b, const T &epsilon = FLOATING_POINT_ERROR_PRESCION)
+	inline constexpr bool32 Equal(const T &a, const T &b, const T &epsilon = FLOATING_POINT_ERROR_PRESCION)
 	{
 		return (Abs(a - b) < epsilon) ? true : false;
 	}
 
 	template<typename T>
-	inline bool32 Nequal(const T &a, const T &b, const T &epsilon = FLOATING_POINT_ERROR_PRESCION)
+	inline constexpr bool32 Nequal(const T &a, const T &b, const T &epsilon = FLOATING_POINT_ERROR_PRESCION)
 	{
 		return !Equal(a, b);
 	}
@@ -196,9 +189,22 @@ namespace cm
 	//************************************
 	// Math structures
 	//************************************
+	
+	//************************************
+	// Vector2 
+	//************************************
 
 	template<typename T>
-	struct  Vec2
+	struct Vec2;
+
+	template<typename T>
+	struct Vec3;
+
+	template<typename T>
+	struct Vec4;
+
+	template<typename T>
+	struct Vec2
 	{
 		T x;
 		T y;
@@ -279,8 +285,12 @@ namespace cm
 
 	typedef Vec2<real32> Vec2f;
 
+	//************************************
+	// Vector3
+	//************************************
+
 	template<typename T>
-	struct  Vec3
+	struct Vec3
 	{
 		union
 		{
@@ -328,6 +338,12 @@ namespace cm
 			this->x = all; this->y = all; this->z = all; this->pad0 = 0;
 		}
 
+		//TODO: Template this for type
+		Vec3(const Vec4<T> &a)
+		{
+			this->x = a.x; this->y = a.y; this->z = a.z; this->pad0 = 0;
+		}
+
 		T& operator[](const int32 &index)
 		{
 			Assert(index >= 0 && index < 3);
@@ -354,14 +370,6 @@ namespace cm
 	T Mag(const Vec3<T> &a)
 	{
 		return Sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
-	}
-
-	template<typename T>
-	Vec3<T> Normalize(const Vec3<T> &a)
-	{
-		T m = Mag(a);
-		Vec3<T> result = Vec3<T>(a.x / m, a.y / m, a.z / m);
-		return result;
 	}
 	
 	template<typename T>
@@ -392,12 +400,29 @@ namespace cm
 	}
 
 	template<typename T>
+	Vec3<T> Normalize(const Vec3<T> &a)
+	{
+		T m = Mag(a);
+		Vec3<T> result = Vec3<T>(a.x / m, a.y / m, a.z / m);
+		return result;
+	}
+
+	template<typename T>
 	Vec3<T> Cross(const Vec3<T> &a, const Vec3<T> &b)
 	{
 		T x = a.y * b.z - b.y * a.z;
 		T y = a.z * b.x - b.z * a.x;
 		T z = a.x * b.y - b.x * a.y;
 		return Vec3<T>(x, y, z);
+	}
+
+	template<typename T>
+	bool32 CompareVec(const Vec3<T> &a, const Vec3<T> &b, const T &epsilon = FLOATING_POINT_ERROR_PRESCION)
+	{
+		bool32 resx = Equal(a.x, b.x, epsilon);
+		bool32 resy = Equal(a.y, b.y, epsilon);
+		bool32 resz = Equal(a.z, b.z, epsilon);
+		return resx && resy && resz;
 	}
 
 	template<typename T>
@@ -408,8 +433,6 @@ namespace cm
 		return ss.str();
 	}
 
-	bool CompareVec(const Vec3f &a, const Vec3f &b, const real &epsilon = FLOATING_POINT_ERROR_PRESCION);
-	
 	template<typename T>
 	inline bool32 operator ==(const Vec3<T> &a, const Vec3<T> &b)
 	{
@@ -482,79 +505,159 @@ namespace cm
 		a = Vec3<T>(a.x - b.x, a.y - b.y, a.z - b.z);
 	}
 	
-	
-	
-	struct  Vec4
+	//************************************
+	// Vector4
+	//************************************
+
+	template<typename T>
+	struct Vec4
 	{
 		union
 		{
-			__m128 data;
-			real32 ptr[4];
+			T ptr[4];
 			struct
 			{
 				union
 				{
-					real32 x;
-					real32 r;
+					T x;
+					T r;
 				};
 				union
 				{
-					real32 y;
-					real32 g;
+					T y;
+					T g;
 				};
 				union
 				{
-					real32 z;
-					real32 b;
+					T z;
+					T b;
 				};
 				union
 				{
-					real32 w;
-					real32 a;
+					T w;
+					T a;
 				};
 			};
 		};
 
 		Vec4()
 		{
-			data = _mm_set_ps(0, 0, 0, 0);
+			this->x = 0; this->y = 0; this->z = 0; this->w = 0;
 		}
 		
-		Vec4(const real32 &x, const real32 &y, const real32 &z, const real32 &w)
+		Vec4(const T &x, const T &y, const T &z, const T &w)
 		{
-			data = _mm_set_ps(w, z, y, x);
+			this->x = x; this->y = y; this->z = z; this->w = w;
 		}
 		
-		Vec4(const real32 &all)
+		Vec4(const T &all)
 		{
-			data = _mm_set_ps(all, all, all, all);
+			this->x = all; this->y = all;  this->z = all; this->w = all;
 		}
 		
-		Vec4(const Vec3f &xyz, const real32 &_w)
+		// @TODO: Template with cast
+		Vec4(const Vec3<T> &xyz, const T &w)
 		{
-			x = xyz.x;
-			y = xyz.y;
-			z = xyz.z;
-			w = _w;
-		}
-		
-		Vec4(__m128 _data)
-		{
-			data = _data;
+			this->x = xyz.x;
+			this->y = xyz.y;
+			this->z = xyz.z;
+			this->w = w;
 		}
 
-		real32& operator[](const int32 &index)
+		T& operator[](const int32 &index)
 		{
 			Assert(index >= 0 && index < 4);
 			return (&x)[index];
 		}
 
-		real32 operator[](const int32 &index) const
+		T operator[](const int32 &index) const
 		{
 			Assert(index >= 0 && index < 4);
 			return (&x)[index];
 		}
 	};
+
+	typedef Vec4<real32> Vec4f;
+
+	template<typename T>
+	T Mag(const Vec4<T> &a)
+	{
+		return Sqrt(a.x*a.x + a.y * a.y + a.z * a.z + a.w *a.w);
+	}
+
+	template<typename T>
+	Vec4<T> Normalize(const Vec4<T> &a)
+	{
+		T m = Mag(a);
+		Vec4<T> result = Vec4<T>(a.x / m, a.y / m, a.z / m, a.w / m);
+		return result;
+	}
+
+	template<typename T>
+	T Dot(const Vec4<T> &a, const Vec4<T> &b)
+	{
+		return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+	}
+
+	template<typename T>
+	String ToString(const Vec4<T> &a)
+	{
+		StringStream ss;
+		
+		ss << '(' << a.x << ", " << a.y << ", " << a.z << ", " << a.w << ')';
+		
+		return ss.str();
+	}
+
+	template<typename T>
+	inline bool32 operator ==(const Vec4<T> &a, const Vec4<T> &b)
+	{
+		return (a.x == b.x) && (a.y == b.y) && (a.z == b.z) && (a.w == a.w);
+	}
+
+	template<typename T>
+	inline bool32 operator !=(const Vec4<T> &a, const Vec4<T> &b)
+	{
+		return (a.x != b.x) || (a.y != b.y) || (a.z != b.z) || (a.w != b.w);
+	}
+
+	template<typename T>
+	inline Vec4<T> operator +(const Vec4<T> &a, const Vec4<T> &b)
+	{
+		return Vec4<T>(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+	}
+
+	template<typename T>
+	inline Vec4<T> operator -(const Vec4<T> &a, const Vec4<T> &b)
+	{
+		return Vec4<T>(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+	}
+
+	template<typename T>
+	inline Vec4<T> operator *(const Vec4<T> &a, const Vec4<T> &b)
+	{
+		return Vec4<T>(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
+	}
+
+	template<typename T>
+	inline Vec4<T> operator /(const Vec4<T> &a, const Vec4<T> &b)
+	{
+		return Vec4<T>(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
+	}
+
+	template<typename T>
+	inline Vec4<T> operator *(const Vec4<T> &a, const T &b)
+	{
+		return Vec4<T>(a.x * b, a.y * b, a.z * b, a.w * b);
+	}
+
+	template<typename T>
+	inline Vec4<T> operator /(const Vec4<T> &a, const T &b)
+	{
+		return Vec4<T>(a.x / b, a.y / b, a.z / b, a.w / b);
+	}
+
+
 
 	struct Quat
 	{
@@ -659,30 +762,30 @@ namespace cm
 			real32 ptr[16];			
 			struct
 			{
-				Vec4 row0;
-				Vec4 row1;
-				Vec4 row2;
-				Vec4 row3;
+				Vec4f row0;
+				Vec4f row1;
+				Vec4f row2;
+				Vec4f row3;
 			};
 		};
 
 		Mat4()
 		{
-			row0 = Vec4(1, 0, 0, 0);
-			row1 = Vec4(0, 1, 0, 0);
-			row2 = Vec4(0, 0, 1, 0);
-			row3 = Vec4(0, 0, 0, 1);
+			row0 = Vec4f(1, 0, 0, 0);
+			row1 = Vec4f(0, 1, 0, 0);
+			row2 = Vec4f(0, 0, 1, 0);
+			row3 = Vec4f(0, 0, 0, 1);
 		}
 
 		Mat4(const real32 &a)
 		{
-			row0 = Vec4(a, 0, 0, 0);
-			row1 = Vec4(0, a, 0, 0);
-			row2 = Vec4(0, 0, a, 0);
-			row3 = Vec4(0, 0, 0, a);
+			row0 = Vec4f(a, 0, 0, 0);
+			row1 = Vec4f(0, a, 0, 0);
+			row2 = Vec4f(0, 0, a, 0);
+			row3 = Vec4f(0, 0, 0, a);
 		}
 
-		Mat4(const Vec4 &_row0, const Vec4 &_row1, const Vec4 &_row2, const Vec4 &_row3)
+		Mat4(const Vec4f &_row0, const Vec4f &_row1, const Vec4f &_row2, const Vec4f &_row3)
 		{
 			row0 = _row0;
 			row1 = _row1;
@@ -692,19 +795,19 @@ namespace cm
 		
 		Mat4(const Mat3 &a, const Vec3f &translation)
 		{
-			row0 = Vec4(a.row0, 0);
-			row1 = Vec4(a.row1, 0);
-			row2 = Vec4(a.row2, 0);
-			row3 = Vec4(translation, 1);
+			row0 = Vec4f(a.row0, 0);
+			row1 = Vec4f(a.row1, 0);
+			row2 = Vec4f(a.row2, 0);
+			row3 = Vec4f(translation, 1);
 		}
 
-		Vec4 & operator[](const int32 &index)
+		Vec4f & operator[](const int32 &index)
 		{
 			Assert(index >= 0 && index < 4);
 			return (&row0)[index];
 		}
 
-		Vec4 operator[](const int32 &index) const
+		Vec4f operator[](const int32 &index) const
 		{
 			Assert(index >= 0 && index < 4);
 			return (&row0)[index];
@@ -786,37 +889,16 @@ namespace cm
 	// Coordinate spaces
 	//************************************
 
-	Vec4 GetNormalisedDeviceCoordinates(const real32 &window_width, const real32 &window_height, const real32 &mouse_x, const real32 &mouse_y);
+	Vec4f GetNormalisedDeviceCoordinates(const real32 &window_width, const real32 &window_height, const real32 &mouse_x, const real32 &mouse_y);
 
-	Vec4 ToViewCoords(const Mat4 &projection_matrix, const Vec4 &viewCoords);
+	Vec4f ToViewCoords(const Mat4 &projection_matrix, const Vec4f &viewCoords);
 
-	Vec3f ToWorldCoords(const Mat4 &view_matrix, const Vec4 &viewCoords);
-
-	//************************************
-	// Vector2 
-	//************************************
+	Vec3f ToWorldCoords(const Mat4 &view_matrix, const Vec4f &viewCoords);
 
 
 
-	//************************************
-	// Vector3
-	//************************************
-	
-	Vec3f Vec4ToVec3(const Vec4 &a);
 
-	//************************************
-	// Vector4
-	//************************************
 
-	real32 Mag(const Vec4 &a);
-	
-	real32 Dot(const Vec4 &a, const Vec4 &b);
-	
-	Vec4 Normalize(const Vec4 &a);
-
-	Vec4 Vec3ToVec4(const Vec3f &a, const real32  &w);
-
-	String ToString(const Vec4 &a);
 
 	//************************************
 	// Matrix 3x3
@@ -848,7 +930,7 @@ namespace cm
 
 	real32 GetMatrixElement(const Mat4 &a, const int32 &row, const int32 &col);
 	
-	Vec4 GetColumn(const Mat4 &a, const uint32 &col);
+	Vec4f GetColumn(const Mat4 &a, const uint32 &col);
 
 	String ToString(const Mat4 &a);
 
@@ -862,7 +944,7 @@ namespace cm
 
 	real32 Det(const Mat4 &a);
 
-	Mat4 Mat3ToMat4(const Mat3 &a, const Vec4 &b);
+	Mat4 Mat3ToMat4(const Mat3 &a, const Vec4f &b);
 
 	Mat4 Translate(Mat4 a, Vec3f translation);
 
@@ -895,13 +977,6 @@ namespace cm
 	Mat4 Orthographic(const real32 &left, const real32 &right, const real32 &top, const real32 &bottom, const real32 &_near, const real32 &_far);
 
 	Mat4 LookAt(const Vec3f &position, const Vec3f &target, const Vec3f &up);
-
-
-	//************************************
-	// Templated boyos
-	//************************************
-
-
 	   	 
 	//************************************
 	// Usefull classes for everything
@@ -969,47 +1044,7 @@ namespace cm
 
 
 
-	inline  Vec4 operator  +(const Vec4 &a, const Vec4 &b)
-	{
-		return Vec4(_mm_add_ps(a.data, b.data));
-	}
 
-	inline  Vec4 operator  -(const Vec4 &a, const Vec4 &b)
-	{
-		return Vec4(_mm_sub_ps(a.data, b.data));
-	}
-
-	inline  Vec4 operator  *(const Vec4 &a, const Vec4 &b)
-	{
-		return Vec4(_mm_mul_ps(a.data, b.data));
-	}
-
-	inline  Vec4 operator  /(const Vec4 &a, const Vec4 &b)
-	{
-		return Vec4(_mm_div_ps(a.data, b.data));
-	}
-
-	inline  Vec4 operator *(const Vec4 &a, const float &b)
-	{
-		return _mm_mul_ps(a.data, _mm_set1_ps(b));
-	}
-
-	inline  Vec4 operator /(const Vec4 &a, const float &b)
-	{
-		return _mm_div_ps(a.data, _mm_set1_ps(b));
-	}
-
-	inline bool operator  ==(const Vec4 &a, const Vec4 &b)
-	{
-		int32 *compared = reinterpret_cast<int32*>(&_mm_cmpeq_ps(a.data, b.data));
-		return(compared[0] & compared[1] & compared[2] & compared[3]);
-	}
-
-	inline bool operator  !=(const Vec4 &a, const Vec4 &b)
-	{
-		int32 *compared = reinterpret_cast<int32*>(&_mm_cmpneq_ps(a.data, b.data));
-		return(compared[0] | compared[1] | compared[2] | compared[3]);
-	}	
 
 	inline Mat3 operator /(const Mat3 &a, const real32 &b)
 	{
@@ -1042,7 +1077,7 @@ namespace cm
 
 	Mat4 operator +(const Mat4 &a, const Mat4 &b);
 	
-	Vec4  operator *(const Vec4 &a, const Mat4 &b);	
+	Vec4f  operator *(const Vec4f &a, const Mat4 &b);	
 
 	inline Quat operator *(const Quat &q, const Quat &p)
 	{

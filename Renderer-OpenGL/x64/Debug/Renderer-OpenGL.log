@@ -1,17 +1,2 @@
-﻿  main.cpp
-  Animation.cpp
-  Camera.cpp
-  Debug.cpp
-  EditableMesh.cpp
-  Editor.cpp
-  Sandbox.cpp
-  Serialization.cpp
-  World.cpp
-  AssetLoader.cpp
-  Input.cpp
-  CosmicGeometry.cpp
-  CosmicMath.cpp
-  CosmicNoise.cpp
-  OpenGL.cpp
-  Generating Code...
+﻿  Debug.cpp
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

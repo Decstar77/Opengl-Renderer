@@ -43,7 +43,7 @@ namespace cm
 		Vec3f light_colour;
 		Vec3f light_position;
 		// @NOTE: direction.w = raduis
-		Vec4 direction; 
+		Vec4f direction; 
 	};
 
 	struct RenderSettings

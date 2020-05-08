@@ -18,18 +18,8 @@ namespace cm
 
 
 
-	Vec3f Vec4ToVec3(const Vec4 &a)
-	{
-		return Vec3f(a.x, a.y, a.z);
-	}
 
-	bool CompareVec(const Vec3f &a, const Vec3f &b, const real &epsilon /*= FLOATING_POINT_ERROR_PRESCION*/)
-	{		
-		bool resx = Equal(a.x, b.x, epsilon);
-		bool resy = Equal(a.y, b.y, epsilon);
-		bool resz = Equal(a.z, b.z, epsilon);
-		return resx && resy && resz;
-	}
+
 
 	String ToString(const Mat3 &a)
 	{
@@ -41,39 +31,13 @@ namespace cm
 		return ss.str();
 	}
 
-	real32 Dot(const Vec4 &a, const Vec4 &b)
-	{
-		return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
-	}
 
-	real32 Mag(const Vec4 &a)
-	{
-		return sqrt(a.x*a.x + a.y * a.y + a.z * a.z + a.w *a.w);
-	}
 
-	Vec4 Normalize(const Vec4 &a)
-	{
-		real32 magA = Mag(a);
-		if (magA != 1)
-		{
-			__m128 div = _mm_div_ps(a.data, _mm_set1_ps(magA));
-			return Vec4(div);
-		}
-		return a;
-	}
 
-	Vec4 Vec3ToVec4(const Vec3f &a, const real32 &w)
-	{
-		return Vec4(a.x, a.y, a.z, w);
-	}
 
-	String ToString(const Vec4 &a)
-	{
-		StringStream ss;
-		ss << '(' << a.x << ", " << a.y << ", " << a.z << ", " << a.w << ')';
-		return ss.str();
 
-	}
+
+
 
 	real32 Det(const Mat3 &a)
 	{
@@ -87,9 +51,9 @@ namespace cm
 	Mat3 Mat4ToMat3(const Mat4 &a)
 	{
 		Mat3 result(1);
-		result.row0 = Vec4ToVec3(a.row0);
-		result.row1 = Vec4ToVec3(a.row1);
-		result.row2 = Vec4ToVec3(a.row2);
+		result.row0 = Vec3(a.row0);
+		result.row1 = Vec3(a.row1);
+		result.row2 = Vec3(a.row2);
 		return result;
 	}
 
@@ -206,9 +170,9 @@ namespace cm
 		return a.ptr[4 * row + col];
 	}
 
-	Vec4 GetColumn(const Mat4 &a, const uint32 &col)
+	Vec4f GetColumn(const Mat4 &a, const uint32 &col)
 	{
-		Vec4 column(0, 0, 0, 0);
+		Vec4f column(0, 0, 0, 0);
 		column.x = a.ptr[4 * 0 + col];
 		column.y = a.ptr[4 * 1 + col];
 		column.z = a.ptr[4 * 2 + col];
@@ -311,12 +275,12 @@ namespace cm
 		return f - b + c - d;
 	}
 
-	Mat4 Mat3ToMat4(const Mat3 &a, const Vec4 &b)
+	Mat4 Mat3ToMat4(const Mat3 &a, const Vec4f &b)
 	{
 		Mat4 result(1);
-		result.row0 = Vec3ToVec4(a.row0, 0);
-		result.row1 = Vec3ToVec4(a.row1, 0);
-		result.row2 = Vec3ToVec4(a.row2, 0);
+		result.row0 = Vec4f(a.row0, 0);
+		result.row1 = Vec4f(a.row1, 0);
+		result.row2 = Vec4f(a.row2, 0);
 		result.row3 = b;
 		return result;
 	}
@@ -335,8 +299,14 @@ namespace cm
 
 	Mat4 Transpose(Mat4 a)
 	{
-		_MM_TRANSPOSE4_PS(a.row0.data, a.row1.data, a.row2.data, a.row3.data);
-		return a;
+		Vec4f c0 = GetColumn(a, 0);
+		Vec4f c1 = GetColumn(a, 1);
+		Vec4f c2 = GetColumn(a, 2);
+		Vec4f c3 = GetColumn(a, 3);
+
+		Mat4 result(c0, c1, c2, c3);
+
+		return result;
 	}
 
 	Mat4 Inverse(const Mat4 &a)
@@ -377,20 +347,20 @@ namespace cm
 
 	Mat4 Translate(Mat4 a, Vec3f translation)
 	{
-		a.row3 = Vec4(translation, 1) * a;
+		a.row3 = Vec4f(translation, 1) * a;
 		return a;
 	}
 
 	Mat4 Translate(Mat4 a, real32 length, real32 d_angle, real32 z)
 	{
 		Polar_coord p_coord = Canonical(length, d_angle, z);
-		a.row3 = Vec4(p_coord.r * cosf(p_coord.theta), p_coord.r * sinf(p_coord.theta), p_coord.z, 1) * a;
+		a.row3 = Vec4f(p_coord.r * cosf(p_coord.theta), p_coord.r * sinf(p_coord.theta), p_coord.z, 1) * a;
 		return a;
 	}
 
 	Mat4 Translate(Mat4 a, Polar_coord p_coord)
 	{
-		a.row3 = Vec4(p_coord.r * cosf(p_coord.theta), p_coord.r * sinf(p_coord.theta), p_coord.z, 1) * a;
+		a.row3 = Vec4f(p_coord.r * cosf(p_coord.theta), p_coord.r * sinf(p_coord.theta), p_coord.z, 1) * a;
 		return a;
 	}
 
@@ -401,25 +371,25 @@ namespace cm
 		real32 cos_theata = cosf(theata);
 		real32 sin_theata = sinf(theata);
 
-		Vec4 iPrime(0, 0, 0, 0);
+		Vec4f iPrime(0, 0, 0, 0);
 		iPrime.x = Round(axis.x *axis.x * (1 - cos_theata) + cos_theata);
 		iPrime.y = Round(axis.x *axis.y * (1 - cos_theata) + axis.z * sin_theata);
 		iPrime.z = Round(axis.x *axis.z * (1 - cos_theata) - axis.y * sin_theata);
 		iPrime.w = 0;
 
-		Vec4 jPrime(0, 0, 0, 0);
+		Vec4f jPrime(0, 0, 0, 0);
 		jPrime.x = Round(axis.x *axis.y * (1 - cos_theata) - axis.z *sin_theata);
 		jPrime.y = Round(axis.y *axis.y * (1 - cos_theata) + cos_theata);
 		jPrime.z = Round(axis.y *axis.z * (1 - cos_theata) + axis.x *sin_theata);
 		jPrime.w = 0;
 
-		Vec4 kPrime(0, 0, 0, 0);
+		Vec4f kPrime(0, 0, 0, 0);
 		kPrime.x = Round(axis.x *axis.z * (1 - cos_theata) + axis.y *sin_theata);
 		kPrime.y = Round(axis.y *axis.z * (1 - cos_theata) - axis.x *sin_theata);
 		kPrime.z = Round(axis.z *axis.z * (1 - cos_theata) + cos_theata);
 		kPrime.w = 0;
 
-		Vec4 wPrime(0, 0, 0, 1);
+		Vec4f wPrime(0, 0, 0, 1);
 
 		Mat4 result(iPrime, jPrime, kPrime, wPrime);
 
@@ -562,22 +532,22 @@ namespace cm
 		{
 			unit_direction = Normalize(unit_direction);
 		}
-		Vec4 iPrime(0, 0, 0, 0);
+		Vec4f iPrime(0, 0, 0, 0);
 		iPrime.x = 1 + (k - 1) * unit_direction.x * unit_direction.x;
 		iPrime.y = (k - 1) * unit_direction.x * unit_direction.y;
 		iPrime.z = (k - 1) * unit_direction.x * unit_direction.z;
 
-		Vec4 jPrime(0, 0, 0, 0);
+		Vec4f jPrime(0, 0, 0, 0);
 		jPrime.x = (k - 1) * unit_direction.x * unit_direction.y;
 		jPrime.y = 1 + (k - 1) * unit_direction.y * unit_direction.y;
 		jPrime.z = (k - 1) * unit_direction.y * unit_direction.z;
 
-		Vec4 kPrime(0, 0, 0, 0);
+		Vec4f kPrime(0, 0, 0, 0);
 		kPrime.x = (k - 1) * unit_direction.x * unit_direction.z;
 		kPrime.y = (k - 1) * unit_direction.y * unit_direction.z;
 		kPrime.z = 1 + (k - 1) * unit_direction.z * unit_direction.z;
 
-		Vec4 wPrime(0, 0, 0, 1);
+		Vec4f wPrime(0, 0, 0, 1);
 
 		Mat4 result(iPrime, jPrime, kPrime, wPrime);
 		return result * a;
@@ -619,23 +589,23 @@ namespace cm
 		Mat4 p(1);
 		real32 fovy = DegToRad(dfovy);
 		real32 half_tan_fovy = tan(fovy / 2);
-		p.row0 = Vec4((1 / (aspect * half_tan_fovy)), 0, 0, 0);
-		p.row1 = Vec4(0, 1 / half_tan_fovy, 0, 0);
+		p.row0 = Vec4f((1 / (aspect * half_tan_fovy)), 0, 0, 0);
+		p.row1 = Vec4f(0, 1 / half_tan_fovy, 0, 0);
 
 		real32 a = -(ffar + fnear) / (ffar - fnear);
 		real32 b = (-2 * ffar * fnear) / (ffar - fnear);
-		p.row2 = Vec4(0, 0, a, -1);
-		p.row3 = Vec4(0, 0, b, 0);
+		p.row2 = Vec4f(0, 0, a, -1);
+		p.row3 = Vec4f(0, 0, b, 0);
 		return p;
 	}
 
 	Mat4 Orthographic(const real32 &left, const real32 &right, const real32 &top, const real32 &bottom, const real32 &_near, const real32 &_far)
 	{
 		Mat4 result(1);
-		result.row0 = Vec4(2 / (right - left), 0, 0, 0);
-		result.row1 = Vec4(0, 2 / (top - bottom), 0, 0);
-		result.row2 = Vec4(0, 0, -2 / (_far - _near), 0);
-		result.row3 = Vec4(-(right + left) / (right - left), -(top + bottom) / (top - bottom), -(_far + _near) / (_far - _near), 1);
+		result.row0 = Vec4f(2 / (right - left), 0, 0, 0);
+		result.row1 = Vec4f(0, 2 / (top - bottom), 0, 0);
+		result.row2 = Vec4f(0, 0, -2 / (_far - _near), 0);
+		result.row3 = Vec4f(-(right + left) / (right - left), -(top + bottom) / (top - bottom), -(_far + _near) / (_far - _near), 1);
 		return result;
 	}
 
@@ -652,14 +622,14 @@ namespace cm
 		//		: We just yeet it by transposing it at the end. Also care for order of multiplication order
 		Mat4 rotation(1);
 
-		rotation.row0 = Vec4(basis_right, 0);
-		rotation.row1 = Vec4(basis_up, 0);
-		rotation.row2 = Vec4(camera_reverse_direction * -1, 0);
+		rotation.row0 = Vec4f(basis_right, 0);
+		rotation.row1 = Vec4f(basis_up, 0);
+		rotation.row2 = Vec4f(camera_reverse_direction * -1, 0);
 		Mat4 translation(1);
 
-		translation.row0 = Vec4(1, 0, 0, -position.x);
-		translation.row1 = Vec4(0, 1, 0, -position.y);
-		translation.row2 = Vec4(0, 0, 1, -position.z);
+		translation.row0 = Vec4f(1, 0, 0, -position.x);
+		translation.row1 = Vec4f(0, 1, 0, -position.y);
+		translation.row2 = Vec4f(0, 0, 1, -position.z);
 
 		return Transpose(rotation * translation);
 	}
@@ -716,7 +686,7 @@ namespace cm
 			for (int32 y = 0; y < 4; y++)
 			{
 				// @NOTE: Gets the column vector of the right hand side
-				Vec4 col(0, 0, 0, 0);
+				Vec4f col(0, 0, 0, 0);
 				for (int32 x = 0; x < 4; x++)
 				{
 					col[x] = GetMatrixElement(b, x, y);
@@ -739,12 +709,12 @@ namespace cm
 		return result;
 	}
 
-	Vec4 operator *(const Vec4 &a, const Mat4 &b)
+	Vec4f operator *(const Vec4f &a, const Mat4 &b)
 	{
-		Vec4 result(0, 0, 0, 0);
+		Vec4f result(0, 0, 0, 0);
 		for (uint32 i = 0; i < 4; i++)
 		{
-			Vec4 col = GetColumn(b, i);
+			Vec4f col = GetColumn(b, i);
 			result[i] = Dot(col, a);
 		}
 		return result;
@@ -916,23 +886,23 @@ namespace cm
 		return ss.str();
 	}
 
-	Vec4 GetNormalisedDeviceCoordinates(const real32 &window_width, const real32 &window_height, const real32 &mouse_x,
+	Vec4f GetNormalisedDeviceCoordinates(const real32 &window_width, const real32 &window_height, const real32 &mouse_x,
 		const real32 &mouse_y)
 	{
 		// @NOTE: This is actualy clip space when the vec4 with -1 and 1
-		return Vec4(2 * mouse_x / window_width - 1, -(2 * mouse_y / window_height - 1), -1, 1);
+		return Vec4f(2 * mouse_x / window_width - 1, -(2 * mouse_y / window_height - 1), -1, 1);
 	}
 
-	Vec4 ToViewCoords(const Mat4 &projection_matrix, const Vec4 &viewCoords)
+	Vec4f ToViewCoords(const Mat4 &projection_matrix, const Vec4f &viewCoords)
 	{
 		Mat4 invproj = Inverse(projection_matrix);
 		return viewCoords * invproj;
 	}
 
-	Vec3f ToWorldCoords(const Mat4 &view_matrix, const Vec4 &viewCoords)
+	Vec3f ToWorldCoords(const Mat4 &view_matrix, const Vec4f &viewCoords)
 	{
 		Mat4 invView = Inverse(view_matrix);
-		Vec4 worldSpace = viewCoords * invView;
+		Vec4f worldSpace = viewCoords * invView;
 		return Vec3f(worldSpace.x, worldSpace.y, worldSpace.z);
 	}
 

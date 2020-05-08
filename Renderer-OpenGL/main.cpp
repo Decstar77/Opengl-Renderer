@@ -410,7 +410,7 @@ int main()
 	
 	
 	UniformBuffer global_uniforms;
-	global_uniforms.size_bytes = sizeof(Mat4) * 3 + sizeof(Vec4) * 23;
+	global_uniforms.size_bytes = sizeof(Mat4) * 3 + sizeof(Vec4f) * 23;
 	CreateUniformBuffer(&global_uniforms);
 	UniformBufferSetBindPoint(global_uniforms, 0);
 	ShaderBindUniformBuffer(worldspace_gbuffer_shader, 0, "WorldState");
@@ -493,7 +493,7 @@ int main()
 			UnbindShader();
 
 			// @NOTE: Set the clear colour to black for stencil errors
-			SetClearColour(Vec4(0, 0, 0, 1));
+			SetClearColour(Vec4f(0, 0, 0, 1));
 
 			// @NOTE: Configure the stencil buffer to write 1's where the editor draws
 			StencilWriteOnes();
@@ -555,7 +555,7 @@ int main()
 			StencilZeroMask();
 
 			// @NOTE: Reset the clear colour to a noticable
-			SetClearColour(Vec4(0, 1, 0, 1));
+			SetClearColour(Vec4f(0, 1, 0, 1));
 		}
 		else
 		{
@@ -757,12 +757,12 @@ int main()
 			Mat4(1)
 		};
 
-		std::vector<Vec4> lighting_data = {
-			Vec4(1,  1, 0, 0), 
-			Vec4(camera_controller.main_camera.transform.position, 0),
-			Vec4(sun_light.direction, 0),
-			Vec4(point_light.light_position, 0), Vec4(1), Vec4(1), Vec4(1),
-			Vec4(point_light.light_colour, 0), Vec4(1), Vec4(1), Vec4(1)
+		std::vector<Vec4f> lighting_data = {
+			Vec4f(1,  1, 0, 0), 
+			Vec4f(camera_controller.main_camera.transform.position, 0),
+			Vec4f(sun_light.direction, 0),
+			Vec4f(point_light.light_position, 0), Vec4f(1), Vec4f(1), Vec4f(1),
+			Vec4f(point_light.light_colour, 0), Vec4f(1), Vec4f(1), Vec4f(1)
 		};
 
 		

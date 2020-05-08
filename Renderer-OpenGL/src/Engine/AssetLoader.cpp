@@ -135,10 +135,10 @@ namespace cm
 
 
 		Mat4 a;
-		a.row0 = Vec4(ai_mat->a1, ai_mat->a2, ai_mat->a3, ai_mat->a4);
-		a.row1 = Vec4(ai_mat->b1, ai_mat->b2, ai_mat->b3, ai_mat->b4);
-		a.row2 = Vec4(ai_mat->c1, ai_mat->c2, ai_mat->c3, ai_mat->c4);
-		a.row3 = Vec4(ai_mat->d1, ai_mat->d2, ai_mat->d3, ai_mat->d4);
+		a.row0 = Vec4f(ai_mat->a1, ai_mat->a2, ai_mat->a3, ai_mat->a4);
+		a.row1 = Vec4f(ai_mat->b1, ai_mat->b2, ai_mat->b3, ai_mat->b4);
+		a.row2 = Vec4f(ai_mat->c1, ai_mat->c2, ai_mat->c3, ai_mat->c4);
+		a.row3 = Vec4f(ai_mat->d1, ai_mat->d2, ai_mat->d3, ai_mat->d4);
 		a = Transpose(a);
 		return a;
 	}
