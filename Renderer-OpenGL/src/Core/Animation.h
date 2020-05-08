@@ -29,7 +29,7 @@ namespace cm
 		std::vector<Vec3f> poskeys;
 
 		std::vector<real32> rottime;
-		std::vector<Quat> rotkeys;
+		std::vector<Quatf> rotkeys;
 
 		std::vector<real32> scltime;
 		std::vector<Vec3f> sclkeys;
@@ -62,7 +62,7 @@ namespace cm
 
 		Vec3f CalculateInterpolatedScaling(const real32 &animation_time, const int32 &keyset_index);
 		Vec3f CalculateInterpolatedPosition(const real32 &animation_time, const int32 &keyset_index);
-		Quat CalculateInterpolatedRotation(const real32 &animation_time, const int32 &keyset_index);
+		Quatf CalculateInterpolatedRotation(const real32 &animation_time, const int32 &keyset_index);
 
 		int32 FindPosition(const real32 &animation_time, const int32 &keyset_index);
 		int32 FindRotation(const real32 &animation_time, const int32 &keyset_index);

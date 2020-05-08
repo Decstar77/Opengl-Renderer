@@ -3,14 +3,7 @@
 namespace cm
 {	   	 
 
-	bool Equal(const Quat &q1, const Quat &q2, const real32 &epsilon /*= FLOATING_POINT_ERROR_PRESCION*/)
-	{
-		real32 dx = Abs(q1.x - q2.x);
-		real32 dy = Abs(q1.y - q2.y);
-		real32 dz = Abs(q1.z - q2.z);
-		real32 dw = Abs(q1.w - q2.w);
-		return (dx < epsilon && dy < epsilon && dz < epsilon && dw < epsilon);
-	}
+
 	   
 
 
@@ -57,7 +50,7 @@ namespace cm
 		return result;
 	}
 
-	cm::Quat Mat3ToQuat(const Mat3 &a)
+	cm::Quatf Mat3ToQuat(const Mat3 &a)
 	{
 		//@ HELP: 3D Math Primer for Graphics and Game Development		
 		real32 m11 = a.row0.x;
@@ -105,36 +98,36 @@ namespace cm
 			real32 y = (m31 - m13) * mult;
 			real32 z = (m12 - m21) * mult;
 			real32 w = big;
-			return Quat(x, y, z, w);
+			return Quatf(x, y, z, w);
 		}
 		case 1: {
 			real32 x = big;
 			real32 y = (m12 + m21) * mult;
 			real32 z = (m31 + m13) * mult;
 			real32 w = (m23 - m32) * mult;
-			return Quat(x, y, z, w);
+			return Quatf(x, y, z, w);
 		}
 		case 2: {
 			real32 x = (m12 + m21) * mult;
 			real32 y = big;
 			real32 z = (m23 + m32) * mult;
 			real32 w = (m31 - m13) * mult;
-			return Quat(x, y, z, w);
+			return Quatf(x, y, z, w);
 		}
 		case 3: {
 			real32 x = (m31 + m13) * mult;
 			real32 y = (m23 + m32) * mult;
 			real32 z = big;
 			real32 w = (m12 - m21) * mult;
-			return Quat(x, y, z, w);
+			return Quatf(x, y, z, w);
 		}
 		default:
 			Assert(0);
-			return Quat(0, 0, 0, 1);
+			return Quatf(0, 0, 0, 1);
 		}
 	}
 
-	Mat4 CalculateTransformMatrix(const Vec3f & position, const Vec3f & scale, const Quat & rotation)
+	Mat4 CalculateTransformMatrix(const Vec3f & position, const Vec3f & scale, const Quatf & rotation)
 	{
 		// @HELP: Real time rendering book
 		Mat4 trans(1);
@@ -424,32 +417,11 @@ namespace cm
 		return result * a;
 	}
 
-	Quat Rotate(const Quat &q, const real32 &d_angle, Vec3f axis)
-	{
-		// @HELP: https://stackoverflow.com/questions/4436764/rotating-a-quaternion-on-1-axis
-		axis = Normalize(axis);
 
-		real32 rangle = DegToRad(d_angle);
-		
-		real32 s = SafeTruncateDouble(sin(rangle / 2.0));
-		real32 c = SafeTruncateDouble(cos(rangle / 2.0));
 
-		real32 x = axis.x * s;
-		real32 y = axis.y * s;
-		real32 z = axis.z * s;
-		real32 w = c;
 
-		Quat result = Normalize(Quat(x, y, z, w));
-		return result;
-	}
 
-	Quat Rotate(const Quat &a, const Quat &b)
-	{
-		// @NOTE: I always forget this, that's why I made this a function. Also more readable this way
-		return a * b;
-	}
-
-	Quat Mat4ToQuat(const Mat4 &a)
+	Quatf Mat4ToQuat(const Mat4 &a)
 	{
 		//@ HELP: 3D Math Primer for Graphics and Game Development		
 		real32 m11 = a.row0.x;
@@ -497,32 +469,32 @@ namespace cm
 			real32 y = (m31 - m13) * mult;
 			real32 z = (m12 - m21) * mult;
 			real32 w = big;
-			return Quat(x, y, z, w);
+			return Quatf(x, y, z, w);
 		}
 		case 1: {
 			real32 x = big;
 			real32 y = (m12 + m21) * mult;
 			real32 z = (m31 + m13) * mult;
 			real32 w = (m23 - m32) * mult;
-			return Quat(x, y, z, w);
+			return Quatf(x, y, z, w);
 		}
 		case 2: {
 			real32 x = (m12 + m21) * mult;
 			real32 y = big;
 			real32 z = (m23 + m32) * mult;
 			real32 w = (m31 - m13) * mult;
-			return Quat(x, y, z, w);
+			return Quatf(x, y, z, w);
 		}
 		case 3: {
 			real32 x = (m31 + m13) * mult;
 			real32 y = (m23 + m32) * mult;
 			real32 z = big;
 			real32 w = (m12 - m21) * mult;
-			return Quat(x, y, z, w);
+			return Quatf(x, y, z, w);
 		}
 		default: 
 			Assert(0);
-			return Quat(0, 0, 0, 1);
+			return Quatf(0, 0, 0, 1);
 		}
 	}
 
@@ -720,66 +692,13 @@ namespace cm
 		return result;
 	}
 
-	Quat EulerToQuat(const Vec3f &euler_angle)
-	{
-		Vec3f c = Vec3f(cos(DegToRad(euler_angle.x) / 2.0f), cos(DegToRad(euler_angle.y) / 2.0f), cos(DegToRad(euler_angle.z) / 2.0f));
-		Vec3f s = Vec3f(sin(DegToRad(euler_angle.x) / 2.0f), sin(DegToRad(euler_angle.y) / 2.0f), sin(DegToRad(euler_angle.z) / 2.0f));
 
-		Quat q;
-		q.x = s.x * c.y * c.z - c.x * s.y * s.z;
-		q.y = c.x * s.y * c.z + s.x * c.y * s.z;
-		q.z = c.x * c.y * s.z - s.x * s.y * c.z;
-		q.w = c.x * c.y * c.z + s.x * s.y * s.z;		
-
-		return q;
-	}
 	
-	cm::Vec3f QuatToEuler(const Quat &q)
-	{
-		// @HELP: Glm and Math book
-		Vec3f euler;
-		Vec2f sp;
-		sp.x = 2.f * (q.y * q.z + q.w * q.x);
-		sp.y = q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z;
-				
-		if (Equal(Vec2f(sp.x, sp.y), Vec2f(0)))
-		{
-			euler.x = 2.0f * atan2(q.w, q.x);
-		}
-		else
-		{
-			euler.x = atan2(sp.x, sp.y);
-		}
-		
-		euler.y = asin( Clamp(-2.0f * (q.x * q.z - q.w * q.y), -1.0f, 1.0f) );
-		euler.z = atan2( 2.0f * (q.x * q.y + q.w * q.z), q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z );
 
-		euler.x = RadToDeg(euler.x);
-		euler.y = RadToDeg(euler.y);
-		euler.z = RadToDeg(euler.z);
 
-		return euler;
-	}
 
-	Quat Slerp(const Quat &a, const Quat &b, const real32 &t)
-	{
-		Quat an = Normalize(a);
-		Quat bn = Normalize(b);
 
-		real32 d = an.x * bn.x + an.y * bn.y + an.z * bn.z + an.w * bn.w;
-		real32 tinv = 1.0f - t;
-		int32 ds = Sign(d);
-
-		Quat result;		
-		result.x = an.x * tinv + ds * t * bn.x;
-		result.y = an.y * tinv + ds * t * bn.y;
-		result.z = an.z * tinv + ds * t * bn.z;
-		result.w = an.w * tinv + ds * t * bn.w;
-		
-		return Normalize(result);
-	}
-
-	Mat3 QuatToMat3(const Quat &q)
+	Mat3 QuatToMat3(const Quatf &q)
 	{
 		Mat3 mat(1);
 
@@ -807,7 +726,7 @@ namespace cm
 		return mat;
 	}
 
-	Mat4 QuatToMat4(const Quat &q)
+	Mat4 QuatToMat4(const Quatf &q)
 	{
 		Mat4 mat(1);
 
@@ -835,56 +754,16 @@ namespace cm
 		return mat;
 	}
 
-	Vec3f Rotate(const real32 &d_angle, const Vec3f &point, const Vec3f &axis)
-	{
-		Vec3f ax = Normalize(axis);
 
-		real32 sh = sin(DegToRad(d_angle / 2));
-		real32 ch = cos(DegToRad(d_angle / 2));
 
-		Quat r(ax.x * sh,
-			ax.y * sh,
-			ax.z * sh,
-			ch);
 
-		Quat rc = Conjugate(r);
-		Quat pp = Quat(point, 0);
 
-		Quat res = (r * pp) * rc;
-		return Vec3f(res.x, res.y, res.z);
-	}
 
-	Vec3f Rotate(const Quat &r, const Vec3f &point)
-	{
-		//@Help: https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
-		Quat rc = Conjugate(Normalize(r));
-		Quat pp = Quat(point, 0);
-		Quat res = (r * pp) * rc;
-		return Vec3f(res.x, res.y, res.z);
-	}
 
-	Quat Conjugate(const Quat &a)
-	{
-		return Quat(-a.x, -a.y, -a.z, a.w);
-	}
 
-	real32 Mag(const Quat & a)
-	{
-		return sqrt(a.x* a.x + a.y * a.y + a.z * a.z + a.w * a.w);
-	}
 
-	Quat Normalize(const Quat & a)
-	{
-		real32 m = Mag(a);
-		return Quat(a.x / m, a.y / m, a.z / m, a.w / m);
-	}
 
-	String ToString(const Quat & a)
-	{
-		StringStream ss;
-		ss << '(' << '{' << a.x << ", " << a.y << ", " << a.z << '}' << ' ' << a.w << ')';
-		return ss.str();
-	}
+
 
 	Vec4f GetNormalisedDeviceCoordinates(const real32 &window_width, const real32 &window_height, const real32 &mouse_x,
 		const real32 &mouse_y)

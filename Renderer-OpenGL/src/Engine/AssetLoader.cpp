@@ -473,7 +473,7 @@ namespace cm
 
 			for (uint32 j = 0; j < ai->mNumRotationKeys; j++)
 			{
-				Quat rot = Quat(ai->mRotationKeys[j].mValue.x, ai->mRotationKeys[j].mValue.y, ai->mRotationKeys[j].mValue.z, ai->mRotationKeys[j].mValue.w);
+				Quatf rot = Quatf(ai->mRotationKeys[j].mValue.x, ai->mRotationKeys[j].mValue.y, ai->mRotationKeys[j].mValue.z, ai->mRotationKeys[j].mValue.w);
 				real32 time = SafeTruncateDouble(ai->mRotationKeys[j].mTime);
 				animation->frames[i].rotkeys[j] = rot;
 				animation->frames[i].rottime[j] = time;

@@ -228,6 +228,6 @@ namespace cm
 		//		: back into a quat. This has the down side landing in gimbal lock, but is much better
 		//		: than having to rewrite the whole transform class inorder to store a euler rotation
 		Vec3f euler_angles = Vec3f(0);
-		Quat quat_angle = Quat();
+		Quatf quat_angle = Quatf();
 	};
 }

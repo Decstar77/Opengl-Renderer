@@ -93,19 +93,67 @@ namespace cm
 	}
 	
 	template<typename T>
-	inline constexpr T DegToRad(T degrees)
+	inline constexpr T DegToRad(const T &degrees)
 	{
 		return (static_cast<T>(PI) * degrees) / static_cast<T>(180.0);
 	}
 
 	template<typename T>
-	inline T RadToDeg(T radians)
+	inline constexpr T RadToDeg(const T &radians)
 	{
 		return (static_cast<T>(180.0) * radians) / static_cast<T>(PI);
 	}
 
 	template<typename T>
-	inline constexpr T Round(T val)
+	inline constexpr T Sin(const T &rads)
+	{
+		return std::sin(rads);
+	}
+
+	template<typename T>
+	inline constexpr T Asin(const T &rads)
+	{
+		return std::asin(rads);
+	}
+
+	template<typename T>
+	inline constexpr T Cos(const T &rads)
+	{
+		return std::cos(rads);
+	}
+
+	template<typename T>
+	inline constexpr T Acos(const T &rads)
+	{
+		return std::acos(rads);
+	}
+	
+	template<typename T>
+	inline constexpr T Tan(const T &rads)
+	{
+		return std::tan(rads);
+	}
+
+	template<typename T>
+	inline constexpr T Tan(const T &y, const T &x)
+	{
+		return std::atan2(y, x);
+	}
+
+	template<typename T>
+	inline constexpr T Atan(const T &rads)
+	{
+		return std::atan(rads);
+	}
+
+	template<typename T>
+	inline constexpr T Atan(const T &y, const T &x)
+	{
+		return std::atan2(y, x);
+	}
+
+	template<typename T>
+	inline constexpr T Round(const T &val)
 	{
 		return std::round(val * static_cast<T>(1000000.0)) / static_cast<T>(1000000.0f);
 	}
@@ -202,6 +250,12 @@ namespace cm
 
 	template<typename T>
 	struct Vec4;
+
+	template<typename T>
+	struct Quat;
+
+	struct Mat3;
+	struct Mat4;
 
 	template<typename T>
 	struct Vec2
@@ -417,7 +471,7 @@ namespace cm
 	}
 
 	template<typename T>
-	bool32 CompareVec(const Vec3<T> &a, const Vec3<T> &b, const T &epsilon = FLOATING_POINT_ERROR_PRESCION)
+	bool32 Equal(const Vec3<T> &a, const Vec3<T> &b, const T &epsilon = FLOATING_POINT_ERROR_PRESCION)
 	{
 		bool32 resx = Equal(a.x, b.x, epsilon);
 		bool32 resy = Equal(a.y, b.y, epsilon);
@@ -656,59 +710,246 @@ namespace cm
 	{
 		return Vec4<T>(a.x / b, a.y / b, a.z / b, a.w / b);
 	}
+	
+	// @TODO: Name comment
 
-
-
+	template<typename T>
 	struct Quat
 	{
 		union
-		{
-			__m128 data;
-			real32 ptr[4];
+		{		
+			T ptr[4];
 			struct
 			{
-				real32 x;
-				real32 y;
-				real32 z;
-				real32 w;
+				T x;
+				T y;
+				T z;
+				T w;
 			};
 		};
 
 		Quat()
 		{
-			data = _mm_set_ps(1, 0, 0, 0);
+			this->x = static_cast<T>(0.0); 
+			this->y = static_cast<T>(0.0); 
+			this->z = static_cast<T>(0.0); 
+			this->w = static_cast<T>(1.0);
 		}
 
-		Quat(const real32 &x, const real32 &y, const real32 &z, const real32 &w)
+		Quat(const T &x, const T &y, const T &z, const T &w)
 		{
-			data = _mm_set_ps(w, z, y, x);
+			this->x = x;
+			this->y = y;
+			this->z = z;
+			this->w = w;
 		}
 
-		Quat(const Vec3f &xyz, const real32 &_w)
+		Quat(const Vec3f &xyz, const T &w)
 		{
-			x = xyz.x;
-			y = xyz.y;
-			z = xyz.z;
-			w = _w;
+			this->x = xyz.x;
+			this->y = xyz.y;
+			this->z = xyz.z;
+			this->w = w;
 		}
 
-		Quat(__m128 _data)
-		{
-			data = _data;
-		}
-
-		real32& operator[](const int32 &index)
+		T& operator[](const int32 &index)
 		{
 			Assert(index >= 0 && index < 4);
 			return (&x)[index];
 		}
 
-		real32 operator[](const int32 &index) const
+		T operator[](const int32 &index) const
 		{
 			Assert(index >= 0 && index < 4);
 			return (&x)[index];
 		}
 	};
+
+	typedef Quat<real32> Quatf;
+
+	template<typename T>
+	Quat<T> Conjugate(const Quat<T> &a)
+	{
+		return Quat<T>(-a.x, -a.y, -a.z, a.w);
+	}
+
+	template<typename T>
+	T Mag(const Quat<T> &a)
+	{
+		return Sqrt(a.x * a.x + a.y * a.y + a.z * a.z + a.w * a.w);
+	}
+
+	template<typename T>
+	Quat<T> Normalize(const Quat<T> &a)
+	{
+		T m = Mag(a);
+		return Quat<T>(a.x / m, a.y / m, a.z / m, a.w / m);
+	}
+
+	template<typename T>
+	Quat<T> EulerToQuat(const Vec3<T> &euler_angle)
+	{
+		Vec3<T> c = Vec3f(Cos(DegToRad(euler_angle.x) / 2.0f), Cos(DegToRad(euler_angle.y) / 2.0f), Cos(DegToRad(euler_angle.z) / 2.0f));
+		Vec3<T> s = Vec3f(Sin(DegToRad(euler_angle.x) / 2.0f), Sin(DegToRad(euler_angle.y) / 2.0f), Sin(DegToRad(euler_angle.z) / 2.0f));
+
+		Quat<T> q;
+		q.x = s.x * c.y * c.z - c.x * s.y * s.z;
+		q.y = c.x * s.y * c.z + s.x * c.y * s.z;
+		q.z = c.x * c.y * s.z - s.x * s.y * c.z;
+		q.w = c.x * c.y * c.z + s.x * s.y * s.z;
+		return q;
+	}
+
+	template<typename T>
+	Vec3<T> QuatToEuler(const Quat<T> &q)
+	{
+		// @HELP: Glm and Math book
+		Vec3<T> euler;
+		Vec2<T> sp;
+		sp.x = 2.f * (q.y * q.z + q.w * q.x);
+		sp.y = q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z;
+
+		if (Equal(Vec2<T>(sp.x, sp.y), Vec2<T>(0.0)))
+		{
+			euler.x = 2.0f * Atan(q.w, q.x);
+		}
+		else
+		{
+			euler.x = Atan(sp.x, sp.y);
+		}
+
+		euler.y = Asin(Clamp(-2.0f * (q.x * q.z - q.w * q.y), -1.0f, 1.0f));
+		euler.z = Atan(2.0f * (q.x * q.y + q.w * q.z), q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z);
+
+		euler.x = RadToDeg(euler.x);
+		euler.y = RadToDeg(euler.y);
+		euler.z = RadToDeg(euler.z);
+
+		return euler;
+	}
+
+	template<typename T>
+	Quat<T> Rotate(const Quat<T> &a, const Quat<T> &b)
+	{
+		return a * b;
+	}
+
+	template<typename T>
+	Vec3<T> Rotate(const Quat<T> &r, const Vec3<T> &point)
+	{
+		//@Help: https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
+		Quat<T> rc = Conjugate(Normalize(r));
+		Quat<T> pp = Quat<T>(point, 0);
+		Quat<T> res = (r * pp) * rc;
+
+		return Vec3<T>(res.x, res.y, res.z);
+	}
+
+	template<typename T>
+	Vec3<T> Rotate(const T &d_angle, const Vec3<T> &point, const Vec3<T> &axis)
+	{
+		Vec3<T> ax = Normalize(axis);
+
+		T sh = Sin(DegToRad(d_angle / 2));
+		T ch = Cos(DegToRad(d_angle / 2));
+
+		Quat<T> r(ax.x * sh,
+			ax.y * sh,
+			ax.z * sh,
+			ch);
+
+		Quat<T> rc = Conjugate(r);
+		Quat<T> pp = Quat<T>(point, 0);
+
+		Quat<T> res = (r * pp) * rc;
+
+		return Vec3<T>(res.x, res.y, res.z);
+	}
+
+	template<typename T>
+	Quat<T> Rotate(const Quat<T> &q, const T &d_angle, Vec3<T> axis)
+	{
+		// @HELP: https://stackoverflow.com/questions/4436764/rotating-a-quaternion-on-1-axis
+		axis = Normalize(axis);
+
+		T rangle = DegToRad(d_angle);
+
+		T s = SafeTruncateDouble(sin(rangle / 2.0));
+		T c = SafeTruncateDouble(cos(rangle / 2.0));
+
+		T x = axis.x * s;
+		T y = axis.y * s;
+		T z = axis.z * s;
+		T w = c;
+
+		Quat<T> result = Normalize(Quat<T>(x, y, z, w));
+		return result;
+	}
+
+	template<typename T>
+	Quat<T> Slerp(const Quat<T> &a, const Quat<T> &b, const T &t)
+	{
+		Quat<T> an = Normalize(a);
+		Quat<T> bn = Normalize(b);
+
+		T d = an.x * bn.x + an.y * bn.y + an.z * bn.z + an.w * bn.w;
+		T tinv = 1.0f - t;
+		int32 ds = Sign(d);
+
+		Quat<T> result;
+		result.x = an.x * tinv + ds * t * bn.x;
+		result.y = an.y * tinv + ds * t * bn.y;
+		result.z = an.z * tinv + ds * t * bn.z;
+		result.w = an.w * tinv + ds * t * bn.w;
+
+		return Normalize(result);
+	}
+
+	template<typename T>
+	bool32 Equal(const Quat<T> &q1, const Quat<T> &q2, const T &epsilon = FLOATING_POINT_ERROR_PRESCION)
+	{
+		T dx = Abs(q1.x - q2.x);
+		T dy = Abs(q1.y - q2.y);
+		T dz = Abs(q1.z - q2.z);
+		T dw = Abs(q1.w - q2.w);
+		return (dx < epsilon && dy < epsilon && dz < epsilon && dw < epsilon);
+	}
+
+	template<typename T>
+	String ToString(const Quat<T> &a)
+	{
+		StringStream ss;
+		ss << '(' << '{' << a.x << ", " << a.y << ", " << a.z << '}' << ' ' << a.w << ')';
+		return ss.str();
+	}
+
+	Mat3 QuatToMat3(const Quatf &q);
+
+	Mat4 QuatToMat4(const Quatf &q);
+
+	template<typename T>
+	inline Quat<T> operator *(const Quat<T> &q, const Quat<T> &p)
+	{
+		T w = p.w * q.w - p.x * q.x - p.y * q.y - p.z * q.z;
+		T x = p.w * q.x + p.x * q.w + p.y * q.z - p.z * q.y;
+		T y = p.w * q.y + p.y * q.w + p.z * q.x - p.x * q.z;
+		T z = p.w * q.z + p.z * q.w + p.x * q.y - p.y * q.x;
+		return Quatf(x, y, z, w);
+	}
+
+	template<typename T>
+	inline Quat<T> operator *(const Quat<T> &a, const Vec3<T> &b)
+	{
+		T w = -a.x * b.x - a.y - b.y - a.z * b.z;
+		T x = a.w * b.x + a.y *b.z - a.z * b.y;
+		T y = a.w * b.y + a.z *b.x - a.x * b.z;
+		T z = a.w * b.z + a.x *b.y - a.y * b.x;
+		return Quatf(x, w, z, w);
+	}
+
+
+
+
 
 	struct  Mat3
 	{
@@ -857,33 +1098,7 @@ namespace cm
 	// Quaterion functions
 	//************************************
 
-	Quat EulerToQuat(const Vec3f &euler_angle);
-	
-	Vec3f QuatToEuler(const Quat &q);
 
-	Quat Slerp(const Quat &a, const Quat &b, const real32 &t);
-
-	Quat Conjugate(const Quat &a);
-
-	Quat Normalize(const Quat &a);
-
-	Mat3 QuatToMat3(const Quat &q);
-
-	Mat4 QuatToMat4(const Quat &q);
-		
-	real32 Mag(const Quat &a);
-
-	String ToString(const Quat &a);
-
-	bool Equal(const Quat &q1, const Quat &q2, const real32 &epsilon = FLOATING_POINT_ERROR_PRESCION);
-
-	Vec3f Rotate(const Quat &r, const Vec3f &point);
-
-	Vec3f Rotate(const real32 &d_angle, const Vec3f &point, const Vec3f &axis);
-
-	Quat Rotate(const Quat &q, const real32 &d_angle, Vec3f axis);
-
-	Quat Rotate(const Quat &a, const Quat &b);
 
 	//************************************
 	// Coordinate spaces
@@ -922,7 +1137,7 @@ namespace cm
 
 	Mat3 Mat4ToMat3(const Mat4 &a);
 
-	Quat Mat3ToQuat(const Mat3 &a);
+	Quatf Mat3ToQuat(const Mat3 &a);
 
 	//************************************
 	// Matrix 4x4
@@ -954,13 +1169,13 @@ namespace cm
 
 	Mat4 Rotate(Mat4 a, real32 dangle, Vec3f axis);
 
-	Quat Mat4ToQuat(const Mat4 &a);
+	Quatf Mat4ToQuat(const Mat4 &a);
 
 	Mat4 ScaleDirection(Mat4 a, real32 k, Vec3f unit_direction, bool should_normalize = true);
 
 	Mat4 ScaleCardinal(Mat4 a, Vec3f direction);
 	
-	Mat4 CalculateTransformMatrix(const Vec3f &position, const Vec3f &scale, const Quat &rotation);
+	Mat4 CalculateTransformMatrix(const Vec3f &position, const Vec3f &scale, const Quatf &rotation);
 	
 	void Print(const Mat4 &m);
 
@@ -987,7 +1202,7 @@ namespace cm
 	public:
 		Vec3f position = Vec3f(0, 0, 0);
 		Vec3f scale = Vec3f(1, 1, 1);
-		Quat rotation = Quat(0, 0, 0, 1);
+		Quatf rotation = Quatf(0, 0, 0, 1);
 		Basis basis;
 
 	public:
@@ -1079,23 +1294,6 @@ namespace cm
 	
 	Vec4f  operator *(const Vec4f &a, const Mat4 &b);	
 
-	inline Quat operator *(const Quat &q, const Quat &p)
-	{
-		real32 w = p.w * q.w		 - p.x * q.x		- p.y * q.y			- p.z * q.z;
-		real32 x = p.w * q.x		 + p.x * q.w		+ p.y * q.z			- p.z * q.y;
-		real32 y = p.w * q.y		 + p.y * q.w		+ p.z * q.x			- p.x * q.z;
-		real32 z = p.w * q.z		 + p.z * q.w		+ p.x * q.y			- p.y * q.x;
-		return Quat(x, y, z, w);
-	}
-
-	inline Quat operator *(const Quat &a, const Vec3f &b)
-	{
-		real32 w = -a.x * b.x - a.y - b.y - a.z * b.z;
-		real32 x =  a.w * b.x + a.y *b.z - a.z * b.y;
-		real32 y =  a.w * b.y + a.z *b.x - a.x * b.z;
-		real32 z =  a.w * b.z + a.x *b.y - a.y * b.x;
-		return Quat(x, w, z, w);
-	}
 
 
 }

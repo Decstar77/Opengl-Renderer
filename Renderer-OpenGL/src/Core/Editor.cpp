@@ -40,7 +40,7 @@ namespace cm
 	void Widget3D::WorldAlign()
 	{
 		object_aligning = false;
-		this->transform.rotation = Quat();
+		this->transform.rotation = Quatf();
 	}
 
 	const cm::GLMesh Widget3D::GetMeshForRender() const
@@ -474,7 +474,7 @@ namespace cm
 				}
 				
 				// @NOTE: Apply the rotation
-				Quat r = Rotate(transform->rotation, theta, nbr);
+				Quatf r = Rotate(transform->rotation, theta, nbr);
 				transform->rotation = r * transform->rotation;
 
 				// @NOTE: Put the origin where the ray intersected the plane
@@ -511,7 +511,7 @@ namespace cm
 				}
 
 				// @NOTE: Apply the rotation
-				Quat r = Rotate(transform->rotation, theta, nbu);
+				Quatf r = Rotate(transform->rotation, theta, nbu);
 				transform->rotation = r * transform->rotation;
 
 				// @NOTE: Put the origin where the ray intersected the plane
@@ -547,7 +547,7 @@ namespace cm
 				}
 
 				// @NOTE: Apply the rotation
-				Quat r = Rotate(transform->rotation, theta, nbf);
+				Quatf r = Rotate(transform->rotation, theta, nbf);
 				transform->rotation = r * transform->rotation;
 			
 
@@ -1210,7 +1210,7 @@ namespace cm
 		if (world_object != nullptr)
 		{			
 			Transform *transform = world_object->GetTransform();
-			Quat rot = transform->rotation;
+			Quatf rot = transform->rotation;
 
 			if (!Equal(quat_angle, rot))
 			{

@@ -77,7 +77,7 @@ namespace cm
 			Assert(keyset_index >= 0);
 
 			Vec3f pos = CalculateInterpolatedPosition(animation_time, keyset_index);
-			Quat q = CalculateInterpolatedRotation(animation_time, keyset_index);
+			Quatf q = CalculateInterpolatedRotation(animation_time, keyset_index);
 			Vec3f scl = CalculateInterpolatedScaling(animation_time, keyset_index);
 
 			Mat4 scaleM = ScaleCardinal(Mat4(1), scl);
@@ -136,7 +136,7 @@ namespace cm
 		return result;
 	}
 
-	cm::Quat Animation::CalculateInterpolatedRotation(const real32 &animation_time, const int32 &keyset_index)
+	cm::Quatf Animation::CalculateInterpolatedRotation(const real32 &animation_time, const int32 &keyset_index)
 	{
 		const AnimationFrames &keyset = frames[keyset_index];
 
@@ -154,10 +154,10 @@ namespace cm
 
 		factor = Clamp(factor, 0.f, 1.f);
 
-		Quat start = keyset.rotkeys[rotation_index];
-		Quat end = keyset.rotkeys[next_rotation_index];
+		Quatf start = keyset.rotkeys[rotation_index];
+		Quatf end = keyset.rotkeys[next_rotation_index];
 
-		Quat result = Slerp(start, end, factor);
+		Quatf result = Slerp(start, end, factor);
 
 		return result;
 	}
