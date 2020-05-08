@@ -5,7 +5,7 @@
 #include <intrin.h>
 #include <xmmintrin.h>
 
-//============       NOES       ============//
+//============       NOTES       ============//
 
 //TODO all matrices and vectors are floats/real32
 //TODO check_orthogonal could be faster
@@ -39,6 +39,19 @@ namespace cm
 		None = 0, Object, World, View, Projection
 	};
 
+	inline uint32 SafeTruncateUint64(uint64 value)
+	{
+		Assert(value <= 0xFFFFFFFF);
+		uint32 result = static_cast<uint32>(value);
+		return result;
+	}
+
+	inline real32 SafeTruncateDouble(real64 value)
+	{
+		Assert(value <= 0xFFFFFFFF);
+		real32 result = static_cast<real32>(value);
+		return result;
+	}
 
 	template<typename T>
 	inline T Abs(const T &a)
@@ -84,6 +97,56 @@ namespace cm
 	inline T Lerp(const T &a, const T &b, const T &t)
 	{
 		return a * (static_cast<T>(1.0) - t) + b * t;
+	}
+	
+	template<typename T>
+	inline T DegToRad(T degrees)
+	{
+		return (static_cast<T>(PI) * degrees) / static_cast<T>(180.0);
+	}
+
+	template<typename T>
+	inline T RadToDeg(T radians)
+	{
+		return (static_cast<T>(180.0) * radians) / static_cast<T>(PI);
+	}
+
+	template<typename T>
+	inline T Round(T val)
+	{
+		return std::round(val * static_cast<T>(1000000.0)) / static_cast<T>(1000000.0f);
+	}
+
+	template<typename T>
+	inline T Floor(const T &val)
+	{
+		return std::floor(val);
+	}
+
+	template<typename T>
+	inline T Ceil(const T &val)
+	{
+		return std::ceil(val);
+	}
+
+	template<typename T>
+	inline int32 Sign(const T &val)
+	{
+		return (static_cast<T>(0.0) < val) - (val < static_cast<T>(0));
+	}
+
+	template<typename T>
+	inline T Sqrt(const T &val)
+	{
+		return std::sqrt(val);
+	}
+
+	template<typename T>
+	inline void Swap(T *a1, T *a2)
+	{
+		T temp = *a1;
+		*a1 = *a2;
+		*a2 = temp;
 	}
 
 	template<typename T>
@@ -728,61 +791,7 @@ namespace cm
 	// Inline math functions
 	//************************************
 
-	inline uint32 SafeTruncateUint64(uint64 Value)
-	{
-		Assert(Value <= 0xFFFFFFFF);
-		uint32 Result = static_cast<uint32>(Value);
-		return(Result);
-	}
 
-	inline real32 SafeTruncateDouble(real64 Value)
-	{
-		Assert(Value <= 0xFFFFFFFF);
-		float Result = static_cast<float>(Value);
-		return(Result);
-	}
-
-	inline  real32 DegToRad(real32 degrees)
-	{
-		return SafeTruncateDouble((PI * degrees) / 180);
-	}
-
-	inline  real32 RadToDeg(real32 radians)
-	{
-		return SafeTruncateDouble((180 * radians) / PI);
-	}
-
-	inline real32 Round(real32 val)
-	{
-		return std::roundf(val * 1000000.0f) / 1000000.0f;
-	}
-
-	inline real32 Floor(const real32 &val)
-	{
-		return std::floor(val);
-	}
-
-	inline real32 Ceil(const real32 &val)
-	{
-		return std::ceil(val);
-	}
-
-	inline int32 Sign(const real32 &val)
-	{
-		return (0 < val) - (val < 0);
-	}
-
-	inline real32 Sqrt(const real32 &val)
-	{
-		return sqrtf(val);
-	}
-
-	inline void Swap(real32 *a1, real32 *a2)
-	{
-		real32 temp = *a1;
-		*a1 = *a2;
-		*a2 = temp;
-	}
 
 	inline float FloatChop(float val, float decimal_count)
 	{
