@@ -49,7 +49,7 @@ namespace cm
 		
 		switch (flags)
 		{			
-			case AnimationFlags::Once: animation_time = Clamp(time_in_ticks, 0, duration - 0.01f); break; 
+			case AnimationFlags::Once: animation_time = Clamp(time_in_ticks, 0.0f, duration - 0.01f); break; 
 			case AnimationFlags::Loop: animation_time = fmod(time_in_ticks, duration);  break;
 			default: return;			
 		}
@@ -76,9 +76,9 @@ namespace cm
 			Assert(keyset_index < frames.size());
 			Assert(keyset_index >= 0);
 
-			Vec3 pos = CalculateInterpolatedPosition(animation_time, keyset_index);
+			Vec3f pos = CalculateInterpolatedPosition(animation_time, keyset_index);
 			Quat q = CalculateInterpolatedRotation(animation_time, keyset_index);
-			Vec3 scl = CalculateInterpolatedScaling(animation_time, keyset_index);
+			Vec3f scl = CalculateInterpolatedScaling(animation_time, keyset_index);
 
 			Mat4 scaleM = ScaleCardinal(Mat4(1), scl);
 			Mat4 rotM = QuatToMat4(q);
@@ -110,7 +110,7 @@ namespace cm
 	}
 
 
-	cm::Vec3 Animation::CalculateInterpolatedPosition(const real32 &animation_time, const int32 &keyset_index)
+	cm::Vec3f Animation::CalculateInterpolatedPosition(const real32 &animation_time, const int32 &keyset_index)
 	{
 		const AnimationFrames &keyset = frames[keyset_index];
 
@@ -128,10 +128,10 @@ namespace cm
 
 		factor = Clamp(factor, 0.f, 1.f);
 
-		Vec3 start = keyset.poskeys[position_index];
-		Vec3 end = keyset.poskeys[next_position_index];
+		Vec3f start = keyset.poskeys[position_index];
+		Vec3f end = keyset.poskeys[next_position_index];
 
-		Vec3 result = Lerp(start, end, factor);
+		Vec3f result = Lerp(start, end, factor);
 
 		return result;
 	}
@@ -163,7 +163,7 @@ namespace cm
 	}
 
 
-	cm::Vec3 Animation::CalculateInterpolatedScaling(const real32 &animation_time, const int32 &keyset_index)
+	cm::Vec3f Animation::CalculateInterpolatedScaling(const real32 &animation_time, const int32 &keyset_index)
 	{
 		const AnimationFrames &keyset = frames[keyset_index];
 
@@ -181,10 +181,10 @@ namespace cm
 
 		factor = Clamp(factor, 0.f, 1.f);
 
-		Vec3 start = keyset.sclkeys[scaling_index];
-		Vec3 end = keyset.sclkeys[next_scaling_index];
+		Vec3f start = keyset.sclkeys[scaling_index];
+		Vec3f end = keyset.sclkeys[next_scaling_index];
 
-		Vec3 result = Lerp(start, end, factor);
+		Vec3f result = Lerp(start, end, factor);
 		return result;
 	}
 

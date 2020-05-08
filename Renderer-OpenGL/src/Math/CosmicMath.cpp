@@ -11,73 +11,24 @@ namespace cm
 		real32 dw = Abs(q1.w - q2.w);
 		return (dx < epsilon && dy < epsilon && dz < epsilon && dw < epsilon);
 	}
+	   
 
-	real32 Dot(const Vec3 &a, const Vec3 &b)
+
+
+
+
+
+	Vec3f Vec4ToVec3(const Vec4 &a)
 	{
-		return a.x * b.x + a.y * b.y + a.z * b.z;
+		return Vec3f(a.x, a.y, a.z);
 	}
 
-	real32 SqrdDistance(const Vec3 &a, const Vec3 &b)
-	{
-		return (a.x - b.x)*(a.x - b.x) + (a.y - b.y)*(a.y - b.y) + (a.z - b.z)*(a.z - b.z);
-	}
-
-	real32 Distance(const Vec3 &a, const Vec3 &b)
-	{
-		return Mag(a - b);
-	}
-
-	int32 AbsMaxIndex(const Vec3 &a)
-	{
-		real32 x = Abs(a.x);
-		real32 y = Abs(a.y);
-		real32 z = Abs(a.z);
-		return (x > y) ? ((x > z) ? 0 : 2) : ((y > z) ? 1 : 2);
-	}
-
-	int32 MaxIndex(const Vec3 &a)
-	{
-		return (a.x > a.y) ? ((a.x > a.z) ? 0 : 2) : ((a.y > a.z) ? 1 : 2);
-	}
-
-	real32 Mag(const Vec3 &a)
-	{
-		return sqrt(a.x*a.x + a.y * a.y + a.z * a.z);
-	}
-
-	Vec3 Cross(const Vec3 &a, const Vec3 &b)
-	{
-		real32 x = a.y * b.z - b.y * a.z;
-		real32 y = a.z * b.x - b.z * a.x;
-		real32 z = a.x * b.y - b.x * a.y;
-		return Vec3(x, y, z);
-	}
-
-	Vec3 Normalize(const Vec3 &a)
-	{
-		real32 magA = Mag(a);
-		__m128 div = _mm_div_ps(a.data, _mm_set1_ps(magA));
-		return Vec3(div);
-	}
-
-	Vec3 Vec4ToVec3(const Vec4 &a)
-	{
-		return Vec3(a.x, a.y, a.z);
-	}
-
-	bool CompareVec(const Vec3 &a, const Vec3 &b, const real &epsilon /*= FLOATING_POINT_ERROR_PRESCION*/)
+	bool CompareVec(const Vec3f &a, const Vec3f &b, const real &epsilon /*= FLOATING_POINT_ERROR_PRESCION*/)
 	{		
-		bool resx = requal(a.x, b.x, epsilon);
-		bool resy = requal(a.y, b.y, epsilon);
-		bool resz = requal(a.z, b.z, epsilon);
+		bool resx = Equal(a.x, b.x, epsilon);
+		bool resy = Equal(a.y, b.y, epsilon);
+		bool resz = Equal(a.z, b.z, epsilon);
 		return resx && resy && resz;
-	}
-
-	String ToString(const Vec3 &a)
-	{
-		StringStream ss;
-		ss << '(' << a.x << ", " << a.y << ", " << a.z << ')';
-		return ss.str();
 	}
 
 	String ToString(const Mat3 &a)
@@ -111,7 +62,7 @@ namespace cm
 		return a;
 	}
 
-	Vec4 Vec3ToVec4(const Vec3 &a, const real32 &w)
+	Vec4 Vec3ToVec4(const Vec3f &a, const real32 &w)
 	{
 		return Vec4(a.x, a.y, a.z, w);
 	}
@@ -219,7 +170,7 @@ namespace cm
 		}
 	}
 
-	Mat4 CalculateTransformMatrix(const Vec3 & position, const Vec3 & scale, const Quat & rotation)
+	Mat4 CalculateTransformMatrix(const Vec3f & position, const Vec3f & scale, const Quat & rotation)
 	{
 		// @HELP: Real time rendering book
 		Mat4 trans(1);
@@ -265,27 +216,27 @@ namespace cm
 		return column;
 	}
 
-	Vec3 GetColumn(const Mat3 &a, const uint32 &col)
+	Vec3f GetColumn(const Mat3 &a, const uint32 &col)
 	{
-		Vec3 column(0, 0, 0);
+		Vec3f column(0, 0, 0);
 		column.x = a.ptr[4 * 0 + col];
 		column.y = a.ptr[4 * 1 + col];
 		column.z = a.ptr[4 * 2 + col];
 		return column;
 	}
 
-	cm::Vec3 DecomposeToScale(const Mat3 &a)
+	cm::Vec3f DecomposeToScale(const Mat3 &a)
 	{
 		real32 x = Mag(a.row0);
 		real32 y = Mag(a.row1);
 		real32 z = Mag(a.row2);
-		Vec3 result = Vec3(x, y, z);
+		Vec3f result = Vec3f(x, y, z);
 		return result;
 	}
 
 	cm::Mat3 DecomposeToRotationMatrix(const Mat3 &a)
 	{
-		Vec3 scale = DecomposeToScale(a);
+		Vec3f scale = DecomposeToScale(a);
 		Mat3 result;
 
 		for (int32 i = 0; i < 3; i++)
@@ -424,7 +375,7 @@ namespace cm
 
 	}
 
-	Mat4 Translate(Mat4 a, Vec3 translation)
+	Mat4 Translate(Mat4 a, Vec3f translation)
 	{
 		a.row3 = Vec4(translation, 1) * a;
 		return a;
@@ -443,7 +394,7 @@ namespace cm
 		return a;
 	}
 
-	Mat4 Rotate(Mat4 a, real32 d_angle, Vec3 axis)
+	Mat4 Rotate(Mat4 a, real32 d_angle, Vec3f axis)
 	{
 		axis = Normalize(axis);
 		real32 theata = DegToRad(d_angle);
@@ -475,7 +426,7 @@ namespace cm
 		return result * a;
 	}
 
-	Mat3 Rotate(const Mat3 &a, const real32 &d_angle, Vec3 axis)
+	Mat3 Rotate(const Mat3 &a, const real32 &d_angle, Vec3f axis)
 	{
 		axis = Normalize(axis);
 		
@@ -483,17 +434,17 @@ namespace cm
 		real32 cos_theata = cosf(theata);
 		real32 sin_theata = sinf(theata);
 
-		Vec3 iPrime(0, 0, 0);
+		Vec3f iPrime(0, 0, 0);
 		iPrime.x = Round(axis.x *axis.x * (1 - cos_theata) + cos_theata);
 		iPrime.y = Round(axis.x *axis.y * (1 - cos_theata) + axis.z * sin_theata);
 		iPrime.z = Round(axis.x *axis.z * (1 - cos_theata) - axis.y * sin_theata);
 
-		Vec3 jPrime(0, 0, 0);
+		Vec3f jPrime(0, 0, 0);
 		jPrime.x = Round(axis.x *axis.y * (1 - cos_theata) - axis.z *sin_theata);
 		jPrime.y = Round(axis.y *axis.y * (1 - cos_theata) + cos_theata);
 		jPrime.z = Round(axis.y *axis.z * (1 - cos_theata) + axis.x *sin_theata);
 
-		Vec3 kPrime(0, 0, 0);
+		Vec3f kPrime(0, 0, 0);
 		kPrime.x = Round(axis.x *axis.z * (1 - cos_theata) + axis.y *sin_theata);
 		kPrime.y = Round(axis.y *axis.z * (1 - cos_theata) - axis.x *sin_theata);
 		kPrime.z = Round(axis.z *axis.z * (1 - cos_theata) + cos_theata);
@@ -503,7 +454,7 @@ namespace cm
 		return result * a;
 	}
 
-	Quat Rotate(const Quat &q, const real32 &d_angle, Vec3 axis)
+	Quat Rotate(const Quat &q, const real32 &d_angle, Vec3f axis)
 	{
 		// @HELP: https://stackoverflow.com/questions/4436764/rotating-a-quaternion-on-1-axis
 		axis = Normalize(axis);
@@ -605,7 +556,7 @@ namespace cm
 		}
 	}
 
-	Mat4 ScaleDirection(Mat4 a, real32 k, Vec3 unit_direction, bool should_normalize)
+	Mat4 ScaleDirection(Mat4 a, real32 k, Vec3f unit_direction, bool should_normalize)
 	{
 		if (should_normalize && Mag(unit_direction) != 1)
 		{
@@ -632,21 +583,21 @@ namespace cm
 		return result * a;
 	}
 
-	cm::Mat3 ScaleDirection(const Mat3 &a, const real32 &k, Vec3 direction)
+	cm::Mat3 ScaleDirection(const Mat3 &a, const real32 &k, Vec3f direction)
 	{
 		direction = Normalize(direction);
 
-		Vec3 i_prime(0, 0, 0);
+		Vec3f i_prime(0, 0, 0);
 		i_prime.x = 1 + (k - 1) * direction.x * direction.x;
 		i_prime.y = (k - 1) * direction.x * direction.y;
 		i_prime.z = (k - 1) * direction.x * direction.z;
 
-		Vec3 j_prime(0, 0, 0);
+		Vec3f j_prime(0, 0, 0);
 		j_prime.x = (k - 1) * direction.x * direction.y;
 		j_prime.y = 1 + (k - 1) * direction.y * direction.y;
 		j_prime.z = (k - 1) * direction.y * direction.z;
 
-		Vec3 k_prime(0, 0, 0);
+		Vec3f k_prime(0, 0, 0);
 		k_prime.x = (k - 1) * direction.x * direction.z;
 		k_prime.y = (k - 1) * direction.y * direction.z;
 		k_prime.z = 1 + (k - 1) * direction.z * direction.z;
@@ -655,7 +606,7 @@ namespace cm
 		return result;
 	}
 
-	Mat4 ScaleCardinal(Mat4 a, Vec3 direction)
+	Mat4 ScaleCardinal(Mat4 a, Vec3f direction)
 	{
 		a.row0 = a.row0 * direction.x;
 		a.row1 = a.row1 * direction.y;
@@ -688,14 +639,14 @@ namespace cm
 		return result;
 	}
 
-	Mat4 LookAt(const Vec3 &position, const Vec3 &target, const Vec3 &up)
+	Mat4 LookAt(const Vec3f &position, const Vec3f &target, const Vec3f &up)
 	{
-		Vec3 camera_reverse_direction = Normalize((target - position));
+		Vec3f camera_reverse_direction = Normalize((target - position));
 
-		Vec3 basis_right = Normalize(Cross(camera_reverse_direction, up));
-		Vec3 basis_up = Cross(basis_right, camera_reverse_direction);
+		Vec3f basis_right = Normalize(Cross(camera_reverse_direction, up));
+		Vec3f basis_up = Cross(basis_right, camera_reverse_direction);
 
-		Vec3 basis_forward = Normalize(Cross(basis_up, basis_right));
+		Vec3f basis_forward = Normalize(Cross(basis_up, basis_right));
 
 		// @NOTE: THIS IS CODE IS ACTUALLY COLUNM MAJOR
 		//		: We just yeet it by transposing it at the end. Also care for order of multiplication order
@@ -723,7 +674,7 @@ namespace cm
 			for (int32 y = 0; y < 3; y++)
 			{
 				// @NOTE: Gets the column vector of the right hand side
-				Vec3 col(0, 0, 0);
+				Vec3f col(0, 0, 0);
 				for (int32 x = 0; x < 3; x++)
 				{
 					col[x] = GetMatrixElement(b, x, y);
@@ -735,12 +686,12 @@ namespace cm
 		return result;
 	}
 
-	Vec3 operator*(const Vec3 &a, const Mat3 &b)
+	Vec3f operator*(const Vec3f &a, const Mat3 &b)
 	{
-		Vec3 result(0, 0, 0);
+		Vec3f result(0, 0, 0);
 		for (uint32 i = 0; i < 3; i++)
 		{
-			Vec3 col = GetColumn(b, i);
+			Vec3f col = GetColumn(b, i);
 			result[i] = Dot(col, a);
 		}
 		return result;
@@ -799,10 +750,10 @@ namespace cm
 		return result;
 	}
 
-	Quat EulerToQuat(const Vec3 &euler_angle)
+	Quat EulerToQuat(const Vec3f &euler_angle)
 	{
-		Vec3 c = Vec3(cos(DegToRad(euler_angle.x) / 2.0f), cos(DegToRad(euler_angle.y) / 2.0f), cos(DegToRad(euler_angle.z) / 2.0f));
-		Vec3 s = Vec3(sin(DegToRad(euler_angle.x) / 2.0f), sin(DegToRad(euler_angle.y) / 2.0f), sin(DegToRad(euler_angle.z) / 2.0f));
+		Vec3f c = Vec3f(cos(DegToRad(euler_angle.x) / 2.0f), cos(DegToRad(euler_angle.y) / 2.0f), cos(DegToRad(euler_angle.z) / 2.0f));
+		Vec3f s = Vec3f(sin(DegToRad(euler_angle.x) / 2.0f), sin(DegToRad(euler_angle.y) / 2.0f), sin(DegToRad(euler_angle.z) / 2.0f));
 
 		Quat q;
 		q.x = s.x * c.y * c.z - c.x * s.y * s.z;
@@ -813,10 +764,10 @@ namespace cm
 		return q;
 	}
 	
-	cm::Vec3 QuatToEuler(const Quat &q)
+	cm::Vec3f QuatToEuler(const Quat &q)
 	{
 		// @HELP: Glm and Math book
-		Vec3 euler;
+		Vec3f euler;
 		Vec2f sp;
 		sp.x = 2.f * (q.y * q.z + q.w * q.x);
 		sp.y = q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z;
@@ -830,7 +781,7 @@ namespace cm
 			euler.x = atan2(sp.x, sp.y);
 		}
 		
-		euler.y = asin( Clamp(-2.0f * (q.x * q.z - q.w * q.y), -1.0, 1.0f) );
+		euler.y = asin( Clamp(-2.0f * (q.x * q.z - q.w * q.y), -1.0f, 1.0f) );
 		euler.z = atan2( 2.0f * (q.x * q.y + q.w * q.z), q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z );
 
 		euler.x = RadToDeg(euler.x);
@@ -914,9 +865,9 @@ namespace cm
 		return mat;
 	}
 
-	Vec3 Rotate(const real32 &d_angle, const Vec3 &point, const Vec3 &axis)
+	Vec3f Rotate(const real32 &d_angle, const Vec3f &point, const Vec3f &axis)
 	{
-		Vec3 ax = Normalize(axis);
+		Vec3f ax = Normalize(axis);
 
 		real32 sh = sin(DegToRad(d_angle / 2));
 		real32 ch = cos(DegToRad(d_angle / 2));
@@ -930,16 +881,16 @@ namespace cm
 		Quat pp = Quat(point, 0);
 
 		Quat res = (r * pp) * rc;
-		return Vec3(res.x, res.y, res.z);
+		return Vec3f(res.x, res.y, res.z);
 	}
 
-	Vec3 Rotate(const Quat &r, const Vec3 &point)
+	Vec3f Rotate(const Quat &r, const Vec3f &point)
 	{
 		//@Help: https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
 		Quat rc = Conjugate(Normalize(r));
 		Quat pp = Quat(point, 0);
 		Quat res = (r * pp) * rc;
-		return Vec3(res.x, res.y, res.z);
+		return Vec3f(res.x, res.y, res.z);
 	}
 
 	Quat Conjugate(const Quat &a)
@@ -978,11 +929,11 @@ namespace cm
 		return viewCoords * invproj;
 	}
 
-	Vec3 ToWorldCoords(const Mat4 &view_matrix, const Vec4 &viewCoords)
+	Vec3f ToWorldCoords(const Mat4 &view_matrix, const Vec4 &viewCoords)
 	{
 		Mat4 invView = Inverse(view_matrix);
 		Vec4 worldSpace = viewCoords * invView;
-		return Vec3(worldSpace.x, worldSpace.y, worldSpace.z);
+		return Vec3f(worldSpace.x, worldSpace.y, worldSpace.z);
 	}
 
 	Polar_coord Canonical(real32 r, real32 theta, real32 z)

@@ -227,7 +227,7 @@ namespace cm
 		//		: then acts as out non canonical form which the user plays with and then we convert 
 		//		: back into a quat. This has the down side landing in gimbal lock, but is much better
 		//		: than having to rewrite the whole transform class inorder to store a euler rotation
-		Vec3 euler_angles = Vec3(0);
+		Vec3f euler_angles = Vec3f(0);
 		Quat quat_angle = Quat();
 	};
 }

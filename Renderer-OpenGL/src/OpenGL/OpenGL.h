@@ -768,7 +768,7 @@ namespace cm
 	private:
 		bool created = false;
 		uint32 kernel_size;
-		Vec3 *kernel_samples;
+		Vec3f *kernel_samples;
 
 	public:
 		void Create(uint32 kernel_size, uint32 noise_texture_size);
@@ -782,7 +782,7 @@ namespace cm
 		~HemisphereKernel();
 
 		inline uint32 GetKernelSize() const { return kernel_size; }
-		inline Vec3 GetKernelSample(uint32 index) const { Assert(index >= 0 && index < kernel_size); return kernel_samples[index]; }
+		inline Vec3f GetKernelSample(uint32 index) const { Assert(index >= 0 && index < kernel_size); return kernel_samples[index]; }
 		void SetKernelSize(uint32 kernel_size); 
 	};
 	   	 

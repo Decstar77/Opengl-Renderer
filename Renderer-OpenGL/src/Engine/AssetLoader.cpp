@@ -465,7 +465,7 @@ namespace cm
 
 			for (uint32 j = 0; j < ai->mNumPositionKeys; j++)
 			{
-				Vec3 pos = Vec3(ai->mPositionKeys[j].mValue.x, ai->mPositionKeys[j].mValue.y, ai->mPositionKeys[j].mValue.z);
+				Vec3f pos = Vec3f(ai->mPositionKeys[j].mValue.x, ai->mPositionKeys[j].mValue.y, ai->mPositionKeys[j].mValue.z);
 				real32 time = SafeTruncateDouble(ai->mPositionKeys[j].mTime);
 				animation->frames[i].poskeys[j] = pos;
 				animation->frames[i].postime[j] = time;
@@ -481,7 +481,7 @@ namespace cm
 
 			for (uint32 j = 0; j < ai->mNumScalingKeys; j++)
 			{
-				Vec3 pos = Vec3(ai->mScalingKeys[j].mValue.x, ai->mScalingKeys[j].mValue.y, ai->mScalingKeys[j].mValue.z);
+				Vec3f pos = Vec3f(ai->mScalingKeys[j].mValue.x, ai->mScalingKeys[j].mValue.y, ai->mScalingKeys[j].mValue.z);
 				real32 time = SafeTruncateDouble(ai->mScalingKeys[j].mTime);
 				animation->frames[i].sclkeys[j] = pos;
 				animation->frames[i].scltime[j] = time;

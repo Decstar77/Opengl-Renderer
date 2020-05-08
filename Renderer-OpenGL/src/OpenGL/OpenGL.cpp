@@ -1334,12 +1334,12 @@ namespace cm
 
 	cm::Mat4 CubeMapMatrices::views[6] =
 	{
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(1.0f,  0.0f,  0.0f), Vec3(0.0f, -1.0f,  0.0f)),
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(-1.0f,  0.0f,  0.0f),Vec3(0.0f, -1.0f,  0.0f)),
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  1.0f,  0.0f), Vec3(0.0f,  0.0f,  1.0f)),
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f,  0.0f), Vec3(0.0f,  0.0f, -1.0f)),
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f,  1.0f), Vec3(0.0f, -1.0f,  0.0f)),
-		LookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f,  0.0f, -1.0f), Vec3(0.0f, -1.0f,  0.0f))
+		LookAt(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(1.0f,  0.0f,  0.0f), Vec3f(0.0f, -1.0f,  0.0f)),
+		LookAt(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(-1.0f,  0.0f,  0.0f),Vec3f(0.0f, -1.0f,  0.0f)),
+		LookAt(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(0.0f,  1.0f,  0.0f), Vec3f(0.0f,  0.0f,  1.0f)),
+		LookAt(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(0.0f, -1.0f,  0.0f), Vec3f(0.0f,  0.0f, -1.0f)),
+		LookAt(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(0.0f,  0.0f,  1.0f), Vec3f(0.0f, -1.0f,  0.0f)),
+		LookAt(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(0.0f,  0.0f, -1.0f), Vec3f(0.0f, -1.0f,  0.0f))
 	};
 
 
@@ -2752,13 +2752,13 @@ namespace cm
 		{
 		}
 			delete[] kernel_samples;
-			kernel_samples = new Vec3[kernel_size];
+			kernel_samples = new Vec3f[kernel_size];
 		this->kernel_size = kernel_size;
 
 		
 		for (uint32 i = 0; i < kernel_size; i++)
 		{
-			Vec3 sample = Vec3(
+			Vec3f sample = Vec3f(
 				RandomBillateral<real32>(),
 				RandomBillateral<real32> (),
 				RandomUnillateral<real32>()
@@ -2780,12 +2780,12 @@ namespace cm
 		Assert(kernel_size != 0);
 		Assert(noise_texture_size != 0);
 
-		kernel_samples = new Vec3[kernel_size];
+		kernel_samples = new Vec3f[kernel_size];
 		this->kernel_size = kernel_size;
 		// @NOTE: Gen samples
 		for (uint32 i = 0; i < kernel_size; i++)
 		{
-			Vec3 sample = Vec3(
+			Vec3f sample = Vec3f(
 				RandomBillateral<real32>(),
 				RandomBillateral<real32>(),
 				RandomUnillateral <real32> ()
@@ -2801,10 +2801,10 @@ namespace cm
 		}
 
 		// @NOTE: Gen noise texture
-		Vec3 *noise = new Vec3[noise_texture_size * noise_texture_size];
+		Vec3f *noise = new Vec3f[noise_texture_size * noise_texture_size];
 		for (uint32 i = 0; i < noise_texture_size * noise_texture_size; i++)
 		{
-			Vec3 n(
+			Vec3f n(
 				RandomBillateral<real32>(),
 				RandomBillateral<real32>(),
 				0.0f);

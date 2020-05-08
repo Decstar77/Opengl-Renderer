@@ -26,13 +26,13 @@ namespace cm
 		int32 bone_index = -1;
 		String bone_name;
 		std::vector<real32> postime;
-		std::vector<Vec3> poskeys;
+		std::vector<Vec3f> poskeys;
 
 		std::vector<real32> rottime;
 		std::vector<Quat> rotkeys;
 
 		std::vector<real32> scltime;
-		std::vector<Vec3> sclkeys;
+		std::vector<Vec3f> sclkeys;
 	};
 
 	enum class AnimationFlags
@@ -60,8 +60,8 @@ namespace cm
 
 		int32 GetAnimationChannel(const String &bone_name);
 
-		Vec3 CalculateInterpolatedScaling(const real32 &animation_time, const int32 &keyset_index);
-		Vec3 CalculateInterpolatedPosition(const real32 &animation_time, const int32 &keyset_index);
+		Vec3f CalculateInterpolatedScaling(const real32 &animation_time, const int32 &keyset_index);
+		Vec3f CalculateInterpolatedPosition(const real32 &animation_time, const int32 &keyset_index);
 		Quat CalculateInterpolatedRotation(const real32 &animation_time, const int32 &keyset_index);
 
 		int32 FindPosition(const real32 &animation_time, const int32 &keyset_index);

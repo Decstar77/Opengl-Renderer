@@ -13,10 +13,10 @@ namespace cm
 	class PointMass
 	{		
 	public:
-		Vec3 position;
-		Vec3 velocity;
-		Vec3 acceleration;
-		Vec3 force_accum;
+		Vec3f position;
+		Vec3f velocity;
+		Vec3f acceleration;
+		Vec3f force_accum;
 
 		uint32 rid = 0;
 
@@ -53,12 +53,12 @@ namespace cm
 	class AttractionForceGenerator : public ForceGenerator
 	{
 	public:
-		Vec3 origin;
+		Vec3f origin;
 		real raduis;
 		real strength;
 		AttractionForceGenerator() {}
 		~AttractionForceGenerator() {}
-		AttractionForceGenerator(const Vec3 &origin, real strength, real raduis) : origin(origin), strength(strength), raduis(raduis) {}
+		AttractionForceGenerator(const Vec3f &origin, real strength, real raduis) : origin(origin), strength(strength), raduis(raduis) {}
 
 		void ApplyForce(PointMass *ri, real delta) override;
 	
@@ -82,7 +82,7 @@ namespace cm
 	class AnchoredSpringForce : public ForceGenerator
 	{
 	public:
-		Vec3 anchor;
+		Vec3f anchor;
 		//Spring constant
 		real k; 
 		//Rest length
@@ -111,9 +111,9 @@ namespace cm
 	class PointMassContact
 	{
 	public:
-		Vec3 pms_movement[2];
+		Vec3f pms_movement[2];
 		PointMass *pms[2];
-		Vec3 contant_normal;
+		Vec3f contant_normal;
 		real restitution = 0;
 		real penetration = 0;
 		
@@ -224,7 +224,7 @@ namespace cm
 				contacts[maxIndex].resolve(delta);
 
 				// Update the interpenetrations for all particles
-				Vec3 *move = contacts[maxIndex].pms_movement;
+				Vec3f *move = contacts[maxIndex].pms_movement;
 				for (int32 i = 0; i < contacts.size(); i++)
 				{
 					if (contacts[i].pms[0] == contacts[maxIndex].pms[0])
@@ -302,7 +302,7 @@ namespace cm
 			PointMass m2 = *pms[1];
 
 			real length = Mag(m1.position - m2.position);
-			if (requal(length, max_length))
+			if (Equal(length, max_length))
 			{
 				return {};
 			}
@@ -338,7 +338,7 @@ namespace cm
 
 	public:
 
-		uint32 CreatePointMass(const Vec3 &pos, real mass, real damping)
+		uint32 CreatePointMass(const Vec3f &pos, real mass, real damping)
 		{
 			PointMass pm_test;
 			pm_test.damping = damping;

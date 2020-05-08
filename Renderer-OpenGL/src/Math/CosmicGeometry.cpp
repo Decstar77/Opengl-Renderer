@@ -8,7 +8,7 @@ namespace cm
 
 	}
 
-	Ray::Ray(const Vec3 &origin, const Vec3 &direction)
+	Ray::Ray(const Vec3f &origin, const Vec3f &direction)
 	{
 		this->origin = origin;
 		this->direction = Normalize(direction);
@@ -19,7 +19,7 @@ namespace cm
 
 	}
 	
-	Vec3 Ray::Travel(real32 dist) const
+	Vec3f Ray::Travel(real32 dist) const
 	{
 		return origin + dist * direction;
 	}
@@ -30,7 +30,7 @@ namespace cm
 
 	}
 
-	Plane::Plane(const Vec3 &origin, const Vec3 &normal)
+	Plane::Plane(const Vec3f &origin, const Vec3f &normal)
 	{
 		this->origin = origin;
 		this->normal = Normalize(normal);
@@ -52,7 +52,7 @@ namespace cm
 		real32 demon = Dot(r.direction, normal);
 		if (Abs(demon) >= 0.001)
 		{
-			Vec3 to_origin = origin - r.origin;
+			Vec3f to_origin = origin - r.origin;
 			real32 t = Dot(to_origin, normal) / demon;
 			return (t >= 0);
 		}
@@ -64,7 +64,7 @@ namespace cm
 		real32 demon = Dot(r.direction, normal);
 		if (Abs(demon) >= 0.001)
 		{
-			Vec3 to_origin = origin - r.origin;
+			Vec3f to_origin = origin - r.origin;
 			real32 t = Dot(to_origin, normal) / demon;
 			if (t >= 0)
 			{
@@ -95,7 +95,7 @@ namespace cm
 
 	}
 
-	Aabb::Aabb(const Vec3 &min, const Vec3 &max)
+	Aabb::Aabb(const Vec3f &min, const Vec3f &max)
 	{
 		SetFromMinMax(min, max);
 	}
@@ -110,7 +110,7 @@ namespace cm
 		return GeometricColliderType::axis_aligned_bounding_box;
 	}
 
-	void Aabb::SetFromCenterRaduis(const Vec3 &center, const Vec3 &raduis)
+	void Aabb::SetFromCenterRaduis(const Vec3f &center, const Vec3f &raduis)
 	{
 		this->min = center - raduis;
 		this->max = center + raduis;
@@ -118,11 +118,11 @@ namespace cm
 		this->radius = raduis;
 	}
 
-	void Aabb::SetFromMinMax(const Vec3 &min, const Vec3 &max)
+	void Aabb::SetFromMinMax(const Vec3f &min, const Vec3f &max)
 	{
 		this->min = min;
 		this->max = max;
-		this->center = (min + max) / 2.0;
+		this->center = (min + max) / 2.0f;
 		this->radius = Abs(max - this->center);
 	}
 
@@ -172,8 +172,8 @@ namespace cm
 	{
 		// @SPEED: This is matrix calc is slow
 		Mat4 transform_matrix = t.CalcTransformMatrix();
-		Vec3 old_center = this->center;
-		Vec3 old_radius = this->radius;
+		Vec3f old_center = this->center;
+		Vec3f old_radius = this->radius;
 		for (int32 i = 0; i < 3; i++)
 		{
 			this->center[i] = t.position[i];
@@ -192,8 +192,8 @@ namespace cm
 	{	
 		// @SPEED: This is matrix calc is slow
 		Mat4 transform_matrix = t->CalcTransformMatrix();
-		Vec3 old_center = this->center;
-		Vec3 old_radius = this->radius;
+		Vec3f old_center = this->center;
+		Vec3f old_radius = this->radius;
 		for (int32 i = 0; i < 3; i++)
 		{
 			this->center[i] = t->position[i];
@@ -215,7 +215,7 @@ namespace cm
 
 	}
 
-	OBB::OBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis)
+	OBB::OBB(const Vec3f &origin, const Vec3f &extents, const Basis &basis)
 	{
 		this->origin = origin;
 		this->extents = extents;
@@ -228,12 +228,12 @@ namespace cm
 
 	}
 
-	cm::Vec3 OBB::GetExtents() const
+	cm::Vec3f OBB::GetExtents() const
 	{
 		return extents;
 	}
 
-	void OBB::SetExtents(const Vec3 &extents)
+	void OBB::SetExtents(const Vec3f &extents)
 	{
 		this->extents = extents;
 		this->scale_extent_offset = 1.0f / this->extents;
@@ -255,7 +255,7 @@ namespace cm
 			if (Abs(demon) < 0.001)
 			{
 				// @NOTE: Ray parallel to a plane
-				Vec3 to_origin = origin - r.origin;
+				Vec3f to_origin = origin - r.origin;
 				real32 r = Dot(basis.mat[i], to_origin);
 				if (-r - extents[i] > 0 || -r + extents[i] > 0)
 				{
@@ -263,7 +263,7 @@ namespace cm
 				}
 			}
 
-			Vec3 to_origin = origin - r.origin;
+			Vec3f to_origin = origin - r.origin;
 			real32 q = Dot(basis.mat[i], to_origin);
 			real32 s = Dot(basis.mat[i], r.direction);
 
@@ -295,7 +295,7 @@ namespace cm
 			if (Abs(demon) < 0.001)
 			{
 				// @NOTE: Ray parallel to a plane
-				Vec3 to_origin = origin - r.origin;
+				Vec3f to_origin = origin - r.origin;
 				real32 r = Dot(basis.mat[i], to_origin);
 				if (-r - extents[i] > 0 || -r + extents[i] > 0)
 				{
@@ -303,7 +303,7 @@ namespace cm
 				}
 			}
 
-			Vec3 to_origin = origin - r.origin;
+			Vec3f to_origin = origin - r.origin;
 			real32 q = Dot(basis.mat[i], to_origin);
 			real32 s = Dot(basis.mat[i], r.direction);
 
@@ -334,7 +334,7 @@ namespace cm
 
 	void OBB::Update(const Transform &t)
 	{
-		Assert(scale_extent_offset != Vec3(0));
+		Assert(scale_extent_offset != Vec3f(0));
 		this->origin = t.position;
 		this->basis = Basis(QuatToMat3( Conjugate(t.rotation) ));
 		this->extents = t.scale / scale_extent_offset;
@@ -342,7 +342,7 @@ namespace cm
 
 	void OBB::Update(const Transform *t)
 	{
-		Assert(scale_extent_offset != Vec3(0));
+		Assert(scale_extent_offset != Vec3f(0));
 		this->origin = t->position;
 		this->basis = Basis(QuatToMat3(Conjugate(t->rotation)));
 		this->extents = t->scale / scale_extent_offset;

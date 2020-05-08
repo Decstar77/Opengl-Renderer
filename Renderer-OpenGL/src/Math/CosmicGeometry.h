@@ -19,15 +19,15 @@ namespace cm
 	class Ray
 	{
 	public:
-		Vec3 origin;
-		Vec3 direction;
+		Vec3f origin;
+		Vec3f direction;
 
 	public:
-		Vec3 Travel(real32 dist) const;
+		Vec3f Travel(real32 dist) const;
 
 	public:
 		Ray();
-		Ray(const Vec3 &origin, const Vec3 &direction);
+		Ray(const Vec3f &origin, const Vec3f &direction);
 		~Ray();
 	};	   	  	
 	
@@ -52,8 +52,8 @@ namespace cm
 	class Plane : public GeometricCollider
 	{
 	public:
-		Vec3 origin;
-		Vec3 normal;
+		Vec3f origin;
+		Vec3f normal;
 
 	public:
 		virtual GeometricColliderType GetColliderType() const override;
@@ -67,23 +67,23 @@ namespace cm
 
 	public:
 		Plane();
-		Plane(const Vec3 &origin, const Vec3 &normal);
+		Plane(const Vec3f &origin, const Vec3f &normal);
 		~Plane();
 	};
 
 	class Aabb : public GeometricCollider
 	{
 	public:
-		Vec3 min = Vec3(0);
-		Vec3 max = Vec3(0);
-		Vec3 center = Vec3(0);
-		Vec3 radius = Vec3(0);
+		Vec3f min = Vec3f(0);
+		Vec3f max = Vec3f(0);
+		Vec3f center = Vec3f(0);
+		Vec3f radius = Vec3f(0);
 
 	public:
 		virtual GeometricColliderType GetColliderType() const override;
 
-		void SetFromCenterRaduis(const Vec3 &center, const Vec3 &raduis);
-		void SetFromMinMax(const Vec3 &min, const Vec3 &max);
+		void SetFromCenterRaduis(const Vec3f &center, const Vec3f &raduis);
+		void SetFromMinMax(const Vec3f &min, const Vec3f &max);
 
 		virtual bool CheckCollision(const Ray &r) const override;
 		virtual bool CheckCollision(const Ray &r, CollisionInfo *collision_info) const override;
@@ -93,7 +93,7 @@ namespace cm
 
 	public:
 		Aabb();
-		Aabb(const Vec3 &min, const Vec3 &max);
+		Aabb(const Vec3f &min, const Vec3f &max);
 		~Aabb();
 	};
 
@@ -101,12 +101,12 @@ namespace cm
 	{
 	public:
 		Basis basis;
-		Vec3 origin = Vec3(0);
+		Vec3f origin = Vec3f(0);
 
 	public:
 		
-		Vec3 GetExtents() const;
-		void SetExtents(const Vec3 &extents);
+		Vec3f GetExtents() const;
+		void SetExtents(const Vec3f &extents);
 		
 		virtual GeometricColliderType GetColliderType() const override;
 
@@ -118,13 +118,13 @@ namespace cm
 				
 	public:
 		OBB();
-		OBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis);
+		OBB(const Vec3f &origin, const Vec3f &extents, const Basis &basis);
 		~OBB();
 
 
 	private:
-		Vec3 extents = Vec3(0);
-		Vec3 scale_extent_offset = Vec3(0);
+		Vec3f extents = Vec3f(0);
+		Vec3f scale_extent_offset = Vec3f(0);
 		
 
 

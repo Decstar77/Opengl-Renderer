@@ -46,7 +46,7 @@ namespace cm
 		log_info_stream << msg << '\n';
 	}
 
-	void Debug::Log(const Vec3 &msg)
+	void Debug::Log(const Vec3f &msg)
 	{
 		log_info_stream << ToString(msg) << '\n';
 	}
@@ -97,7 +97,7 @@ namespace cm
 		log_info_stream << "WARNING: " << msg << '\n';
 	}
 
-	void Debug::LogWarning(const Vec3 &msg)
+	void Debug::LogWarning(const Vec3f &msg)
 	{
 		log_info_stream << "WARNING: " << ToString(msg) << '\n';
 	}
@@ -117,28 +117,28 @@ namespace cm
 		log_info_stream << "WARNING: " << ToString(msg) << '\n';
 	}
 
-	void Debug::AddPersistentLine(const Vec3 &a, const Vec3 &b)
+	void Debug::AddPersistentLine(const Vec3f &a, const Vec3f &b)
 	{
 		Assert(debug_queue.persistent_vertices.size() + 2 < debug_queue.MAX_VERTICES_SIZE);
 		debug_queue.persistent_vertices.push_back(a);
 		debug_queue.persistent_vertices.push_back(b);
 	}
 
-	void Debug::AddIrresoluteLine(const Vec3 &a, const Vec3 &b)
+	void Debug::AddIrresoluteLine(const Vec3f &a, const Vec3f &b)
 	{
 		debug_queue.irresolute_vertices.push_back(a);
 		debug_queue.irresolute_vertices.push_back(b);
 	}
 
-	void Debug::AddPersistentAABBMinMax(const Vec3 &min, const Vec3 &max)
+	void Debug::AddPersistentAABBMinMax(const Vec3f &min, const Vec3f &max)
 	{
-		Vec3 v2 = Vec3(max.x, min.y, min.z);
-		Vec3 v3 = Vec3(max.x, max.y, min.z);
-		Vec3 v4 = Vec3(min.x, max.y, min.z);
+		Vec3f v2 = Vec3f(max.x, min.y, min.z);
+		Vec3f v3 = Vec3f(max.x, max.y, min.z);
+		Vec3f v4 = Vec3f(min.x, max.y, min.z);
 
-		Vec3 v6 = Vec3(max.x, min.y, max.z);
-		Vec3 v7 = Vec3(min.x, min.y, max.z);
-		Vec3 v8 = Vec3(min.x, max.y, max.z);
+		Vec3f v6 = Vec3f(max.x, min.y, max.z);
+		Vec3f v7 = Vec3f(min.x, min.y, max.z);
+		Vec3f v8 = Vec3f(min.x, max.y, max.z);
 
 		AddPersistentLine(min, v2);
 		AddPersistentLine(min, v4);
@@ -158,15 +158,15 @@ namespace cm
 		AddPersistentLine(v8, v4);
 	}
 
-	void Debug::AddIrresoluteAABBMinMax(const Vec3 &min, const Vec3 &max)
+	void Debug::AddIrresoluteAABBMinMax(const Vec3f &min, const Vec3f &max)
 	{
-		Vec3 v2 = Vec3(max.x, min.y, min.z);
-		Vec3 v3 = Vec3(max.x, max.y, min.z);
-		Vec3 v4 = Vec3(min.x, max.y, min.z);
+		Vec3f v2 = Vec3f(max.x, min.y, min.z);
+		Vec3f v3 = Vec3f(max.x, max.y, min.z);
+		Vec3f v4 = Vec3f(min.x, max.y, min.z);
 
-		Vec3 v6 = Vec3(max.x, min.y, max.z);
-		Vec3 v7 = Vec3(min.x, min.y, max.z);
-		Vec3 v8 = Vec3(min.x, max.y, max.z);
+		Vec3f v6 = Vec3f(max.x, min.y, max.z);
+		Vec3f v7 = Vec3f(min.x, min.y, max.z);
+		Vec3f v8 = Vec3f(min.x, max.y, max.z);
 
 		AddIrresoluteLine(min, v2);
 		AddIrresoluteLine(min, v4);
@@ -186,39 +186,39 @@ namespace cm
 		AddIrresoluteLine(v8, v4);
 	}
 
-	void Debug::AddPersistentAABBCenterRaduis(const Vec3 &center, const Vec3 &extents)
+	void Debug::AddPersistentAABBCenterRaduis(const Vec3f &center, const Vec3f &extents)
 	{
 		AddPersistentAABBMinMax(center - extents, center + extents);
 	}
 
-	void Debug::AddIrresoluteAABBCenterRaduis(const Vec3 &center, const Vec3 &extents)
+	void Debug::AddIrresoluteAABBCenterRaduis(const Vec3f &center, const Vec3f &extents)
 	{
 		AddIrresoluteAABBMinMax(center - extents, center + extents);
 	}
 
-	void Debug::AddPersistentPlane(const Vec3 &origin, const Vec3 &normal)
+	void Debug::AddPersistentPlane(const Vec3f &origin, const Vec3f &normal)
 	{
 		AddPersistentPoint(origin);
 		AddPersistentLine(origin, origin + normal);
 	}
 
-	void Debug::AddIrresolutePlane(const Vec3 &origin, const Vec3 &normal)
+	void Debug::AddIrresolutePlane(const Vec3f &origin, const Vec3f &normal)
 	{
 		AddIrresolutePoint(origin);
 		AddIrresoluteLine(origin, origin + normal);
 	}
 
-	void Debug::AddPersistentPoint(const Vec3 &center)
+	void Debug::AddPersistentPoint(const Vec3f &center)
 	{
-		AddPersistentAABBCenterRaduis(center, Vec3(0.05f));
+		AddPersistentAABBCenterRaduis(center, Vec3f(0.05f));
 	}
 
-	void Debug::AddIrresolutePoint(const Vec3 &center)
+	void Debug::AddIrresolutePoint(const Vec3f &center)
 	{
-		AddIrresoluteAABBCenterRaduis(center, Vec3(0.05f));
+		AddIrresoluteAABBCenterRaduis(center, Vec3f(0.05f));
 	}
 
-	void Debug::AddPersistentOBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis)
+	void Debug::AddPersistentOBB(const Vec3f &origin, const Vec3f &extents, const Basis &basis)
 	{	
 		Mat4 mat(basis.mat, origin);
 
@@ -250,7 +250,7 @@ namespace cm
 		AddPersistentPoint(origin);
 	}
 
-	void Debug::AddIrresoluteOBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis)
+	void Debug::AddIrresoluteOBB(const Vec3f &origin, const Vec3f &extents, const Basis &basis)
 	{
 		Mat4 mat(basis.mat, origin);
 

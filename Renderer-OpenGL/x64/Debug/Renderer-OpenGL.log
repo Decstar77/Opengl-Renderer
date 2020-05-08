@@ -1,7 +1,17 @@
 ﻿  main.cpp
+  Animation.cpp
+  Camera.cpp
+  Debug.cpp
+  EditableMesh.cpp
+  Editor.cpp
+  Sandbox.cpp
+  Serialization.cpp
+  World.cpp
+  AssetLoader.cpp
+  Input.cpp
+  CosmicGeometry.cpp
+  CosmicMath.cpp
   CosmicNoise.cpp
+  OpenGL.cpp
   Generating Code...
-LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
-LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
-glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'F:\Renderer-OpenGL\x64\Debug\vc120.pdb'; linking object as if no debug info
   Renderer-OpenGL.vcxproj -> F:\Renderer-OpenGL\x64\Debug\Renderer-OpenGL.exe

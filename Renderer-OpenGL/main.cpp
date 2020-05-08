@@ -348,6 +348,9 @@ int main()
 	UnbindFrameBuffer();
 
 
+	Vec3f test1 = Vec3f(1, 1, 1);
+	Vec3f test2 = Vec3f(1, 1, 1);
+	Vec3f test3 = test1 + test2;
 
 
 	uint32 drawing_width = post_processing_buffer.colour0_texture_attachment.config.width;
@@ -401,9 +404,9 @@ int main()
 
 
 	camera_controller.main_camera.projection_matrix = Perspective(40, ((float)WINDOW_WIDTH) / WINDOW_HEIGHT, 0.1f, 250.0f);
-	camera_controller.main_camera.target = Vec3(0);
-	camera_controller.main_camera.transform.position = Vec3(0, 4, 5);
-	camera_controller.main_camera.view_matrix = LookAt(camera_controller.main_camera.transform.position, camera_controller.main_camera.target, Vec3(0, 1, 0));
+	camera_controller.main_camera.target = Vec3f(0);
+	camera_controller.main_camera.transform.position = Vec3f(0, 4, 5);
+	camera_controller.main_camera.view_matrix = LookAt(camera_controller.main_camera.transform.position, camera_controller.main_camera.target, Vec3f(0, 1, 0));
 	
 	
 	UniformBuffer global_uniforms;
@@ -433,17 +436,17 @@ int main()
 	EditorWorldObjectInspector editor_world_object_inspector;
 	
 	DirectionalLight sun_light;
-	sun_light.direction = Normalize(Vec3(2, -4, 1));
-	sun_light.light_colour = Vec3(.5);
+	sun_light.direction = Normalize(Vec3f(2, -4, 1));
+	sun_light.light_colour = Vec3f(.5);
 	
 	PointLight point_light;
-	point_light.light_colour = Vec3(23.47, 21.31, 20.79);
-	point_light.light_position = Vec3(0, 2, -1);
+	point_light.light_colour = Vec3f(23.47, 21.31, 20.79);
+	point_light.light_position = Vec3f(0, 2, -1);
 
 	
 	StaticWorldObject *floor = CreateWorldObjectPlane();
-	floor->transform.rotation = EulerToQuat(Vec3(90, 0, 0));
-	floor->transform.scale = Vec3(10);
+	floor->transform.rotation = EulerToQuat(Vec3f(90, 0, 0));
+	floor->transform.scale = Vec3f(10);
 	floor->GetCollider()->Update(floor->transform);
 
 
@@ -457,9 +460,9 @@ int main()
 	EditableMesh emesh = model_import_animation.resulting_meshes[0];
 	test_cube_guy.mesh = emesh.CreateAnimMesh();
 	test_cube_guy.animation_controller = model_import_animation.resulting_animation_controllers[0];
-	test_cube_guy.transform.scale = Vec3(1);
-	test_cube_guy.transform.rotation = EulerToQuat(Vec3(0, 0, 0));
-	test_cube_guy.transform.position = Vec3(0, 0, 0);
+	test_cube_guy.transform.scale = Vec3f(1);
+	test_cube_guy.transform.rotation = EulerToQuat(Vec3f(0, 0, 0));
+	test_cube_guy.transform.position = Vec3f(0, 0, 0);
 
 	model_import_animation.Free();
 
@@ -825,9 +828,9 @@ int main()
 			if (mat.HasTextures())
 			{
 				// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
-				ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", Vec3(1).ptr);
+				ShaderSetVec3(&worldspace_gbuffer_shader, "colour_set", Vec3f(1).ptr);
 				ShaderSetInt32(&worldspace_gbuffer_shader, "normal_set", 1);
-				ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3(1).ptr);
+				ShaderSetVec3(&worldspace_gbuffer_shader, "orm_set", Vec3f(1).ptr);
 
 
 				mat.SetTextures(&worldspace_gbuffer_shader);
@@ -852,9 +855,9 @@ int main()
 #if 1
 		BindShader(worldspace_gbuffer_anim_shader);
 
-		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "colour_set", Vec3(1).ptr);
+		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "colour_set", Vec3f(1).ptr);
 		ShaderSetInt32(&worldspace_gbuffer_anim_shader, "normal_set", 1);
-		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "orm_set", Vec3(1).ptr);
+		ShaderSetVec3(&worldspace_gbuffer_anim_shader, "orm_set", Vec3f(1).ptr);
 	
 		Texture lady_diffuse;
 		Texture lady_normal;
@@ -907,9 +910,9 @@ int main()
 				if (mat.HasTextures())
 				{
 					// @TODO: Now that we know stuff about branching we can use Static-Flow controll booleans
-					ShaderSetVec3(&viewspace_gbuffer_shader, "colour_set", Vec3(1).ptr);
+					ShaderSetVec3(&viewspace_gbuffer_shader, "colour_set", Vec3f(1).ptr);
 					ShaderSetInt32(&viewspace_gbuffer_shader, "normal_set", 1);
-					ShaderSetVec3(&viewspace_gbuffer_shader, "orm_set", Vec3(1).ptr);
+					ShaderSetVec3(&viewspace_gbuffer_shader, "orm_set", Vec3f(1).ptr);
 
 
 					mat.SetTextures(&viewspace_gbuffer_shader);

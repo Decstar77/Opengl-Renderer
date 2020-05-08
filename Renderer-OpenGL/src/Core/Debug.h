@@ -11,9 +11,9 @@ namespace cm
 		// @TODO: Remove std::vector
 		uint32 MAX_VERTICES_SIZE;
 		VertexArray persistent_vao;
-		std::vector<Vec3> irresolute_vertices;
-		std::vector<Vec3> persistent_vertices;
-		std::vector<Vec3> colours;
+		std::vector<Vec3f> irresolute_vertices;
+		std::vector<Vec3f> persistent_vertices;
+		std::vector<Vec3f> colours;
 	};
 	   
 	class Debug
@@ -40,7 +40,7 @@ namespace cm
 		static void Log(const int32 &msg);
 		static void Log(const real32 &msg);
 
-		static void Log(const Vec3 &msg);
+		static void Log(const Vec3f &msg);
 		static void Log(const Vec4 &msg);
 		static void Log(const Mat3 &msg);
 		static void Log(const Mat4 &msg);	
@@ -50,28 +50,28 @@ namespace cm
 		static void LogWarning(const int32 &msg);
 		static void LogWarning(const real32 &msg);
 
-		static void LogWarning(const Vec3 &msg);
+		static void LogWarning(const Vec3f &msg);
 		static void LogWarning(const Vec4 &msg);
 		static void LogWarning(const Mat3 &msg);
 		static void LogWarning(const Mat4 &msg);
 		
-		static void AddPersistentLine(const Vec3 &a, const Vec3 &b);
-		static void AddIrresoluteLine(const Vec3 &a, const Vec3 &b);
+		static void AddPersistentLine(const Vec3f &a, const Vec3f &b);
+		static void AddIrresoluteLine(const Vec3f &a, const Vec3f &b);
 
-		static void AddPersistentAABBMinMax(const Vec3 &min, const Vec3 &max);
-		static void AddIrresoluteAABBMinMax(const Vec3 &min, const Vec3 &max);
+		static void AddPersistentAABBMinMax(const Vec3f &min, const Vec3f &max);
+		static void AddIrresoluteAABBMinMax(const Vec3f &min, const Vec3f &max);
 
-		static void AddPersistentAABBCenterRaduis(const Vec3 &center, const Vec3 &extents);
-		static void AddIrresoluteAABBCenterRaduis(const Vec3 &center, const Vec3 &extents);
+		static void AddPersistentAABBCenterRaduis(const Vec3f &center, const Vec3f &extents);
+		static void AddIrresoluteAABBCenterRaduis(const Vec3f &center, const Vec3f &extents);
 
-		static void AddPersistentPlane(const Vec3 &origin, const Vec3 &normal);
-		static void AddIrresolutePlane(const Vec3 &origin, const Vec3 &normal);
+		static void AddPersistentPlane(const Vec3f &origin, const Vec3f &normal);
+		static void AddIrresolutePlane(const Vec3f &origin, const Vec3f &normal);
 
-		static void AddPersistentPoint(const Vec3 &center);
-		static void AddIrresolutePoint(const Vec3 &center);
+		static void AddPersistentPoint(const Vec3f &center);
+		static void AddIrresolutePoint(const Vec3f &center);
 
-		static void AddPersistentOBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis);
-		static void AddIrresoluteOBB(const Vec3 &origin, const Vec3 &extents, const Basis &basis);
+		static void AddPersistentOBB(const Vec3f &origin, const Vec3f &extents, const Basis &basis);
+		static void AddIrresoluteOBB(const Vec3f &origin, const Vec3f &extents, const Basis &basis);
 
 		static void Update(const Mat4 &projection, const Mat4 &view);
 

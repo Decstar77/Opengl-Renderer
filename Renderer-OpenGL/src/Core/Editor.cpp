@@ -61,8 +61,8 @@ namespace cm
 
 	void TranslationWidget::Create(const GLMesh &mesh)
 	{
-		transform.position = Vec3(0);
-		transform.scale = Vec3(0.04);
+		transform.position = Vec3f(0);
+		transform.scale = Vec3f(0.04);
 		this->mesh = mesh;
 		CalculateBoundingBoxes();
 	}
@@ -116,8 +116,8 @@ namespace cm
 						
 			translation_plane.CheckCollision(camera_ray, &colinfo);
 
-			Vec3 p0 = translation_plane.origin;
-			Vec3 p1 = camera_ray.Travel(colinfo.dist);
+			Vec3f p0 = translation_plane.origin;
+			Vec3f p1 = camera_ray.Travel(colinfo.dist);
 
 			// @NOTE: Offset the origin to stop snapping
 			translation_plane.origin += p1 - p0;
@@ -171,8 +171,8 @@ namespace cm
 
 			translation_plane.CheckCollision(camera_ray, &colinfo);
 
-			Vec3 p0 = translation_plane.origin;
-			Vec3 p1 = camera_ray.Travel(colinfo.dist);
+			Vec3f p0 = translation_plane.origin;
+			Vec3f p1 = camera_ray.Travel(colinfo.dist);
 
 			// @NOTE: Offset the origin to stop snapping
 			translation_plane.origin += p1 - p0;
@@ -227,8 +227,8 @@ namespace cm
 
 			translation_plane.CheckCollision(camera_ray, &colinfo);
 
-			Vec3 p0 = translation_plane.origin;
-			Vec3 p1 = camera_ray.Travel(colinfo.dist);
+			Vec3f p0 = translation_plane.origin;
+			Vec3f p1 = camera_ray.Travel(colinfo.dist);
 
 			// @NOTE: Offset the origin to stop snapping
 			translation_plane.origin += p1 - p0;
@@ -252,10 +252,10 @@ namespace cm
 			CollisionInfo colinfo;
 			translation_plane.CheckCollision(camera_ray, &colinfo);
 
-			Vec3 p0 = translation_plane.origin;
-			Vec3 p1 = camera_ray.Travel(colinfo.dist);
+			Vec3f p0 = translation_plane.origin;
+			Vec3f p1 = camera_ray.Travel(colinfo.dist);
 			
-			Vec3 delta = p1 - p0;
+			Vec3f delta = p1 - p0;
 			
 			switch (transformation_mode)
 			{
@@ -264,7 +264,7 @@ namespace cm
 				break;
 			}
 			case cm::TransformationMode::x_axis: {
-				Vec3 dir = Normalize( x_bounding_volume.basis.right );
+				Vec3f dir = Normalize( x_bounding_volume.basis.right );
 				real32 dist = Dot(delta, x_bounding_volume.basis.right);
 
 				if (Abs(dist) < snapping_amount)
@@ -281,7 +281,7 @@ namespace cm
 				break;
 			}
 			case cm::TransformationMode::y_axis: {
-				Vec3 dir = Normalize(y_bounding_volume.basis.upward);
+				Vec3f dir = Normalize(y_bounding_volume.basis.upward);
 				real32 dist = Dot(delta, y_bounding_volume.basis.upward);
 				
 				if (Abs(dist) < snapping_amount)
@@ -299,7 +299,7 @@ namespace cm
 				break;
 			}
 			case cm::TransformationMode::z_axis: {
-				Vec3 dir = Normalize(z_bounding_volume.basis.forward);
+				Vec3f dir = Normalize(z_bounding_volume.basis.forward);
 				real32 dist = Dot(delta, z_bounding_volume.basis.forward);
 
 				if (Abs(dist) < snapping_amount)
@@ -332,13 +332,13 @@ namespace cm
 		Mat3 rotation = QuatToMat3(Conjugate(transform.rotation));
 		Basis local_basis(rotation);
 
-		Vec3 x_origin = Vec3(0.36, 0, 0) * local_basis.mat;
-		Vec3 y_origin = Vec3(0, 0.36, 0) * local_basis.mat;
-		Vec3 z_origin = Vec3(0, 0, 0.36) * local_basis.mat;
+		Vec3f x_origin = Vec3f(0.36, 0, 0) * local_basis.mat;
+		Vec3f y_origin = Vec3f(0, 0.36, 0) * local_basis.mat;
+		Vec3f z_origin = Vec3f(0, 0, 0.36) * local_basis.mat;
 
-		x_bounding_volume = OBB(transform.position + x_origin, Vec3(0.30, 0.05, 0.05), local_basis);
-		y_bounding_volume = OBB(transform.position + y_origin, Vec3(0.05, 0.30, 0.05), local_basis);
-		z_bounding_volume = OBB(transform.position + z_origin, Vec3(0.05, 0.05, 0.30), local_basis);
+		x_bounding_volume = OBB(transform.position + x_origin, Vec3f(0.30, 0.05, 0.05), local_basis);
+		y_bounding_volume = OBB(transform.position + y_origin, Vec3f(0.05, 0.30, 0.05), local_basis);
+		z_bounding_volume = OBB(transform.position + z_origin, Vec3f(0.05, 0.05, 0.30), local_basis);
 	}
 	
 	RotationWidget::RotationWidget()
@@ -353,8 +353,8 @@ namespace cm
 
 	void RotationWidget::Create(const GLMesh &mesh)
 	{
-		transform.position = Vec3(0);
-		transform.scale = Vec3(0.04);
+		transform.position = Vec3f(0);
+		transform.scale = Vec3f(0.04);
 		this->mesh = mesh;
 		CalculateBoundingBoxes();
 	}
@@ -432,11 +432,11 @@ namespace cm
 			CollisionInfo colinfo;
 			transform_plane.CheckCollision(camera_ray, &colinfo);
 
-			Vec3 p0 = transform_plane.origin;
-			Vec3 p1 = camera_ray.Travel(colinfo.dist);
+			Vec3f p0 = transform_plane.origin;
+			Vec3f p1 = camera_ray.Travel(colinfo.dist);
 
-			Vec3 d0 = Normalize(p0 - this->transform.position);
-			Vec3 d1 = Normalize(p1 - this->transform.position);
+			Vec3f d0 = Normalize(p0 - this->transform.position);
+			Vec3f d1 = Normalize(p1 - this->transform.position);
 			
 			switch (transformation_mode)
 			{
@@ -449,11 +449,11 @@ namespace cm
 				Basis b = x_bounding_volumes[0].basis;
 
 				// @NOTE: Normalize for safety
-				Vec3 ncr = Normalize(camera_ray.direction);
-				Vec3 nbr = Normalize(b.right);
+				Vec3f ncr = Normalize(camera_ray.direction);
+				Vec3f nbr = Normalize(b.right);
 
 				// @NOTE: Get the angle theta from d0 to d1. The clamp is for floating point errors 
-				real32 theta = Clamp(Dot(d0, d1), -1, 1);
+				real32 theta = Clamp(Dot(d0, d1), -1.0f, 1.0f);
 
 				// @NOTE: The first dot is determining which way the user is dragging the widget
 				//		: The second is determining if the user is facing away or two the right basis vector
@@ -486,11 +486,11 @@ namespace cm
 				Basis b = y_bounding_volumes[0].basis;
 
 				// @NOTE: Normalize for safety
-				Vec3 ncr = Normalize(camera_ray.direction);
-				Vec3 nbu = Normalize(b.upward);
+				Vec3f ncr = Normalize(camera_ray.direction);
+				Vec3f nbu = Normalize(b.upward);
 
 				// @NOTE: Get the angle theta from d0 to d1. The clamp is for floating point errors 
-				real32 theta = Clamp(Dot(d0, d1), -1, 1);
+				real32 theta = Clamp(Dot(d0, d1), -1.0f, 1.0f);
 
 				// @NOTE: The first dot is determining which way the user is dragging the widget
 				//		: The second is determining if the user is facing away or two the right basis vector
@@ -522,11 +522,11 @@ namespace cm
 				Basis b = z_bounding_volumes[0].basis;
 
 				// @NOTE: Normalize for safety
-				Vec3 ncr = Normalize(camera_ray.direction);
-				Vec3 nbf = Normalize(b.forward);
+				Vec3f ncr = Normalize(camera_ray.direction);
+				Vec3f nbf = Normalize(b.forward);
 
 				// @NOTE: Get the angle theta from d0 to d1. The clamp is for floating point errors 
-				real32 theta = Clamp(Dot(d0, d1), -1, 1);
+				real32 theta = Clamp(Dot(d0, d1), -1.0f, 1.0f);
 
 				// @NOTE: The first dot is determining which way the user is dragging the widget
 				//		: The second is determining if the user is facing away or two the right basis vector
@@ -577,37 +577,37 @@ namespace cm
 		Basis local_basis(rotation);
 
 		// @NOTE: x-axis 
-		Vec3 x_origin01 = Vec3(0, 0.4, 0.4)	  * local_basis.mat;
-		Vec3 x_origin02 = Vec3(0, -0.4, -0.4) * local_basis.mat;
-		Vec3 x_origin03 = Vec3(0, 0.4, -0.4)  * local_basis.mat;
-		Vec3 x_origin04 = Vec3(0, -0.4, 0.4)  * local_basis.mat;
+		Vec3f x_origin01 = Vec3f(0, 0.4, 0.4)	  * local_basis.mat;
+		Vec3f x_origin02 = Vec3f(0, -0.4, -0.4) * local_basis.mat;
+		Vec3f x_origin03 = Vec3f(0, 0.4, -0.4)  * local_basis.mat;
+		Vec3f x_origin04 = Vec3f(0, -0.4, 0.4)  * local_basis.mat;
 
-		x_bounding_volumes[0] = OBB(transform.position + x_origin01, Vec3(0.05, 0.2, 0.05), Rotate(local_basis.mat, -45, Vec3(1, 0, 0)));
-		x_bounding_volumes[1] = OBB(transform.position + x_origin02, Vec3(0.05, 0.2, 0.05), Rotate(local_basis.mat, -45, Vec3(1, 0, 0)));
-		x_bounding_volumes[2] = OBB(transform.position + x_origin03, Vec3(0.05, 0.2, 0.05), Rotate(local_basis.mat, 45, Vec3(1, 0, 0)));
-		x_bounding_volumes[3] = OBB(transform.position + x_origin04, Vec3(0.05, 0.2, 0.05), Rotate(local_basis.mat, 45, Vec3(1, 0, 0)));
+		x_bounding_volumes[0] = OBB(transform.position + x_origin01, Vec3f(0.05, 0.2, 0.05), Rotate(local_basis.mat, -45, Vec3f(1, 0, 0)));
+		x_bounding_volumes[1] = OBB(transform.position + x_origin02, Vec3f(0.05, 0.2, 0.05), Rotate(local_basis.mat, -45, Vec3f(1, 0, 0)));
+		x_bounding_volumes[2] = OBB(transform.position + x_origin03, Vec3f(0.05, 0.2, 0.05), Rotate(local_basis.mat, 45, Vec3f(1, 0, 0)));
+		x_bounding_volumes[3] = OBB(transform.position + x_origin04, Vec3f(0.05, 0.2, 0.05), Rotate(local_basis.mat, 45, Vec3f(1, 0, 0)));
 
 		// @NOTE: y-axis 
-		Vec3 y_origin01 = Vec3(0.4, 0, 0.4)	  * local_basis.mat;
-		Vec3 y_origin02 = Vec3(-0.4, 0, -0.4) * local_basis.mat;
-		Vec3 y_origin03 = Vec3(0.4, 0, -0.4)  * local_basis.mat;
-		Vec3 y_origin04 = Vec3(-0.4, 0, 0.4)  * local_basis.mat;
+		Vec3f y_origin01 = Vec3f(0.4, 0, 0.4)	  * local_basis.mat;
+		Vec3f y_origin02 = Vec3f(-0.4, 0, -0.4) * local_basis.mat;
+		Vec3f y_origin03 = Vec3f(0.4, 0, -0.4)  * local_basis.mat;
+		Vec3f y_origin04 = Vec3f(-0.4, 0, 0.4)  * local_basis.mat;
 
-		y_bounding_volumes[0] = OBB(transform.position + y_origin01, Vec3(0.2, 0.05, 0.05), Rotate(local_basis.mat, 45, Vec3(0, 1, 0)));
-		y_bounding_volumes[1] = OBB(transform.position + y_origin02, Vec3(0.2, 0.05, 0.05), Rotate(local_basis.mat, 45, Vec3(0, 1, 0)));
-		y_bounding_volumes[2] = OBB(transform.position + y_origin03, Vec3(0.2, 0.05, 0.05), Rotate(local_basis.mat, -45, Vec3(0, 1, 0)));
-		y_bounding_volumes[3] = OBB(transform.position + y_origin04, Vec3(0.2, 0.05, 0.05), Rotate(local_basis.mat, -45, Vec3(0, 1, 0)));
+		y_bounding_volumes[0] = OBB(transform.position + y_origin01, Vec3f(0.2, 0.05, 0.05), Rotate(local_basis.mat, 45, Vec3f(0, 1, 0)));
+		y_bounding_volumes[1] = OBB(transform.position + y_origin02, Vec3f(0.2, 0.05, 0.05), Rotate(local_basis.mat, 45, Vec3f(0, 1, 0)));
+		y_bounding_volumes[2] = OBB(transform.position + y_origin03, Vec3f(0.2, 0.05, 0.05), Rotate(local_basis.mat, -45, Vec3f(0, 1, 0)));
+		y_bounding_volumes[3] = OBB(transform.position + y_origin04, Vec3f(0.2, 0.05, 0.05), Rotate(local_basis.mat, -45, Vec3f(0, 1, 0)));
 
 		// @NOTE: z-axis, 0.6 because of pythag.
-		Vec3 z_origin01 = Vec3(0.6, 0, 0)	* local_basis.mat;
-		Vec3 z_origin02 = Vec3(0, 0.6, 0)	* local_basis.mat;
-		Vec3 z_origin03 = Vec3(0, -0.6, 0)	* local_basis.mat;
-		Vec3 z_origin04 = Vec3(-0.6, 0, 0)	* local_basis.mat;
+		Vec3f z_origin01 = Vec3f(0.6, 0, 0)	* local_basis.mat;
+		Vec3f z_origin02 = Vec3f(0, 0.6, 0)	* local_basis.mat;
+		Vec3f z_origin03 = Vec3f(0, -0.6, 0)	* local_basis.mat;
+		Vec3f z_origin04 = Vec3f(-0.6, 0, 0)	* local_basis.mat;
 
-		z_bounding_volumes[0] = OBB(transform.position + z_origin01, Vec3(0.05, 0.2, 0.05), local_basis);
-		z_bounding_volumes[1] = OBB(transform.position + z_origin02, Vec3(0.2, 0.05, 0.05), local_basis);
-		z_bounding_volumes[2] = OBB(transform.position + z_origin03, Vec3(0.2, 0.05, 0.05), local_basis);
-		z_bounding_volumes[3] = OBB(transform.position + z_origin04, Vec3(0.05, 0.2, 0.05), local_basis);
+		z_bounding_volumes[0] = OBB(transform.position + z_origin01, Vec3f(0.05, 0.2, 0.05), local_basis);
+		z_bounding_volumes[1] = OBB(transform.position + z_origin02, Vec3f(0.2, 0.05, 0.05), local_basis);
+		z_bounding_volumes[2] = OBB(transform.position + z_origin03, Vec3f(0.2, 0.05, 0.05), local_basis);
+		z_bounding_volumes[3] = OBB(transform.position + z_origin04, Vec3f(0.05, 0.2, 0.05), local_basis);
 	}
 
 	ScalingWidget::ScalingWidget()
@@ -622,8 +622,8 @@ namespace cm
 
 	void ScalingWidget::Create(const GLMesh &mesh)
 	{
-		transform.position = Vec3(0);
-		transform.scale = Vec3(0.04);
+		transform.position = Vec3f(0);
+		transform.scale = Vec3f(0.04);
 		this->mesh = mesh;
 		CalculateBoundingBoxes();
 	}
@@ -676,8 +676,8 @@ namespace cm
 
 			transformation_plane.CheckCollision(camera_ray, &colinfo);
 
-			Vec3 p0 = transformation_plane.origin;
-			Vec3 p1 = camera_ray.Travel(colinfo.dist);
+			Vec3f p0 = transformation_plane.origin;
+			Vec3f p1 = camera_ray.Travel(colinfo.dist);
 
 			// @NOTE: Offset the origin to stop snapping
 			transformation_plane.origin += p1 - p0;
@@ -729,8 +729,8 @@ namespace cm
 
 			transformation_plane.CheckCollision(camera_ray, &colinfo);
 
-			Vec3 p0 = transformation_plane.origin;
-			Vec3 p1 = camera_ray.Travel(colinfo.dist);
+			Vec3f p0 = transformation_plane.origin;
+			Vec3f p1 = camera_ray.Travel(colinfo.dist);
 
 			// @NOTE: Offset the origin to stop snapping
 			transformation_plane.origin += p1 - p0;
@@ -783,8 +783,8 @@ namespace cm
 
 			transformation_plane.CheckCollision(camera_ray, &colinfo);
 
-			Vec3 p0 = transformation_plane.origin;
-			Vec3 p1 = camera_ray.Travel(colinfo.dist);
+			Vec3f p0 = transformation_plane.origin;
+			Vec3f p1 = camera_ray.Travel(colinfo.dist);
 
 			// @NOTE: Offset the origin to stop snapping
 			transformation_plane.origin += p1 - p0;
@@ -808,10 +808,10 @@ namespace cm
 			CollisionInfo colinfo;
 			transformation_plane.CheckCollision(camera_ray, &colinfo);
 
-			Vec3 p0 = transformation_plane.origin;
-			Vec3 p1 = camera_ray.Travel(colinfo.dist);
+			Vec3f p0 = transformation_plane.origin;
+			Vec3f p1 = camera_ray.Travel(colinfo.dist);
 
-			Vec3 delta = p1 - p0;
+			Vec3f delta = p1 - p0;
 
 			switch (transformation_mode)
 			{
@@ -820,21 +820,21 @@ namespace cm
 				break;
 			}
 			case cm::TransformationMode::x_axis: {
-				Vec3 dir = Normalize(x_bounding_volume.basis.right);
+				Vec3f dir = Normalize(x_bounding_volume.basis.right);
 				real32 dist = Dot(delta, x_bounding_volume.basis.right);
 				transform->scale.x += dist;					
 				transformation_plane.origin = p1;
 				break;
 			}
 			case cm::TransformationMode::y_axis: {
-				Vec3 dir = Normalize(y_bounding_volume.basis.upward);
+				Vec3f dir = Normalize(y_bounding_volume.basis.upward);
 				real32 dist = Dot(delta, y_bounding_volume.basis.upward);
 				transform->scale.y += dist;
 				transformation_plane.origin = p1;
 				break;
 			}
 			case cm::TransformationMode::z_axis: {
-				Vec3 dir = Normalize(z_bounding_volume.basis.forward);
+				Vec3f dir = Normalize(z_bounding_volume.basis.forward);
 				real32 dist = Dot(delta, z_bounding_volume.basis.forward);
 				transform->scale.z += dist;
 				transformation_plane.origin = p1;
@@ -862,13 +862,13 @@ namespace cm
 		Mat3 rotation = QuatToMat3(Conjugate(transform.rotation));
 		Basis local_basis(rotation);
 
-		Vec3 x_origin = Vec3(0.36, 0, 0) * local_basis.mat;
-		Vec3 y_origin = Vec3(0, 0.36, 0) * local_basis.mat;
-		Vec3 z_origin = Vec3(0, 0, 0.36) * local_basis.mat;
+		Vec3f x_origin = Vec3f(0.36, 0, 0) * local_basis.mat;
+		Vec3f y_origin = Vec3f(0, 0.36, 0) * local_basis.mat;
+		Vec3f z_origin = Vec3f(0, 0, 0.36) * local_basis.mat;
 
-		x_bounding_volume = OBB(transform.position + x_origin, Vec3(0.30, 0.05, 0.05), local_basis);
-		y_bounding_volume = OBB(transform.position + y_origin, Vec3(0.05, 0.30, 0.05), local_basis);
-		z_bounding_volume = OBB(transform.position + z_origin, Vec3(0.05, 0.05, 0.30), local_basis);
+		x_bounding_volume = OBB(transform.position + x_origin, Vec3f(0.30, 0.05, 0.05), local_basis);
+		y_bounding_volume = OBB(transform.position + y_origin, Vec3f(0.05, 0.30, 0.05), local_basis);
+		z_bounding_volume = OBB(transform.position + z_origin, Vec3f(0.05, 0.05, 0.30), local_basis);
 	}
 
 	//---------------------------------------------------------------

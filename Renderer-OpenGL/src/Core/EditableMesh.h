@@ -8,12 +8,12 @@ namespace cm
 	#define MAX_VERTEX_BONE_COUNT 4
 	struct Vertex
 	{
-		Vec3 position = Vec3(0);
-		Vec3 normal = Vec3(0);
-		Vec3 tangent = Vec3(0);
-		Vec3 bitangent = Vec3(0);
-		Vec3 colour = Vec3(0);
-		Vec3 texture_coord = Vec3(0);
+		Vec3f position = Vec3f(0);
+		Vec3f normal = Vec3f(0);
+		Vec3f tangent = Vec3f(0);
+		Vec3f bitangent = Vec3f(0);
+		Vec3f colour = Vec3f(0);
+		Vec3f texture_coord = Vec3f(0);
 		uint32 next = 0;		
 		uint32 bone_index[MAX_VERTEX_BONE_COUNT] = { 0, 0, 0, 0 };
 		real32 bone_weights[MAX_VERTEX_BONE_COUNT] = { 0, 0, 0, 0 };
@@ -49,7 +49,7 @@ namespace cm
 	struct Triangle
 	{
 		real32 area;
-		Vec3 normal;
+		Vec3f normal;
 		Vertex vertices[3];
 		Edge edges[2];
 	};
@@ -69,15 +69,15 @@ namespace cm
 		};
 		union
 		{
-			Vec3 edges[3];
+			Vec3f edges[3];
 			struct
 			{
-				Vec3 edge1;
-				Vec3 edge2;
-				Vec3 edge3;
+				Vec3f edge1;
+				Vec3f edge2;
+				Vec3f edge3;
 			};
 		};
-		Vec3 normal;
+		Vec3f normal;
 	public:
 		IndexedTriangle() {}
 		~IndexedTriangle() {}		

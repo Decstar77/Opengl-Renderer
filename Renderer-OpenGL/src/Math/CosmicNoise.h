@@ -31,31 +31,31 @@ namespace cm
 		};
 
 		// Possible directions vectors for unit cubes
-		std::vector<Vec3> cases2D = {
-			Vec3(1, 1, 0),
-			Vec3(-1, 1, 0),
-			Vec3(1, -1, 0),
-			Vec3(-1, -1, 0),
-			Vec3(Sqrt<real32>(2), 0, 0),
-			Vec3(0, Sqrt<real32>(2), 0),
-			Vec3(-Sqrt<real32> (2), 0, 0),
-			Vec3(0, -Sqrt<real32>(2), 0)
+		std::vector<Vec3f> cases2D = {
+			Vec3f(1, 1, 0),
+			Vec3f(-1, 1, 0),
+			Vec3f(1, -1, 0),
+			Vec3f(-1, -1, 0),
+			Vec3f(Sqrt<real32>(2), 0, 0),
+			Vec3f(0, Sqrt<real32>(2), 0),
+			Vec3f(-Sqrt<real32> (2), 0, 0),
+			Vec3f(0, -Sqrt<real32>(2), 0)
 		};
 		
-		std::vector<Vec3> cases3D =
+		std::vector<Vec3f> cases3D =
 		{
-			Vec3(1,1,0),
-			Vec3(-1,1,0),
-			Vec3(1,-1,0),
-			Vec3(-1,-1,0),
-			Vec3(1,0,1),
-			Vec3(-1,0,1),
-			Vec3(1,0,-1),
-			Vec3(-1,0,-1),
-			Vec3(0,1,1),
-			Vec3(0,-1,1),
-			Vec3(0,1,-1),
-			Vec3(0,-1,-1)
+			Vec3f(1,1,0),
+			Vec3f(-1,1,0),
+			Vec3f(1,-1,0),
+			Vec3f(-1,-1,0),
+			Vec3f(1,0,1),
+			Vec3f(-1,0,1),
+			Vec3f(1,0,-1),
+			Vec3f(-1,0,-1),
+			Vec3f(0,1,1),
+			Vec3f(0,-1,1),
+			Vec3f(0,1,-1),
+			Vec3f(0,-1,-1)
 		};
 
 	private:

@@ -21,7 +21,7 @@ namespace cm
 	void Material::SetValues(Shader *shader)
 	{
 		ShaderSetVec3(shader, "colour_set", diffuse.ptr);
-		ShaderSetVec3(shader, "orm_set", Vec3(1, roughness, metalness).ptr);
+		ShaderSetVec3(shader, "orm_set", Vec3f(1, roughness, metalness).ptr);
 	}
 
 	//---------------------------------------------------------------
@@ -48,7 +48,7 @@ namespace cm
 
 	cm::GeometricCollider *StaticWorldObject::GetCollider()
 	{
-		if (obb.GetExtents() == Vec3(0))
+		if (obb.GetExtents() == Vec3f(0))
 		{
 			return nullptr;
 		}
@@ -136,11 +136,11 @@ namespace cm
 
 		StaticWorldObject *cube = new StaticWorldObject();
 
-		cube->material.diffuse = Vec3(0.85);
+		cube->material.diffuse = Vec3f(0.85);
 		cube->material.roughness = 0.8;
 		cube->material.metalness = 0.1;
 
-		cube->obb = OBB(Vec3(0), Vec3(1), Basis());
+		cube->obb = OBB(Vec3f(0), Vec3f(1), Basis());
 
 		cube->mesh = StandardMeshes::Cube();
 
@@ -153,11 +153,11 @@ namespace cm
 
 		StaticWorldObject *plane = new StaticWorldObject();
 
-		plane->material.diffuse = Vec3(0.85);
+		plane->material.diffuse = Vec3f(0.85);
 		plane->material.roughness = 0.8;
 		plane->material.metalness = 0.1;
 
-		plane->obb = OBB(Vec3(0), Vec3(1, 1, 0), Basis());
+		plane->obb = OBB(Vec3f(0), Vec3f(1, 1, 0), Basis());
 
 		plane->mesh = StandardMeshes::Plane();
 

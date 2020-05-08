@@ -10,8 +10,8 @@ namespace cm
 	class Material
 	{
 	public:
-		Vec3 diffuse = Vec3(1);
-		Vec3 emssive = Vec3(1);
+		Vec3f diffuse = Vec3f(1);
+		Vec3f emssive = Vec3f(1);
 		real metalness = 0;
 		real roughness = 0;
 
@@ -28,20 +28,20 @@ namespace cm
 
 	struct PointLight 
 	{
-		Vec3 light_colour;
-		Vec3 light_position;
+		Vec3f light_colour;
+		Vec3f light_position;
 	};
 
 	struct DirectionalLight 
 	{
-		Vec3 light_colour;
-		Vec3 direction;
+		Vec3f light_colour;
+		Vec3f direction;
 	};
 
 	struct SpotLight 
 	{
-		Vec3 light_colour;
-		Vec3 light_position;
+		Vec3f light_colour;
+		Vec3f light_position;
 		// @NOTE: direction.w = raduis
 		Vec4 direction; 
 	};

@@ -12,7 +12,7 @@ namespace cm
 	   
 	real PerlinNoise::DotProd(int32 hash, real x, real y)
 	{
-		Vec3 v = Vec3(x, y, 0);
+		Vec3f v = Vec3f(x, y, 0);
 		int32 count = static_cast<int32>(cases2D.size());
 		int32 vcase = hash & (count - 1);
 		return Dot(cases2D[vcase], v);
@@ -20,7 +20,7 @@ namespace cm
 
 	real PerlinNoise::DotProd(int32 hash, real x, real y, real z)
 	{
-		Vec3 v = Vec3(x, y, z);
+		Vec3f v = Vec3f(x, y, z);
 		int32 count = static_cast<int32>(cases3D.size());
 		int32 vcase = hash & (count - 1);
 		return Dot(cases3D[vcase], v);
@@ -68,7 +68,7 @@ namespace cm
 		real result = (y1 + 1) / 2.f;
 
 		// Due to floating point errors we clamp the normalized value. Ensuring the range. 
-		result = Clamp(result, 0, 1);
+		result = Clamp(result, 0.0f, 1.0f);
 
 		return result;
 	}
@@ -127,7 +127,7 @@ namespace cm
 		real result = (z1 + 1) / 2.f;
 
 		// Due to floating point errors we clamp the normalized value. Ensuring the range. 
-		result = Clamp(result, 0, 1);
+		result = Clamp(result, 0.0f, 1.0f);
 		
 		return result;
 	}

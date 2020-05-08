@@ -12,7 +12,7 @@ namespace cm
 		real  camera_pitch = 0.0f;
 
 		Transform transform;
-		Vec3 target;
+		Vec3f target;
 		Mat4 view_matrix;
 		Mat4 projection_matrix;
 	};
