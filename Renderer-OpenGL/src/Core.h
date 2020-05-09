@@ -21,15 +21,21 @@
 #include <atomic>
 #include <chrono>
 
-
 // TODO: Make this a pch
 
 #ifdef _DEBUG
+#define DEBUG
+#else
+#define RELEASE
+#endif
+
+
+#ifdef DEBUG
 #define Assert(Value) if (!(Value)) {*(int *)0 = 0;}
 #else
 #define Assert(Value)
 #endif
-#ifdef _DEBUG
+#ifdef DEBUG
 
 #define LOG(...)	printf(__FUNCTION__); \
 					printf(" Line: %d ", __LINE__); \

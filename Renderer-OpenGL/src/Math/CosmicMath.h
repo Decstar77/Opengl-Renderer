@@ -535,17 +535,29 @@ namespace cm
 		return Vec3<T>(b.x * a, b.y * a, b.z * a);
 	}
 
+#ifdef RELEASE
+#pragma warning(push)
+#pragma warning(disable: 4723)
+#endif
+
 	template<typename T>
 	inline Vec3<T> operator /(const Vec3<T> &a, const T &b)
 	{
+		//Assert(a.x != 0 && a.y != 0 && a.z != 0);
 		return Vec3<T>(a.x / b, a.y / b, a.z / b);
 	}
 
 	template<typename T>
 	inline Vec3<T> operator /(const T &b, const Vec3<T> &a)
 	{
+		//Assert(a.x != 0 && a.y != 0 && a.z != 0);
 		return Vec3<T>(b / a.x, b / a.y, b / a.z);
+
 	}
+
+#ifdef RELEASE
+#pragma warning(pop)
+#endif
 
 	template<typename T>
 	inline void operator +=(Vec3<T> &a, const Vec3<T> &b)
@@ -694,22 +706,33 @@ namespace cm
 	}
 
 	template<typename T>
-	inline Vec4<T> operator /(const Vec4<T> &a, const Vec4<T> &b)
-	{
-		return Vec4<T>(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
-	}
-
-	template<typename T>
 	inline Vec4<T> operator *(const Vec4<T> &a, const T &b)
 	{
 		return Vec4<T>(a.x * b, a.y * b, a.z * b, a.w * b);
 	}
 
+#ifdef RELEASE
+#pragma warning(push)
+#pragma warning(disable: 4723)
+#endif
+
+	template<typename T>
+	inline Vec4<T> operator /(const Vec4<T> &a, const Vec4<T> &b)
+	{
+		//Assert(a.x != 0 && a.y != 0 && a.z != 0);
+		return Vec4<T>(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
+	}
+
 	template<typename T>
 	inline Vec4<T> operator /(const Vec4<T> &a, const T &b)
 	{
+		//Assert(a.x != 0 && a.y != 0 && a.z != 0);
 		return Vec4<T>(a.x / b, a.y / b, a.z / b, a.w / b);
 	}
+
+#ifdef RELEASE
+#pragma warning(pop)
+#endif
 	
 	// @TODO: Name comment
 
