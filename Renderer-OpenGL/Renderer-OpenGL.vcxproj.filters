@@ -36,9 +36,6 @@
     <ClCompile Include="src\Core\Camera.cpp">
       <Filter>src\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\Math\CosmicMath.cpp">
-      <Filter>src\Math</Filter>
-    </ClCompile>
     <ClCompile Include="src\Math\CosmicNoise.cpp">
       <Filter>src\Math</Filter>
     </ClCompile>

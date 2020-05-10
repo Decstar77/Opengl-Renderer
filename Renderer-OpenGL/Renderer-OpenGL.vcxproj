@@ -22,7 +22,6 @@
     <ClCompile Include="src\Engine\AssetLoader.cpp" />
     <ClCompile Include="src\Engine\Input.cpp" />
     <ClCompile Include="src\Math\CosmicGeometry.cpp" />
-    <ClCompile Include="src\Math\CosmicMath.cpp" />
     <ClCompile Include="src\Math\CosmicNoise.cpp" />
     <ClCompile Include="src\Core\EditableMesh.cpp" />
     <ClCompile Include="src\OpenGL\OpenGL.cpp" />
@@ -156,7 +155,7 @@
       <PreprocessorDefinitions>GLEW_STATIC;IMGUI_IMPL_OPENGL_LOADER_GLEW;_ENABLE_EXTENDED_ALIGNED_STORAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <AdditionalIncludeDirectories>F:\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;F:\Libraries\ASSIMP\include;F:\Libraries\glm-0.9.9.6\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\Renderers\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;F:\Libraries\ASSIMP\include;F:\Libraries\glm-0.9.9.6\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -177,7 +176,7 @@
       <PreprocessorDefinitions>GLEW_STATIC;IMGUI_IMPL_OPENGL_LOADER_GLEW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <AdditionalIncludeDirectories>F:\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;F:\Libraries\ASSIMP\include;F:\Libraries\glm-0.9.9.6\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\Renderers\Renderer-OpenGL\Renderer-OpenGL\src;F:\Libraries\GLEW\include\GL;F:\Libraries\GLFW_SDK\glfw-3.3.bin.WIN64\include;F:\Libraries\ASSIMP\include;F:\Libraries\glm-0.9.9.6\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>

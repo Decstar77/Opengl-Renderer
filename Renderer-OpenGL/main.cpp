@@ -401,7 +401,7 @@ int main()
 	World main_world;
 
 
-	camera_controller.main_camera.projection_matrix = Perspective(40, ((float)WINDOW_WIDTH) / WINDOW_HEIGHT, 0.1f, 250.0f);
+	camera_controller.main_camera.projection_matrix = Perspective(40.0f, ((real32)WINDOW_WIDTH) / WINDOW_HEIGHT, 0.1f, 250.0f);
 	camera_controller.main_camera.target = Vec3f(0);
 	camera_controller.main_camera.transform.position = Vec3f(0, 4, 5);
 	camera_controller.main_camera.view_matrix = LookAt(camera_controller.main_camera.transform.position, camera_controller.main_camera.target, Vec3f(0, 1, 0));

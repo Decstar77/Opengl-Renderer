@@ -1,8 +1,6 @@
 #include "CosmicGeometry.h"
 namespace cm
 {
-
-
 	Ray::Ray()
 	{
 
@@ -23,7 +21,6 @@ namespace cm
 	{
 		return origin + dist * direction;
 	}
-
 
 	Plane::Plane()
 	{
@@ -246,8 +243,8 @@ namespace cm
 
 	bool OBB::CheckCollision(const Ray &r) const
 	{
-		real32 tmin = -REAL_MAX;
-		real32 tmax	= REAL_MAX;
+		real32 tmin = -9999999999.0f;
+		real32 tmax	= 9999999999.0f;
 
 		for (int32 i = 0; i < 3; i++)
 		{
@@ -286,8 +283,8 @@ namespace cm
 
 	bool OBB::CheckCollision(const Ray &r, CollisionInfo *collision_info) const
 	{
-		real32 tmin = -REAL_MAX;
-		real32 tmax = REAL_MAX;
+		real32 tmin = -9999999999.0f;
+		real32 tmax = 9999999999.0f;
 
 		for (int32 i = 0; i < 3; i++)
 		{

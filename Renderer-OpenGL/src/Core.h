@@ -66,6 +66,10 @@
 
 #define EDITOR_WINDOW 1
 
+#ifndef TYPES
+
+#define TYPES
+
 typedef uint8_t		uint8;
 typedef uint16_t	uint16;
 typedef uint32_t	uint32;
@@ -91,3 +95,8 @@ typedef std::atomic<real32> AtomicReal32;
 typedef std::atomic<real64> AtomicReal64;
 
 typedef uint32 RenderFlags;
+
+#endif 
+
+
+

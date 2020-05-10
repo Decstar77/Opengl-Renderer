@@ -1,6 +1,8 @@
 #pragma once
 #include "Core.h"
 #include "OpenGL/OpenGl.h"
+#include "Math/CosmicMath.h"
+#include "Math/CosmicGeometry.h"
 #include "GLFW/glfw3.h"
 
 

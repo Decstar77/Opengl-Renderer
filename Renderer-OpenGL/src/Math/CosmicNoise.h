@@ -1,18 +1,18 @@
 #pragma once
-#include "Core.h"
 #include "CosmicMath.h"
-#include "Utility.h"
 namespace cm
 {
-	//Many thanks to this dude
-	//https://www.youtube.com/watch?v=MJ3bvCkHJtE
-	//https://www.youtube.com/watch?v=iW4nFygKAjw
+	// @NOTE: Many thanks to this dude
+	// @HELP: https://www.youtube.com/watch?v=MJ3bvCkHJtE
+	// @HELP: https://www.youtube.com/watch?v=iW4nFygKAjw
 	class PerlinNoise
 	{
 	public:
-		real Sample(real x, real y);
-		real Sample(real x, real y, real z);
+
+		real32 Sample(real32 x, real32 y);
+		real32 Sample(real32 x, real32 y, real32 z);
 		void Shuffle();
+
 	private:
 		// Random numbers 0 - 255 inclusive
 		int p[256] = { 151,160,137,91,90,15,
@@ -31,7 +31,8 @@ namespace cm
 		};
 
 		// Possible directions vectors for unit cubes
-		std::vector<Vec3f> cases2D = {
+		Vec3f cases2D[8] = 
+		{
 			Vec3f(1, 1, 0),
 			Vec3f(-1, 1, 0),
 			Vec3f(1, -1, 0),
@@ -42,7 +43,7 @@ namespace cm
 			Vec3f(0, -Sqrt<real32>(2), 0)
 		};
 		
-		std::vector<Vec3f> cases3D =
+		Vec3f cases3D[12] =
 		{
 			Vec3f(1,1,0),
 			Vec3f(-1,1,0),
@@ -59,9 +60,10 @@ namespace cm
 		};
 
 	private:
-		real Fade(real t);
-		real DotProd(int32 hash, real x, real y);
-		real DotProd(int32 hash, real x, real y, real z);
+
+		real32 Fade(real32 t);
+		real32 DotProd(int32 hash, real32 x, real32 y);
+		real32 DotProd(int32 hash, real32 x, real32 y, real32 z);
 		int32 Inc(int32 value);
 	};
 }
