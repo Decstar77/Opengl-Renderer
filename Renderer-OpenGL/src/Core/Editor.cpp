@@ -329,7 +329,7 @@ namespace cm
 	void TranslationWidget::CalculateBoundingBoxes()
 	{
 		// @NOTE: We take the conjugate because of model's blender coords ??
-		Mat3 rotation = QuatToMat3(Conjugate(transform.rotation));
+		Mat3f rotation = QuatToMat3(Conjugate(transform.rotation));
 		Basis local_basis(rotation);
 
 		Vec3f x_origin = Vec3f(0.36, 0, 0) * local_basis.mat;
@@ -573,7 +573,7 @@ namespace cm
 
 	void RotationWidget::CalculateBoundingBoxes()
 	{		
-		Mat3 rotation = QuatToMat3(Conjugate(transform.rotation));
+		Mat3f rotation = QuatToMat3(Conjugate(transform.rotation));
 		Basis local_basis(rotation);
 
 		// @NOTE: x-axis 
@@ -582,10 +582,10 @@ namespace cm
 		Vec3f x_origin03 = Vec3f(0, 0.4, -0.4)  * local_basis.mat;
 		Vec3f x_origin04 = Vec3f(0, -0.4, 0.4)  * local_basis.mat;
 
-		x_bounding_volumes[0] = OBB(transform.position + x_origin01, Vec3f(0.05, 0.2, 0.05), Rotate(local_basis.mat, -45, Vec3f(1, 0, 0)));
-		x_bounding_volumes[1] = OBB(transform.position + x_origin02, Vec3f(0.05, 0.2, 0.05), Rotate(local_basis.mat, -45, Vec3f(1, 0, 0)));
-		x_bounding_volumes[2] = OBB(transform.position + x_origin03, Vec3f(0.05, 0.2, 0.05), Rotate(local_basis.mat, 45, Vec3f(1, 0, 0)));
-		x_bounding_volumes[3] = OBB(transform.position + x_origin04, Vec3f(0.05, 0.2, 0.05), Rotate(local_basis.mat, 45, Vec3f(1, 0, 0)));
+		x_bounding_volumes[0] = OBB(transform.position + x_origin01, Vec3f(0.05, 0.2, 0.05), Rotate(local_basis.mat, -45.0f, Vec3f(1, 0, 0)));
+		x_bounding_volumes[1] = OBB(transform.position + x_origin02, Vec3f(0.05, 0.2, 0.05), Rotate(local_basis.mat, -45.0f, Vec3f(1, 0, 0)));
+		x_bounding_volumes[2] = OBB(transform.position + x_origin03, Vec3f(0.05, 0.2, 0.05), Rotate(local_basis.mat, 45.0f, Vec3f(1, 0, 0)));
+		x_bounding_volumes[3] = OBB(transform.position + x_origin04, Vec3f(0.05, 0.2, 0.05), Rotate(local_basis.mat, 45.0f, Vec3f(1, 0, 0)));
 
 		// @NOTE: y-axis 
 		Vec3f y_origin01 = Vec3f(0.4, 0, 0.4)	  * local_basis.mat;
@@ -593,10 +593,10 @@ namespace cm
 		Vec3f y_origin03 = Vec3f(0.4, 0, -0.4)  * local_basis.mat;
 		Vec3f y_origin04 = Vec3f(-0.4, 0, 0.4)  * local_basis.mat;
 
-		y_bounding_volumes[0] = OBB(transform.position + y_origin01, Vec3f(0.2, 0.05, 0.05), Rotate(local_basis.mat, 45, Vec3f(0, 1, 0)));
-		y_bounding_volumes[1] = OBB(transform.position + y_origin02, Vec3f(0.2, 0.05, 0.05), Rotate(local_basis.mat, 45, Vec3f(0, 1, 0)));
-		y_bounding_volumes[2] = OBB(transform.position + y_origin03, Vec3f(0.2, 0.05, 0.05), Rotate(local_basis.mat, -45, Vec3f(0, 1, 0)));
-		y_bounding_volumes[3] = OBB(transform.position + y_origin04, Vec3f(0.2, 0.05, 0.05), Rotate(local_basis.mat, -45, Vec3f(0, 1, 0)));
+		y_bounding_volumes[0] = OBB(transform.position + y_origin01, Vec3f(0.2, 0.05, 0.05), Rotate(local_basis.mat, 45.0f, Vec3f(0, 1, 0)));
+		y_bounding_volumes[1] = OBB(transform.position + y_origin02, Vec3f(0.2, 0.05, 0.05), Rotate(local_basis.mat, 45.0f, Vec3f(0, 1, 0)));
+		y_bounding_volumes[2] = OBB(transform.position + y_origin03, Vec3f(0.2, 0.05, 0.05), Rotate(local_basis.mat, -45.0f, Vec3f(0, 1, 0)));
+		y_bounding_volumes[3] = OBB(transform.position + y_origin04, Vec3f(0.2, 0.05, 0.05), Rotate(local_basis.mat, -45.0f, Vec3f(0, 1, 0)));
 
 		// @NOTE: z-axis, 0.6 because of pythag.
 		Vec3f z_origin01 = Vec3f(0.6, 0, 0)	* local_basis.mat;
@@ -859,7 +859,7 @@ namespace cm
 
 	void ScalingWidget::CalculateBoundingBoxes()
 	{
-		Mat3 rotation = QuatToMat3(Conjugate(transform.rotation));
+		Mat3f rotation = QuatToMat3(Conjugate(transform.rotation));
 		Basis local_basis(rotation);
 
 		Vec3f x_origin = Vec3f(0.36, 0, 0) * local_basis.mat;

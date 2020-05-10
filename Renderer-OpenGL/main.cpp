@@ -151,7 +151,7 @@ int main()
 		std::cout << "MAX ANTI  " << a << std::endl;
 	}
 
-
+	int32 min = Min(1, 2, 3, 4, 5);
 
 	//************************************
 	// Load shaders

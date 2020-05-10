@@ -320,7 +320,7 @@ namespace cm
 			else
 			{
 				pmc.penetration = max_length - length;
-				pmc.contant_normal = normal * -1;
+				pmc.contant_normal = normal * -1.0f;
 			}
 			pmc.restitution = 0;
 			return pmc;

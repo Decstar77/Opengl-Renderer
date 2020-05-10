@@ -42,7 +42,7 @@ namespace cm
 
 		static void Log(const Vec3f &msg);
 		static void Log(const Vec4f &msg);
-		static void Log(const Mat3 &msg);
+		static void Log(const Mat3f &msg);
 		static void Log(const Mat4 &msg);	
 		
 		static void LogWarning(const String &msg);
@@ -52,7 +52,7 @@ namespace cm
 
 		static void LogWarning(const Vec3f &msg);
 		static void LogWarning(const Vec4f &msg);
-		static void LogWarning(const Mat3 &msg);
+		static void LogWarning(const Mat3f &msg);
 		static void LogWarning(const Mat4 &msg);
 		
 		static void AddPersistentLine(const Vec3f &a, const Vec3f &b);

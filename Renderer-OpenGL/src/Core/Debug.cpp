@@ -56,7 +56,7 @@ namespace cm
 		log_info_stream << ToString(msg) << '\n';
 	}
 
-	void Debug::Log(const Mat3 &msg)
+	void Debug::Log(const Mat3f &msg)
 	{
 		log_info_stream << ToString(msg) << '\n';
 	}
@@ -107,7 +107,7 @@ namespace cm
 		log_info_stream << "WARNING: " << ToString(msg) << '\n';
 	}
 
-	void Debug::LogWarning(const Mat3 &msg)
+	void Debug::LogWarning(const Mat3f &msg)
 	{
 		log_info_stream << "WARNING: " << ToString(msg) << '\n';
 	}
@@ -223,7 +223,7 @@ namespace cm
 		Mat4 mat(basis.mat, origin);
 
 		Vec4f v0 = Vec4f(extents, 1) * mat;
-		Vec4f v1 = Vec4f(extents * -1, 1) * mat;
+		Vec4f v1 = Vec4f(extents * -1.0f, 1) * mat;
 		
 		Vec4f v2 = (Vec4f(-extents.x,  extents.y, extents.z, 1)) * mat;
 		Vec4f v3 = (Vec4f(extents.x, -extents.y, extents.z, 1)) * mat;
@@ -254,7 +254,7 @@ namespace cm
 		Mat4 mat(basis.mat, origin);
 
 		Vec4f v0 = Vec4f(extents, 1) * mat;
-		Vec4f v1 = Vec4f(extents * -1, 1) * mat;
+		Vec4f v1 = Vec4f(extents * -1.0f, 1) * mat;
 
 		Vec4f v2 = (Vec4f(-extents.x, extents.y, extents.z, 1)) * mat;
 		Vec4f v3 = (Vec4f(extents.x, -extents.y, extents.z, 1)) * mat;

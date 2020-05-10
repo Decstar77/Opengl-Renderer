@@ -35,14 +35,18 @@ namespace cm
 	inline constexpr uint32 SafeTruncateUint64(uint64 value)
 	{
 		Assert(value <= 0xFFFFFFFF);
+
 		uint32 result = static_cast<uint32>(value);
+
 		return result;
 	}
 
 	inline constexpr real32 SafeTruncateDouble(real64 value)
 	{
 		Assert(value <= 0xFFFFFFFF);
+
 		real32 result = static_cast<real32>(value);
+
 		return result;
 	}
 
@@ -254,7 +258,11 @@ namespace cm
 	template<typename T>
 	struct Quat;
 
+	template<typename T>
 	struct Mat3;
+
+	typedef Mat3<real32> Mat3f;
+
 	struct Mat4;
 
 	template<typename T>
@@ -265,29 +273,33 @@ namespace cm
 
 		Vec2()
 		{
-			x = 0; y = 0;
+			this->x = static_cast<T>(0); 
+			this->y = static_cast<T>(0);
 		}
 		
 		Vec2(const T &x, const T &y)
 		{
-			this->x = x; this->y = y;
+			this->x = x; 
+			this->y = y;
 		}
 		
 		Vec2(const T &all)
 		{
-			x = all;
-			y = all;
+			this->x = all;
+			this->y = all;
 		}
 
 		T& operator[](const int32 &index)
 		{
 			Assert(index >= 0 && index < 2);
+
 			return (&x)[index];
 		}
 
 		T operator[](const int32 &index) const
 		{
 			Assert(index >= 0 && index < 2);
+
 			return (&x)[index];
 		}
 	};
@@ -295,46 +307,62 @@ namespace cm
 	template<typename T>
 	T Mag(const Vec2<T> &a)
 	{
-		return std::sqrt(a.x * a.x + a.y * a.y);
+		T result = Sqrt(a.x * a.x + a.y * a.y);
+
+		return result;
 	}
 
 	template<typename T>
 	T Normalize(const Vec2<T> &a)
 	{
 		T magA = Mag(a);
-		return a / magA;
+
+		T result = a / magA;
+
+		return result;
 	}
 
 	template<typename T>
-	bool Equal(const Vec2<T> &a1, const Vec2<T> a2, const real32 &epsilon = FLOATING_POINT_ERROR_PRESCION)
+	bool32 Equal(const Vec2<T> &a1, const Vec2<T> a2, const real32 &epsilon = FLOATING_POINT_ERROR_PRESCION)
 	{
 		T dx = Abs(a1.x - a2.x);
 		T dy = Abs(a1.y - a2.y);
-		return (dx < epsilon && dy < epsilon);
+
+		bool32 result = (dx < epsilon && dy < epsilon);
+
+		return result;
 	}
 
 	template<typename T>
 	inline Vec2<T> operator +(const Vec2<T> &a, const Vec2<T> &b)
 	{
-		return Vec2(a.x + b.x, a.y + b.y);
+		Vec2<T> result =  Vec2<T>(a.x + b.x, a.y + b.y);
+
+		return result;
 	}
 	
 	template<typename T>
 	inline Vec2<T> operator -(const Vec2<T> &a, const Vec2<T> &b)
 	{
-		return Vec2(a.x - b.x, a.y - b.y);
+		Vec2<T> result = Vec2<T>(a.x - b.x, a.y - b.y);
+
+		return result;
 	}
 
 	template<typename T>
-	inline Vec2<T> operator /(const Vec2<T> &a, T b)
+	inline Vec2<T> operator /(const Vec2<T> &a, const T &b)
 	{
-		return Vec2(a.x / b, a.y / b);
+		Vec2<T> result = Vec2<T>(a.x / b, a.y / b);
+
+		return result;
 	}
 
 	template<typename T>
 	inline bool32 operator  ==(const Vec2<T> &a, const Vec2<T> &b)
 	{
-		return (a.x == b.x && a.y == b.y);
+		bool32 result = (a.x == b.x && a.y == b.y);
+
+		return result;
 	}
 
 	typedef Vec2<real32> Vec2f;
@@ -376,37 +404,48 @@ namespace cm
 
 		Vec3()
 		{			
-			this->x = static_cast<T>(0.0); 
-			this->y = static_cast<T>(0.0);
-			this->z = static_cast<T>(0.0);
-			this->pad0 = static_cast<T>(0.0);
+			this->x		= static_cast<T>(0.0); 
+			this->y		= static_cast<T>(0.0);
+			this->z		= static_cast<T>(0.0);
+			this->pad0	= static_cast<T>(0.0);
 		}
 
 		Vec3(const T &x, const T &y, const T &z)
 		{
-			this->x = x; this->y = y; this->z = z; this->pad0 = 0;
+			this->x		= x; 
+			this->y		= y; 
+			this->z		= z; 
+			this->pad0	= static_cast<T>(0.0);
 		}
 
 		Vec3(const T &all)
 		{
-			this->x = all; this->y = all; this->z = all; this->pad0 = 0;
+			this->x		= all; 
+			this->y		= all; 
+			this->z		= all; 
+			this->pad0	= static_cast<T>(0.0);
 		}
 
 		//TODO: Template this for type
 		Vec3(const Vec4<T> &a)
 		{
-			this->x = a.x; this->y = a.y; this->z = a.z; this->pad0 = 0;
+			this->x		= a.x; 
+			this->y		= a.y; 
+			this->z		= a.z; 
+			this->pad0	= static_cast<T>(0.0);
 		}
 
 		T& operator[](const int32 &index)
 		{
 			Assert(index >= 0 && index < 3);
+
 			return (&x)[index];
 		}
 
 		T operator[](const int32 &index) const
 		{
 			Assert(index >= 0 && index < 3);
+			
 			return (&x)[index];
 		}
 	};
@@ -417,31 +456,41 @@ namespace cm
 	template<typename T>
 	T Dot(const Vec3<T> &a, const Vec3<T> &b)
 	{
-		return a.x * b.x + a.y * b.y + a.z * b.z;
+		T result = a.x * b.x + a.y * b.y + a.z * b.z;
+
+		return result;
 	}
 
 	template<typename T>
 	T Mag(const Vec3<T> &a)
 	{
-		return Sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+		T result = Sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+
+		return result;
 	}
 	
 	template<typename T>
 	T Distance(const Vec3<T> &a, const Vec3<T> &b)
 	{
-		return Mag(a - b);
+		T result = Mag(a - b);
+
+		return result;
 	}
 
 	template<typename T>
 	T SqrdDistance(const Vec3<T> &a, const Vec3<T> &b)
 	{
-		return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
+		T result = (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
+
+		return result;
 	}
 	
 	template<typename T>
 	int32 MaxIndex(const Vec3<T> &a)
 	{
-		return (a.x > a.y) ? ((a.x > a.z) ? 0 : 2) : ((a.y > a.z) ? 1 : 2);
+		int32 result = (a.x > a.y) ? ((a.x > a.z) ? 0 : 2) : ((a.y > a.z) ? 1 : 2);
+
+		return result;
 	}
 
 	template<typename T>
@@ -450,14 +499,19 @@ namespace cm
 		T x = Abs(a.x);
 		T y = Abs(a.y);
 		T z = Abs(a.z);
-		return (x > y) ? ((x > z) ? 0 : 2) : ((y > z) ? 1 : 2);
+
+		int32 result = (x > y) ? ((x > z) ? 0 : 2) : ((y > z) ? 1 : 2);
+
+		return result;
 	}
 
 	template<typename T>
 	Vec3<T> Normalize(const Vec3<T> &a)
 	{
 		T m = Mag(a);
+
 		Vec3<T> result = Vec3<T>(a.x / m, a.y / m, a.z / m);
+		
 		return result;
 	}
 
@@ -467,7 +521,10 @@ namespace cm
 		T x = a.y * b.z - b.y * a.z;
 		T y = a.z * b.x - b.z * a.x;
 		T z = a.x * b.y - b.x * a.y;
-		return Vec3<T>(x, y, z);
+		
+		Vec3<T> result = Vec3<T>(x, y, z);
+
+		return result;
 	}
 
 	template<typename T>
@@ -476,14 +533,19 @@ namespace cm
 		bool32 resx = Equal(a.x, b.x, epsilon);
 		bool32 resy = Equal(a.y, b.y, epsilon);
 		bool32 resz = Equal(a.z, b.z, epsilon);
-		return resx && resy && resz;
+
+		bool32 result = resx && resy && resz;
+
+		return result;
 	}
 
 	template<typename T>
 	String ToString(const Vec3<T> &a)
 	{
 		StringStream ss;
+
 		ss << '(' << a.x << ", " << a.y << ", " << a.z << ')';
+		
 		return ss.str();
 	}
 
@@ -946,7 +1008,7 @@ namespace cm
 		return ss.str();
 	}
 
-	Mat3 QuatToMat3(const Quatf &q);
+	Mat3f QuatToMat3(const Quatf &q);
 
 	Mat4 QuatToMat4(const Quatf &q);
 
@@ -971,53 +1033,251 @@ namespace cm
 	}
 
 
+	//************************************
+	// Matrix 3x3
+	//************************************
 
-
-
-	struct  Mat3
+	template<typename T>
+	struct Mat3
 	{
 		union
 		{
-			real32 ptr[12]; // @NOTE: 12 because padding byte
+			T ptr[12]; // @NOTE: 12 because padding byte
 			struct
 			{
-				Vec3f row0;
-				Vec3f row1;
-				Vec3f row2;
+				Vec3<T> row0;
+				Vec3<T> row1;
+				Vec3<T> row2;
 			};
 		};
+
 		Mat3()
 		{
-			row0 = Vec3f(1, 0, 0);
-			row1 = Vec3f(0, 1, 0);
-			row2 = Vec3f(0, 0, 1);
+			this->row0 = Vec3<T>(static_cast<T>(1.0), static_cast<T>(0.0), static_cast<T>(0.0));
+			this->row1 = Vec3<T>(static_cast<T>(0.0), static_cast<T>(1.0), static_cast<T>(0.0));
+			this->row2 = Vec3<T>(static_cast<T>(0.0), static_cast<T>(0.0), static_cast<T>(1.0));
 		}
 
-		Mat3(const real32 &a)
+		Mat3(const T &a)
 		{
-			row0 = Vec3f(a, 0, 0);
-			row1 = Vec3f(0, a, 0);
-			row2 = Vec3f(0, 0, a);
-		}
-		Mat3(const Vec3f &_row0, const Vec3f &_row1, const Vec3f &_row2)
-		{
-			row0 = _row0;
-			row1 = _row1;
-			row2 = _row2;
+			this->row0 = Vec3<T>(static_cast<T>(a), static_cast<T>(0.0), static_cast<T>(0.0));
+			this->row1 = Vec3<T>(static_cast<T>(0.0), static_cast<T>(a), static_cast<T>(0.0));
+			this->row2 = Vec3<T>(static_cast<T>(0.0), static_cast<T>(0.0), static_cast<T>(a));
 		}
 
-		Vec3f& operator[](const int32 &index)
+		Mat3(const Vec3<T> &row0, const Vec3<T> &row1, const Vec3<T> &row2)
+		{
+			this->row0 = row0;
+			this->row1 = row1;
+			this->row2 = row2;
+		}
+
+		Vec3<T>& operator[](const int32 &index)
 		{
 			Assert(index >= 0 && index < 3);
 			return (&row0)[index];
 		}
 
-		Vec3f operator[](const int32 &index) const
+		Vec3<T> operator[](const int32 &index) const
 		{
 			Assert(index >= 0 && index < 3);
 			return (&row0)[index];
 		}
 	};
+
+	template<typename T>
+	T GetMatrixElement(const Mat3<T> &a, const int32 &row, const int32 &col)
+	{
+		return a.ptr[4 * row + col];
+	}
+
+	template<typename T>
+	Vec3<T> GetColumn(const Mat3<T> &a, const int32 &col)
+	{
+		Vec3<T> column(0, 0, 0);
+
+		column.x = a.ptr[4 * 0 + col];
+		column.y = a.ptr[4 * 1 + col];
+		column.z = a.ptr[4 * 2 + col];
+		
+		return column;
+	}
+
+	template<typename T>
+	Vec3<T> DecomposeToScale(const Mat3<T> &a)
+	{
+		T x = Mag(a.row0);
+		T y = Mag(a.row1);
+		T z = Mag(a.row2);
+
+		Vec3<T> result = Vec3<T>(x, y, z);
+
+		return result;
+	}
+
+	template<typename T>
+	Mat3<T> DecomposeToRotationMatrix(const Mat3<T> &a)
+	{
+		Vec3<T> scale = DecomposeToScale(a);
+		Mat3<T> result;
+
+		for (int32 i = 0; i < 3; i++)
+		{
+			result[i] = a[i] / scale[i];
+		}
+
+		return result;
+	}
+
+	template<typename T>
+	String ToString(const Mat3<T> &a)
+	{
+		StringStream ss;
+
+		String space = "            ";
+		ss << "| " << a.ptr[0] << space << a.ptr[1] << space << a.ptr[2] << " |" << '\n';
+		ss << "| " << a.ptr[4] << space << a.ptr[5] << space << a.ptr[6] << " |" << '\n';
+		ss << "| " << a.ptr[8] << space << a.ptr[9] << space << a.ptr[10] << " |" << '\n';
+		
+		return ss.str();
+	}
+
+	template<typename T>
+	T Det(const Mat3<T> &a)
+	{
+		T f = a.ptr[0] * (a.ptr[5] * a.ptr[10] - a.ptr[9] * a.ptr[6]);
+		T b = a.ptr[1] * (a.ptr[4] * a.ptr[10] - a.ptr[8] * a.ptr[6]);
+		T c = a.ptr[2] * (a.ptr[4] * a.ptr[9] - a.ptr[8] * a.ptr[5]);
+
+		return f - b + c;
+	}
+
+	template<typename T>
+	Mat3<T> ScaleDirection(const Mat3<T> &a, const T &k, Vec3<T> direction)
+	{
+		direction = Normalize(direction);
+
+		Vec3<T> i_prime(0, 0, 0);
+		i_prime.x = 1 + (k - 1) * direction.x * direction.x;
+		i_prime.y = (k - 1) * direction.x * direction.y;
+		i_prime.z = (k - 1) * direction.x * direction.z;
+
+		Vec3<T> j_prime(0, 0, 0);
+		j_prime.x = (k - 1) * direction.x * direction.y;
+		j_prime.y = 1 + (k - 1) * direction.y * direction.y;
+		j_prime.z = (k - 1) * direction.y * direction.z;
+
+		Vec3<T> k_prime(0, 0, 0);
+		k_prime.x = (k - 1) * direction.x * direction.z;
+		k_prime.y = (k - 1) * direction.y * direction.z;
+		k_prime.z = 1 + (k - 1) * direction.z * direction.z;
+
+		Mat3<T> result(i_prime, j_prime, k_prime);
+
+		return result;
+	}
+
+	template<typename T>
+	Mat3<T> Rotate(const Mat3<T> &a, const T &d_angle, Vec3<T> axis)
+	{
+		axis = Normalize(axis);
+
+		T theata = DegToRad(d_angle);
+		T cos_theata = Cos(theata);
+		T sin_theata = Sin(theata);
+
+		Vec3<T> iPrime(0, 0, 0);
+		iPrime.x = Round(axis.x *axis.x * (1 - cos_theata) + cos_theata);
+		iPrime.y = Round(axis.x *axis.y * (1 - cos_theata) + axis.z * sin_theata);
+		iPrime.z = Round(axis.x *axis.z * (1 - cos_theata) - axis.y * sin_theata);
+
+		Vec3<T> jPrime(0, 0, 0);
+		jPrime.x = Round(axis.x *axis.y * (1 - cos_theata) - axis.z *sin_theata);
+		jPrime.y = Round(axis.y *axis.y * (1 - cos_theata) + cos_theata);
+		jPrime.z = Round(axis.y *axis.z * (1 - cos_theata) + axis.x *sin_theata);
+
+		Vec3<T> kPrime(0, 0, 0);
+		kPrime.x = Round(axis.x *axis.z * (1 - cos_theata) + axis.y *sin_theata);
+		kPrime.y = Round(axis.y *axis.z * (1 - cos_theata) - axis.x *sin_theata);
+		kPrime.z = Round(axis.z *axis.z * (1 - cos_theata) + cos_theata);
+
+		Mat3<T> result(iPrime, jPrime, kPrime);
+
+		return result * a;
+	}
+
+
+	Mat3f Mat4ToMat3(const Mat4 &a);
+
+	Quatf Mat3ToQuat(const Mat3f &a);
+
+	template<typename T>
+	inline Mat3<T> operator /(const Mat3<T> &a, const T &b)
+	{
+		Mat3<T> result;
+
+		for (int32 i = 0; i < 12; i++)
+		{
+			result.ptr[i] = a.ptr[i] / b;
+		}
+
+		return result;
+	}
+
+	template<typename T>
+	inline Mat3<T> operator /(const T &a, const Mat3<T> &b)
+	{
+		Mat3<T> result;
+
+		for (int32 i = 0; i < 12; i++)
+		{
+			result.ptr[i] = b.ptr[i] / a;
+		}
+
+		return result;
+	}
+
+	template<typename T>
+	Vec3<T> operator *(const Vec3<T> &a, const Mat3<T> &b)
+	{
+		Vec3<T> result(0, 0, 0);
+
+		for (uint32 i = 0; i < 3; i++)
+		{
+			Vec3<T> col = GetColumn(b, i);
+			result[i] = Dot(col, a);
+		}
+
+		return result;
+	}
+
+	template<typename T>
+	Mat3<T> operator *(const Mat3<T> &a, const Mat3<T> &b)
+	{
+		Mat3<T> result(1);
+
+		for (int32 i = 0; i < 3; i++)
+		{
+			for (int32 y = 0; y < 3; y++)
+			{
+				Vec3<T> col(0, 0, 0);
+				
+				for (int32 x = 0; x < 3; x++)
+				{
+					col[x] = GetMatrixElement(b, x, y);
+				}
+
+				result.ptr[4 * i + y] = Dot(col, a[i]);
+			}
+		}
+
+		return result;
+	}
+
+
+	//************************************
+	// Matrix 4x4
+	//************************************
 
 	struct  Mat4
 	{
@@ -1057,7 +1317,7 @@ namespace cm
 			row3 = _row3;
 		}
 		
-		Mat4(const Mat3 &a, const Vec3f &translation)
+		Mat4(const Mat3f &a, const Vec3f &translation)
 		{
 			row0 = Vec4f(a.row0, 0);
 			row1 = Vec4f(a.row1, 0);
@@ -1089,7 +1349,7 @@ namespace cm
 	{
 		union 
 		{
-			Mat3 mat;
+			Mat3f mat;
 			struct
 			{
 				Vec3f right;
@@ -1100,10 +1360,10 @@ namespace cm
 
 		Basis()
 		{
-			mat = Mat3(1);
+			mat = Mat3f(1);
 		}
 
-		Basis(const Mat3 &basis)
+		Basis(const Mat3f &basis)
 		{
 			this->mat = basis;
 		}
@@ -1139,30 +1399,6 @@ namespace cm
 
 
 	//************************************
-	// Matrix 3x3
-	//************************************
-
-	real32 GetMatrixElement(const Mat3 &a, const int32 &row, const int32 &col);
-	
-	Vec3f GetColumn(const Mat3 &a, const uint32 &col);
-
-	Vec3f DecomposeToScale(const Mat3 &a);
-
-	Mat3 DecomposeToRotationMatrix(const Mat3 &a);
-	
-	String ToString(const Mat3 &a);
-
-	real32 Det(const Mat3 &a);
-
-	Mat3 ScaleDirection(const Mat3 &a, const real32 &k, Vec3f direction);
-
-	Mat3 Rotate(const Mat3 &a, const real32 &d_angle, Vec3f axis);
-
-	Mat3 Mat4ToMat3(const Mat4 &a);
-
-	Quatf Mat3ToQuat(const Mat3 &a);
-
-	//************************************
 	// Matrix 4x4
 	//************************************
 
@@ -1174,7 +1410,7 @@ namespace cm
 
 	bool CheckOrthogonal(const Mat4 &a, const real32 tolerance = 0.01);
 
-	Mat3 Adjoint(const Mat4 &a, const int32 &row, const int32 &col);
+	Mat3f Adjoint(const Mat4 &a, const int32 &row, const int32 &col);
 	
 	Mat4 Inverse(const Mat4 &a);
 
@@ -1182,7 +1418,7 @@ namespace cm
 
 	real32 Det(const Mat4 &a);
 
-	Mat4 Mat3ToMat4(const Mat3 &a, const Vec4f &b);
+	Mat4 Mat3ToMat4(const Mat3f &a, const Vec4f &b);
 
 	Mat4 Translate(Mat4 a, Vec3f translation);
 
@@ -1284,30 +1520,9 @@ namespace cm
 
 
 
-	inline Mat3 operator /(const Mat3 &a, const real32 &b)
-	{
-		Mat3 result;
-		for (int32 i = 0; i < 12; i++)
-		{
-			result.ptr[i] = a.ptr[i] / b;
-		}
-		return result;
-	}
-
-	inline Mat3 operator /(const real32 &a, const Mat3 &b)
-	{
-		Mat3 result;
-		for (int32 i = 0; i < 12; i++)
-		{
-			result.ptr[i] = b.ptr[i] / a;
-		}
-		return result;
-	}
 
 
-	Vec3f operator *(const Vec3f &a, const Mat3 &b);
 
-	Mat3 operator *(const Mat3 &a, const Mat3 &b);
 
 	Mat4  operator /(Mat4 a, float b);
 

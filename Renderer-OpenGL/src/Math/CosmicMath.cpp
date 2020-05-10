@@ -14,43 +14,28 @@ namespace cm
 
 
 
-	String ToString(const Mat3 &a)
+
+
+
+
+
+
+
+
+
+
+
+
+	Mat3f Mat4ToMat3(const Mat4 &a)
 	{
-		StringStream ss;
-		String space = "            ";
-		ss << "| " << a.ptr[0] << space << a.ptr[1] << space << a.ptr[2] << " |" << '\n';
-		ss << "| " << a.ptr[4] << space << a.ptr[5] << space << a.ptr[6] << " |" << '\n';
-		ss << "| " << a.ptr[8] << space << a.ptr[9] << space << a.ptr[10] << " |" << '\n';
-		return ss.str();
-	}
-
-
-
-
-
-
-
-
-
-	real32 Det(const Mat3 &a)
-	{
-		real32 f = a.ptr[0] * (a.ptr[5] * a.ptr[10] - a.ptr[9] * a.ptr[6]);
-		real32 b = a.ptr[1] * (a.ptr[4] * a.ptr[10] - a.ptr[8] * a.ptr[6]);
-		real32 c = a.ptr[2] * (a.ptr[4] * a.ptr[9] - a.ptr[8] * a.ptr[5]);
-
-		return f - b + c;
-	}
-
-	Mat3 Mat4ToMat3(const Mat4 &a)
-	{
-		Mat3 result(1);
+		Mat3f result(1);
 		result.row0 = Vec3(a.row0);
 		result.row1 = Vec3(a.row1);
 		result.row2 = Vec3(a.row2);
 		return result;
 	}
 
-	cm::Quatf Mat3ToQuat(const Mat3 &a)
+	cm::Quatf Mat3ToQuat(const Mat3f &a)
 	{
 		//@ HELP: 3D Math Primer for Graphics and Game Development		
 		real32 m11 = a.row0.x;
@@ -158,10 +143,7 @@ namespace cm
 		return a.ptr[4 * row + col];
 	}
 
-	real32 GetMatrixElement(const Mat3 &a, const int32 &row, const int32 &col)
-	{
-		return a.ptr[4 * row + col];
-	}
+
 
 	Vec4f GetColumn(const Mat4 &a, const uint32 &col)
 	{
@@ -173,36 +155,11 @@ namespace cm
 		return column;
 	}
 
-	Vec3f GetColumn(const Mat3 &a, const uint32 &col)
-	{
-		Vec3f column(0, 0, 0);
-		column.x = a.ptr[4 * 0 + col];
-		column.y = a.ptr[4 * 1 + col];
-		column.z = a.ptr[4 * 2 + col];
-		return column;
-	}
 
-	cm::Vec3f DecomposeToScale(const Mat3 &a)
-	{
-		real32 x = Mag(a.row0);
-		real32 y = Mag(a.row1);
-		real32 z = Mag(a.row2);
-		Vec3f result = Vec3f(x, y, z);
-		return result;
-	}
 
-	cm::Mat3 DecomposeToRotationMatrix(const Mat3 &a)
-	{
-		Vec3f scale = DecomposeToScale(a);
-		Mat3 result;
 
-		for (int32 i = 0; i < 3; i++)
-		{
-			result[i] = a[i] / scale[i];
-		}
 
-		return result;
-	}
+
 
 	String ToString(const Mat4 &a)
 	{
@@ -215,9 +172,9 @@ namespace cm
 		return ss.str();
 	}
 
-	Mat3 Adjoint(const Mat4 &a, const int32 &row, const int32 &col)
+	Mat3f Adjoint(const Mat4 &a, const int32 &row, const int32 &col)
 	{
-		Mat3 result(1);
+		Mat3f result(1);
 		int32 index = 0;
 		// @SPEEDS: To many branches
 		for (int32 r = 0; r < 4; r++)
@@ -268,7 +225,7 @@ namespace cm
 		return f - b + c - d;
 	}
 
-	Mat4 Mat3ToMat4(const Mat3 &a, const Vec4f &b)
+	Mat4 Mat3ToMat4(const Mat3f &a, const Vec4f &b)
 	{
 		Mat4 result(1);
 		result.row0 = Vec4f(a.row0, 0);
@@ -309,7 +266,7 @@ namespace cm
 			return Transpose(a);
 		}
 		Mat4 result(1);
-		Mat3 ad(1);
+		Mat3f ad(1);
 		int index = 0;
 		for (int32 row = 0; row < 4; row++)
 		{
@@ -389,33 +346,6 @@ namespace cm
 		return result * a;
 	}
 
-	Mat3 Rotate(const Mat3 &a, const real32 &d_angle, Vec3f axis)
-	{
-		axis = Normalize(axis);
-		
-		real32 theata = DegToRad(d_angle);
-		real32 cos_theata = cosf(theata);
-		real32 sin_theata = sinf(theata);
-
-		Vec3f iPrime(0, 0, 0);
-		iPrime.x = Round(axis.x *axis.x * (1 - cos_theata) + cos_theata);
-		iPrime.y = Round(axis.x *axis.y * (1 - cos_theata) + axis.z * sin_theata);
-		iPrime.z = Round(axis.x *axis.z * (1 - cos_theata) - axis.y * sin_theata);
-
-		Vec3f jPrime(0, 0, 0);
-		jPrime.x = Round(axis.x *axis.y * (1 - cos_theata) - axis.z *sin_theata);
-		jPrime.y = Round(axis.y *axis.y * (1 - cos_theata) + cos_theata);
-		jPrime.z = Round(axis.y *axis.z * (1 - cos_theata) + axis.x *sin_theata);
-
-		Vec3f kPrime(0, 0, 0);
-		kPrime.x = Round(axis.x *axis.z * (1 - cos_theata) + axis.y *sin_theata);
-		kPrime.y = Round(axis.y *axis.z * (1 - cos_theata) - axis.x *sin_theata);
-		kPrime.z = Round(axis.z *axis.z * (1 - cos_theata) + cos_theata);
-		
-		Mat3 result(iPrime, jPrime, kPrime);
-
-		return result * a;
-	}
 
 
 
@@ -525,28 +455,7 @@ namespace cm
 		return result * a;
 	}
 
-	cm::Mat3 ScaleDirection(const Mat3 &a, const real32 &k, Vec3f direction)
-	{
-		direction = Normalize(direction);
 
-		Vec3f i_prime(0, 0, 0);
-		i_prime.x = 1 + (k - 1) * direction.x * direction.x;
-		i_prime.y = (k - 1) * direction.x * direction.y;
-		i_prime.z = (k - 1) * direction.x * direction.z;
-
-		Vec3f j_prime(0, 0, 0);
-		j_prime.x = (k - 1) * direction.x * direction.y;
-		j_prime.y = 1 + (k - 1) * direction.y * direction.y;
-		j_prime.z = (k - 1) * direction.y * direction.z;
-
-		Vec3f k_prime(0, 0, 0);
-		k_prime.x = (k - 1) * direction.x * direction.z;
-		k_prime.y = (k - 1) * direction.y * direction.z;
-		k_prime.z = 1 + (k - 1) * direction.z * direction.z;
-
-		Mat3 result(i_prime, j_prime, k_prime);
-		return result;
-	}
 
 	Mat4 ScaleCardinal(Mat4 a, Vec3f direction)
 	{
@@ -596,7 +505,7 @@ namespace cm
 
 		rotation.row0 = Vec4f(basis_right, 0);
 		rotation.row1 = Vec4f(basis_up, 0);
-		rotation.row2 = Vec4f(camera_reverse_direction * -1, 0);
+		rotation.row2 = Vec4f(camera_reverse_direction * -1.0f, 0);
 		Mat4 translation(1);
 
 		translation.row0 = Vec4f(1, 0, 0, -position.x);
@@ -606,38 +515,9 @@ namespace cm
 		return Transpose(rotation * translation);
 	}
 
-	Mat3 operator*(const Mat3 &a, const Mat3 &b)
-	{
-		Mat3 result(1);
-		// @NOTE: Steps through the rows
-		for (int32 i = 0; i < 3; i++)
-		{
-			// @NOTE: Steps through the columns
-			for (int32 y = 0; y < 3; y++)
-			{
-				// @NOTE: Gets the column vector of the right hand side
-				Vec3f col(0, 0, 0);
-				for (int32 x = 0; x < 3; x++)
-				{
-					col[x] = GetMatrixElement(b, x, y);
-				}
-				// @NOTE: Adds to result
-				result.ptr[4 * i + y] = Dot(col, a[i]);
-			}
-		}
-		return result;
-	}
 
-	Vec3f operator*(const Vec3f &a, const Mat3 &b)
-	{
-		Vec3f result(0, 0, 0);
-		for (uint32 i = 0; i < 3; i++)
-		{
-			Vec3f col = GetColumn(b, i);
-			result[i] = Dot(col, a);
-		}
-		return result;
-	}
+
+
 
 	Mat4 operator /(Mat4 a, real32 b)
 	{
@@ -698,9 +578,9 @@ namespace cm
 
 
 
-	Mat3 QuatToMat3(const Quatf &q)
+	Mat3f QuatToMat3(const Quatf &q)
 	{
-		Mat3 mat(1);
+		Mat3f mat(1);
 
 		real32 qxx = (q.x * q.x);
 		real32 qyy = (q.y * q.y);
