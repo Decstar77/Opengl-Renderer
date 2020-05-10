@@ -8,9 +8,9 @@ namespace cm
 	class Bone
 	{
 	public:
-		Mat4 current_transform;
-		Mat4 inverse_bind_transform;
-		Mat4 node_transform_matrix;
+		Mat4f current_transform;
+		Mat4f inverse_bind_transform;
+		Mat4f node_transform_matrix;
 		
 		// @NOTE: Assume there is only one parent. -1 is an invaild value
 		int32 parent_index = -1;
@@ -56,7 +56,7 @@ namespace cm
 		void Play(real time, std::vector<Bone> *bones);
 
 	private:
-		void AnimateBones(const real &animation_time, Bone *bone, const Mat4 &parent_transform);
+		void AnimateBones(const real &animation_time, Bone *bone, const Mat4f &parent_transform);
 
 		int32 GetAnimationChannel(const String &bone_name);
 
@@ -74,7 +74,7 @@ namespace cm
 	public:
 		uint32 current_animation_index;
 		real32 current_time;
-		Mat4 global_inverse_transform;
+		Mat4f global_inverse_transform;
 		
 		// @NOTE: We reserve the [0]/0th index to be the root bone. This root bone does not actually exist in the mesh
 		//  	: It is simply a place holder to make all other calculations easiers

@@ -13,8 +13,8 @@ namespace cm
 
 		Transform transform;
 		Vec3f target;
-		Mat4 view_matrix;
-		Mat4 projection_matrix;
+		Mat4f view_matrix;
+		Mat4f projection_matrix;
 	};
 
 	class CameraController

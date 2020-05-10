@@ -171,7 +171,7 @@ namespace cm
 	void Aabb::Update(const Transform &t)
 	{
 		// @SPEED: This is matrix calc is slow
-		Mat4 transform_matrix = t.CalcTransformMatrix();
+		Mat4f transform_matrix = t.CalcTransformMatrix();
 		Vec3f old_center = this->center;
 		Vec3f old_radius = this->radius;
 		for (int32 i = 0; i < 3; i++)
@@ -191,7 +191,7 @@ namespace cm
 	void Aabb::Update(const Transform *t)
 	{	
 		// @SPEED: This is matrix calc is slow
-		Mat4 transform_matrix = t->CalcTransformMatrix();
+		Mat4f transform_matrix = t->CalcTransformMatrix();
 		Vec3f old_center = this->center;
 		Vec3f old_radius = this->radius;
 		for (int32 i = 0; i < 3; i++)

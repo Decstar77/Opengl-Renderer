@@ -24,8 +24,8 @@ namespace cm
 		static bool created;
 		static Shader line_shader;
 		static Shader texture_shader;
-		static Mat4 projection;
-		static Mat4 view;
+		static Mat4f projection;
+		static Mat4f view;
 	public:
 		static uint32 window_height;
 		static uint32 window_width; 		
@@ -43,7 +43,7 @@ namespace cm
 		static void Log(const Vec3f &msg);
 		static void Log(const Vec4f &msg);
 		static void Log(const Mat3f &msg);
-		static void Log(const Mat4 &msg);	
+		static void Log(const Mat4f &msg);	
 		
 		static void LogWarning(const String &msg);
 		static void LogWarning(const uint32 &msg);
@@ -53,7 +53,7 @@ namespace cm
 		static void LogWarning(const Vec3f &msg);
 		static void LogWarning(const Vec4f &msg);
 		static void LogWarning(const Mat3f &msg);
-		static void LogWarning(const Mat4 &msg);
+		static void LogWarning(const Mat4f &msg);
 		
 		static void AddPersistentLine(const Vec3f &a, const Vec3f &b);
 		static void AddIrresoluteLine(const Vec3f &a, const Vec3f &b);
@@ -73,7 +73,7 @@ namespace cm
 		static void AddPersistentOBB(const Vec3f &origin, const Vec3f &extents, const Basis &basis);
 		static void AddIrresoluteOBB(const Vec3f &origin, const Vec3f &extents, const Basis &basis);
 
-		static void Update(const Mat4 &projection, const Mat4 &view);
+		static void Update(const Mat4f &projection, const Mat4f &view);
 
 		static void DrawLines();
 		static void DrawTexture(const Texture &t);

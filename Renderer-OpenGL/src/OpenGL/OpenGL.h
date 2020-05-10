@@ -221,7 +221,7 @@ namespace cm
 	{
 		VertexArray vao;
 		IndexBuffer ibo;
-		std::vector<Mat4> transforms;
+		std::vector<Mat4f> transforms;
 	};
 
 	//************************************
@@ -654,8 +654,8 @@ namespace cm
 	class CubeMapMatrices
 	{
 	public:
-		static Mat4 projection;
-		static Mat4 views[6];
+		static Mat4f projection;
+		static Mat4f views[6];
 	};
 
 	class CubeMapGenerator

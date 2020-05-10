@@ -408,7 +408,7 @@ int main()
 	
 	
 	UniformBuffer global_uniforms;
-	global_uniforms.size_bytes = sizeof(Mat4) * 3 + sizeof(Vec4f) * 23;
+	global_uniforms.size_bytes = sizeof(Mat4f) * 3 + sizeof(Vec4f) * 23;
 	CreateUniformBuffer(&global_uniforms);
 	UniformBufferSetBindPoint(global_uniforms, 0);
 	ShaderBindUniformBuffer(worldspace_gbuffer_shader, 0, "WorldState");
@@ -749,10 +749,10 @@ int main()
 		// Update GPU Buffers
 		//************************************
 
-		std::vector<Mat4> camera_data = { 
+		std::vector<Mat4f> camera_data = { 
 			camera_controller.main_camera.projection_matrix, 
 			camera_controller.main_camera.view_matrix, 
-			Mat4(1)
+			Mat4f(1)
 		};
 
 		std::vector<Vec4f> lighting_data = {
@@ -766,7 +766,7 @@ int main()
 		
 		WriteBufferData(&global_uniforms, camera_data, 0);
 		// @HACK: Should write in one go, defeats the purpose !
-		WriteBufferData(&global_uniforms, lighting_data, sizeof(Mat4) * 3);
+		WriteBufferData(&global_uniforms, lighting_data, sizeof(Mat4f) * 3);
 
 		Debug::Update(camera_controller.main_camera.projection_matrix, camera_controller.main_camera.view_matrix);
 
@@ -793,7 +793,7 @@ int main()
 			WorldObject *obj	= main_world.objects[i];
 			Transform transform = *obj->GetTransform();
 			Material mat		= *obj->GetMaterial();
-			Mat4 transform_matrix = transform.CalcTransformMatrix();
+			Mat4f transform_matrix = transform.CalcTransformMatrix();
 
 			ShaderSetMat4(&depth_shader, "model", transform_matrix.ptr);
 
@@ -820,7 +820,7 @@ int main()
 			WorldObject *obj	= main_world.defferd_objects[i];
 			Transform transform = *obj->GetTransform();
 			Material mat		= *obj->GetMaterial();
-			Mat4 transform_matrix = transform.CalcTransformMatrix();
+			Mat4f transform_matrix = transform.CalcTransformMatrix();
 				
 			// @TODO: Some sort of sorting (TextureSet) ?? For this non instanced draw call
 			if (mat.HasTextures())
@@ -900,7 +900,7 @@ int main()
 			WorldObject *obj = main_world.defferd_objects[i];
 			Transform transform = *obj->GetTransform();
 			Material mat = *obj->GetMaterial();
-			Mat4 transform_matrix = transform.CalcTransformMatrix();
+			Mat4f transform_matrix = transform.CalcTransformMatrix();
 			RenderFlags flags = obj->GetRenderFlags();
 
 			if (flags == RENDERFLAG_NOTHING)

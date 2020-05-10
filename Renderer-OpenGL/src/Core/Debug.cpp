@@ -13,9 +13,9 @@ namespace cm
 
 	cm::Shader Debug::texture_shader;
 
-	cm::Mat4 Debug::projection;
+	cm::Mat4f Debug::projection;
 
-	cm::Mat4 Debug::view;
+	cm::Mat4f Debug::view;
 
 	uint32 Debug::window_height = 0;
 
@@ -61,7 +61,7 @@ namespace cm
 		log_info_stream << ToString(msg) << '\n';
 	}
 
-	void Debug::Log(const Mat4 &msg)
+	void Debug::Log(const Mat4f &msg)
 	{
 		log_info_stream << ToString(msg) << '\n';
 	}
@@ -112,7 +112,7 @@ namespace cm
 		log_info_stream << "WARNING: " << ToString(msg) << '\n';
 	}
 
-	void Debug::LogWarning(const Mat4 &msg)
+	void Debug::LogWarning(const Mat4f &msg)
 	{
 		log_info_stream << "WARNING: " << ToString(msg) << '\n';
 	}
@@ -220,7 +220,7 @@ namespace cm
 
 	void Debug::AddPersistentOBB(const Vec3f &origin, const Vec3f &extents, const Basis &basis)
 	{	
-		Mat4 mat(basis.mat, origin);
+		Mat4f mat(basis.mat, origin);
 
 		Vec4f v0 = Vec4f(extents, 1) * mat;
 		Vec4f v1 = Vec4f(extents * -1.0f, 1) * mat;
@@ -251,7 +251,7 @@ namespace cm
 
 	void Debug::AddIrresoluteOBB(const Vec3f &origin, const Vec3f &extents, const Basis &basis)
 	{
-		Mat4 mat(basis.mat, origin);
+		Mat4f mat(basis.mat, origin);
 
 		Vec4f v0 = Vec4f(extents, 1) * mat;
 		Vec4f v1 = Vec4f(extents * -1.0f, 1) * mat;
@@ -280,7 +280,7 @@ namespace cm
 		AddIrresolutePoint(origin);
 	}
 	
-	void Debug::Update(const Mat4 &projection, const Mat4 &view)
+	void Debug::Update(const Mat4f &projection, const Mat4f &view)
 	{
 		Debug::projection = projection;
 		Debug::view = view;

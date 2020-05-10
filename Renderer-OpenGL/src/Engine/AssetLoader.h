@@ -14,7 +14,7 @@ namespace cm
 	class ModelImport
 	{
 	private:
-		Mat4 ToMatrix4f(const aiMatrix4x4 *ai_mat);
+		Mat4f ToMatrix4f(const aiMatrix4x4 *ai_mat);
 		aiMatrix4x4 CalcRootNodeTransformMatrix(const aiNode *node);
 
 		int32 FindMinVertexWeight(Vertex vertex);

@@ -60,13 +60,13 @@ namespace cm
 	
 
 		working_bones = bones;
-		AnimateBones(animation_time, &bones->at(0), Mat4(1));
+		AnimateBones(animation_time, &bones->at(0), Mat4f(1));
 	}
 
-	void Animation::AnimateBones(const real &animation_time, Bone *bone, const Mat4 &parent_transform)
+	void Animation::AnimateBones(const real &animation_time, Bone *bone, const Mat4f &parent_transform)
 	{
 		String bone_name = bone->name;
-		Mat4 node_transform = bone->node_transform_matrix;
+		Mat4f node_transform = bone->node_transform_matrix;
 
 		// @NOTE: Returns -1 if nothing is found
 		int32 keyset_index = GetAnimationChannel(bone_name);
@@ -80,14 +80,14 @@ namespace cm
 			Quatf q = CalculateInterpolatedRotation(animation_time, keyset_index);
 			Vec3f scl = CalculateInterpolatedScaling(animation_time, keyset_index);
 
-			Mat4 scaleM = ScaleCardinal(Mat4(1), scl);
-			Mat4 rotM = QuatToMat4(q);
-			Mat4 tranM = Translate(Mat4(1), pos);
+			Mat4f scaleM = ScaleCardinal(Mat4f(1), scl);
+			Mat4f rotM = QuatToMat4(q);
+			Mat4f tranM = Translate(Mat4f(1), pos);
 
 			node_transform = scaleM * rotM * tranM;
 		}
 
-		Mat4 global_transform = node_transform * parent_transform;
+		Mat4f global_transform = node_transform * parent_transform;
 
 		bone->current_transform = bone->inverse_bind_transform * global_transform;
 

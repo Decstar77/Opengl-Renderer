@@ -263,7 +263,11 @@ namespace cm
 
 	typedef Mat3<real32> Mat3f;
 
+	template<typename T>
 	struct Mat4;
+
+	typedef Mat4<real32> Mat4f;
+	
 
 	template<typename T>
 	struct Vec2
@@ -334,7 +338,7 @@ namespace cm
 	}
 
 	template<typename T>
-	inline Vec2<T> operator +(const Vec2<T> &a, const Vec2<T> &b)
+	inline constexpr Vec2<T> operator +(const Vec2<T> &a, const Vec2<T> &b)
 	{
 		Vec2<T> result =  Vec2<T>(a.x + b.x, a.y + b.y);
 
@@ -342,7 +346,7 @@ namespace cm
 	}
 	
 	template<typename T>
-	inline Vec2<T> operator -(const Vec2<T> &a, const Vec2<T> &b)
+	inline constexpr Vec2<T> operator -(const Vec2<T> &a, const Vec2<T> &b)
 	{
 		Vec2<T> result = Vec2<T>(a.x - b.x, a.y - b.y);
 
@@ -350,7 +354,7 @@ namespace cm
 	}
 
 	template<typename T>
-	inline Vec2<T> operator /(const Vec2<T> &a, const T &b)
+	inline constexpr Vec2<T> operator /(const Vec2<T> &a, const T &b)
 	{
 		Vec2<T> result = Vec2<T>(a.x / b, a.y / b);
 
@@ -358,7 +362,7 @@ namespace cm
 	}
 
 	template<typename T>
-	inline bool32 operator  ==(const Vec2<T> &a, const Vec2<T> &b)
+	inline constexpr bool32 operator ==(const Vec2<T> &a, const Vec2<T> &b)
 	{
 		bool32 result = (a.x == b.x && a.y == b.y);
 
@@ -550,49 +554,49 @@ namespace cm
 	}
 
 	template<typename T>
-	inline bool32 operator ==(const Vec3<T> &a, const Vec3<T> &b)
+	inline constexpr bool32 operator ==(const Vec3<T> &a, const Vec3<T> &b)
 	{
 		return (a.x == b.x) && (a.y == b.y) && (a.z == b.z);
 	}
 
 	template<typename T>
-	inline bool32 operator !=(const Vec3<T> &a, const Vec3<T> &b)
+	inline constexpr bool32 operator !=(const Vec3<T> &a, const Vec3<T> &b)
 	{		
 		return (a.x != b.x) || (a.y != b.y) || (a.z != b.z);
 	}
 
 	template<typename T>
-	inline Vec3<T> operator +(const Vec3<T> &a, const Vec3<T> &b)
+	inline constexpr Vec3<T> operator +(const Vec3<T> &a, const Vec3<T> &b)
 	{
 		return Vec3<T>(a.x + b.x, a.y + b.y, a.z + b.z);
 	}
 
 	template<typename T>
-	inline Vec3<T> operator -(const Vec3<T> &a, const Vec3<T> &b)
+	inline constexpr Vec3<T> operator -(const Vec3<T> &a, const Vec3<T> &b)
 	{
 		return Vec3<T>(a.x - b.x, a.y - b.y, a.z - b.z);
 	}
 
 	template<typename T>
-	inline Vec3<T> operator *(const Vec3<T> &a, const Vec3<T> &b)
+	inline constexpr Vec3<T> operator *(const Vec3<T> &a, const Vec3<T> &b)
 	{
 		return Vec3<T>(a.x * b.x, a.y * b.y, a.z * b.z);
 	}
 
 	template<typename T>
-	inline Vec3<T> operator /(const Vec3<T> &a, const Vec3<T> &b)
+	inline constexpr Vec3<T> operator /(const Vec3<T> &a, const Vec3<T> &b)
 	{
 		return Vec3<T>(a.x / b.x, a.y / b.y, a.z / b.z);
 	}
 
 	template<typename T>
-	inline Vec3<T> operator *(const Vec3<T> &a, const T &b)
+	inline constexpr Vec3<T> operator *(const Vec3<T> &a, const T &b)
 	{
 		return Vec3<T>(a.x * b, a.y * b, a.z * b);
 	}
 
 	template<typename T>
-	inline Vec3<T> operator *(const T &a, const Vec3<T> &b)
+	inline constexpr Vec3<T> operator *(const T &a, const Vec3<T> &b)
 	{
 		return Vec3<T>(b.x * a, b.y * a, b.z * a);
 	}
@@ -603,14 +607,14 @@ namespace cm
 #endif
 
 	template<typename T>
-	inline Vec3<T> operator /(const Vec3<T> &a, const T &b)
+	inline constexpr Vec3<T> operator /(const Vec3<T> &a, const T &b)
 	{
 		//Assert(a.x != 0 && a.y != 0 && a.z != 0);
 		return Vec3<T>(a.x / b, a.y / b, a.z / b);
 	}
 
 	template<typename T>
-	inline Vec3<T> operator /(const T &b, const Vec3<T> &a)
+	inline constexpr Vec3<T> operator /(const T &b, const Vec3<T> &a)
 	{
 		//Assert(a.x != 0 && a.y != 0 && a.z != 0);
 		return Vec3<T>(b / a.x, b / a.y, b / a.z);
@@ -622,13 +626,13 @@ namespace cm
 #endif
 
 	template<typename T>
-	inline void operator +=(Vec3<T> &a, const Vec3<T> &b)
+	inline constexpr void operator +=(Vec3<T> &a, const Vec3<T> &b)
 	{
 		a = Vec3<T>(a.x + b.x, a.y + b.y, a.z + b.z);
 	}
 
 	template<typename T>
-	inline void operator -=(Vec3<T> &a, const Vec3<T> &b)
+	inline constexpr void operator -=(Vec3<T> &a, const Vec3<T> &b)
 	{
 		a = Vec3<T>(a.x - b.x, a.y - b.y, a.z - b.z);
 	}
@@ -738,37 +742,37 @@ namespace cm
 	}
 
 	template<typename T>
-	inline bool32 operator ==(const Vec4<T> &a, const Vec4<T> &b)
+	inline constexpr bool32 operator ==(const Vec4<T> &a, const Vec4<T> &b)
 	{
 		return (a.x == b.x) && (a.y == b.y) && (a.z == b.z) && (a.w == a.w);
 	}
 
 	template<typename T>
-	inline bool32 operator !=(const Vec4<T> &a, const Vec4<T> &b)
+	inline constexpr bool32 operator !=(const Vec4<T> &a, const Vec4<T> &b)
 	{
 		return (a.x != b.x) || (a.y != b.y) || (a.z != b.z) || (a.w != b.w);
 	}
 
 	template<typename T>
-	inline Vec4<T> operator +(const Vec4<T> &a, const Vec4<T> &b)
+	inline constexpr Vec4<T> operator +(const Vec4<T> &a, const Vec4<T> &b)
 	{
 		return Vec4<T>(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
 	}
 
 	template<typename T>
-	inline Vec4<T> operator -(const Vec4<T> &a, const Vec4<T> &b)
+	inline constexpr Vec4<T> operator -(const Vec4<T> &a, const Vec4<T> &b)
 	{
 		return Vec4<T>(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
 	}
 
 	template<typename T>
-	inline Vec4<T> operator *(const Vec4<T> &a, const Vec4<T> &b)
+	inline constexpr Vec4<T> operator *(const Vec4<T> &a, const Vec4<T> &b)
 	{
 		return Vec4<T>(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
 	}
 
 	template<typename T>
-	inline Vec4<T> operator *(const Vec4<T> &a, const T &b)
+	inline constexpr Vec4<T> operator *(const Vec4<T> &a, const T &b)
 	{
 		return Vec4<T>(a.x * b, a.y * b, a.z * b, a.w * b);
 	}
@@ -1010,10 +1014,10 @@ namespace cm
 
 	Mat3f QuatToMat3(const Quatf &q);
 
-	Mat4 QuatToMat4(const Quatf &q);
+	Mat4f QuatToMat4(const Quatf &q);
 
 	template<typename T>
-	inline Quat<T> operator *(const Quat<T> &q, const Quat<T> &p)
+	inline constexpr Quat<T> operator *(const Quat<T> &q, const Quat<T> &p)
 	{
 		T w = p.w * q.w - p.x * q.x - p.y * q.y - p.z * q.z;
 		T x = p.w * q.x + p.x * q.w + p.y * q.z - p.z * q.y;
@@ -1023,7 +1027,7 @@ namespace cm
 	}
 
 	template<typename T>
-	inline Quat<T> operator *(const Quat<T> &a, const Vec3<T> &b)
+	inline constexpr Quat<T> operator *(const Quat<T> &a, const Vec3<T> &b)
 	{
 		T w = -a.x * b.x - a.y - b.y - a.z * b.z;
 		T x = a.w * b.x + a.y *b.z - a.z * b.y;
@@ -1207,12 +1211,12 @@ namespace cm
 	}
 
 
-	Mat3f Mat4ToMat3(const Mat4 &a);
+	Mat3f Mat4ToMat3(const Mat4f &a);
 
 	Quatf Mat3ToQuat(const Mat3f &a);
 
 	template<typename T>
-	inline Mat3<T> operator /(const Mat3<T> &a, const T &b)
+	inline constexpr Mat3<T> operator /(const Mat3<T> &a, const T &b)
 	{
 		Mat3<T> result;
 
@@ -1225,7 +1229,7 @@ namespace cm
 	}
 
 	template<typename T>
-	inline Mat3<T> operator /(const T &a, const Mat3<T> &b)
+	inline constexpr Mat3<T> operator /(const T &a, const Mat3<T> &b)
 	{
 		Mat3<T> result;
 
@@ -1238,7 +1242,7 @@ namespace cm
 	}
 
 	template<typename T>
-	Vec3<T> operator *(const Vec3<T> &a, const Mat3<T> &b)
+	inline constexpr Vec3<T> operator *(const Vec3<T> &a, const Mat3<T> &b)
 	{
 		Vec3<T> result(0, 0, 0);
 
@@ -1252,7 +1256,7 @@ namespace cm
 	}
 
 	template<typename T>
-	Mat3<T> operator *(const Mat3<T> &a, const Mat3<T> &b)
+	inline constexpr Mat3<T> operator *(const Mat3<T> &a, const Mat3<T> &b)
 	{
 		Mat3<T> result(1);
 
@@ -1279,37 +1283,39 @@ namespace cm
 	// Matrix 4x4
 	//************************************
 
-	struct  Mat4
+	template<typename T>
+	struct Mat4
 	{
 		union
 		{
-			real32 ptr[16];			
+			T ptr[16];		
+
 			struct
 			{
-				Vec4f row0;
-				Vec4f row1;
-				Vec4f row2;
-				Vec4f row3;
+				Vec4<T> row0;
+				Vec4<T> row1;
+				Vec4<T> row2;
+				Vec4<T> row3;
 			};
 		};
 
 		Mat4()
 		{
-			row0 = Vec4f(1, 0, 0, 0);
-			row1 = Vec4f(0, 1, 0, 0);
-			row2 = Vec4f(0, 0, 1, 0);
-			row3 = Vec4f(0, 0, 0, 1);
+			row0 = Vec4<T>(1, 0, 0, 0);
+			row1 = Vec4<T>(0, 1, 0, 0);
+			row2 = Vec4<T>(0, 0, 1, 0);
+			row3 = Vec4<T>(0, 0, 0, 1);
 		}
 
-		Mat4(const real32 &a)
+		Mat4(const T &a)
 		{
-			row0 = Vec4f(a, 0, 0, 0);
-			row1 = Vec4f(0, a, 0, 0);
-			row2 = Vec4f(0, 0, a, 0);
-			row3 = Vec4f(0, 0, 0, a);
+			row0 = Vec4<T>(a, 0, 0, 0);
+			row1 = Vec4<T>(0, a, 0, 0);
+			row2 = Vec4<T>(0, 0, a, 0);
+			row3 = Vec4<T>(0, 0, 0, a);
 		}
 
-		Mat4(const Vec4f &_row0, const Vec4f &_row1, const Vec4f &_row2, const Vec4f &_row3)
+		Mat4(const Vec4<T> &_row0, const Vec4<T> &_row1, const Vec4<T> &_row2, const Vec4<T> &_row3)
 		{
 			row0 = _row0;
 			row1 = _row1;
@@ -1317,33 +1323,413 @@ namespace cm
 			row3 = _row3;
 		}
 		
-		Mat4(const Mat3f &a, const Vec3f &translation)
+		Mat4(const Mat3<T> &a, const Vec3<T> &translation)
 		{
-			row0 = Vec4f(a.row0, 0);
-			row1 = Vec4f(a.row1, 0);
-			row2 = Vec4f(a.row2, 0);
-			row3 = Vec4f(translation, 1);
+			row0 = Vec4<T>(a.row0, 0);
+			row1 = Vec4<T>(a.row1, 0);
+			row2 = Vec4<T>(a.row2, 0);
+			row3 = Vec4<T>(translation, 1);
 		}
 
-		Vec4f & operator[](const int32 &index)
+		Vec4<T> & operator[](const int32 &index)
 		{
 			Assert(index >= 0 && index < 4);
 			return (&row0)[index];
 		}
 
-		Vec4f operator[](const int32 &index) const
+		Vec4<T> operator[](const int32 &index) const
 		{
 			Assert(index >= 0 && index < 4);
 			return (&row0)[index];
 		}
 	};
-
 	struct  Polar_coord
 	{
 		real r;
 		real theta;
 		real z;
 	};
+
+	template<typename T>
+	inline constexpr T GetMatrixElement(const Mat4<T> &a, const int32 &row, const int32 &col)
+	{
+		T result = a.ptr[4 * row + col];
+
+		return result;
+	}
+
+	template<typename T>
+	inline constexpr Vec4<T> GetColumn(const Mat4<T> &a, const uint32 &col)
+	{
+		Vec4<T> result(0, 0, 0, 0);
+
+		result.x = a.ptr[4 * 0 + col];
+		result.y = a.ptr[4 * 1 + col];
+		result.z = a.ptr[4 * 2 + col];
+		result.w = a.ptr[4 * 3 + col];
+		
+		return result;
+	}
+
+	template<typename T>
+	String ToString(const Mat4<T> &a)
+	{
+		StringStream ss;
+		String space = "            ";
+
+		ss << "| " << a.ptr[0] << space << a.ptr[1] << space << a.ptr[2] << space << a.ptr[3] << " |" << '\n';
+		ss << "| " << a.ptr[4] << space << a.ptr[5] << space << a.ptr[6] << space << a.ptr[7] << " |" << '\n';
+		ss << "| " << a.ptr[8] << space << a.ptr[9] << space << a.ptr[10] << space << a.ptr[11] << " |" << '\n';
+		ss << "| " << a.ptr[12] << space << a.ptr[13] << space << a.ptr[14] << space << a.ptr[15] << " |" << '\n';
+		
+		return ss.str();
+	}
+
+	template<typename T>
+	bool32 CheckOrthogonal(const Mat4<T> &a, const T tolerance = 0.01)
+	{
+		Mat4<T> result = a * Transpose(a);
+
+		for (int32 i = 0; i < 4; i++)
+		{
+			if (abs(1 - abs(result.ptr[i * 5])) > tolerance) 
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	template<typename T>
+	Mat3<T> Adjoint(const Mat4<T> &a, const int32 &row, const int32 &col)
+	{
+		Mat3<T> result(1);
+		int32 index = 0;
+		
+		// @SPEEDS: To many branches
+		for (int32 r = 0; r < 4; r++)
+		{
+			if (row == r)
+			{
+				continue;
+			}
+			for (int32 c = 0; c < 4; c++)
+			{
+				if (c == col || c == col + 4 || c == col + 8 || c == col + 12)
+				{
+					continue;
+				}
+				
+				if (index == 3 || index == 7) // @NOTE: REMEMBER THE PADDING BYTE!!
+				{
+					index++;
+				}
+		
+				result.ptr[index++] = GetMatrixElement(a, r, c);
+			}
+		}
+
+		return result;
+	}
+
+	template<typename T>
+	Mat4<T> Inverse(const Mat4<T> &a)
+	{
+		if (CheckOrthogonal(a))
+		{
+			return Transpose(a);
+		}
+
+		Mat4<T> result(1);
+		Mat3<T> ad(1);
+		int32 index = 0;
+
+		for (int32 row = 0; row < 4; row++)
+		{
+			for (int32 col = 0; col < 4; col++)
+			{
+				if ((row + col) % 2)
+				{
+					ad = Adjoint(a, row, col);
+					T i = -Det(ad);
+					result.ptr[index++] = i;
+				}
+				else
+				{
+					ad = Adjoint(a, row, col);
+					T i = Det(ad);
+					result.ptr[index++] = i;
+				}
+			}
+		}
+
+		T determinant = Det(a);
+
+		result = Transpose(result) / determinant;
+
+		return result;
+	}
+
+	template<typename T>
+	inline constexpr Mat4<T> Transpose(const Mat4<T> &a)
+	{
+		Vec4<T> c0 = GetColumn(a, 0);
+		Vec4<T> c1 = GetColumn(a, 1);
+		Vec4<T> c2 = GetColumn(a, 2);
+		Vec4<T> c3 = GetColumn(a, 3);
+
+		Mat4<T> result(c0, c1, c2, c3);
+
+		return result;
+	}
+
+	template<typename T>
+	inline constexpr T Det(const Mat4<T> &a)
+	{
+		T f = a.ptr[0] * (
+			a.ptr[5] * (a.ptr[10] * a.ptr[15] - a.ptr[11] * a.ptr[14]) +
+			a.ptr[6] * (a.ptr[11] * a.ptr[13] - a.ptr[9] * a.ptr[15]) +
+			a.ptr[7] * (a.ptr[9] * a.ptr[14] - a.ptr[10] * a.ptr[13]));
+
+		T b = a.ptr[1] * (
+			a.ptr[4] * (a.ptr[10] * a.ptr[15] - a.ptr[11] * a.ptr[14]) +
+			a.ptr[6] * (a.ptr[11] * a.ptr[12] - a.ptr[8] * a.ptr[15]) +
+			a.ptr[7] * (a.ptr[8] * a.ptr[14] - a.ptr[10] * a.ptr[12]));
+
+		T c = a.ptr[2] * (
+			a.ptr[4] * (a.ptr[9] * a.ptr[15] - a.ptr[11] * a.ptr[13]) +
+			a.ptr[5] * (a.ptr[11] * a.ptr[12] - a.ptr[8] * a.ptr[15]) +
+			a.ptr[7] * (a.ptr[8] * a.ptr[13] - a.ptr[9] * a.ptr[12]));
+
+		T d = a.ptr[3] * (
+			a.ptr[4] * (a.ptr[9] * a.ptr[14] - a.ptr[10] * a.ptr[13]) +
+			a.ptr[5] * (a.ptr[10] * a.ptr[12] - a.ptr[8] * a.ptr[14]) +
+			a.ptr[6] * (a.ptr[8] * a.ptr[13] - a.ptr[9] * a.ptr[12]));
+
+		T result = f - b + c - d;
+
+		return result;
+	}
+
+	Mat4f Mat3ToMat4(const Mat3f &a, const Vec4f &b);
+
+	Quatf Mat4ToQuat(const Mat4f &a);
+
+	template<typename T>
+	inline constexpr Mat4<T> Translate(const Mat4<T> &a, const Vec3<T> &translation)
+	{
+		Mat4<T> result = a;
+		
+		result.row3 = Vec4<T>(translation, 1) * a;
+
+		return result;
+	}
+	
+	// @TODO: PolarCoords
+	//template<typename T>
+	//Mat4<T> Translate(Mat4<T> a, T length, T d_angle, T z)
+	//{
+	//	Polar_coord p_coord = Canonical(length, d_angle, z);
+	//	a.row3 = Vec4<T>(p_coord.r * cosf(p_coord.theta), p_coord.r * sinf(p_coord.theta), p_coord.z, 1) * a;
+	//	return a;
+	//}
+
+	// @TODO: PolarCoords
+	//Mat4f Translate(Mat4f a, Polar_coord p_coord)
+	//{
+	//	a.row3 = Vec4f(p_coord.r * cosf(p_coord.theta), p_coord.r * sinf(p_coord.theta), p_coord.z, 1) * a;
+	//	return a;
+	//}
+	
+	template<typename T>
+	inline constexpr Mat4<T> Rotate(const Mat4<T> &a, const T &d_angle, Vec3<T> axis)
+	{
+		axis = Normalize(axis);
+
+		T theata = DegToRad(d_angle);
+		T cos_theata = Cos(theata);
+		T sin_theata = Sin(theata);
+
+		Vec4<T> iPrime(0, 0, 0, 0);
+		iPrime.x = Round(axis.x *axis.x * (1 - cos_theata) + cos_theata);
+		iPrime.y = Round(axis.x *axis.y * (1 - cos_theata) + axis.z * sin_theata);
+		iPrime.z = Round(axis.x *axis.z * (1 - cos_theata) - axis.y * sin_theata);
+		iPrime.w = 0;
+
+		Vec4<T> jPrime(0, 0, 0, 0);
+		jPrime.x = Round(axis.x *axis.y * (1 - cos_theata) - axis.z *sin_theata);
+		jPrime.y = Round(axis.y *axis.y * (1 - cos_theata) + cos_theata);
+		jPrime.z = Round(axis.y *axis.z * (1 - cos_theata) + axis.x *sin_theata);
+		jPrime.w = 0;
+
+		Vec4<T> kPrime(0, 0, 0, 0);
+		kPrime.x = Round(axis.x *axis.z * (1 - cos_theata) + axis.y *sin_theata);
+		kPrime.y = Round(axis.y *axis.z * (1 - cos_theata) - axis.x *sin_theata);
+		kPrime.z = Round(axis.z *axis.z * (1 - cos_theata) + cos_theata);
+		kPrime.w = 0;
+
+		Vec4<T> wPrime(0, 0, 0, 1);
+
+		Mat4<T> result(iPrime, jPrime, kPrime, wPrime);
+
+		result = result * a;
+
+		return result;
+	}	   
+
+	template<typename T>
+	inline constexpr Mat4<T> ScaleDirection(const Mat4<T> &a, const T &k, Vec3<T> unit_direction)
+	{
+		unit_direction = Normalize(unit_direction);
+
+		Vec4<T> iPrime(0, 0, 0, 0);
+		iPrime.x = 1 + (k - 1) * unit_direction.x * unit_direction.x;
+		iPrime.y = (k - 1) * unit_direction.x * unit_direction.y;
+		iPrime.z = (k - 1) * unit_direction.x * unit_direction.z;
+
+		Vec4<T> jPrime(0, 0, 0, 0);
+		jPrime.x = (k - 1) * unit_direction.x * unit_direction.y;
+		jPrime.y = 1 + (k - 1) * unit_direction.y * unit_direction.y;
+		jPrime.z = (k - 1) * unit_direction.y * unit_direction.z;
+
+		Vec4<T> kPrime(0, 0, 0, 0);
+		kPrime.x = (k - 1) * unit_direction.x * unit_direction.z;
+		kPrime.y = (k - 1) * unit_direction.y * unit_direction.z;
+		kPrime.z = 1 + (k - 1) * unit_direction.z * unit_direction.z;
+
+		Vec4<T> wPrime(0, 0, 0, 1);
+
+		Mat4<T> result(iPrime, jPrime, kPrime, wPrime);
+
+		result = result * a;
+
+		return result;
+	}
+
+	template<typename T>
+	inline constexpr Mat4<T> ScaleCardinal(const Mat4<T> &a, const Vec3<T> &direction)
+	{
+		Mat4<T> result = a;
+
+		result.row0 = a.row0 * direction.x;
+		result.row1 = a.row1 * direction.y;
+		result.row2 = a.row2 * direction.z;
+
+		return result;
+	}
+
+	template<typename T>
+	inline constexpr Mat4<T> CalculateTransformMatrix(const Vec3<T> &position, const Vec3<T> &scale, const Quat<T> &rotation)
+	{
+		// @HELP: Real time rendering book
+		Mat4<T> result;
+		Mat4<T> trans(1);
+		Mat4<T> rot(1);
+		Mat4<T> scl(1);
+
+		trans = Translate(trans, position);
+		rot = QuatToMat4(Conjugate(rotation));
+		scl = ScaleCardinal(scl, scale);
+		
+		result = scl * rot * trans;
+
+		return result;
+	}
+
+	template<typename T>
+	inline void Print(const Mat4<T> &m)
+	{
+		for (int32 i = 0; i < 16; i++)
+		{
+			std::cout << m.ptr[i] << " ";
+		}
+		std::cout << std::endl;
+	}
+
+	template<typename T>
+	inline void PrintPretty(const Mat4<T> &m)
+	{
+		std::cout << ToString(m) << std::endl;
+	}
+
+	template<typename T>
+	inline constexpr Mat4<T> operator /(const Mat4<T> &a, const T &b)
+	{
+		Mat4<T> result;
+
+		result.row0 = a.row0 / b;
+		result.row1 = a.row1 / b;
+		result.row2 = a.row2 / b;
+		result.row3 = a.row3 / b;
+
+		return result;
+	}
+	
+	template<typename T>
+	inline constexpr Mat4<T> operator +(const Mat4<T> &a, const Mat4<T> &b)
+	{
+		Mat4<T> result(1);
+
+		result.row0 = a.row0 + b.row0;
+		result.row1 = a.row1 + b.row1;
+		result.row2 = a.row2 + b.row2;
+		result.row3 = a.row3 + b.row3;
+
+		return result;
+	}
+
+	template<typename T>
+	inline constexpr Mat4<T> operator *(const Mat4<T> &a, const Mat4<T> &b)
+	{
+		Mat4<T> result(1);
+		
+		for (int32 i = 0; i < 4; i++)
+		{
+		
+			for (int32 y = 0; y < 4; y++)
+			{
+			
+				Vec4<T> col(0, 0, 0, 0);
+				for (int32 x = 0; x < 4; x++)
+				{
+					col[x] = GetMatrixElement(b, x, y);
+				}
+				
+				result.ptr[4 * i + y] = Dot(col, a[i]);
+			}
+		}
+
+		return result;
+	}
+
+	template<typename T>
+	inline constexpr Vec4<T> operator *(const Vec4<T> &a, const Mat4<T> &b)
+	{
+		Vec4<T> result(0, 0, 0, 0);
+
+		for (uint32 i = 0; i < 4; i++)
+		{
+			Vec4<T> col = GetColumn(b, i);
+			result[i] = Dot(col, a);
+		}
+
+		return result;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	struct Basis
 	{
@@ -1389,9 +1775,9 @@ namespace cm
 
 	Vec4f GetNormalisedDeviceCoordinates(const real32 &window_width, const real32 &window_height, const real32 &mouse_x, const real32 &mouse_y);
 
-	Vec4f ToViewCoords(const Mat4 &projection_matrix, const Vec4f &viewCoords);
+	Vec4f ToViewCoords(const Mat4f &projection_matrix, const Vec4f &viewCoords);
 
-	Vec3f ToWorldCoords(const Mat4 &view_matrix, const Vec4f &viewCoords);
+	Vec3f ToWorldCoords(const Mat4f &view_matrix, const Vec4f &viewCoords);
 
 
 
@@ -1402,43 +1788,7 @@ namespace cm
 	// Matrix 4x4
 	//************************************
 
-	real32 GetMatrixElement(const Mat4 &a, const int32 &row, const int32 &col);
-	
-	Vec4f GetColumn(const Mat4 &a, const uint32 &col);
 
-	String ToString(const Mat4 &a);
-
-	bool CheckOrthogonal(const Mat4 &a, const real32 tolerance = 0.01);
-
-	Mat3f Adjoint(const Mat4 &a, const int32 &row, const int32 &col);
-	
-	Mat4 Inverse(const Mat4 &a);
-
-	Mat4 Transpose(Mat4 a);
-
-	real32 Det(const Mat4 &a);
-
-	Mat4 Mat3ToMat4(const Mat3f &a, const Vec4f &b);
-
-	Mat4 Translate(Mat4 a, Vec3f translation);
-
-	Mat4 Translate(Mat4 a, real32 length, real32 d_angle, real32 z);
-
-	Mat4 Translate(Mat4 a, Polar_coord p_coord);
-
-	Mat4 Rotate(Mat4 a, real32 dangle, Vec3f axis);
-
-	Quatf Mat4ToQuat(const Mat4 &a);
-
-	Mat4 ScaleDirection(Mat4 a, real32 k, Vec3f unit_direction, bool should_normalize = true);
-
-	Mat4 ScaleCardinal(Mat4 a, Vec3f direction);
-	
-	Mat4 CalculateTransformMatrix(const Vec3f &position, const Vec3f &scale, const Quatf &rotation);
-	
-	void Print(const Mat4 &m);
-
-	void PrintPretty(const Mat4 &m);
 			
 	//************************************
 	// Other Functions
@@ -1446,11 +1796,11 @@ namespace cm
 
 	Polar_coord Canonical(real32 r, real32 theta, real32 z);
 
-	Mat4  Perspective(const real32 &dfovy, const real32 &aspect, const real32 &fnear, const real32 &ffar);
+	Mat4f  Perspective(const real32 &dfovy, const real32 &aspect, const real32 &fnear, const real32 &ffar);
 
-	Mat4 Orthographic(const real32 &left, const real32 &right, const real32 &top, const real32 &bottom, const real32 &_near, const real32 &_far);
+	Mat4f Orthographic(const real32 &left, const real32 &right, const real32 &top, const real32 &bottom, const real32 &_near, const real32 &_far);
 
-	Mat4 LookAt(const Vec3f &position, const Vec3f &target, const Vec3f &up);
+	Mat4f LookAt(const Vec3f &position, const Vec3f &target, const Vec3f &up);
 	   	 
 	//************************************
 	// Usefull classes for everything
@@ -1465,7 +1815,7 @@ namespace cm
 		Basis basis;
 
 	public:
-		Mat4 CalcTransformMatrix() const
+		Mat4f CalcTransformMatrix() const
 		{
 			return CalculateTransformMatrix(position, scale, rotation);
 		}
@@ -1524,13 +1874,7 @@ namespace cm
 
 
 
-	Mat4  operator /(Mat4 a, float b);
 
-	Mat4  operator *(const Mat4 &a, const Mat4&b);
-
-	Mat4 operator +(const Mat4 &a, const Mat4 &b);
-	
-	Vec4f  operator *(const Vec4f &a, const Mat4 &b);	
 
 
 

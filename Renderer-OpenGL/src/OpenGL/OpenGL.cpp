@@ -1044,7 +1044,7 @@ namespace cm
 		VertexBuffer mat_vbo;
 		mat_vbo.lbo = LayoutBuffer({ ShaderDataType::Mat4 });
 		LayoutBufferSetAttributeDivisor(&mat_vbo.lbo, 1);
-		mat_vbo.size_bytes = mat_count * sizeof(Mat4);
+		mat_vbo.size_bytes = mat_count * sizeof(Mat4f);
 		mat_vbo.flags = VertexFlags::READ_WRITE;
 		CreateVertexBuffer(&mat_vbo);
 		WriteBufferData(&mat_vbo, batch->transforms, 0);
@@ -1094,7 +1094,7 @@ namespace cm
 	{
 		uint32 amount = (uint32)batch.transforms.size();
 		//@NOTE: Test to make sure we haven't added anything to the transforms without recreating batch
-		Assert(batch.vao.vertex_buffers[1].size_bytes / sizeof(Mat4) == amount);
+		Assert(batch.vao.vertex_buffers[1].size_bytes / sizeof(Mat4f) == amount);
 
 
 		BindShader(shader);
@@ -1330,9 +1330,9 @@ namespace cm
 		OpenGlState::is_initilized = true;
 	}
 
-	cm::Mat4 CubeMapMatrices::projection = Perspective(90.0f, 1.0f, 0.1f, 10.0f);
+	cm::Mat4f CubeMapMatrices::projection = Perspective(90.0f, 1.0f, 0.1f, 10.0f);
 
-	cm::Mat4 CubeMapMatrices::views[6] =
+	cm::Mat4f CubeMapMatrices::views[6] =
 	{
 		LookAt(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(1.0f,  0.0f,  0.0f), Vec3f(0.0f, -1.0f,  0.0f)),
 		LookAt(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(-1.0f,  0.0f,  0.0f),Vec3f(0.0f, -1.0f,  0.0f)),

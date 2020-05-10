@@ -128,13 +128,13 @@ namespace cm
 	
 
 
-	Mat4 ModelImport::ToMatrix4f(const aiMatrix4x4 *ai_mat)
+	Mat4f ModelImport::ToMatrix4f(const aiMatrix4x4 *ai_mat)
 	{
 
-		uint32 size = sizeof(Mat4);
+		uint32 size = sizeof(Mat4f);
 
 
-		Mat4 a;
+		Mat4f a;
 		a.row0 = Vec4f(ai_mat->a1, ai_mat->a2, ai_mat->a3, ai_mat->a4);
 		a.row1 = Vec4f(ai_mat->b1, ai_mat->b2, ai_mat->b3, ai_mat->b4);
 		a.row2 = Vec4f(ai_mat->c1, ai_mat->c2, ai_mat->c3, ai_mat->c4);
@@ -513,7 +513,7 @@ namespace cm
 		ac->bones[0].name = root_node->mName.C_Str();
 		ac->bones[0].name += "---ROOT_BONE---";
 		ac->bones[0].node_transform_matrix = ToMatrix4f(&root_node_transform_matrix);
-		ac->bones[0].inverse_bind_transform = Mat4(0);
+		ac->bones[0].inverse_bind_transform = Mat4f(0);
 
 		// @NOTE: Store all the bone's node's node transformation matrix in the bones
 		StoreNodeTransformMatrices(root_node, ac);
