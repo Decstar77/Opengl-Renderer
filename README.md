@@ -1,31 +1,45 @@
 # Opengl-Renderer
 
-Renderer for Opengl 
+**Rendering Features**
+<ul>
+  <li> Physically based rendering </li>
+  <li> Image based lighting </li>
+  <li> Screen Space reflections </li>
+  <li> Screen Space ambient occlusion </li>
+  <li> Bone based animations </li>
+  <li> Bloom </li>
+  <li> FXAA </li>
+  <li> 3 Tone mapping methods </li>
+  <li> Vignette </li>
+  <li> UI using ImGui </li>
+</ul>
 
-Rendering Features:
-Physically based rendering
-Image based lighting
-Screen Space reflections
-Screen Space ambient occlusion 
-Bone based animations 
-Bloom
-FXAA
-3 Tone mapping methods
-Vignette
-UI using ImGui
+**Other Features**
+<ul>
+  <li> Multi-threaded texture asset importing </li> 
+  <li> Custom built math library </li>
+  <li> Custom 3D Gizmos (Rotate, Scale, Translate) </li>  
+  <li> Colliders such as (AABB, OBB) </li>
+  <li> Model loading </li>
+</ul>
 
-Other Features:
-Multi-threaded texture asset importing
-Model loading
-Custom 3D Gizmos (Rotate, Scale, Translate)
-Custom built math library
-Colliders such as (AABB, OBB)
+**Requires**
+<ul>
+ <li> C++17 </li>
+ <li>OpenGL 4.0+  </li>
+</ul>
 
-Libraries used:
-Stb_Image: https://github.com/nothings/stb/blob/... 
-Assimp: https://github.com/assimp/assimp
-GLFW: https://github.com/glfw/glfw
-GLEW: http://glew.sourceforge.net/
-ImGui: https://github.com/ocornut/imgui
-C++17
-OpenGL 4.0+
+**Libraries used**
+<ul>
+  <li> Stb_Image: https://github.com/nothings/stb</li> 
+  <li> Assimp: https://github.com/assimp/assimp </li>
+  <li> GLFW: https://github.com/glfw/glfw </li>  
+  <li> GLEW: http://glew.sourceforge.net/ </li>
+  <li> ImGui: https://github.com/ocornut/imgui </li>
+</ul>
+
+
+
+
+
+
